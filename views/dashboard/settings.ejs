@@ -85,6 +85,13 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: rgb(255, 140, 0);
+            box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.1);
         }
         
         .form-row {
@@ -103,6 +110,7 @@
             display: inline-block;
             cursor: pointer;
             transition: background 0.3s;
+            font-size: 1rem;
         }
         
         .btn:hover {
@@ -115,6 +123,11 @@
         
         .btn-secondary:hover {
             background: #5a6268;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
         
         .toggle {
@@ -175,6 +188,163 @@
             margin-bottom: 0.5rem;
         }
         
+        .phone-sync-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+        
+        .phone-sync-info .sync-icon {
+            color: #28a745;
+            margin-right: 0.5rem;
+        }
+        
+        .alert {
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 5px;
+        }
+        
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .operation-hours {
+            display: flex;
+            flex-direction: column;
+            gap: 0.875rem;
+            margin-top: 0.75rem;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .day-hours {
+            display: grid;
+            grid-template-columns: 110px auto 1fr;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .day-hours:hover {
+            background: #f1f3f4;
+            border-color: #dee2e6;
+        }
+        
+        .day-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.95rem;
+            min-width: 110px;
+        }
+        
+        .closed-section {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .closed-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            cursor: pointer;
+            font-weight: 500;
+            user-select: none;
+            transition: color 0.2s ease;
+        }
+        
+        .closed-label:hover {
+            color: #495057;
+        }
+        
+        .day-hours input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: rgb(255, 140, 0);
+        }
+        
+        .time-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+        
+        .day-hours input[type="time"] {
+            padding: 0.5rem 0.6rem;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #495057;
+            background: #ffffff;
+            width: 100px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .day-hours input[type="time"]:focus {
+            outline: none;
+            border-color: rgb(255, 140, 0);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+            background: #ffffff;
+        }
+        
+        .day-hours input[type="time"]:hover:not(:disabled) {
+            border-color: #adb5bd;
+        }
+        
+        .day-hours input[type="checkbox"]:checked ~ .time-section input[type="time"] {
+            opacity: 0.4;
+            pointer-events: none;
+            background: #f8f9fa;
+            border-color: #e9ecef;
+        }
+        
+        .time-separator {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 1rem;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .day-hours.closed {
+            background: #f8f9fa;
+            opacity: 0.7;
+        }
+        
+        .day-hours.closed .day-label {
+            color: #6c757d;
+        }
+        
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -193,6 +363,40 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
+            
+            .day-hours {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                padding: 0.75rem 0.5rem;
+            }
+            
+            .day-label {
+                font-size: 0.9rem;
+                margin-bottom: 0.5rem;
+                text-align: center;
+                font-weight: 600;
+            }
+            
+            .closed-section {
+                justify-content: center;
+                margin-bottom: 0.5rem;
+            }
+            
+            .time-section {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .day-hours input[type="time"] {
+                width: 95px;
+                font-size: 0.9rem;
+                padding: 0.4rem 0.5rem;
+            }
+            
+            .day-label {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -202,6 +406,7 @@
         <nav class="nav">
             <a href="/dashboard">Dashboard</a>
             <a href="/dashboard/analytics">Analytics</a>
+            <a href="/dashboard/whatsapp-setup">WhatsApp</a>
             <a href="/dashboard/settings" class="active">Settings</a>
         </nav>
     </header>
@@ -214,18 +419,13 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="businessName">Business Name</label>
-                        <input type="text" id="businessName" name="businessName" value="Demo Restaurant" readonly>
+                        <input type="text" id="businessName" name="businessName" value="Demo Restaurant" required>
                     </div>
                     <div class="form-group">
                         <label for="businessType">Business Type</label>
-                        <select id="businessType" name="businessType" disabled>
-                            <option value="restaurant" selected>Restaurant</option>
-                            <option value="clinic">Clinic</option>
-                            <option value="salon">Salon</option>
-                            <option value="bank">Bank</option>
-                            <option value="government">Government</option>
+                        <select id="businessType" name="businessType" required>
+                            <option value="restaurant">F&B (Food & Beverage)</option>
                             <option value="retail">Retail</option>
-                            <option value="other">Other</option>
                         </select>
                     </div>
                 </div>
@@ -233,13 +433,115 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" value="demo@smartqueue.com" readonly>
+                        <input type="email" id="email" name="email" value="demo@smartqueue.com" required>
                     </div>
                     <div class="form-group">
-                        <label for="phone">Phone</label>
+                        <label for="phone">Contact Number</label>
                         <input type="tel" id="phone" name="phone" value="+1234567890" readonly>
+                        <div class="phone-sync-info" id="phoneSyncInfo">
+                            <span class="sync-icon">🔄</span>
+                            <span id="phoneSyncText">Synced with WhatsApp device</span>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <label for="address">Business Address</label>
+                    <textarea id="address" name="address" rows="3" placeholder="Enter your complete business address"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Operation Hours</label>
+                    <p style="color: #6c757d; font-size: 0.9rem; margin-bottom: 0.75rem;">Set your business hours for each day of the week. Check "Closed" for days when you're not open.</p>
+                    <div class="operation-hours">
+                        <div class="day-hours">
+                            <label class="day-label">Monday</label>
+                            <div class="closed-section">
+                                <input type="checkbox" id="mondayClosed" name="mondayClosed">
+                                <label for="mondayClosed" class="closed-label">Closed</label>
+                            </div>
+                            <div class="time-section">
+                                <input type="time" id="mondayStart" name="mondayStart" value="09:00" step="60">
+                                <span class="time-separator">to</span>
+                                <input type="time" id="mondayEnd" name="mondayEnd" value="18:00" step="60">
+                            </div>
+                        </div>
+                        <div class="day-hours">
+                            <label class="day-label">Tuesday</label>
+                            <div class="closed-section">
+                                <input type="checkbox" id="tuesdayClosed" name="tuesdayClosed">
+                                <label for="tuesdayClosed" class="closed-label">Closed</label>
+                            </div>
+                            <div class="time-section">
+                                <input type="time" id="tuesdayStart" name="tuesdayStart" value="09:00" step="60">
+                                <span class="time-separator">to</span>
+                                <input type="time" id="tuesdayEnd" name="tuesdayEnd" value="18:00" step="60">
+                            </div>
+                        </div>
+                        <div class="day-hours">
+                            <label class="day-label">Wednesday</label>
+                            <div class="closed-section">
+                                <input type="checkbox" id="wednesdayClosed" name="wednesdayClosed">
+                                <label for="wednesdayClosed" class="closed-label">Closed</label>
+                            </div>
+                            <div class="time-section">
+                                <input type="time" id="wednesdayStart" name="wednesdayStart" value="09:00" step="60">
+                                <span class="time-separator">to</span>
+                                <input type="time" id="wednesdayEnd" name="wednesdayEnd" value="18:00" step="60">
+                            </div>
+                        </div>
+                        <div class="day-hours">
+                            <label class="day-label">Thursday</label>
+                            <div class="closed-section">
+                                <input type="checkbox" id="thursdayClosed" name="thursdayClosed">
+                                <label for="thursdayClosed" class="closed-label">Closed</label>
+                            </div>
+                            <div class="time-section">
+                                <input type="time" id="thursdayStart" name="thursdayStart" value="09:00" step="60">
+                                <span class="time-separator">to</span>
+                                <input type="time" id="thursdayEnd" name="thursdayEnd" value="18:00" step="60">
+                            </div>
+                        </div>
+                        <div class="day-hours">
+                            <label class="day-label">Friday</label>
+                            <div class="closed-section">
+                                <input type="checkbox" id="fridayClosed" name="fridayClosed">
+                                <label for="fridayClosed" class="closed-label">Closed</label>
+                            </div>
+                            <div class="time-section">
+                                <input type="time" id="fridayStart" name="fridayStart" value="09:00" step="60">
+                                <span class="time-separator">to</span>
+                                <input type="time" id="fridayEnd" name="fridayEnd" value="18:00" step="60">
+                            </div>
+                        </div>
+                        <div class="day-hours">
+                            <label class="day-label">Saturday</label>
+                            <div class="closed-section">
+                                <input type="checkbox" id="saturdayClosed" name="saturdayClosed">
+                                <label for="saturdayClosed" class="closed-label">Closed</label>
+                            </div>
+                            <div class="time-section">
+                                <input type="time" id="saturdayStart" name="saturdayStart" value="09:00" step="60">
+                                <span class="time-separator">to</span>
+                                <input type="time" id="saturdayEnd" name="saturdayEnd" value="18:00" step="60">
+                            </div>
+                        </div>
+                        <div class="day-hours">
+                            <label class="day-label">Sunday</label>
+                            <div class="closed-section">
+                                <input type="checkbox" id="sundayClosed" name="sundayClosed" checked>
+                                <label for="sundayClosed" class="closed-label">Closed</label>
+                            </div>
+                            <div class="time-section">
+                                <input type="time" id="sundayStart" name="sundayStart" value="09:00" step="60">
+                                <span class="time-separator">to</span>
+                                <input type="time" id="sundayEnd" name="sundayEnd" value="18:00" step="60">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn" id="saveBusinessBtn">Save Business Information</button>
             </form>
         </div>
 
@@ -291,10 +593,10 @@
         <div class="section">
             <h2>Integrations</h2>
             
-            <div class="info-card">
-                <h4>🟢 WhatsApp Integration</h4>
-                <p>WhatsApp integration is enabled and running in simulation mode for demo purposes.</p>
-                <p><strong>Phone:</strong> +1234567890</p>
+            <div class="info-card" id="whatsappIntegrationCard">
+                <h4 id="whatsappStatus">🟡 WhatsApp Integration</h4>
+                <p id="whatsappMessage">Checking WhatsApp connection status...</p>
+                <p id="whatsappPhone"><strong>Phone:</strong> <span id="whatsappPhoneNumber">Loading...</span></p>
             </div>
             
             <div class="info-card">
@@ -305,6 +607,7 @@
             <div style="margin-top: 1rem;">
                 <button class="btn btn-secondary" onclick="testIntegration('whatsapp')">Test WhatsApp</button>
                 <button class="btn btn-secondary" onclick="testIntegration('messenger')" disabled>Test Messenger</button>
+                <a href="/dashboard/whatsapp-setup" class="btn">Manage WhatsApp</a>
             </div>
         </div>
 
@@ -326,6 +629,243 @@
     </div>
 
     <script>
+        // Global variables
+        let whatsappDeviceInfo = null;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBusinessInformation();
+            checkWhatsAppStatus();
+            initializeOperationHours();
+            
+            // Check WhatsApp status every 30 seconds
+            setInterval(checkWhatsAppStatus, 30000);
+        });
+        
+        // Initialize operation hours functionality
+        function initializeOperationHours() {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            
+            days.forEach(day => {
+                const checkbox = document.getElementById(`${day}Closed`);
+                const dayHoursElement = checkbox.closest('.day-hours');
+                
+                // Set initial state
+                updateDayHoursVisual(dayHoursElement, checkbox.checked);
+                
+                // Add event listener for checkbox changes
+                checkbox.addEventListener('change', function() {
+                    updateDayHoursVisual(dayHoursElement, this.checked);
+                });
+            });
+        }
+        
+        // Update visual state of day hours row
+        function updateDayHoursVisual(dayHoursElement, isClosed) {
+            if (isClosed) {
+                dayHoursElement.classList.add('closed');
+            } else {
+                dayHoursElement.classList.remove('closed');
+            }
+        }
+        
+        // Load business information from API
+        async function loadBusinessInformation() {
+            try {
+                const response = await fetch('/api/merchant/profile');
+                const data = await response.json();
+                
+                if (data.success && data.merchant) {
+                    const merchant = data.merchant;
+                    
+                    // Populate form fields
+                    document.getElementById('businessName').value = merchant.businessName || 'Demo Restaurant';
+                    document.getElementById('email').value = merchant.email || 'demo@smartqueue.com';
+                    document.getElementById('businessType').value = merchant.businessType || 'restaurant';
+                    
+                    // Populate address
+                    if (merchant.address) {
+                        const addressText = [
+                            merchant.address.street,
+                            merchant.address.city,
+                            merchant.address.state,
+                            merchant.address.zipCode,
+                            merchant.address.country
+                        ].filter(Boolean).join(', ');
+                        document.getElementById('address').value = addressText;
+                    }
+                    
+                    // Populate business hours
+                    if (merchant.businessHours) {
+                        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                        days.forEach(day => {
+                            const dayData = merchant.businessHours[day];
+                            if (dayData) {
+                                const closedCheckbox = document.getElementById(`${day}Closed`);
+                                const startInput = document.getElementById(`${day}Start`);
+                                const endInput = document.getElementById(`${day}End`);
+                                
+                                if (closedCheckbox) closedCheckbox.checked = dayData.closed || false;
+                                if (startInput) startInput.value = dayData.start || '09:00';
+                                if (endInput) endInput.value = dayData.end || '18:00';
+                            }
+                        });
+                    }
+                    
+                    // Update queue settings if available
+                    if (merchant.settings) {
+                        document.getElementById('maxQueueSize').value = merchant.settings.maxQueueSize || 100;
+                        document.getElementById('notificationInterval').value = merchant.settings.notificationInterval || 5;
+                        document.getElementById('welcomeMessage').value = merchant.settings.welcomeMessage || 'Welcome! Please select a service to join the queue.';
+                        document.getElementById('autoNotifications').checked = merchant.settings.autoNotifications !== false;
+                        document.getElementById('allowCancellation').checked = merchant.settings.allowCustomerCancellation !== false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading business information:', error);
+            }
+        }
+        
+        // Check WhatsApp status and update phone number
+        async function checkWhatsAppStatus() {
+            try {
+                const response = await fetch('/api/whatsapp/status');
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('whatsappStatus');
+                const messageElement = document.getElementById('whatsappMessage');
+                const phoneElement = document.getElementById('whatsappPhoneNumber');
+                const phoneInput = document.getElementById('phone');
+                const phoneSyncInfo = document.getElementById('phoneSyncInfo');
+                const phoneSyncText = document.getElementById('phoneSyncText');
+                
+                if (data.isReady && data.deviceInfo) {
+                    // WhatsApp is connected
+                    whatsappDeviceInfo = data.deviceInfo;
+                    const devicePhone = data.deviceInfo.phoneNumber || 'Unknown';
+                    
+                    statusElement.textContent = '🟢 WhatsApp Integration';
+                    messageElement.textContent = `WhatsApp is connected and ready for customer notifications.`;
+                    phoneElement.textContent = devicePhone;
+                    
+                    // Update phone input with WhatsApp device number
+                    phoneInput.value = devicePhone.startsWith('+') ? devicePhone : `+${devicePhone}`;
+                    phoneSyncInfo.style.display = 'block';
+                    phoneSyncText.innerHTML = '<span class="sync-icon">✅</span>Automatically synced with connected WhatsApp device';
+                    phoneSyncInfo.style.backgroundColor = '#d4edda';
+                    phoneSyncInfo.style.borderColor = '#c3e6cb';
+                    phoneSyncInfo.style.color = '#155724';
+                    
+                } else if (data.status === 'waiting_for_scan') {
+                    // QR code is ready to scan
+                    statusElement.textContent = '🟡 WhatsApp Integration';
+                    messageElement.textContent = 'QR code is ready - scan to connect WhatsApp for customer notifications.';
+                    phoneElement.textContent = 'Not connected';
+                    
+                    phoneInput.value = '+1234567890'; // Default value
+                    phoneSyncInfo.style.display = 'block';
+                    phoneSyncText.innerHTML = '<span class="sync-icon">⚠️</span>Connect WhatsApp to automatically sync phone number';
+                    phoneSyncInfo.style.backgroundColor = '#fff3cd';
+                    phoneSyncInfo.style.borderColor = '#ffeaa7';
+                    phoneSyncInfo.style.color = '#856404';
+                    
+                } else {
+                    // WhatsApp is not connected
+                    statusElement.textContent = '🔴 WhatsApp Integration';
+                    messageElement.textContent = 'WhatsApp is not connected. Connect to enable automatic customer notifications.';
+                    phoneElement.textContent = 'Not connected';
+                    
+                    phoneInput.value = '+1234567890'; // Default value
+                    phoneSyncInfo.style.display = 'block';
+                    phoneSyncText.innerHTML = '<span class="sync-icon">❌</span>Connect WhatsApp to automatically sync phone number';
+                    phoneSyncInfo.style.backgroundColor = '#f8d7da';
+                    phoneSyncInfo.style.borderColor = '#f5c6cb';
+                    phoneSyncInfo.style.color = '#721c24';
+                }
+            } catch (error) {
+                console.error('Error checking WhatsApp status:', error);
+                
+                // Show error state
+                document.getElementById('whatsappStatus').textContent = '❓ WhatsApp Integration';
+                document.getElementById('whatsappMessage').textContent = 'Unable to check WhatsApp connection status.';
+                document.getElementById('whatsappPhoneNumber').textContent = 'Status unknown';
+                
+                const phoneSyncInfo = document.getElementById('phoneSyncInfo');
+                const phoneSyncText = document.getElementById('phoneSyncText');
+                phoneSyncInfo.style.display = 'block';
+                phoneSyncText.innerHTML = '<span class="sync-icon">❓</span>Unable to check WhatsApp connection';
+                phoneSyncInfo.style.backgroundColor = '#f8d7da';
+                phoneSyncInfo.style.borderColor = '#f5c6cb';
+                phoneSyncInfo.style.color = '#721c24';
+            }
+        }
+        
+        // Handle business form submission
+        document.getElementById('businessForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const saveBtn = document.getElementById('saveBusinessBtn');
+            const originalText = saveBtn.textContent;
+            
+            try {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+                
+                const formData = new FormData(e.target);
+                
+                // Parse address
+                const addressText = formData.get('address');
+                const address = addressText ? { street: addressText } : null;
+                
+                // Parse business hours
+                const businessHours = {};
+                const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                days.forEach(day => {
+                    const closed = document.getElementById(`${day}Closed`).checked;
+                    const start = document.getElementById(`${day}Start`).value;
+                    const end = document.getElementById(`${day}End`).value;
+                    
+                    businessHours[day] = {
+                        closed: closed,
+                        start: start,
+                        end: end
+                    };
+                });
+                
+                const businessData = {
+                    businessName: formData.get('businessName'),
+                    email: formData.get('email'),
+                    businessType: formData.get('businessType'),
+                    phone: formData.get('phone'),
+                    address: address,
+                    businessHours: businessHours
+                };
+                
+                const response = await fetch('/api/merchant/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(businessData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    showAlert('Business information saved successfully!', 'success');
+                } else {
+                    showAlert('Error saving business information: ' + (result.error || 'Unknown error'), 'danger');
+                }
+            } catch (error) {
+                console.error('Error saving business information:', error);
+                showAlert('Error saving business information. Please try again.', 'danger');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+        });
+
         // Handle queue settings form submission
         document.getElementById('queueSettingsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -357,13 +897,13 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('Settings saved successfully!');
+                    showAlert('Queue settings saved successfully!', 'success');
                 } else {
-                    alert('Error saving settings: ' + (result.error || 'Unknown error'));
+                    showAlert('Error saving queue settings: ' + (result.error || 'Unknown error'), 'danger');
                 }
             } catch (error) {
-                console.error('Error saving settings:', error);
-                alert('Error saving settings');
+                console.error('Error saving queue settings:', error);
+                showAlert('Error saving queue settings. Please try again.', 'danger');
             }
         });
         
@@ -377,21 +917,49 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            phoneNumber: '+1234567890',
-                            message: 'test',
+                            phoneNumber: whatsappDeviceInfo?.phoneNumber || '+1234567890',
+                            message: 'Test message from Smart Queue Manager - WhatsApp integration is working!',
                             merchantId: '507f1f77bcf86cd799439011'
                         })
                     });
                     
                     const result = await response.json();
-                    alert('WhatsApp Test Result: ' + result.message);
+                    
+                    if (result.success) {
+                        showAlert('WhatsApp test message sent successfully!', 'success');
+                    } else {
+                        showAlert('WhatsApp test failed: ' + (result.error || 'Unknown error'), 'warning');
+                    }
                 } catch (error) {
                     console.error('Error testing WhatsApp:', error);
-                    alert('WhatsApp integration test completed (simulation mode)');
+                    showAlert('WhatsApp integration test completed (simulation mode)', 'warning');
                 }
             } else if (platform === 'messenger') {
-                alert('Messenger integration is not available in demo mode');
+                showAlert('Messenger integration is not available in demo mode', 'warning');
             }
+        }
+        
+        // Show alert messages
+        function showAlert(message, type = 'success') {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            // Create new alert
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            // Insert at the top of the container
+            const container = document.querySelector('.container');
+            container.insertBefore(alert, container.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
         }
     </script>
 </body>

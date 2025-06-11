@@ -206,25 +206,64 @@ router.get('/queue/:queueId', async (req, res) => {
 
     // Generate WhatsApp and Messenger links
     const baseMessage = `Hi! I'm interested in joining the queue for ${queue.name} at ${merchant.businessName}. Can you help me with the current wait time and queue status?`;
-    const whatsappLink = `https://wa.me/${merchant.integrations?.whatsapp?.phoneNumber || '1234567890'}?text=${encodeURIComponent(baseMessage)}`;
+    const whatsappLink = `https://wa.me/${merchant.phone || '1234567890'}?text=${encodeURIComponent(baseMessage)}`;
     const messengerLink = `https://m.me/${merchant.integrations?.messenger?.pageId || 'your-page'}?ref=${encodeURIComponent(`queue_${queue._id}`)}`;
 
-    // Format business hours
-    const businessHours = merchant.businessHours?.monday ? 
-      `${merchant.businessHours.monday.open} - ${merchant.businessHours.monday.close}` : 
-      '9:00 AM - 6:00 PM';
+    // Format business hours - show today's hours
+    let businessHours = '9:00 AM - 6:00 PM'; // Default
+    if (merchant.businessHours) {
+      const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const todayName = dayNames[today];
+      const todayHours = merchant.businessHours[todayName];
+      
+      if (todayHours) {
+        if (todayHours.closed) {
+          businessHours = 'Closed Today';
+        } else {
+          const start = todayHours.start || '09:00';
+          const end = todayHours.end || '18:00';
+          // Convert 24-hour format to 12-hour format for display
+          const formatTime = (time) => {
+            const [hours, minutes] = time.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+            return `${displayHour}:${minutes} ${ampm}`;
+          };
+          businessHours = `${formatTime(start)} - ${formatTime(end)}`;
+        }
+      }
+    }
+
+    // Format business type for display
+    const businessTypeDisplay = merchant.businessType === 'restaurant' ? 'Food & Beverage' : 'Retail';
+
+    // Format business address
+    let businessAddress = 'Address not available';
+    if (merchant.address && typeof merchant.address === 'object') {
+      const addr = merchant.address;
+      businessAddress = [addr.street, addr.city, addr.state, addr.zipCode, addr.country]
+        .filter(Boolean)
+        .join(', ');
+    } else if (typeof merchant.address === 'string') {
+      businessAddress = merchant.address;
+    }
 
     res.render('queue-info', {
       queueId: queue._id,
       queueName: queue.name,
       businessName: merchant.businessName,
+      businessType: businessTypeDisplay,
+      businessPhone: merchant.phone || 'Not available',
+      businessEmail: merchant.email || 'Not available',
       queueActive: queue.isActive,
       totalAhead,
       averageWaitTime,
       whatsappLink,
       messengerLink,
       businessHours,
-      businessAddress: merchant.address || 'Address not available',
+      businessAddress,
       lastUpdated: new Date().toLocaleTimeString()
     });
 

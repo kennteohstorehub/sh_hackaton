@@ -81,7 +81,7 @@ router.post('/register', [
   body('email').isEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('phone').isMobilePhone().withMessage('Valid phone number is required'),
-  body('businessType').isIn(['restaurant', 'clinic', 'salon', 'bank', 'government', 'retail', 'other']).withMessage('Valid business type is required')
+  body('businessType').isIn(['restaurant', 'retail']).withMessage('Valid business type is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);

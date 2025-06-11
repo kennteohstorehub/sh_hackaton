@@ -32,7 +32,7 @@ const merchantSchema = new mongoose.Schema({
   },
   businessType: {
     type: String,
-    enum: ['restaurant', 'clinic', 'salon', 'bank', 'government', 'retail', 'other'],
+    enum: ['restaurant', 'retail'],
     required: true
   },
   businessHours: {

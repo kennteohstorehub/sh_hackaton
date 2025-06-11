@@ -42,8 +42,11 @@ router.get('/profile', setMockUser, async (req, res) => {
 // PUT /api/merchant/profile - Update merchant profile
 router.put('/profile', setMockUser, [
   body('businessName').optional().trim().isLength({ min: 2, max: 100 }),
+  body('email').optional().isEmail(),
   body('phone').optional().isMobilePhone(),
-  body('businessType').optional().isIn(['restaurant', 'clinic', 'salon', 'bank', 'government', 'retail', 'other'])
+  body('businessType').optional().isIn(['restaurant', 'retail']),
+  body('address').optional(),
+  body('businessHours').optional()
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -58,18 +61,28 @@ router.put('/profile', setMockUser, [
     }
 
     // Update allowed fields
-    const allowedFields = ['businessName', 'phone', 'businessType', 'address'];
+    const allowedFields = ['businessName', 'email', 'phone', 'businessType', 'address', 'businessHours'];
     allowedFields.forEach(field => {
       if (req.body[field] !== undefined) {
         merchant[field] = req.body[field];
       }
     });
 
+    // Handle settings update if provided
+    if (req.body.settings) {
+      // Merge settings with existing settings
+      merchant.settings = {
+        ...merchant.settings.toObject(),
+        ...req.body.settings
+      };
+    }
+
     await merchant.save();
 
     // Update session data
     req.session.user.businessName = merchant.businessName;
     req.session.user.businessType = merchant.businessType;
+    req.session.user.email = merchant.email;
 
     res.json({
       success: true,
