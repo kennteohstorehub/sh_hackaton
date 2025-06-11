@@ -1262,12 +1262,13 @@
                 actionButton = `<button class="btn-action btn-select" onclick="notifySpecificCustomer('${queueId}', '${customer._id}')">Notify</button>`;
             }
             
+            // Add NEXT badge for first waiting customer
+            const nextBadge = (index === 0 && customer.status === 'waiting') ? '<div class="next-badge">NEXT</div>' : '';
+            
             row.innerHTML = `
                 <div class="position">
                     ${customer.position}
-                    <% if (index === 0 && customer.status === 'waiting') { %>
-                        <div class="next-badge">NEXT</div>
-                    <% } %>
+                    ${nextBadge}
                 </div>
                 <div class="customer-name">${customer.customerName}</div>
                 <div class="phone">${customer.phoneNumber}</div>
