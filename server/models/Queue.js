@@ -41,7 +41,18 @@ const queueEntrySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  partySize: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 20,
+    default: 1
+  },
   notes: {
+    type: String,
+    default: ''
+  },
+  specialRequests: {
     type: String,
     default: ''
   },
@@ -56,6 +67,9 @@ const queueEntrySchema = new mongoose.Schema({
     type: Date
   },
   completedAt: {
+    type: Date
+  },
+  requeuedAt: {
     type: Date
   },
   lastNotified: {
@@ -255,10 +269,17 @@ queueSchema.methods.removeCustomer = function(customerId, reason = 'cancelled') 
   const customerIndex = this.entries.findIndex(entry => entry.customerId === customerId);
   
   if (customerIndex !== -1) {
-    this.entries[customerIndex].status = reason;
-    this.entries[customerIndex].completedAt = new Date();
+    const customer = this.entries[customerIndex];
+    customer.status = reason;
+    customer.completedAt = new Date();
+    
+    // Keep the customer in entries for daily statistics, don't remove from array
+    // This ensures "Customers Today" count remains accurate
+    
+    // Update positions for remaining waiting customers
     this.updatePositions();
-    return this.entries[customerIndex];
+    
+    return customer;
   }
   
   return null;

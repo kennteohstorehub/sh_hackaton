@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; color: #333; }
+        .header { background: white; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #667eea; font-size: 1.5rem; }
+        .nav { display: flex; gap: 1rem; }
+        .nav a { text-decoration: none; color: #666; padding: 0.5rem 1rem; border-radius: 5px; transition: all 0.3s; }
+        .nav a:hover, .nav a.active { background: #667eea; color: white; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .section { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .section h2 { margin-bottom: 1.5rem; color: #333; }
+        .btn { background: #667eea; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 5px; text-decoration: none; display: inline-block; cursor: pointer; transition: background 0.3s; }
+        .btn:hover { background: #5a6fd8; }
+        .queue-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat { text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; }
+        .stat-number { font-size: 1.5rem; font-weight: bold; color: #667eea; }
+        .stat-label { font-size: 0.8rem; color: #666; }
+        .customer-list { margin-top: 2rem; }
+        .customer-item { padding: 1rem; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .customer-info h4 { margin-bottom: 0.5rem; }
+        .customer-info p { color: #666; font-size: 0.9rem; }
+        .customer-actions { display: flex; gap: 0.5rem; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; }
+        .btn-success { background: #28a745; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-danger { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Smart Queue Manager</h1>
+        <nav class="nav">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/dashboard/queues" class="active">Queues</a>
+            <a href="/dashboard/analytics">Analytics</a>
+            <a href="/dashboard/settings">Settings</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="section">
+            <h2><%= queue.name %> - Queue Details</h2>
+            <p><%= queue.description || 'No description provided' %></p>
+            
+            <div class="queue-stats">
+                <div class="stat">
+                    <div class="stat-number"><%= waitingCustomers.length %></div>
+                    <div class="stat-label">Currently Waiting</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number"><%= queue.maxCapacity %></div>
+                    <div class="stat-label">Max Capacity</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number"><%= queue.averageServiceTime %></div>
+                    <div class="stat-label">Avg Service Time (min)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number"><%= queue.isActive ? 'Active' : 'Inactive' %></div>
+                    <div class="stat-label">Status</div>
+                </div>
+            </div>
+        </div>
+
+        <% if (waitingCustomers.length > 0) { %>
+        <div class="section">
+            <h2>Waiting Customers</h2>
+            <div class="customer-list">
+                <% waitingCustomers.forEach(customer => { %>
+                <div class="customer-item">
+                    <div class="customer-info">
+                        <h4><%= customer.customerName %></h4>
+                        <p>Position: #<%= customer.position %> | Phone: <%= customer.customerPhone %> | Wait: <%= customer.estimatedWaitTime %> min</p>
+                    </div>
+                    <div class="customer-actions">
+                        <button class="btn btn-sm btn-success" onclick="callCustomer('<%= queue._id %>', '<%= customer.customerId %>')">Call Now</button>
+                        <button class="btn btn-sm btn-warning" onclick="notifyCustomer('<%= customer.customerId %>')">Notify</button>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (otherCustomers.length > 0) { %>
+        <div class="section">
+            <h2>Recent Activity</h2>
+            <div class="customer-list">
+                <% otherCustomers.slice(0, 10).forEach(customer => { %>
+                <div class="customer-item">
+                    <div class="customer-info">
+                        <h4><%= customer.customerName %></h4>
+                        <p>Status: <%= customer.status %> | Phone: <%= customer.customerPhone %></p>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+        <% } %>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.emit('join-merchant-room', '507f1f77bcf86cd799439011');
+        
+        socket.on('queue-updated', (data) => {
+            if (data.queueId === '<%= queue._id %>') {
+                location.reload();
+            }
+        });
+
+        async function callCustomer(queueId, customerId) {
+            try {
+                const response = await fetch(`/api/queue/${queueId}/call-next`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(`Called: ${result.customer.customerName}`);
+                    location.reload();
+                } else {
+                    alert(result.error || 'Failed to call customer');
+                }
+            } catch (error) {
+                console.error('Error calling customer:', error);
+                alert('Error calling customer');
+            }
+        }
+
+        async function notifyCustomer(customerId) {
+            alert('Notification feature coming soon!');
+        }
+    </script>
+</body>
+</html> 

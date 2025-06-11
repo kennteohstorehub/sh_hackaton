@@ -200,12 +200,12 @@ merchantSchema.methods.comparePassword = async function(candidatePassword) {
 // Check if business is currently open
 merchantSchema.methods.isBusinessOpen = function() {
   const now = new Date();
-  const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
+  const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
   const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
   
   const todayHours = this.businessHours[dayOfWeek];
   
-  if (todayHours.closed) return false;
+  if (!todayHours || todayHours.closed) return false;
   
   return currentTime >= todayHours.start && currentTime <= todayHours.end;
 };

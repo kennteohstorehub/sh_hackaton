@@ -5,10 +5,24 @@ const logger = require('../../utils/logger');
 
 const router = express.Router();
 
-// GET / - Landing page
+// Home page
 router.get('/', (req, res) => {
-  res.render('public/index', {
-    title: 'Smart Queue Manager - Reduce Wait Times with AI-Powered Queue Management'
+  res.render('index', {
+    title: 'Smart Queue Manager - Reduce Customer Wait Times'
+  });
+});
+
+// Demo page
+router.get('/demo', (req, res) => {
+  res.render('demo', {
+    title: 'Demo - Smart Queue Manager'
+  });
+});
+
+// Chatbot demo page
+router.get('/chatbot-demo', (req, res) => {
+  res.render('chatbot-demo', {
+    title: 'Chatbot Demo - Smart Queue Manager'
   });
 });
 
@@ -146,6 +160,77 @@ router.get('/terms', (req, res) => {
   res.render('public/terms', {
     title: 'Terms of Service - Smart Queue Manager'
   });
+});
+
+// Queue information page for customers (accessed via QR code)
+router.get('/queue/:queueId', async (req, res) => {
+  try {
+    const queue = await Queue.findById(req.params.queueId);
+    if (!queue) {
+      return res.status(404).render('error', {
+        title: 'Queue Not Found',
+        status: 404,
+        message: 'The queue you are looking for does not exist.'
+      });
+    }
+
+    const merchant = await Merchant.findById(queue.merchantId);
+    if (!merchant) {
+      return res.status(404).render('error', {
+        title: 'Business Not Found',
+        status: 404,
+        message: 'The business information could not be found.'
+      });
+    }
+
+    // Calculate queue statistics
+    const totalAhead = queue.currentLength;
+    
+    // Calculate actual average wait time of currently waiting customers (same as dashboard)
+    const now = new Date();
+    const waitingEntries = queue.entries.filter(entry => entry.status === 'waiting');
+    let averageWaitTime = 0;
+    
+    if (waitingEntries.length > 0) {
+      const totalActualWaitTime = waitingEntries.reduce((total, entry) => {
+        const waitTimeMinutes = Math.floor((now - new Date(entry.joinedAt)) / (1000 * 60));
+        return total + waitTimeMinutes;
+      }, 0);
+      averageWaitTime = Math.round(totalActualWaitTime / waitingEntries.length);
+    }
+
+    // Generate WhatsApp and Messenger links
+    const baseMessage = `Hi! I'm interested in joining the queue for ${queue.name} at ${merchant.businessName}. Can you help me with the current wait time and queue status?`;
+    const whatsappLink = `https://wa.me/${merchant.integrations?.whatsapp?.phoneNumber || '1234567890'}?text=${encodeURIComponent(baseMessage)}`;
+    const messengerLink = `https://m.me/${merchant.integrations?.messenger?.pageId || 'your-page'}?ref=${encodeURIComponent(`queue_${queue._id}`)}`;
+
+    // Format business hours
+    const businessHours = merchant.businessHours?.monday ? 
+      `${merchant.businessHours.monday.open} - ${merchant.businessHours.monday.close}` : 
+      '9:00 AM - 6:00 PM';
+
+    res.render('queue-info', {
+      queueId: queue._id,
+      queueName: queue.name,
+      businessName: merchant.businessName,
+      queueActive: queue.isActive,
+      totalAhead,
+      averageWaitTime,
+      whatsappLink,
+      messengerLink,
+      businessHours,
+      businessAddress: merchant.address || 'Address not available',
+      lastUpdated: new Date().toLocaleTimeString()
+    });
+
+  } catch (error) {
+    logger.error('Error loading queue info:', error);
+    res.status(500).render('error', {
+      title: 'Server Error',
+      status: 500,
+      message: 'Unable to load queue information. Please try again later.'
+    });
+  }
 });
 
 module.exports = router; 

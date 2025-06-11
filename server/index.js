@@ -29,6 +29,7 @@ const publicRoutes = require('./routes/frontend/public');
 const whatsappService = require('./services/whatsappService');
 const messengerService = require('./services/messengerService');
 const aiService = require('./services/aiService');
+const chatbotService = require('./services/chatbotService');
 
 const app = express();
 const server = http.createServer(app);
@@ -55,6 +56,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdn.socket.io"],
+      scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers like onclick
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "ws:", "wss:"]
@@ -130,6 +132,8 @@ app.use('/api/queue', queueRoutes);
 app.use('/api/merchant', merchantRoutes);
 app.use('/api/customer', customerRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/whatsapp', require('./routes/whatsapp'));
+app.use('/api/chatbot', require('./routes/chatbot'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -174,6 +178,10 @@ const initializeServices = async () => {
     await aiService.initialize();
     logger.info('AI service initialized');
     
+    // Initialize chatbot service
+    chatbotService.setSocketIO(io);
+    logger.info('Chatbot service initialized');
+    
   } catch (error) {
     logger.error('Error initializing services:', error);
   }
@@ -193,7 +201,7 @@ app.use((error, req, res, next) => {
     // Render error page for frontend requests
     res.status(500).render('error', {
       title: 'Server Error',
-      error: process.env.NODE_ENV === 'development' ? error : null,
+      status: 500,
       message: 'Something went wrong. Please try again later.'
     });
   }
@@ -206,7 +214,7 @@ app.use('*', (req, res) => {
   } else {
     res.status(404).render('error', {
       title: 'Page Not Found',
-      error: null,
+      status: 404,
       message: 'The page you are looking for does not exist.'
     });
   }

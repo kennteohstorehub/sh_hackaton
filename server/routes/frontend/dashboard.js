@@ -5,105 +5,100 @@ const logger = require('../../utils/logger');
 
 const router = express.Router();
 
-// Authentication middleware
-const requireAuth = (req, res, next) => {
-  if (!req.session.user) {
-    req.flash('error', 'Please log in to access the dashboard.');
-    return res.redirect('/auth/login');
-  }
+// Mock user for demo purposes
+const mockUser = {
+  id: '507f1f77bcf86cd799439011',
+  email: 'demo@smartqueue.com',
+  businessName: 'Demo Restaurant',
+  businessType: 'restaurant'
+};
+
+// Middleware to set mock user
+const setMockUser = (req, res, next) => {
+  req.session.user = mockUser;
+  res.locals.user = mockUser;
   next();
 };
 
-// GET /dashboard - Main dashboard
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    const merchantId = req.session.user.id;
-    
-    // Get merchant's queues
-    const queues = await Queue.find({ merchantId, isActive: true })
-      .sort({ createdAt: -1 });
-    
-    // Calculate dashboard statistics
-    const stats = {
-      totalQueues: queues.length,
-      totalCustomersWaiting: 0,
-      totalCustomersServed: 0,
-      averageWaitTime: 0
-    };
-    
-    queues.forEach(queue => {
-      stats.totalCustomersWaiting += queue.currentLength;
-      stats.totalCustomersServed += queue.analytics.totalServed;
-      stats.averageWaitTime += queue.analytics.averageWaitTime;
-    });
-    
-    if (queues.length > 0) {
-      stats.averageWaitTime = Math.round(stats.averageWaitTime / queues.length);
-    }
-    
-    // Get recent activity (last 10 queue entries)
-    const recentActivity = [];
-    queues.forEach(queue => {
-      queue.entries
-        .filter(entry => entry.status !== 'waiting')
-        .sort((a, b) => new Date(b.completedAt || b.calledAt) - new Date(a.completedAt || a.calledAt))
-        .slice(0, 5)
-        .forEach(entry => {
-          recentActivity.push({
-            queueName: queue.name,
-            customerName: entry.customerName,
-            status: entry.status,
-            timestamp: entry.completedAt || entry.calledAt || entry.joinedAt,
-            platform: entry.platform
-          });
-        });
-    });
-    
-    recentActivity.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    recentActivity.splice(10); // Keep only top 10
-    
-    res.render('dashboard/index', {
-      title: 'Dashboard - Smart Queue Manager',
-      queues,
-      stats,
-      recentActivity
-    });
-    
-  } catch (error) {
-    logger.error('Dashboard error:', error);
-    req.flash('error', 'Error loading dashboard. Please try again.');
-    res.render('dashboard/index', {
-      title: 'Dashboard - Smart Queue Manager',
-      queues: [],
-      stats: { totalQueues: 0, totalCustomersWaiting: 0, totalCustomersServed: 0, averageWaitTime: 0 },
-      recentActivity: []
-    });
-  }
-});
-
-// GET /dashboard/queues - Queue management
-router.get('/queues', requireAuth, async (req, res) => {
+// Dashboard home
+router.get('/', setMockUser, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
     
+    // Calculate basic stats
+    const stats = {
+      totalQueues: queues.length,
+      activeQueues: queues.filter(q => q.isActive).length,
+      totalWaiting: 0,
+      totalCustomersToday: 0,
+      averageWaitTime: 0
+    };
+
+    // Calculate today's customers and current waiting
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    
+    let totalActualWaitTime = 0;
+    let waitingCustomers = 0;
+    
+    queues.forEach(queue => {
+      // Count current waiting customers
+      const currentWaiting = queue.entries.filter(entry => entry.status === 'waiting').length;
+      stats.totalWaiting += currentWaiting;
+      
+      // Count today's customers
+      const todayEntries = queue.entries.filter(entry => 
+        new Date(entry.joinedAt) >= today
+      );
+      stats.totalCustomersToday += todayEntries.length;
+      
+      // Calculate actual wait time for currently waiting customers
+      const waitingEntries = queue.entries.filter(entry => entry.status === 'waiting');
+      waitingEntries.forEach(entry => {
+        const waitTimeMinutes = Math.floor((now - new Date(entry.joinedAt)) / (1000 * 60));
+        totalActualWaitTime += waitTimeMinutes;
+        waitingCustomers++;
+      });
+    });
+    
+    // Calculate average actual wait time
+    stats.averageWaitTime = waitingCustomers > 0 ? Math.round(totalActualWaitTime / waitingCustomers) : 0;
+
+    res.render('dashboard/index', {
+      title: 'Dashboard - Smart Queue Manager',
+      queues,
+      stats
+    });
+
+  } catch (error) {
+    logger.error('Dashboard error:', error);
+    req.flash('error', 'Error loading dashboard.');
+    res.redirect('/');
+  }
+});
+
+// Queue management
+router.get('/queues', setMockUser, async (req, res) => {
+  try {
+    const merchantId = req.session.user.id;
+    const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
+
     res.render('dashboard/queues', {
       title: 'Queue Management - Smart Queue Manager',
       queues
     });
-    
+
   } catch (error) {
-    logger.error('Queues page error:', error);
-    req.flash('error', 'Error loading queues. Please try again.');
-    res.render('dashboard/queues', {
-      title: 'Queue Management - Smart Queue Manager',
-      queues: []
-    });
+    logger.error('Queue management error:', error);
+    req.flash('error', 'Error loading queues.');
+    res.redirect('/dashboard');
   }
 });
 
 // GET /dashboard/queues/new - Create new queue
-router.get('/queues/new', requireAuth, async (req, res) => {
+router.get('/queues/new', setMockUser, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const merchant = await Merchant.findById(merchantId);
@@ -128,7 +123,7 @@ router.get('/queues/new', requireAuth, async (req, res) => {
 });
 
 // GET /dashboard/queues/:id - View specific queue
-router.get('/queues/:id', requireAuth, async (req, res) => {
+router.get('/queues/:id', setMockUser, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
@@ -162,7 +157,7 @@ router.get('/queues/:id', requireAuth, async (req, res) => {
 });
 
 // GET /dashboard/queues/:id/edit - Edit queue
-router.get('/queues/:id/edit', requireAuth, async (req, res) => {
+router.get('/queues/:id/edit', setMockUser, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
@@ -187,31 +182,25 @@ router.get('/queues/:id/edit', requireAuth, async (req, res) => {
   }
 });
 
-// GET /dashboard/settings - Settings page
-router.get('/settings', requireAuth, async (req, res) => {
+// Settings
+router.get('/settings', setMockUser, async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
-    const merchant = await Merchant.findById(merchantId);
-    
-    if (!merchant) {
-      req.flash('error', 'Merchant not found.');
-      return res.redirect('/dashboard');
-    }
-    
+    const merchant = await Merchant.findById(req.session.user.id);
+
     res.render('dashboard/settings', {
       title: 'Settings - Smart Queue Manager',
       merchant
     });
-    
+
   } catch (error) {
-    logger.error('Settings page error:', error);
-    req.flash('error', 'Error loading settings. Please try again.');
+    logger.error('Settings error:', error);
+    req.flash('error', 'Error loading settings.');
     res.redirect('/dashboard');
   }
 });
 
 // GET /dashboard/integrations - Integrations page
-router.get('/integrations', requireAuth, async (req, res) => {
+router.get('/integrations', setMockUser, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const merchant = await Merchant.findById(merchantId);
@@ -233,54 +222,27 @@ router.get('/integrations', requireAuth, async (req, res) => {
   }
 });
 
-// GET /dashboard/analytics - Analytics page
-router.get('/analytics', requireAuth, async (req, res) => {
+// WhatsApp Setup page
+router.get('/whatsapp-setup', setMockUser, async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
-    
-    // Check if merchant has analytics feature
-    if (!req.session.user.subscription.features.analytics) {
-      req.flash('error', 'Analytics feature is not available in your current plan.');
-      return res.redirect('/dashboard');
-    }
-    
-    const queues = await Queue.find({ merchantId });
-    
-    // Calculate analytics data
-    const analyticsData = {
-      totalCustomersServed: 0,
-      averageWaitTime: 0,
-      customerSatisfaction: 0,
-      noShowRate: 0,
-      peakHours: {},
-      dailyStats: {},
-      serviceTypeStats: {}
-    };
-    
-    queues.forEach(queue => {
-      analyticsData.totalCustomersServed += queue.analytics.totalServed;
-      analyticsData.averageWaitTime += queue.analytics.averageWaitTime;
-      analyticsData.customerSatisfaction += queue.analytics.customerSatisfaction;
-      analyticsData.noShowRate += queue.analytics.noShowRate;
+    res.render('dashboard/whatsapp-setup', {
+      title: 'WhatsApp Setup - Smart Queue Manager'
     });
-    
-    if (queues.length > 0) {
-      analyticsData.averageWaitTime = Math.round(analyticsData.averageWaitTime / queues.length);
-      analyticsData.customerSatisfaction = Math.round(analyticsData.customerSatisfaction / queues.length * 10) / 10;
-      analyticsData.noShowRate = Math.round(analyticsData.noShowRate / queues.length * 100) / 100;
-    }
-    
-    res.render('dashboard/analytics', {
-      title: 'Analytics - Smart Queue Manager',
-      analyticsData,
-      queues
-    });
-    
   } catch (error) {
-    logger.error('Analytics page error:', error);
-    req.flash('error', 'Error loading analytics. Please try again.');
-    res.redirect('/dashboard');
+    logger.error('WhatsApp setup page error:', error);
+    res.render('error', {
+      title: 'Error',
+      status: 500,
+      message: 'Failed to load WhatsApp setup page'
+    });
   }
+});
+
+// Analytics
+router.get('/analytics', setMockUser, (req, res) => {
+  res.render('dashboard/analytics', {
+    title: 'Analytics - Smart Queue Manager'
+  });
 });
 
 module.exports = router; 

@@ -1,145 +1,93 @@
 const express = require('express');
-const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
 const Merchant = require('../../models/Merchant');
 const logger = require('../../utils/logger');
 
 const router = express.Router();
 
-// Middleware to redirect if already logged in
-const redirectIfAuthenticated = (req, res, next) => {
+// Login page
+router.get('/login', (req, res) => {
   if (req.session.user) {
     return res.redirect('/dashboard');
   }
-  next();
-};
-
-// GET /auth/login
-router.get('/login', redirectIfAuthenticated, (req, res) => {
+  
   res.render('auth/login', {
-    title: 'Login - Smart Queue Manager',
-    errors: [],
-    formData: {}
+    title: 'Login - Smart Queue Manager'
   });
 });
 
-// POST /auth/login
+// Register page
+router.get('/register', (req, res) => {
+  if (req.session.user) {
+    return res.redirect('/dashboard');
+  }
+  
+  res.render('auth/register', {
+    title: 'Register - Smart Queue Manager'
+  });
+});
+
+// Login POST
 router.post('/login', [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please enter a valid email address'),
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long')
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
-    
     if (!errors.isEmpty()) {
-      return res.render('auth/login', {
-        title: 'Login - Smart Queue Manager',
-        errors: errors.array(),
-        formData: req.body
-      });
+      req.flash('error', 'Please check your input and try again.');
+      return res.redirect('/auth/login');
     }
 
     const { email, password } = req.body;
 
     // Find merchant
-    const merchant = await Merchant.findOne({ email, isActive: true });
+    const merchant = await Merchant.findOne({ email });
     if (!merchant) {
-      return res.render('auth/login', {
-        title: 'Login - Smart Queue Manager',
-        errors: [{ msg: 'Invalid email or password' }],
-        formData: req.body
-      });
+      req.flash('error', 'Invalid email or password.');
+      return res.redirect('/auth/login');
     }
 
     // Check password
-    const isValidPassword = await merchant.comparePassword(password);
+    const isValidPassword = await bcrypt.compare(password, merchant.password);
     if (!isValidPassword) {
-      return res.render('auth/login', {
-        title: 'Login - Smart Queue Manager',
-        errors: [{ msg: 'Invalid email or password' }],
-        formData: req.body
-      });
+      req.flash('error', 'Invalid email or password.');
+      return res.redirect('/auth/login');
     }
 
-    // Update last login
-    merchant.lastLogin = new Date();
-    await merchant.save();
-
-    // Set session
+    // Create session
     req.session.user = {
       id: merchant._id,
       email: merchant.email,
       businessName: merchant.businessName,
-      businessType: merchant.businessType,
-      subscription: merchant.subscription
+      businessType: merchant.businessType
     };
 
-    req.flash('success', `Welcome back, ${merchant.businessName}!`);
     logger.info(`Merchant logged in: ${merchant.email}`);
-    
+    req.flash('success', `Welcome back, ${merchant.businessName}!`);
     res.redirect('/dashboard');
 
   } catch (error) {
     logger.error('Login error:', error);
-    res.render('auth/login', {
-      title: 'Login - Smart Queue Manager',
-      errors: [{ msg: 'An error occurred. Please try again.' }],
-      formData: req.body
-    });
+    req.flash('error', 'An error occurred during login. Please try again.');
+    res.redirect('/auth/login');
   }
 });
 
-// GET /auth/register
-router.get('/register', redirectIfAuthenticated, (req, res) => {
-  res.render('auth/register', {
-    title: 'Register - Smart Queue Manager',
-    errors: [],
-    formData: {}
-  });
-});
-
-// POST /auth/register
+// Register POST
 router.post('/register', [
-  body('businessName')
-    .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Business name must be between 2 and 100 characters'),
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please enter a valid email address'),
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
-  body('confirmPassword')
-    .custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error('Passwords do not match');
-      }
-      return true;
-    }),
-  body('phone')
-    .isMobilePhone()
-    .withMessage('Please enter a valid phone number'),
-  body('businessType')
-    .isIn(['restaurant', 'clinic', 'salon', 'bank', 'government', 'retail', 'other'])
-    .withMessage('Please select a valid business type')
+  body('businessName').trim().isLength({ min: 2, max: 100 }).withMessage('Business name must be 2-100 characters'),
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('phone').isMobilePhone().withMessage('Valid phone number is required'),
+  body('businessType').isIn(['restaurant', 'clinic', 'salon', 'bank', 'government', 'retail', 'other']).withMessage('Valid business type is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
-    
     if (!errors.isEmpty()) {
-      return res.render('auth/register', {
-        title: 'Register - Smart Queue Manager',
-        errors: errors.array(),
-        formData: req.body
-      });
+      req.flash('error', 'Please check your input and try again.');
+      return res.redirect('/auth/register');
     }
 
     const { businessName, email, password, phone, businessType } = req.body;
@@ -147,107 +95,51 @@ router.post('/register', [
     // Check if merchant already exists
     const existingMerchant = await Merchant.findOne({ email });
     if (existingMerchant) {
-      return res.render('auth/register', {
-        title: 'Register - Smart Queue Manager',
-        errors: [{ msg: 'An account with this email already exists' }],
-        formData: req.body
-      });
+      req.flash('error', 'An account with this email already exists.');
+      return res.redirect('/auth/register');
     }
 
-    // Create new merchant
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create merchant
     const merchant = new Merchant({
       businessName,
       email,
-      password,
+      password: hashedPassword,
       phone,
-      businessType,
-      // Set default business hours
-      businessHours: {
-        monday: { start: '09:00', end: '17:00', closed: false },
-        tuesday: { start: '09:00', end: '17:00', closed: false },
-        wednesday: { start: '09:00', end: '17:00', closed: false },
-        thursday: { start: '09:00', end: '17:00', closed: false },
-        friday: { start: '09:00', end: '17:00', closed: false },
-        saturday: { start: '09:00', end: '17:00', closed: false },
-        sunday: { start: '09:00', end: '17:00', closed: true }
-      },
-      // Add default service types based on business type
-      serviceTypes: getDefaultServiceTypes(businessType)
+      businessType
     });
 
     await merchant.save();
 
-    // Set session
+    // Create session
     req.session.user = {
       id: merchant._id,
       email: merchant.email,
       businessName: merchant.businessName,
-      businessType: merchant.businessType,
-      subscription: merchant.subscription
+      businessType: merchant.businessType
     };
 
-    req.flash('success', 'Account created successfully! Welcome to Smart Queue Manager.');
     logger.info(`New merchant registered: ${merchant.email}`);
-    
+    req.flash('success', `Welcome to Smart Queue Manager, ${merchant.businessName}!`);
     res.redirect('/dashboard');
 
   } catch (error) {
     logger.error('Registration error:', error);
-    res.render('auth/register', {
-      title: 'Register - Smart Queue Manager',
-      errors: [{ msg: 'An error occurred. Please try again.' }],
-      formData: req.body
-    });
+    req.flash('error', 'An error occurred during registration. Please try again.');
+    res.redirect('/auth/register');
   }
 });
 
-// POST /auth/logout
+// Logout
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       logger.error('Logout error:', err);
-      return res.redirect('/dashboard');
     }
-    res.clearCookie('connect.sid');
-    req.flash('success', 'You have been logged out successfully.');
     res.redirect('/');
   });
 });
-
-// Helper function to get default service types
-function getDefaultServiceTypes(businessType) {
-  const serviceTypes = {
-    restaurant: [
-      { name: 'Dine-in', estimatedDuration: 60, description: 'Table reservation' },
-      { name: 'Takeout', estimatedDuration: 15, description: 'Order pickup' }
-    ],
-    clinic: [
-      { name: 'General Consultation', estimatedDuration: 30, description: 'Regular checkup' },
-      { name: 'Specialist Consultation', estimatedDuration: 45, description: 'Specialist appointment' }
-    ],
-    salon: [
-      { name: 'Haircut', estimatedDuration: 45, description: 'Hair cutting service' },
-      { name: 'Hair Styling', estimatedDuration: 60, description: 'Hair styling service' },
-      { name: 'Manicure', estimatedDuration: 30, description: 'Nail care service' }
-    ],
-    bank: [
-      { name: 'Account Services', estimatedDuration: 15, description: 'Account related services' },
-      { name: 'Loan Consultation', estimatedDuration: 30, description: 'Loan application and consultation' }
-    ],
-    government: [
-      { name: 'Document Processing', estimatedDuration: 20, description: 'Document submission and processing' },
-      { name: 'Information Inquiry', estimatedDuration: 10, description: 'General information and inquiries' }
-    ],
-    retail: [
-      { name: 'Customer Service', estimatedDuration: 15, description: 'General customer service' },
-      { name: 'Product Return', estimatedDuration: 10, description: 'Product return and exchange' }
-    ],
-    other: [
-      { name: 'General Service', estimatedDuration: 20, description: 'General service' }
-    ]
-  };
-
-  return serviceTypes[businessType] || serviceTypes.other;
-}
 
 module.exports = router; 

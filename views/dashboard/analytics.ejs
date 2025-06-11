@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav a {
+            text-decoration: none;
+            color: #666;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav a:hover, .nav a.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .chart-placeholder {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+            margin: 1rem 0;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Smart Queue Manager</h1>
+        <nav class="nav">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/dashboard/queues">Queues</a>
+            <a href="/dashboard/analytics" class="active">Analytics</a>
+            <a href="/dashboard/settings">Settings</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Analytics Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCustomers">-</div>
+                <div class="stat-label">Total Customers Served</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgWaitTime">-</div>
+                <div class="stat-label">Avg Wait Time (min)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalQueues">-</div>
+                <div class="stat-label">Total Queues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="satisfaction">-</div>
+                <div class="stat-label">Customer Satisfaction</div>
+            </div>
+        </div>
+
+        <!-- Daily Performance -->
+        <div class="section">
+            <h2>Daily Performance (Last 7 Days)</h2>
+            <div class="chart-placeholder">
+                <h3>📊 Daily Customer Flow Chart</h3>
+                <p>Chart visualization would be implemented here using Chart.js or similar library</p>
+                <div id="dailyChart" style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                    Loading chart data...
+                </div>
+            </div>
+        </div>
+
+        <!-- Queue Performance -->
+        <div class="section">
+            <h2>Queue Performance</h2>
+            <div id="queuePerformance">
+                Loading queue performance data...
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="section">
+            <h2>Export & Actions</h2>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button class="btn" onclick="exportData('json')">Export JSON</button>
+                <button class="btn btn-secondary" onclick="exportData('csv')">Export CSV</button>
+                <button class="btn btn-secondary" onclick="refreshData()">Refresh Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/api/analytics/dashboard');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const analytics = data.analytics;
+                    
+                    // Update stats
+                    document.getElementById('totalCustomers').textContent = analytics.totalCustomersServed;
+                    document.getElementById('avgWaitTime').textContent = analytics.averageWaitTime || 0;
+                    document.getElementById('totalQueues').textContent = analytics.totalQueues;
+                    document.getElementById('satisfaction').textContent = analytics.customerSatisfaction || 'N/A';
+                    
+                    // Update daily chart data
+                    const chartDiv = document.getElementById('dailyChart');
+                    let chartHtml = '<div style="display: flex; justify-content: space-around; margin-top: 1rem;">';
+                    analytics.dailyStats.forEach(day => {
+                        chartHtml += `
+                            <div style="text-align: center;">
+                                <div style="font-weight: bold;">${day.customers}</div>
+                                <div style="font-size: 0.8rem;">${day.date.split('-')[2]}/${day.date.split('-')[1]}</div>
+                            </div>
+                        `;
+                    });
+                    chartHtml += '</div>';
+                    chartDiv.innerHTML = chartHtml;
+                    
+                    // Update queue performance
+                    const queueDiv = document.getElementById('queuePerformance');
+                    if (analytics.queuePerformance.length === 0) {
+                        queueDiv.innerHTML = '<p style="text-align: center; color: #666;">No queue data available</p>';
+                    } else {
+                        let queueHtml = '<div style="display: grid; gap: 1rem;">';
+                        analytics.queuePerformance.forEach(queue => {
+                            queueHtml += `
+                                <div style="border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; background: #f8f9fa;">
+                                    <h4>${queue.name}</h4>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+                                        <div style="text-align: center;">
+                                            <div style="font-weight: bold; color: #667eea;">${queue.totalCustomers}</div>
+                                            <div style="font-size: 0.8rem; color: #666;">Total Customers</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-weight: bold; color: #667eea;">${queue.completedCustomers}</div>
+                                            <div style="font-size: 0.8rem; color: #666;">Completed</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-weight: bold; color: #667eea;">${queue.averageWaitTime}</div>
+                                            <div style="font-size: 0.8rem; color: #666;">Avg Wait (min)</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-weight: bold; color: #667eea;">${queue.currentLength}</div>
+                                            <div style="font-size: 0.8rem; color: #666;">Current Length</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        queueHtml += '</div>';
+                        queueDiv.innerHTML = queueHtml;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                alert('Error loading analytics data');
+            }
+        }
+        
+        // Export data
+        async function exportData(format) {
+            try {
+                const response = await fetch(`/api/analytics/export?format=${format}`);
+                
+                if (format === 'json') {
+                    const data = await response.json();
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    downloadFile(blob, 'analytics.json');
+                } else if (format === 'csv') {
+                    const csvData = await response.text();
+                    const blob = new Blob([csvData], { type: 'text/csv' });
+                    downloadFile(blob, 'analytics.csv');
+                }
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                alert('Error exporting data');
+            }
+        }
+        
+        // Download file helper
+        function downloadFile(blob, filename) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+        
+        // Refresh data
+        function refreshData() {
+            loadAnalytics();
+        }
+        
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadAnalytics);
+    </script>
+</body>
+</html> 

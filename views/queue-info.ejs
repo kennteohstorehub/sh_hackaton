@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= queueName %> - Queue Information</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .queue-info-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .join-queue-form {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: none;
+            padding: 12px 15px;
+            margin-bottom: 1rem;
+        }
+        .btn-join {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .btn-join:hover {
+            background: white;
+            color: #28a745;
+        }
+        .contact-btn {
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+        }
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .messenger-btn {
+            background: #0084FF;
+            color: white;
+        }
+        .messenger-btn:hover {
+            background: #0066CC;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .business-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+            font-size: 1.2rem;
+        }
+        .refresh-btn:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+        }
+        .last-updated {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .queue-status {
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+        .queue-open {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .queue-closed {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+        }
+        .form-control.is-valid {
+            border: 2px solid #28a745;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94 1.44 1.44L7.4 4.5l.94.94L4.66 9.2z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        .form-control.is-invalid {
+            border: 2px solid #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4M7.2 4.6l-1.4 1.4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- Queue Information Card -->
+                <div class="card queue-info-card">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <h2 class="card-title mb-2"><%= queueName %></h2>
+                            <p class="text-muted mb-0"><%= businessName %></p>
+                        </div>
+
+                        <!-- Queue Status -->
+                        <div class="queue-status <%= queueActive ? 'queue-open' : 'queue-closed' %>">
+                            <i class="bi <%= queueActive ? 'bi-check-circle' : 'bi-x-circle' %> me-2"></i>
+                            <%= queueActive ? 'Queue is Open' : 'Queue is Currently Closed' %>
+                        </div>
+
+                        <!-- Queue Stats -->
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-number"><%= totalAhead %></div>
+                                    <div class="stat-label">People Ahead</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-number"><%= averageWaitTime %></div>
+                                    <div class="stat-label">Minutes Wait</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Success/Error Messages -->
+                        <div id="successMessage" class="success-message">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <span id="successText"></span>
+                        </div>
+                        <div id="errorMessage" class="error-message">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <span id="errorText"></span>
+                        </div>
+
+                        <!-- Join Queue Form -->
+                        <% if (queueActive) { %>
+                        <div class="join-queue-form">
+                            <div class="text-center mb-3">
+                                <h4><i class="bi bi-person-plus me-2"></i>Join the Queue</h4>
+                                <p class="mb-0 opacity-75">Enter your details to secure your spot</p>
+                            </div>
+                            
+                            <form id="joinQueueForm">
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" id="customerName" name="name" placeholder="Your Full Name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="customerPhone" class="form-label small text-muted">
+                                        <i class="bi bi-phone me-1"></i>Phone Number (for WhatsApp notifications)
+                                    </label>
+                                    <input type="tel" 
+                                           class="form-control" 
+                                           id="customerPhone" 
+                                           name="phone" 
+                                           placeholder="+60123456789 (Country code + Phone number)" 
+                                           pattern="^\+?[1-9]\d{1,14}$"
+                                           title="Please enter a valid phone number with country code (e.g., +60123456789)"
+                                           required>
+                                    <div class="form-text">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Include country code (e.g., +60 for Malaysia, +1 for US, +65 for Singapore)
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <select class="form-control" id="partySize" name="partySize" required>
+                                        <option value="">Select Pax</option>
+                                        <option value="1">1 Person</option>
+                                        <option value="2">2 People</option>
+                                        <option value="3">3 People</option>
+                                        <option value="4">4 People</option>
+                                        <option value="5">5 People</option>
+                                        <option value="6+">6+ People</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <textarea class="form-control" id="specialRequests" name="specialRequests" placeholder="Special requests or notes (optional)" rows="2"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-join" id="joinBtn">
+                                    <i class="bi bi-plus-circle me-2"></i>Join Queue
+                                </button>
+                            </form>
+                        </div>
+                        <% } %>
+
+                        <!-- Alternative Contact Options -->
+                        <div class="text-center mt-4">
+                            <h6 class="mb-3">Or get updates via messaging:</h6>
+                            
+                            <div class="d-flex flex-column flex-sm-row justify-content-center">
+                                <a href="<%= whatsappLink %>" class="contact-btn whatsapp-btn">
+                                    <i class="bi bi-whatsapp"></i>
+                                    WhatsApp
+                                </a>
+                                <a href="<%= messengerLink %>" class="contact-btn messenger-btn">
+                                    <i class="bi bi-messenger"></i>
+                                    Messenger
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Business Information -->
+                        <div class="business-info">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <i class="bi bi-clock text-primary mb-2" style="font-size: 1.5rem;"></i>
+                                    <div class="small">
+                                        <strong>Hours</strong><br>
+                                        <%= businessHours %>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <i class="bi bi-geo-alt text-primary mb-2" style="font-size: 1.5rem;"></i>
+                                    <div class="small">
+                                        <strong>Location</strong><br>
+                                        <%= businessAddress %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="last-updated">
+                            Last updated: <span id="lastUpdated"><%= lastUpdated %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="refreshData()" title="Refresh queue information">
+        <i class="bi bi-arrow-clockwise"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, 30000);
+
+        function refreshData() {
+            window.location.reload();
+        }
+
+        // Update last updated time
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = now.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateLastUpdatedTime, 1000);
+
+        // Phone number formatting and validation
+        document.getElementById('customerPhone')?.addEventListener('input', function(e) {
+            let value = e.target.value;
+            
+            // Remove all non-digit characters except +
+            value = value.replace(/[^\d+]/g, '');
+            
+            // Ensure + is only at the beginning
+            if (value.includes('+')) {
+                const parts = value.split('+');
+                value = '+' + parts.join('');
+            }
+            
+            // Limit length
+            if (value.length > 16) {
+                value = value.substring(0, 16);
+            }
+            
+            e.target.value = value;
+            
+            // Real-time validation feedback
+            const isValid = /^\+?[1-9]\d{1,14}$/.test(value) && value.length >= 8;
+            if (value.length > 0) {
+                if (isValid) {
+                    e.target.classList.remove('is-invalid');
+                    e.target.classList.add('is-valid');
+                } else {
+                    e.target.classList.remove('is-valid');
+                    e.target.classList.add('is-invalid');
+                }
+            } else {
+                e.target.classList.remove('is-valid', 'is-invalid');
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('joinQueueForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const joinBtn = document.getElementById('joinBtn');
+            const originalText = joinBtn.innerHTML;
+            
+            // Show loading state
+            joinBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Joining...';
+            joinBtn.disabled = true;
+            
+            // Hide previous messages
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                
+                const response = await fetch(`/api/customer/join/<%= queueId %>`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    document.getElementById('successText').textContent = 
+                        `Successfully joined the queue! You are position ${result.position}. Estimated wait time: ${result.estimatedWait} minutes.`;
+                    document.getElementById('successMessage').style.display = 'block';
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Refresh queue stats after 2 seconds
+                    setTimeout(() => {
+                        refreshData();
+                    }, 2000);
+                } else {
+                    // Show error message
+                    document.getElementById('errorText').textContent = result.error || 'Failed to join queue. Please try again.';
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error joining queue:', error);
+                document.getElementById('errorText').textContent = 'Network error. Please check your connection and try again.';
+                document.getElementById('errorMessage').style.display = 'block';
+            } finally {
+                // Restore button
+                joinBtn.innerHTML = originalText;
+                joinBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html> 

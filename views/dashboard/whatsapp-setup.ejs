@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-connected { background-color: #28a745; }
+        .status-disconnected { background-color: #dc3545; }
+        .status-connecting { background-color: #ffc107; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .qr-code {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+        }
+        
+        .connection-steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <div class="d-flex align-items-center mb-4">
+                    <i class="bi bi-queue-fill text-white me-2" style="font-size: 1.5rem;"></i>
+                    <h5 class="text-white mb-0">Smart Queue</h5>
+                </div>
+                
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="/dashboard">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </a>
+                    <a class="nav-link" href="/dashboard/queues">
+                        <i class="bi bi-list-ul me-2"></i>Queue Management
+                    </a>
+                    <a class="nav-link active" href="/dashboard/whatsapp-setup">
+                        <i class="bi bi-whatsapp me-2"></i>WhatsApp Setup
+                    </a>
+                    <a class="nav-link" href="/dashboard/analytics">
+                        <i class="bi bi-graph-up me-2"></i>Analytics
+                    </a>
+                    <a class="nav-link" href="/dashboard/settings">
+                        <i class="bi bi-gear me-2"></i>Settings
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">WhatsApp Integration</h2>
+                        <p class="text-muted">Connect your WhatsApp to enable customer notifications</p>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="status-indicator" id="connectionStatus"></span>
+                        <span id="connectionText">Checking connection...</span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Connection Status Card -->
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-whatsapp text-success me-2"></i>
+                                    WhatsApp Connection
+                                </h5>
+                                
+                                <!-- QR Code Section -->
+                                <div id="qrSection" class="text-center" style="display: none;">
+                                    <div class="qr-container">
+                                        <h6 class="mb-3">Scan QR Code with WhatsApp</h6>
+                                        <img id="qrCodeImage" src="" alt="QR Code" class="qr-code mb-3">
+                                        <p class="text-muted small">
+                                            Open WhatsApp on your phone → Settings → Linked Devices → Link a Device
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Connected Section -->
+                                <div id="connectedSection" class="text-center" style="display: none;">
+                                    <div class="alert alert-success">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        WhatsApp is connected and ready!
+                                    </div>
+                                    <p class="text-muted">Your customers can now receive notifications via WhatsApp.</p>
+                                    <button class="btn btn-outline-danger" onclick="disconnectWhatsApp()">
+                                        <i class="bi bi-x-circle me-2"></i>Disconnect
+                                    </button>
+                                </div>
+
+                                <!-- Loading Section -->
+                                <div id="loadingSection" class="text-center">
+                                    <div class="spinner-border text-primary mb-3" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted">Initializing WhatsApp connection...</p>
+                                </div>
+
+                                <!-- Error Section -->
+                                <div id="errorSection" class="text-center" style="display: none;">
+                                    <div class="alert alert-danger">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <span id="errorMessage">Connection failed</span>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="retryConnection()">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Retry Connection
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Connection Steps -->
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-list-check me-2"></i>
+                                    How to Connect
+                                </h5>
+                                <div class="connection-steps">
+                                    <div class="step">
+                                        <div class="step-number">1</div>
+                                        <div>
+                                            <strong>Open WhatsApp on your phone</strong><br>
+                                            <small class="text-muted">Make sure you have the latest version installed</small>
+                                        </div>
+                                    </div>
+                                    <div class="step">
+                                        <div class="step-number">2</div>
+                                        <div>
+                                            <strong>Go to Settings → Linked Devices</strong><br>
+                                            <small class="text-muted">Tap on "Link a Device" option</small>
+                                        </div>
+                                    </div>
+                                    <div class="step">
+                                        <div class="step-number">3</div>
+                                        <div>
+                                            <strong>Scan the QR code</strong><br>
+                                            <small class="text-muted">Point your camera at the QR code displayed above</small>
+                                        </div>
+                                    </div>
+                                    <div class="step">
+                                        <div class="step-number">4</div>
+                                        <div>
+                                            <strong>Start receiving notifications</strong><br>
+                                            <small class="text-muted">Your customers will now get queue updates via WhatsApp</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Sidebar -->
+                    <div class="col-lg-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="bi bi-chat-dots"></i>
+                            </div>
+                            <h6>Automated Notifications</h6>
+                            <p class="small mb-0">Customers receive automatic updates about their queue position and estimated wait times.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <h6>Smart Chatbot</h6>
+                            <p class="small mb-0">AI-powered chatbot handles customer inquiries and queue management automatically.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <h6>Real-time Updates</h6>
+                            <p class="small mb-0">Instant notifications when it's the customer's turn or when queue status changes.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <h6>Secure & Reliable</h6>
+                            <p class="small mb-0">End-to-end encrypted messages with reliable delivery through WhatsApp's infrastructure.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        // DOM elements
+        const qrSection = document.getElementById('qrSection');
+        const connectedSection = document.getElementById('connectedSection');
+        const loadingSection = document.getElementById('loadingSection');
+        const errorSection = document.getElementById('errorSection');
+        const qrCodeImage = document.getElementById('qrCodeImage');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const connectionText = document.getElementById('connectionText');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Initialize connection status check
+        checkConnectionStatus();
+
+        // Socket event listeners
+        socket.on('whatsapp:qr', (data) => {
+            console.log('QR Code received');
+            showQRCode(data.qr);
+        });
+
+        socket.on('whatsapp:ready', (data) => {
+            console.log('WhatsApp connected');
+            showConnected();
+        });
+
+        socket.on('whatsapp:auth_failure', (data) => {
+            console.log('WhatsApp auth failed:', data.error);
+            showError('Authentication failed: ' + data.error);
+        });
+
+        socket.on('whatsapp:disconnected', (data) => {
+            console.log('WhatsApp disconnected:', data.reason);
+            showError('Disconnected: ' + data.reason);
+        });
+
+        // Functions
+        async function checkConnectionStatus() {
+            try {
+                const response = await fetch('/api/whatsapp/status');
+                const data = await response.json();
+                
+                if (data.isReady) {
+                    showConnected();
+                } else if (data.hasQR) {
+                    // Request QR code
+                    const qrResponse = await fetch('/api/whatsapp/qr');
+                    const qrData = await qrResponse.json();
+                    if (qrData.qrDataURL) {
+                        showQRCode(qrData.qrDataURL);
+                    }
+                } else {
+                    showLoading();
+                }
+            } catch (error) {
+                console.error('Error checking connection status:', error);
+                showError('Failed to check connection status');
+            }
+        }
+
+        function showQRCode(qrDataURL) {
+            hideAllSections();
+            qrCodeImage.src = qrDataURL;
+            qrSection.style.display = 'block';
+            updateStatus('connecting', 'Scan QR code to connect');
+        }
+
+        function showConnected() {
+            hideAllSections();
+            connectedSection.style.display = 'block';
+            updateStatus('connected', 'WhatsApp Connected');
+        }
+
+        function showLoading() {
+            hideAllSections();
+            loadingSection.style.display = 'block';
+            updateStatus('connecting', 'Connecting...');
+        }
+
+        function showError(message) {
+            hideAllSections();
+            errorMessage.textContent = message;
+            errorSection.style.display = 'block';
+            updateStatus('disconnected', 'Connection Error');
+        }
+
+        function hideAllSections() {
+            qrSection.style.display = 'none';
+            connectedSection.style.display = 'none';
+            loadingSection.style.display = 'none';
+            errorSection.style.display = 'none';
+        }
+
+        function updateStatus(status, text) {
+            connectionStatus.className = 'status-indicator status-' + status;
+            connectionText.textContent = text;
+        }
+
+        async function disconnectWhatsApp() {
+            if (confirm('Are you sure you want to disconnect WhatsApp? This will stop all customer notifications.')) {
+                try {
+                    const response = await fetch('/api/whatsapp/disconnect', { method: 'POST' });
+                    if (response.ok) {
+                        showLoading();
+                        setTimeout(checkConnectionStatus, 2000);
+                    } else {
+                        showError('Failed to disconnect');
+                    }
+                } catch (error) {
+                    console.error('Error disconnecting:', error);
+                    showError('Failed to disconnect');
+                }
+            }
+        }
+
+        function retryConnection() {
+            showLoading();
+            setTimeout(checkConnectionStatus, 2000);
+        }
+
+        // Auto-refresh QR code every 30 seconds if showing
+        setInterval(() => {
+            if (qrSection.style.display !== 'none') {
+                checkConnectionStatus();
+            }
+        }, 30000);
+    </script>
+</body>
+</html> 

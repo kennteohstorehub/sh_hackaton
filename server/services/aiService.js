@@ -1,5 +1,4 @@
 const natural = require('natural');
-const { LinearRegression } = require('ml-regression');
 const logger = require('../utils/logger');
 
 class AIService {
@@ -7,7 +6,6 @@ class AIService {
     this.sentimentAnalyzer = new natural.SentimentAnalyzer('English', 
       natural.PorterStemmer, 'afinn');
     this.tokenizer = new natural.WordTokenizer();
-    this.waitTimePredictor = null;
     this.isReady = false;
   }
 
@@ -23,23 +21,10 @@ class AIService {
   // Predict wait time based on queue length and historical data
   predictWaitTime(queueLength, averageServiceTime, historicalData = []) {
     try {
-      if (historicalData.length > 10) {
-        // Use machine learning if we have enough data
-        const x = historicalData.map(d => [d.queueLength, d.timeOfDay, d.dayOfWeek]);
-        const y = historicalData.map(d => d.actualWaitTime);
-        
-        const regression = new LinearRegression(x, y);
-        const currentHour = new Date().getHours();
-        const currentDay = new Date().getDay();
-        
-        const prediction = regression.predict([queueLength, currentHour, currentDay]);
-        return Math.max(prediction, queueLength * (averageServiceTime * 0.8));
-      } else {
-        // Simple calculation for new queues
-        const baseTime = queueLength * averageServiceTime;
-        const peakHourMultiplier = this.getPeakHourMultiplier();
-        return Math.round(baseTime * peakHourMultiplier);
-      }
+      // Simple calculation for now (can be enhanced later)
+      const baseTime = queueLength * averageServiceTime;
+      const peakHourMultiplier = this.getPeakHourMultiplier();
+      return Math.round(baseTime * peakHourMultiplier);
     } catch (error) {
       logger.error('Error predicting wait time:', error);
       return queueLength * averageServiceTime;
@@ -117,51 +102,6 @@ class AIService {
     if (hour >= 8 && hour <= 10) return 1.2;
     
     return 1.0;
-  }
-
-  // Analyze queue patterns and suggest optimizations
-  analyzeQueuePatterns(queueData) {
-    try {
-      const patterns = {
-        peakHours: {},
-        averageWaitTimes: {},
-        customerSatisfaction: 0,
-        recommendations: []
-      };
-
-      // Analyze peak hours
-      queueData.forEach(entry => {
-        const hour = new Date(entry.joinedAt).getHours();
-        patterns.peakHours[hour] = (patterns.peakHours[hour] || 0) + 1;
-      });
-
-      // Find busiest hours
-      const busiestHour = Object.keys(patterns.peakHours)
-        .reduce((a, b) => patterns.peakHours[a] > patterns.peakHours[b] ? a : b);
-
-      // Generate recommendations
-      if (patterns.peakHours[busiestHour] > 10) {
-        patterns.recommendations.push(
-          `Consider adding more staff during ${busiestHour}:00-${parseInt(busiestHour) + 1}:00 (peak hour)`
-        );
-      }
-
-      // Analyze wait times
-      const avgWaitTime = queueData.reduce((sum, entry) => {
-        const waitTime = entry.completedAt ? 
-          (new Date(entry.completedAt) - new Date(entry.joinedAt)) / (1000 * 60) : 0;
-        return sum + waitTime;
-      }, 0) / queueData.length;
-
-      if (avgWaitTime > 30) {
-        patterns.recommendations.push('Average wait time is high. Consider optimizing service processes.');
-      }
-
-      return patterns;
-    } catch (error) {
-      logger.error('Error analyzing queue patterns:', error);
-      return { recommendations: [] };
-    }
   }
 
   // Smart notification timing
