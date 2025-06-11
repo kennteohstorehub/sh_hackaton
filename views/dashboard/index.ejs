@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,174 +14,350 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8f9fa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
             color: #333;
+            overflow-x: hidden;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         .header {
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
         .header h1 {
-            color: rgb(255, 140, 0);
-            font-size: 1.5rem;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         
         .nav {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
         }
         
         .nav a {
             text-decoration: none;
-            color: #666;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: all 0.3s;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .nav a:hover, .nav a.active {
-            background: rgb(255, 140, 0);
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav a.active {
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
         }
         
         .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
         }
         
         .whatsapp-status-banner {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
             margin-bottom: 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .whatsapp-status-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
         }
         
         .whatsapp-status-banner.connected {
-            background: #d1edff;
-            border-color: #bee5eb;
+            background: rgba(76, 175, 80, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
         }
         
         .whatsapp-status-banner.disconnected {
-            background: #f8d7da;
-            border-color: #f5c6cb;
+            background: rgba(244, 67, 54, 0.1);
+            border-color: rgba(244, 67, 54, 0.3);
         }
         
         .whatsapp-status-content {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 1rem;
         }
         
         .whatsapp-status-icon {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .whatsapp-status-text h6 {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .whatsapp-status-text p {
             margin: 0;
-            font-size: 0.8rem;
-            opacity: 0.8;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
         }
         
         .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            border-radius: 20px;
             text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-card:hover::before {
+            opacity: 1;
         }
         
         .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: rgb(255, 140, 0);
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
         }
         
         .stat-label {
-            color: #666;
-            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
         }
         
         .section {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2.5rem;
+            border-radius: 20px;
             margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
         }
         
         .section h2 {
-            margin-bottom: 1.5rem;
-            color: #333;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.9);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-weight: 600;
+            font-size: 1.5rem;
         }
         
         .btn {
-            background: rgb(255, 140, 0);
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
             color: white;
-            padding: 0.75rem 1.5rem;
+            padding: 0.875rem 2rem;
             border: none;
-            border-radius: 5px;
+            border-radius: 12px;
             text-decoration: none;
             display: inline-block;
             cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .btn:hover {
-            background: rgb(230, 126, 0);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-        
-        .single-queue-container {
-            max-width: 100%;
-        }
-        
-        .queue-section {
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            background: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+            position: relative;
             overflow: hidden;
         }
         
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+        }
+        
+        .btn-sm {
+            padding: 0.625rem 1.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .tabs-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tabs-header {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+        
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 107, 53, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom-color: #ff8c00;
+        }
+        
+        .tab-button.active::before {
+            opacity: 1;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 2.5rem;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .queue-section {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
         .queue-header {
-            background: #f8f9fa;
-            padding: 2rem;
-            border-bottom: 1px solid #e9ecef;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -189,14 +366,15 @@
         
         .queue-title h3 {
             margin: 0 0 0.5rem 0;
-            color: #333;
-            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.8rem;
+            font-weight: 600;
         }
         
         .queue-description {
             margin: 0;
-            color: #666;
-            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
         }
         
         .queue-summary {
@@ -213,287 +391,301 @@
         
         .stat-item {
             text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.15);
         }
         
         .stat-item .stat-number {
             display: block;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: rgb(255, 140, 0);
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.25rem;
         }
         
         .stat-item .stat-label {
             display: block;
-            font-size: 0.8rem;
-            color: #666;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-        
-        .queue-actions {
-            display: flex;
-            gap: 0.5rem;
+            font-weight: 500;
         }
         
         .customer-list {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
         }
         
         .customer-list-header {
             display: grid;
             grid-template-columns: 100px 1fr 150px 80px 100px 150px 120px;
             gap: 1rem;
-            padding: 1rem 1.5rem;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-            font-weight: bold;
+            padding: 1.5rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
             font-size: 0.9rem;
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
         }
         
         .customer-row {
             display: grid;
             grid-template-columns: 100px 1fr 150px 80px 100px 150px 120px;
             gap: 1rem;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #f1f3f4;
-            transition: all 0.3s ease;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             align-items: center;
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .customer-row:hover {
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
         }
         
         .customer-row.next-customer {
-            background: #fff4e6;
-            border-left: 4px solid rgb(255, 140, 0);
+            background: rgba(255, 140, 0, 0.2);
+            border-left: 4px solid #ff8c00;
+            box-shadow: 0 0 20px rgba(255, 140, 0, 0.3);
         }
         
         .customer-row.notified-customer {
-            background: #f0f8ff;
-            border-left: 4px solid #007bff;
-            opacity: 0.9;
+            background: rgba(33, 150, 243, 0.2);
+            border-left: 4px solid #2196f3;
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.3);
         }
         
         .customer-row .position {
-            font-weight: bold;
-            color: rgb(255, 140, 0);
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.1rem;
         }
         
         .next-badge {
-            background: rgb(255, 140, 0);
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
             color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
+            padding: 0.375rem 0.75rem;
+            border-radius: 8px;
             font-size: 0.75rem;
-            font-weight: bold;
+            font-weight: 600;
             letter-spacing: 0.5px;
-        }
-        
-        .notified-badge {
-            background: #007bff;
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        
-        .customer-row .name {
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .customer-row .phone {
-            color: #666;
-            font-family: monospace;
-        }
-        
-        .customer-row .wait-time {
-            color: #e74c3c;
-            font-weight: 500;
-        }
-        
-        .customer-row .pax-size {
-            text-align: center;
-        }
-        
-        .pax-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-align: center;
-            min-width: 50px;
-        }
-        
-        .pax-1, .pax-2 {
-            background: #e8f5e8;
-            color: #2d5a2d;
-        }
-        
-        .pax-3, .pax-4 {
-            background: #fff4e6;
-            color: #cc7a00;
-        }
-        
-        .pax-5, .pax-6 {
-            background: #ffe6cc;
-            color: #b8610a;
-        }
-        
-        .customer-actions {
-            text-align: center;
-        }
-        
-        .special-requests {
-            font-size: 0.85rem;
-            color: #666;
-            max-width: 150px;
-            overflow: hidden;
-        }
-        
-        .special-requests-text {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: help;
-        }
-        
-        .no-requests {
-            color: #ccc;
-            font-style: italic;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
         }
         
         .btn-action {
-            padding: 0.4rem 0.8rem;
+            padding: 0.5rem 1rem;
             border: none;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
         }
         
         .btn-notify {
-            background: #28a745;
+            background: linear-gradient(135deg, #4caf50, #45a049);
             color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
         
         .btn-notify:hover {
-            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
         }
         
         .btn-select {
-            background: rgb(255, 140, 0);
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
             color: white;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
         }
         
         .btn-select:hover {
-            background: rgb(230, 126, 0);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
         }
         
         .btn-seated {
-            background: #28a745;
+            background: linear-gradient(135deg, #4caf50, #45a049);
             color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
         
         .btn-seated:hover {
-            background: #218838;
-        }
-        
-        .queue-footer {
-            padding: 1rem 1.5rem;
-            background: #f8f9fa;
-            text-align: center;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .view-all-link {
-            color: rgb(255, 140, 0);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .view-all-link:hover {
-            text-decoration: underline;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
         }
         
         .no-customers {
-            padding: 3rem 1.5rem;
+            padding: 4rem 2rem;
             text-align: center;
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .empty-queue-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.6;
         }
         
         .no-customers h4 {
-            margin: 0 0 0.5rem 0;
-            color: #333;
-            font-size: 1.1rem;
+            margin: 0 0 1rem 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.3rem;
+            font-weight: 600;
         }
         
         .no-customers p {
             margin: 0;
-            font-size: 0.95rem;
-        }
-        
-        .no-active-queues {
-            text-align: center;
-            padding: 3rem;
-            color: #666;
-        }
-        
-        .no-active-queues h3 {
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.8rem;
+            font-size: 1rem;
         }
         
         .empty-state {
             text-align: center;
-            padding: 3rem;
-            color: #666;
+            padding: 4rem;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .empty-state h3 {
-            margin-bottom: 1rem;
-            color: #333;
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        /* Floating particles animation */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        /* Loading animations */
+        .updating-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
+        }
+        
+        .updating-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .connection-status.connected {
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .connection-status.disconnected {
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+        
+        .connection-status.connecting {
+            background: rgba(255, 140, 0, 0.9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
         }
         
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
                 gap: 1rem;
+                padding: 1rem;
             }
             
             .nav {
                 flex-wrap: wrap;
                 justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            .nav a {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
             }
             
             .container {
-                padding: 0 1rem;
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1.5rem;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
             }
             
             .queue-header {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 1.5rem;
                 align-items: flex-start;
-                padding: 1.5rem;
+                padding: 2rem;
             }
             
             .queue-summary {
@@ -511,15 +703,11 @@
                 text-align: left;
             }
             
-            .queue-actions {
-                width: 100%;
-                justify-content: flex-start;
-            }
-            
             .customer-list-header,
             .customer-row {
                 grid-template-columns: 80px 1fr 60px 80px;
                 gap: 0.5rem;
+                padding: 1rem;
             }
             
             .customer-list-header span:nth-child(3),
@@ -528,239 +716,38 @@
             .customer-row .wait-time {
                 display: none;
             }
-            
-            .customer-row .phone {
-                font-size: 0.8rem;
-            }
         }
         
-        /* Tab System Styles */
-        .tabs-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-            overflow: hidden;
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
         
-        .tabs-header {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
         }
         
-        .tab-button {
-            flex: 1;
-            padding: 1rem 2rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #666;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .tab-button.active {
-            color: rgb(255, 140, 0);
-            background: white;
-            border-bottom-color: rgb(255, 140, 0);
-        }
-        
-        .tab-button:hover:not(.active) {
-            background: #e9ecef;
-            color: #333;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 2rem;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* Seated customers specific styles */
-        .seated-customer-row {
-            opacity: 0.8;
-            background: #f8f9fa;
-        }
-        
-        .seated-customer-row .position {
-            color: #28a745;
-            font-weight: bold;
-        }
-        
-        .requeue-btn {
-            background: #28a745;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 140, 0, 0.5);
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: background 0.3s;
         }
         
-        .requeue-btn:hover {
-            background: #218838;
-        }
-        
-        .seated-time {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        /* Loading and update indicators */
-        .updating-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgb(255, 140, 0);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .updating-indicator.show {
-            opacity: 1;
-        }
-        
-        .customer-row.updating {
-            background: #fff3cd;
-            border-left: 4px solid rgb(255, 140, 0);
-        }
-        
-        /* Connection status indicator */
-        .connection-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            z-index: 1000;
-            transition: all 0.3s;
-        }
-        
-        .connection-status.connected {
-            background: #28a745;
-            color: white;
-        }
-        
-        .connection-status.disconnected {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .connection-status.connecting {
-            background: rgb(255, 140, 0);
-            color: white;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-header h3 {
-            margin: 0;
-            color: #333;
-        }
-        
-        .close {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 1;
-        }
-        
-        .close:hover {
-            color: #000;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-        
-        #createQueueForm {
-            padding: 1.5rem;
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 140, 0, 0.7);
         }
     </style>
 </head>
 <body>
+    <!-- Floating particles -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; top: 20%; width: 4px; height: 4px; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; top: 80%; width: 6px; height: 6px; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 60%; top: 30%; width: 3px; height: 3px; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 80%; top: 70%; width: 5px; height: 5px; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 30%; top: 10%; width: 4px; height: 4px; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 70%; top: 90%; width: 3px; height: 3px; animation-delay: 5s;"></div>
+    </div>
+
     <header class="header">
         <h1>Smart Queue Manager</h1>
         <nav class="nav">
@@ -790,7 +777,6 @@
         
         <!-- Stats Overview -->
         <div class="stats-grid">
-
             <div class="stat-card">
                 <div class="stat-number" id="totalWaitingCount"><%= stats.totalWaiting || 0 %></div>
                 <div class="stat-label">Currently Waiting</div>
@@ -824,88 +810,67 @@
                     <% const activeQueue = queues.find(queue => queue.isActive); %>
                     <% if (!activeQueue) { %>
                         <div class="no-active-queues">
-                            <h3>Queue is currently inactive</h3>
-                            <p>Activate your queue to start accepting customers</p>
-                            <button class="btn" onclick="activateQueue()">Activate Queue</button>
+                            <h3>No active queues</h3>
+                            <p>Activate a queue to start managing customers</p>
                         </div>
                     <% } else { %>
-                        <!-- Single Queue Display -->
                         <div class="single-queue-container">
                             <div class="queue-section">
                                 <div class="queue-header">
                                     <div class="queue-title">
                                         <h3><%= activeQueue.name %></h3>
-                                        <p class="queue-description"><%= activeQueue.description %></p>
+                                        <p class="queue-description"><%= activeQueue.description || 'No description provided' %></p>
                                     </div>
                                     <div class="queue-summary">
                                         <div class="queue-stats">
                                             <div class="stat-item">
-                                                <span class="stat-number"><%= activeQueue.currentLength %></span>
-                                                <span class="stat-label">Currently Waiting</span>
+                                                <span class="stat-number"><%= activeQueue.entries.filter(e => e.status === 'waiting' || e.status === 'called').length %></span>
+                                                <span class="stat-label">Waiting</span>
                                             </div>
                                             <div class="stat-item">
-                                                <span class="stat-number"><%= Math.round(stats.averageWaitTime) %></span>
-                                                <span class="stat-label">Avg Wait (min)</span>
+                                                <span class="stat-number"><%= activeQueue.averageServiceTime || 0 %></span>
+                                                <span class="stat-label">Avg Time</span>
                                             </div>
                                             <div class="stat-item">
                                                 <span class="stat-number"><%= activeQueue.maxCapacity %></span>
-                                                <span class="stat-label">Max Capacity</span>
+                                                <span class="stat-label">Capacity</span>
                                             </div>
                                         </div>
                                         <div class="queue-actions">
-                                            <button class="btn btn-sm" onclick="notifyNext('<%= activeQueue._id %>')">Notify Next Customer</button>
-                                            <a href="/dashboard/queues/<%= activeQueue._id %>" class="btn btn-secondary btn-sm">View Details</a>
+                                            <button class="btn btn-sm" onclick="addCustomer('<%= activeQueue._id %>')">Add Customer</button>
+                                            <button class="btn btn-secondary btn-sm" onclick="viewQueueDetails('<%= activeQueue._id %>')">View Details</button>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <% if (activeQueue.entries && activeQueue.entries.filter(entry => entry.status === 'waiting' || entry.status === 'called').length > 0) { %>
+                                <% const waitingCustomers = activeQueue.entries.filter(entry => entry.status === 'waiting' || entry.status === 'called').sort((a, b) => { if (a.status === 'called' && b.status === 'waiting') return -1; if (a.status === 'waiting' && b.status === 'called') return 1; return a.position - b.position; }); %>
+                                
+                                <% if (waitingCustomers.length > 0) { %>
                                     <div class="customer-list">
                                         <div class="customer-list-header">
                                             <span>Position</span>
-                                            <span>Customer Name</span>
-                                            <span>Phone Number</span>
-                                            <span>Pax</span>
+                                            <span>Customer</span>
+                                            <span>Phone</span>
+                                            <span>Party</span>
                                             <span>Wait Time</span>
                                             <span>Special Requests</span>
                                             <span>Actions</span>
                                         </div>
-                                        <% 
-                                        const activeCustomers = activeQueue.entries
-                                            .filter(entry => entry.status === 'waiting' || entry.status === 'called')
-                                            .sort((a, b) => {
-                                                // Called customers first, then waiting customers by position
-                                                if (a.status === 'called' && b.status === 'waiting') return -1;
-                                                if (a.status === 'waiting' && b.status === 'called') return 1;
-                                                return a.position - b.position;
-                                            });
-                                        const waitingCustomers = activeCustomers; // Keep same variable name for compatibility
-                                        %>
+                                        
                                         <% waitingCustomers.forEach((customer, index) => { %>
+                                            <% const waitMinutes = Math.floor((new Date() - new Date(customer.joinedAt)) / (1000 * 60)); %>
                                             <div class="customer-row <%= customer.status === 'called' ? 'notified-customer' : (index === 0 && customer.status === 'waiting' ? 'next-customer' : '') %>">
-                                                <span class="position">
-                                                    <% if (customer.status === 'called') { %>
-                                                        <span class="notified-badge">NOTIFIED</span>
-                                                    <% } else if (index === 0 && customer.status === 'waiting') { %>
-                                                        <span class="next-badge">NEXT</span>
-                                                    <% } else { %>
-                                                        #<%= customer.position %>
+                                                <div class="position">
+                                                    <%= customer.position %>
+                                                    <% if (index === 0 && customer.status === 'waiting') { %>
+                                                        <div class="next-badge">NEXT</div>
                                                     <% } %>
-                                                </span>
-                                                <span class="name"><%= customer.customerName %></span>
-                                                <span class="phone"><%= customer.customerPhone %></span>
-                                                <span class="pax-size">
-                                                    <span class="pax-badge pax-<%= customer.partySize || 1 %>">
-                                                        <%= customer.partySize || 1 %> pax
-                                                    </span>
-                                                </span>
-                                                <span class="wait-time">
-                                                    <% 
-                                                    const waitMinutes = Math.floor((new Date() - new Date(customer.joinedAt)) / (1000 * 60));
-                                                    %>
-                                                    <%= waitMinutes %> min
-                                                </span>
-                                                <span class="special-requests">
+                                                </div>
+                                                <div class="customer-name"><%= customer.customerName %></div>
+                                                <div class="phone"><%= customer.phoneNumber %></div>
+                                                <div class="party-size"><%= customer.partySize %></div>
+                                                <div class="wait-time"><%= waitMinutes %> min</div>
+                                                <div class="special-requests">
                                                     <% if (customer.specialRequests && customer.specialRequests.trim()) { %>
                                                         <span class="special-requests-text" title="<%= customer.specialRequests %>">
                                                             <%= customer.specialRequests.length > 30 ? customer.specialRequests.substring(0, 30) + '...' : customer.specialRequests %>
@@ -913,31 +878,19 @@
                                                     <% } else { %>
                                                         <span class="no-requests">-</span>
                                                     <% } %>
-                                                </span>
-                                                <span class="customer-actions">
+                                                </div>
+                                                <div class="actions">
                                                     <% if (customer.status === 'called') { %>
-                                                        <button class="btn-action btn-seated" onclick="markAsSeated('<%= activeQueue._id %>', '<%= customer.customerId %>')">
-                                                            Seated
-                                                        </button>
+                                                        <button class="btn-action btn-seated" onclick="markAsSeated('<%= activeQueue._id %>', '<%= customer.customerId %>')">Seated</button>
                                                     <% } else if (index === 0) { %>
-                                                        <button class="btn-action btn-notify" onclick="notifyNext('<%= activeQueue._id %>')">
-                                                            Notify
-                                                        </button>
+                                                        <button class="btn-action btn-notify" onclick="notifyNext('<%= activeQueue._id %>')">Notify</button>
                                                     <% } else { %>
-                                                        <button class="btn-action btn-select" onclick="notifySpecificCustomer('<%= activeQueue._id %>', '<%= customer._id %>')">
-                                                            Notify
-                                                        </button>
+                                                        <button class="btn-action btn-select" onclick="selectCustomer('<%= activeQueue._id %>', '<%= customer.customerId %>')">Select</button>
                                                     <% } %>
-                                                </span>
+                                                </div>
                                             </div>
                                         <% }); %>
                                     </div>
-                                    
-                                    <% if (waitingCustomers.length > 10) { %>
-                                        <div class="queue-footer">
-                                            <p>Showing first 10 customers • <a href="/dashboard/queues/<%= activeQueue._id %>" class="view-all-link">View all <%= waitingCustomers.length %> customers</a></p>
-                                        </div>
-                                    <% } %>
                                 <% } else { %>
                                     <div class="no-customers">
                                         <div class="empty-queue-icon">🍽️</div>
@@ -955,49 +908,30 @@
             <div id="seated-customers" class="tab-content">
                 <% if (queues.length > 0) { %>
                     <% const activeQueue = queues.find(queue => queue.isActive); %>
-                    <% if (activeQueue && activeQueue.entries) { %>
-                        <% 
-                        const seatedCustomers = activeQueue.entries
-                            .filter(entry => entry.status === 'completed' || entry.status === 'seated')
-                            .sort((a, b) => new Date(b.completedAt || b.updatedAt) - new Date(a.completedAt || a.updatedAt))
-                            .slice(0, 20); // Show last 20 seated customers
-                        %>
+                    <% if (activeQueue) { %>
+                        <% const seatedCustomers = activeQueue.entries.filter(entry => entry.status === 'seated').sort((a, b) => new Date(b.seatedAt) - new Date(a.seatedAt)); %>
+                        
                         <% if (seatedCustomers.length > 0) { %>
                             <div class="customer-list">
                                 <div class="customer-list-header">
+                                    <span>Table</span>
+                                    <span>Customer</span>
+                                    <span>Phone</span>
+                                    <span>Party</span>
                                     <span>Seated Time</span>
-                                    <span>Customer Name</span>
-                                    <span>Phone Number</span>
-                                    <span>Pax</span>
-                                    <span>Total Wait</span>
                                     <span>Special Requests</span>
                                     <span>Actions</span>
                                 </div>
+                                
                                 <% seatedCustomers.forEach((customer) => { %>
+                                    <% const seatedMinutes = Math.floor((new Date() - new Date(customer.seatedAt)) / (1000 * 60)); %>
                                     <div class="customer-row seated-customer-row">
-                                        <span class="position">
-                                            <span class="seated-time">
-                                                <% 
-                                                const seatedTime = new Date(customer.completedAt || customer.updatedAt);
-                                                const timeAgo = Math.floor((new Date() - seatedTime) / (1000 * 60));
-                                                %>
-                                                <%= timeAgo < 60 ? timeAgo + 'm ago' : Math.floor(timeAgo/60) + 'h ago' %>
-                                            </span>
-                                        </span>
-                                        <span class="name"><%= customer.customerName %></span>
-                                        <span class="phone"><%= customer.customerPhone %></span>
-                                        <span class="pax-size">
-                                            <span class="pax-badge pax-<%= customer.partySize || 1 %>">
-                                                <%= customer.partySize || 1 %> pax
-                                            </span>
-                                        </span>
-                                        <span class="wait-time">
-                                            <% 
-                                            const totalWaitMinutes = Math.floor((new Date(customer.completedAt || customer.updatedAt) - new Date(customer.joinedAt)) / (1000 * 60));
-                                            %>
-                                            <%= totalWaitMinutes %> min
-                                        </span>
-                                        <span class="special-requests">
+                                        <div class="position">T<%= customer.tableNumber || '-' %></div>
+                                        <div class="customer-name"><%= customer.customerName %></div>
+                                        <div class="phone"><%= customer.phoneNumber %></div>
+                                        <div class="party-size"><%= customer.partySize %></div>
+                                        <div class="seated-time"><%= seatedMinutes %> min</div>
+                                        <div class="special-requests">
                                             <% if (customer.specialRequests && customer.specialRequests.trim()) { %>
                                                 <span class="special-requests-text" title="<%= customer.specialRequests %>">
                                                     <%= customer.specialRequests.length > 30 ? customer.specialRequests.substring(0, 30) + '...' : customer.specialRequests %>
@@ -1005,27 +939,34 @@
                                             <% } else { %>
                                                 <span class="no-requests">-</span>
                                             <% } %>
-                                        </span>
-                                        <span class="customer-actions">
-                                            <button class="requeue-btn" onclick="requeueCustomer('<%= activeQueue._id %>', '<%= customer.customerId %>')">
-                                                Requeue
-                                            </button>
-                                        </span>
+                                        </div>
+                                        <div class="actions">
+                                            <button class="requeue-btn" onclick="requeueCustomer('<%= activeQueue._id %>', '<%= customer.customerId %>')">Requeue</button>
+                                        </div>
                                     </div>
                                 <% }); %>
                             </div>
                         <% } else { %>
                             <div class="no-customers">
-                                <div class="empty-queue-icon">✅</div>
-                                <h4>No seated customers yet</h4>
-                                <p>Customers who have been seated will appear here</p>
+                                <div class="empty-queue-icon">🪑</div>
+                                <h4>No seated customers</h4>
+                                <p>Customers who are seated will appear here</p>
                             </div>
                         <% } %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <h3>No active queue</h3>
+                            <p>Activate a queue to see seated customers</p>
+                        </div>
                     <% } %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <h3>No queues available</h3>
+                        <p>Create a queue first to manage seated customers</p>
+                    </div>
                 <% } %>
             </div>
         </div>
-
     </div>
 
     <!-- Updating Indicator -->
@@ -1322,18 +1263,18 @@
             }
             
             row.innerHTML = `
-                <span class="position">
-                    ${customer.status === 'called' ? '<span class="notified-badge">NOTIFIED</span>' : 
-                      (index === 0 && customer.status === 'waiting' ? '<span class="next-badge">NEXT</span>' : `#${customer.position}`)}
-                </span>
-                <span class="name">${customer.customerName}</span>
-                <span class="phone">${customer.customerPhone}</span>
-                <span class="pax-size">
-                    <span class="pax-badge pax-${customer.partySize || 1}">${customer.partySize || 1} pax</span>
-                </span>
-                <span class="wait-time">${waitMinutes} min</span>
-                <span class="special-requests">${specialRequestsDisplay}</span>
-                <span class="customer-actions">${actionButton}</span>
+                <div class="position">
+                    ${customer.position}
+                    <% if (index === 0 && customer.status === 'waiting') { %>
+                        <div class="next-badge">NEXT</div>
+                    <% } %>
+                </div>
+                <div class="customer-name">${customer.customerName}</div>
+                <div class="phone">${customer.phoneNumber}</div>
+                <div class="party-size">${customer.partySize}</div>
+                <div class="wait-time">${waitMinutes} min</div>
+                <div class="special-requests">${specialRequestsDisplay}</div>
+                <div class="actions">${actionButton}</div>
             `;
             
             return row;
@@ -1454,7 +1395,7 @@
             // Find the customer row by customer ID or name
             const customerRows = document.querySelectorAll('.customer-row');
             customerRows.forEach(row => {
-                const nameSpan = row.querySelector('.name');
+                const nameSpan = row.querySelector('.customer-name');
                 if (nameSpan && nameSpan.textContent === customer.customerName) {
                     // Update row styling
                     row.className = 'customer-row notified-customer';
@@ -1466,7 +1407,7 @@
                     }
                     
                     // Update action button
-                    const actionsSpan = row.querySelector('.customer-actions');
+                    const actionsSpan = row.querySelector('.actions');
                     if (actionsSpan) {
                         // Get queue ID from existing notify button
                         const existingButton = actionsSpan.querySelector('button[onclick*="notify"]');
@@ -1540,7 +1481,7 @@
             
             let found = false;
             customerRows.forEach((row, index) => {
-                const nameSpan = row.querySelector('.name');
+                const nameSpan = row.querySelector('.customer-name');
                 console.log(`Row ${index}: nameSpan exists:`, !!nameSpan, 'text:', nameSpan?.textContent);
                 
                 if (nameSpan && nameSpan.textContent === customerName) {
