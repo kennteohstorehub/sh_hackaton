@@ -9,7 +9,7 @@
     <style>
         .sidebar {
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, rgb(255, 140, 0) 0%, rgb(230, 126, 0) 100%);
         }
         .sidebar .nav-link {
             color: rgba(255,255,255,0.8);
@@ -87,7 +87,7 @@
         }
         
         .step-number {
-            background: #667eea;
+            background: rgb(255, 140, 0);
             color: white;
             width: 30px;
             height: 30px;
@@ -101,7 +101,7 @@
         }
         
         .feature-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, rgb(255, 140, 0) 0%, rgb(230, 126, 0) 100%);
             color: white;
             border-radius: 15px;
             padding: 1.5rem;
@@ -127,9 +127,6 @@
                 <nav class="nav flex-column">
                     <a class="nav-link" href="/dashboard">
                         <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                    </a>
-                    <a class="nav-link" href="/dashboard/queues">
-                        <i class="bi bi-list-ul me-2"></i>Queue Management
                     </a>
                     <a class="nav-link active" href="/dashboard/whatsapp-setup">
                         <i class="bi bi-whatsapp me-2"></i>WhatsApp Setup
@@ -183,6 +180,12 @@
                                         <i class="bi bi-check-circle-fill me-2"></i>
                                         WhatsApp is connected and ready!
                                     </div>
+                                    <div id="deviceInfo" class="mb-3">
+                                        <h6>Connected Device:</h6>
+                                        <p class="mb-1"><strong>Phone:</strong> <span id="devicePhone">Loading...</span></p>
+                                        <p class="mb-1"><strong>Device:</strong> <span id="deviceName">Loading...</span></p>
+                                        <p class="mb-0"><small class="text-muted">Connected: <span id="deviceConnectedAt">Loading...</span></small></p>
+                                    </div>
                                     <p class="text-muted">Your customers can now receive notifications via WhatsApp.</p>
                                     <button class="btn btn-outline-danger" onclick="disconnectWhatsApp()">
                                         <i class="bi bi-x-circle me-2"></i>Disconnect
@@ -234,9 +237,20 @@
                                     </div>
                                     <div class="step">
                                         <div class="step-number">3</div>
-                                        <div>
+                                        <div class="flex-grow-1">
                                             <strong>Scan the QR code</strong><br>
-                                            <small class="text-muted">Point your camera at the QR code displayed above</small>
+                                            <small class="text-muted">Point your camera at the QR code below</small>
+                                            
+                                            <!-- QR Code Display in Step 3 -->
+                                            <div id="stepQrContainer" class="mt-3" style="display: none;">
+                                                <div class="qr-container" style="padding: 1rem; max-width: 200px;">
+                                                    <img id="stepQrCodeImage" src="" alt="QR Code" class="qr-code" style="max-width: 150px;">
+                                                </div>
+                                            </div>
+                                            
+                                            <div id="stepQrStatus" class="mt-2">
+                                                <small class="text-muted">QR code will appear here when ready to scan</small>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="step">
@@ -304,27 +318,35 @@
         const connectionStatus = document.getElementById('connectionStatus');
         const connectionText = document.getElementById('connectionText');
         const errorMessage = document.getElementById('errorMessage');
+        const devicePhone = document.getElementById('devicePhone');
+        const deviceName = document.getElementById('deviceName');
+        const deviceConnectedAt = document.getElementById('deviceConnectedAt');
+        
+        // Step 3 QR elements
+        const stepQrContainer = document.getElementById('stepQrContainer');
+        const stepQrCodeImage = document.getElementById('stepQrCodeImage');
+        const stepQrStatus = document.getElementById('stepQrStatus');
 
         // Initialize connection status check
         checkConnectionStatus();
 
         // Socket event listeners
-        socket.on('whatsapp:qr', (data) => {
+        socket.on('whatsapp-qr', (data) => {
             console.log('QR Code received');
-            showQRCode(data.qr);
+            showQRCode(data.qrDataURL);
         });
 
-        socket.on('whatsapp:ready', (data) => {
-            console.log('WhatsApp connected');
-            showConnected();
+        socket.on('whatsapp-ready', (data) => {
+            console.log('WhatsApp connected', data);
+            showConnected(data.deviceInfo);
         });
 
-        socket.on('whatsapp:auth_failure', (data) => {
+        socket.on('whatsapp-auth_failure', (data) => {
             console.log('WhatsApp auth failed:', data.error);
             showError('Authentication failed: ' + data.error);
         });
 
-        socket.on('whatsapp:disconnected', (data) => {
+        socket.on('whatsapp-disconnected', (data) => {
             console.log('WhatsApp disconnected:', data.reason);
             showError('Disconnected: ' + data.reason);
         });
@@ -335,8 +357,8 @@
                 const response = await fetch('/api/whatsapp/status');
                 const data = await response.json();
                 
-                if (data.isReady) {
-                    showConnected();
+                if (data.isReady && data.deviceInfo) {
+                    showConnected(data.deviceInfo);
                 } else if (data.hasQR) {
                     // Request QR code
                     const qrResponse = await fetch('/api/whatsapp/qr');
@@ -358,18 +380,38 @@
             qrCodeImage.src = qrDataURL;
             qrSection.style.display = 'block';
             updateStatus('connecting', 'Scan QR code to connect');
+            
+            // Also show QR code in step 3
+            stepQrCodeImage.src = qrDataURL;
+            stepQrContainer.style.display = 'block';
+            stepQrStatus.innerHTML = '<small class="text-success"><i class="bi bi-qr-code me-1"></i>QR code ready - scan with your phone</small>';
         }
 
-        function showConnected() {
+        function showConnected(deviceInfo) {
             hideAllSections();
             connectedSection.style.display = 'block';
             updateStatus('connected', 'WhatsApp Connected');
+            
+            if (deviceInfo) {
+                devicePhone.textContent = deviceInfo.phoneNumber || 'Unknown';
+                deviceName.textContent = deviceInfo.deviceName || 'WhatsApp Device';
+                const connectedDate = deviceInfo.connectedAt ? new Date(deviceInfo.connectedAt).toLocaleString() : 'Unknown';
+                deviceConnectedAt.textContent = connectedDate;
+            }
+            
+            // Hide QR code in step 3
+            stepQrContainer.style.display = 'none';
+            stepQrStatus.innerHTML = '<small class="text-success"><i class="bi bi-check-circle me-1"></i>Successfully connected!</small>';
         }
 
         function showLoading() {
             hideAllSections();
             loadingSection.style.display = 'block';
             updateStatus('connecting', 'Connecting...');
+            
+            // Update step 3 status
+            stepQrContainer.style.display = 'none';
+            stepQrStatus.innerHTML = '<small class="text-muted"><i class="bi bi-hourglass-split me-1"></i>Initializing connection...</small>';
         }
 
         function showError(message) {
@@ -377,6 +419,10 @@
             errorMessage.textContent = message;
             errorSection.style.display = 'block';
             updateStatus('disconnected', 'Connection Error');
+            
+            // Update step 3 status
+            stepQrContainer.style.display = 'none';
+            stepQrStatus.innerHTML = '<small class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Connection failed</small>';
         }
 
         function hideAllSections() {

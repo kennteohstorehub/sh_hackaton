@@ -2,6 +2,7 @@ const logger = require('../utils/logger');
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
+const whatsappSecurity = require('../config/whatsapp-security');
 
 class WhatsAppService {
   constructor() {
@@ -11,6 +12,56 @@ class WhatsAppService {
     this.conversationStates = new Map();
     this.sessionCount = 0;
     this.io = null;
+    this.deviceInfo = null; // Store connected device information
+    
+    // Log whitelist status on initialization
+    const securityInfo = whatsappSecurity.getWhitelistInfo();
+    if (securityInfo.enforced) {
+      logger.info('🔒 WhatsApp Security: Phone number whitelist is ENABLED');
+      logger.info(`📱 Allowed numbers: ${securityInfo.allowedNumbers.join(', ')}`);
+    } else {
+      logger.warn('⚠️  WhatsApp Security: Phone number whitelist is DISABLED (production mode)');
+    }
+  }
+
+  /**
+   * Security check: Verify if a phone number is allowed to receive messages
+   * @param {string} phoneNumber - The phone number to check
+   * @returns {boolean} - True if allowed, false if blocked
+   */
+  isPhoneNumberAllowed(phoneNumber) {
+    const isAllowed = whatsappSecurity.isPhoneNumberAllowed(phoneNumber);
+
+    if (!isAllowed) {
+      const securityInfo = whatsappSecurity.getWhitelistInfo();
+      logger.warn(`🚫 BLOCKED: Attempted to send WhatsApp message to unauthorized number: ${phoneNumber}`);
+      logger.warn(`🔒 Only these numbers are allowed: ${securityInfo.allowedNumbers.join(', ')}`);
+    }
+
+    return isAllowed;
+  }
+
+  /**
+   * Add a phone number to the whitelist (for testing purposes)
+   * @param {string} phoneNumber - Phone number to add
+   * @returns {boolean} - True if added successfully
+   */
+  addToWhitelist(phoneNumber) {
+    const result = whatsappSecurity.addToWhitelist(phoneNumber);
+    if (result) {
+      logger.info(`📱 Added ${phoneNumber} to WhatsApp whitelist`);
+    } else {
+      logger.info(`📱 ${phoneNumber} is already in whitelist or whitelist is disabled`);
+    }
+    return result;
+  }
+
+  /**
+   * Get current whitelist status and allowed numbers
+   * @returns {object} - Whitelist information
+   */
+  getWhitelistInfo() {
+    return whatsappSecurity.getWhitelistInfo();
   }
 
   async initialize(io = null) {
@@ -74,16 +125,39 @@ class WhatsAppService {
     });
 
     // Ready event - when client is authenticated and ready
-    this.client.on('ready', () => {
+    this.client.on('ready', async () => {
       this.isConnected = true;
       this.sessionCount = 1;
       this.qrCode = null;
       
-      logger.info('WhatsApp client is ready!');
+      try {
+        // Get device information
+        const info = this.client.info;
+        this.deviceInfo = {
+          phoneNumber: info.wid.user,
+          deviceName: info.pushname || 'WhatsApp Device',
+          platform: info.platform || 'Unknown',
+          connectedAt: new Date().toISOString()
+        };
+        
+        logger.info(`WhatsApp client is ready! Connected device: ${this.deviceInfo.phoneNumber} (${this.deviceInfo.deviceName})`);
+      } catch (error) {
+        logger.warn('Could not retrieve device info:', error.message);
+        this.deviceInfo = {
+          phoneNumber: 'Unknown',
+          deviceName: 'WhatsApp Device',
+          platform: 'Unknown',
+          connectedAt: new Date().toISOString()
+        };
+        logger.info('WhatsApp client is ready!');
+      }
       
       // Emit to frontend
       if (this.io) {
-        this.io.emit('whatsapp-ready', { isConnected: true });
+        this.io.emit('whatsapp-ready', { 
+          isConnected: true,
+          deviceInfo: this.deviceInfo
+        });
       }
     });
 
@@ -104,6 +178,7 @@ class WhatsAppService {
       logger.info('WhatsApp client disconnected:', reason);
       this.isConnected = false;
       this.sessionCount = 0;
+      this.deviceInfo = null; // Clear device info on disconnect
       
       if (this.io) {
         this.io.emit('whatsapp-disconnected', { reason });
@@ -171,7 +246,9 @@ class WhatsAppService {
       isReady: this.isConnected,
       status: this.isConnected ? 'connected' : (this.qrCode ? 'waiting_for_scan' : 'initializing'),
       sessionCount: this.sessionCount,
-      qrCode: this.isConnected ? null : (this.qrCode ? 'available' : 'generating')
+      qrCode: this.isConnected ? null : (this.qrCode ? 'available' : 'generating'),
+      deviceInfo: this.deviceInfo,
+      hasQR: !!this.qrCode
     };
   }
 
@@ -187,6 +264,7 @@ class WhatsAppService {
       this.isConnected = false;
       this.sessionCount = 0;
       this.qrCode = null;
+      this.deviceInfo = null; // Clear device info
       logger.info('WhatsApp service disconnected');
     } catch (error) {
       logger.error('Error disconnecting WhatsApp:', error);
@@ -201,6 +279,7 @@ class WhatsAppService {
       this.isConnected = false;
       this.sessionCount = 0;
       this.qrCode = null;
+      this.deviceInfo = null; // Clear device info
       logger.info('WhatsApp service destroyed');
     } catch (error) {
       logger.error('Error destroying WhatsApp:', error);
@@ -209,6 +288,18 @@ class WhatsAppService {
 
   async sendMessage(phoneNumber, message) {
     try {
+      // SECURITY CHECK: Verify phone number is allowed
+      if (!this.isPhoneNumberAllowed(phoneNumber)) {
+        logger.error(`🚫 SECURITY BLOCK: Message to ${phoneNumber} was blocked by whitelist`);
+        const securityInfo = whatsappSecurity.getWhitelistInfo();
+        return { 
+          success: false, 
+          error: 'Phone number not authorized for testing',
+          blocked: true,
+          allowedNumbers: securityInfo.allowedNumbers
+        };
+      }
+
       if (!this.isConnected || !this.client) {
         logger.warn('WhatsApp client not connected. Cannot send message.');
         return { success: false, error: 'WhatsApp not connected' };

@@ -27,7 +27,7 @@
         }
         
         .header h1 {
-            color: #667eea;
+            color: rgb(255, 140, 0);
             font-size: 1.5rem;
         }
         
@@ -45,12 +45,12 @@
         }
         
         .nav a:hover, .nav a.active {
-            background: #667eea;
+            background: rgb(255, 140, 0);
             color: white;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 2rem auto;
             padding: 0 2rem;
         }
@@ -66,6 +66,9 @@
         .section h2 {
             margin-bottom: 1.5rem;
             color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .stats-grid {
@@ -86,7 +89,7 @@
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            color: #667eea;
+            color: rgb(255, 140, 0);
             margin-bottom: 0.5rem;
         }
         
@@ -95,18 +98,235 @@
             font-size: 0.9rem;
         }
         
-        .chart-placeholder {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 8px;
-            padding: 3rem;
-            text-align: center;
-            color: #6c757d;
+        .period-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .period-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .period-btn.active {
+            background: rgb(255, 140, 0);
+            color: white;
+            border-color: rgb(255, 140, 0);
+        }
+        
+        .period-btn:hover {
+            border-color: rgb(255, 140, 0);
+        }
+        
+        /* Hourly Heatmap Styles */
+        .heatmap-container {
+            overflow-x: auto;
             margin: 1rem 0;
         }
         
+        .heatmap {
+            display: grid;
+            grid-template-columns: 80px repeat(24, 1fr);
+            gap: 2px;
+            min-width: 800px;
+            font-size: 0.8rem;
+        }
+        
+        .heatmap-header {
+            background: #f8f9fa;
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+        
+        .heatmap-day {
+            background: #f8f9fa;
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+        
+        .heatmap-cell {
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Heat intensity colors */
+        .heat-0 { background: #f8f9fa; color: #666; }
+        .heat-1 { background: #fff3cd; color: #856404; }
+        .heat-2 { background: #ffeaa7; color: #6c5ce7; }
+        .heat-3 { background: #fdcb6e; color: #2d3436; }
+        .heat-4 { background: #e17055; color: white; }
+        .heat-5 { background: #d63031; color: white; }
+        
+        /* Peak Hours Chart */
+        .peak-hours-chart {
+            display: flex;
+            align-items: end;
+            gap: 4px;
+            height: 200px;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .peak-bar {
+            flex: 1;
+            background: rgb(255, 140, 0);
+            border-radius: 3px 3px 0 0;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 5px;
+        }
+        
+        .peak-bar:hover {
+            background: rgb(230, 126, 0);
+            transform: scaleY(1.1);
+        }
+        
+        .peak-bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: #666;
+        }
+        
+        .peak-bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        /* Insights Cards */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .insight-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+        
+        .insight-card h4 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .insight-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .insight-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .insight-card.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .insight-card.info {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        /* Day comparison */
+        .day-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .day-card {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .day-card:hover {
+            border-color: rgb(255, 140, 0);
+            transform: translateY(-2px);
+        }
+        
+        .day-card.peak-day {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border-color: #e17055;
+        }
+        
+        .day-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .day-customers {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: rgb(255, 140, 0);
+            margin-bottom: 0.25rem;
+        }
+        
+        .day-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
         .btn {
-            background: #667eea;
+            background: rgb(255, 140, 0);
             color: white;
             padding: 0.75rem 1.5rem;
             border: none;
@@ -118,7 +338,7 @@
         }
         
         .btn:hover {
-            background: #5a6fd8;
+            background: rgb(230, 126, 0);
         }
         
         .btn-secondary {
@@ -127,6 +347,12 @@
         
         .btn-secondary:hover {
             background: #5a6268;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
         }
         
         @media (max-width: 768px) {
@@ -143,6 +369,14 @@
             .container {
                 padding: 0 1rem;
             }
+            
+            .heatmap {
+                font-size: 0.7rem;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -151,13 +385,20 @@
         <h1>Smart Queue Manager</h1>
         <nav class="nav">
             <a href="/dashboard">Dashboard</a>
-            <a href="/dashboard/queues">Queues</a>
+            <a href="/dashboard/whatsapp-setup">WhatsApp</a>
             <a href="/dashboard/analytics" class="active">Analytics</a>
             <a href="/dashboard/settings">Settings</a>
         </nav>
     </header>
 
     <div class="container">
+        <!-- Period Selector -->
+        <div class="period-selector">
+            <button class="period-btn active" onclick="changePeriod('7d')" data-period="7d">Last 7 Days</button>
+            <button class="period-btn" onclick="changePeriod('30d')" data-period="30d">Last 30 Days</button>
+            <button class="period-btn" onclick="changePeriod('90d')" data-period="90d">Last 90 Days</button>
+        </div>
+
         <!-- Analytics Overview -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -169,38 +410,53 @@
                 <div class="stat-label">Avg Wait Time (min)</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalQueues">-</div>
-                <div class="stat-label">Total Queues</div>
+                <div class="stat-number" id="peakHour">-</div>
+                <div class="stat-label">Peak Hour</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="satisfaction">-</div>
-                <div class="stat-label">Customer Satisfaction</div>
+                <div class="stat-number" id="busiestDay">-</div>
+                <div class="stat-label">Busiest Day</div>
             </div>
         </div>
 
-        <!-- Daily Performance -->
+        <!-- Hourly Heatmap -->
         <div class="section">
-            <h2>Daily Performance (Last 7 Days)</h2>
-            <div class="chart-placeholder">
-                <h3>📊 Daily Customer Flow Chart</h3>
-                <p>Chart visualization would be implemented here using Chart.js or similar library</p>
-                <div id="dailyChart" style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
-                    Loading chart data...
-                </div>
+            <h2>📊 Hourly Customer Flow Heatmap</h2>
+            <p style="color: #666; margin-bottom: 1rem;">Visual representation of customer activity by hour and day. Darker colors indicate higher customer volume.</p>
+            <div class="heatmap-container">
+                <div id="hourlyHeatmap" class="loading">Loading heatmap data...</div>
             </div>
+        </div>
+
+        <!-- Peak Hours Analysis -->
+        <div class="section">
+            <h2>⏰ Peak Hours Analysis</h2>
+            <p style="color: #666; margin-bottom: 1rem;">Identify your busiest hours to optimize staffing and operations.</p>
+            <div id="peakHoursChart" class="loading">Loading peak hours data...</div>
+        </div>
+
+        <!-- Day of Week Comparison -->
+        <div class="section">
+            <h2>📅 Day of Week Performance</h2>
+            <p style="color: #666; margin-bottom: 1rem;">Compare customer volume across different days of the week.</p>
+            <div id="dayComparison" class="loading">Loading day comparison...</div>
+        </div>
+
+        <!-- Operational Insights -->
+        <div class="section">
+            <h2>💡 Operational Insights & Recommendations</h2>
+            <div id="operationalInsights" class="loading">Analyzing patterns...</div>
         </div>
 
         <!-- Queue Performance -->
         <div class="section">
-            <h2>Queue Performance</h2>
-            <div id="queuePerformance">
-                Loading queue performance data...
-            </div>
+            <h2>🏪 Queue Performance</h2>
+            <div id="queuePerformance" class="loading">Loading queue performance data...</div>
         </div>
 
         <!-- Actions -->
         <div class="section">
-            <h2>Export & Actions</h2>
+            <h2>📤 Export & Actions</h2>
             <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                 <button class="btn" onclick="exportData('json')">Export JSON</button>
                 <button class="btn btn-secondary" onclick="exportData('csv')">Export CSV</button>
@@ -210,89 +466,398 @@
     </div>
 
     <script>
+        let currentPeriod = '7d';
+        let analyticsData = null;
+
+        // Change time period
+        function changePeriod(period) {
+            currentPeriod = period;
+            
+            // Update active button
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.period === period) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            loadAnalytics();
+        }
+
         // Load analytics data
         async function loadAnalytics() {
             try {
-                const response = await fetch('/api/analytics/dashboard');
+                const response = await fetch(`/api/analytics/dashboard?period=${currentPeriod}`);
                 const data = await response.json();
                 
                 if (data.success) {
-                    const analytics = data.analytics;
-                    
-                    // Update stats
-                    document.getElementById('totalCustomers').textContent = analytics.totalCustomersServed;
-                    document.getElementById('avgWaitTime').textContent = analytics.averageWaitTime || 0;
-                    document.getElementById('totalQueues').textContent = analytics.totalQueues;
-                    document.getElementById('satisfaction').textContent = analytics.customerSatisfaction || 'N/A';
-                    
-                    // Update daily chart data
-                    const chartDiv = document.getElementById('dailyChart');
-                    let chartHtml = '<div style="display: flex; justify-content: space-around; margin-top: 1rem;">';
-                    analytics.dailyStats.forEach(day => {
-                        chartHtml += `
-                            <div style="text-align: center;">
-                                <div style="font-weight: bold;">${day.customers}</div>
-                                <div style="font-size: 0.8rem;">${day.date.split('-')[2]}/${day.date.split('-')[1]}</div>
-                            </div>
-                        `;
-                    });
-                    chartHtml += '</div>';
-                    chartDiv.innerHTML = chartHtml;
-                    
-                    // Update queue performance
-                    const queueDiv = document.getElementById('queuePerformance');
-                    if (analytics.queuePerformance.length === 0) {
-                        queueDiv.innerHTML = '<p style="text-align: center; color: #666;">No queue data available</p>';
-                    } else {
-                        let queueHtml = '<div style="display: grid; gap: 1rem;">';
-                        analytics.queuePerformance.forEach(queue => {
-                            queueHtml += `
-                                <div style="border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; background: #f8f9fa;">
-                                    <h4>${queue.name}</h4>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
-                                        <div style="text-align: center;">
-                                            <div style="font-weight: bold; color: #667eea;">${queue.totalCustomers}</div>
-                                            <div style="font-size: 0.8rem; color: #666;">Total Customers</div>
-                                        </div>
-                                        <div style="text-align: center;">
-                                            <div style="font-weight: bold; color: #667eea;">${queue.completedCustomers}</div>
-                                            <div style="font-size: 0.8rem; color: #666;">Completed</div>
-                                        </div>
-                                        <div style="text-align: center;">
-                                            <div style="font-weight: bold; color: #667eea;">${queue.averageWaitTime}</div>
-                                            <div style="font-size: 0.8rem; color: #666;">Avg Wait (min)</div>
-                                        </div>
-                                        <div style="text-align: center;">
-                                            <div style="font-weight: bold; color: #667eea;">${queue.currentLength}</div>
-                                            <div style="font-size: 0.8rem; color: #666;">Current Length</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        queueHtml += '</div>';
-                        queueDiv.innerHTML = queueHtml;
-                    }
+                    analyticsData = data.analytics;
+                    updateDashboard(analyticsData);
                 }
             } catch (error) {
                 console.error('Error loading analytics:', error);
                 alert('Error loading analytics data');
             }
         }
+
+        // Update dashboard with analytics data
+        function updateDashboard(analytics) {
+            // Update basic stats
+            document.getElementById('totalCustomers').textContent = analytics.totalCustomersServed || 0;
+            document.getElementById('avgWaitTime').textContent = analytics.averageWaitTime || 0;
+            
+            // Find peak hour
+            const peakHour = findPeakHour(analytics.peakHours);
+            document.getElementById('peakHour').textContent = peakHour;
+            
+            // Find busiest day
+            const busiestDay = findBusiestDay(analytics.dailyStats);
+            document.getElementById('busiestDay').textContent = busiestDay;
+            
+            // Update visualizations
+            updateHourlyHeatmap(analytics);
+            updatePeakHoursChart(analytics.peakHours);
+            updateDayComparison(analytics.dailyStats);
+            updateOperationalInsights(analytics);
+            updateQueuePerformance(analytics.queuePerformance);
+        }
+
+        // Find peak hour from peakHours data
+        function findPeakHour(peakHours) {
+            if (!peakHours || Object.keys(peakHours).length === 0) return 'N/A';
+            
+            let maxHour = 0;
+            let maxCount = 0;
+            
+            for (const [hour, count] of Object.entries(peakHours)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    maxHour = parseInt(hour);
+                }
+            }
+            
+            return `${maxHour}:00`;
+        }
+
+        // Find busiest day from daily stats
+        function findBusiestDay(dailyStats) {
+            if (!dailyStats || dailyStats.length === 0) return 'N/A';
+            
+            const dayTotals = {};
+            
+            dailyStats.forEach(day => {
+                const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
+                dayTotals[dayName] = (dayTotals[dayName] || 0) + day.customers;
+            });
+            
+            let busiestDay = 'N/A';
+            let maxCustomers = 0;
+            
+            for (const [day, customers] of Object.entries(dayTotals)) {
+                if (customers > maxCustomers) {
+                    maxCustomers = customers;
+                    busiestDay = day;
+                }
+            }
+            
+            return busiestDay;
+        }
+
+        // Update hourly heatmap
+        function updateHourlyHeatmap(analytics) {
+            const container = document.getElementById('hourlyHeatmap');
+            
+            // Create heatmap data structure
+            const heatmapData = {};
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            // Initialize with zeros
+            days.forEach(day => {
+                heatmapData[day] = Array(24).fill(0);
+            });
+            
+            // Populate with actual data from dailyStats and peakHours
+            if (analytics.dailyStats) {
+                analytics.dailyStats.forEach(dayData => {
+                    const date = new Date(dayData.date);
+                    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                    
+                    // Distribute customers across hours (simplified simulation)
+                    if (analytics.peakHours) {
+                        Object.entries(analytics.peakHours).forEach(([hour, count]) => {
+                            const hourIndex = parseInt(hour);
+                            if (heatmapData[dayName]) {
+                                heatmapData[dayName][hourIndex] = Math.round(count / 7); // Average across week
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Find max value for normalization
+            let maxValue = 0;
+            Object.values(heatmapData).forEach(dayData => {
+                dayData.forEach(value => {
+                    if (value > maxValue) maxValue = value;
+                });
+            });
+            
+            // Generate heatmap HTML
+            let html = '<div class="heatmap">';
+            
+            // Header row
+            html += '<div class="heatmap-header"></div>';
+            for (let hour = 0; hour < 24; hour++) {
+                html += `<div class="heatmap-header">${hour}:00</div>`;
+            }
+            
+            // Data rows
+            days.forEach(day => {
+                html += `<div class="heatmap-day">${day}</div>`;
+                
+                for (let hour = 0; hour < 24; hour++) {
+                    const value = heatmapData[day][hour];
+                    const intensity = maxValue > 0 ? Math.ceil((value / maxValue) * 5) : 0;
+                    const heatClass = `heat-${intensity}`;
+                    
+                    html += `<div class="heatmap-cell ${heatClass}" title="${day} ${hour}:00 - ${value} customers">${value}</div>`;
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Update peak hours chart
+        function updatePeakHoursChart(peakHours) {
+            const container = document.getElementById('peakHoursChart');
+            
+            if (!peakHours || Object.keys(peakHours).length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No peak hours data available</p>';
+                return;
+            }
+            
+            // Create 24-hour array
+            const hourlyData = Array(24).fill(0);
+            
+            // Populate with peak hours data
+            Object.entries(peakHours).forEach(([hour, count]) => {
+                hourlyData[parseInt(hour)] = count;
+            });
+            
+            // Find max for scaling
+            const maxCount = Math.max(...hourlyData);
+            
+            // Generate chart HTML
+            let html = '<div class="peak-hours-chart">';
+            
+            hourlyData.forEach((count, hour) => {
+                const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                html += `
+                    <div class="peak-bar" style="height: ${height}%" title="${hour}:00 - ${count} customers">
+                        <div class="peak-bar-value">${count}</div>
+                        <div class="peak-bar-label">${hour}:00</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Update day comparison
+        function updateDayComparison(dailyStats) {
+            const container = document.getElementById('dayComparison');
+            
+            if (!dailyStats || dailyStats.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No daily data available</p>';
+                return;
+            }
+            
+            // Group by day of week
+            const dayTotals = {};
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            dayNames.forEach(day => {
+                dayTotals[day] = { customers: 0, count: 0 };
+            });
+            
+            dailyStats.forEach(day => {
+                const date = new Date(day.date);
+                const dayName = dayNames[date.getDay()];
+                dayTotals[dayName].customers += day.customers;
+                dayTotals[dayName].count += 1;
+            });
+            
+            // Find peak day
+            let peakDay = '';
+            let maxAvg = 0;
+            
+            Object.entries(dayTotals).forEach(([day, data]) => {
+                const avg = data.count > 0 ? data.customers / data.count : 0;
+                if (avg > maxAvg) {
+                    maxAvg = avg;
+                    peakDay = day;
+                }
+            });
+            
+            // Generate HTML
+            let html = '<div class="day-comparison">';
+            
+            dayNames.forEach(day => {
+                const data = dayTotals[day];
+                const avgCustomers = data.count > 0 ? Math.round(data.customers / data.count) : 0;
+                const isPeak = day === peakDay;
+                
+                html += `
+                    <div class="day-card ${isPeak ? 'peak-day' : ''}">
+                        <div class="day-name">${day}</div>
+                        <div class="day-customers">${avgCustomers}</div>
+                        <div class="day-label">avg customers</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Update operational insights
+        function updateOperationalInsights(analytics) {
+            const container = document.getElementById('operationalInsights');
+            const insights = generateInsights(analytics);
+            
+            let html = '<div class="insights-grid">';
+            
+            insights.forEach(insight => {
+                html += `
+                    <div class="insight-card ${insight.type}">
+                        <h4>${insight.title}</h4>
+                        <p>${insight.message}</p>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Generate operational insights
+        function generateInsights(analytics) {
+            const insights = [];
+            
+            // Peak hour insight
+            if (analytics.peakHours) {
+                const peakHour = findPeakHour(analytics.peakHours);
+                if (peakHour !== 'N/A') {
+                    insights.push({
+                        type: 'info',
+                        title: '⏰ Peak Hour Optimization',
+                        message: `Your busiest hour is ${peakHour}. Consider increasing staff during this time to reduce wait times and improve customer satisfaction.`
+                    });
+                }
+            }
+            
+            // Wait time insight
+            if (analytics.averageWaitTime > 15) {
+                insights.push({
+                    type: 'warning',
+                    title: '⚠️ High Wait Times',
+                    message: `Average wait time is ${analytics.averageWaitTime} minutes. Consider optimizing service processes or implementing a reservation system during peak hours.`
+                });
+            } else if (analytics.averageWaitTime > 0) {
+                insights.push({
+                    type: 'success',
+                    title: '✅ Efficient Service',
+                    message: `Great job! Your average wait time of ${analytics.averageWaitTime} minutes is within acceptable range. Keep up the good work!`
+                });
+            }
+            
+            // Customer volume insight
+            if (analytics.totalCustomersServed > 100) {
+                insights.push({
+                    type: 'success',
+                    title: '📈 High Customer Volume',
+                    message: `You've served ${analytics.totalCustomersServed} customers! Consider implementing loyalty programs to retain these customers.`
+                });
+            }
+            
+            // Busiest day insight
+            const busiestDay = findBusiestDay(analytics.dailyStats);
+            if (busiestDay !== 'N/A') {
+                insights.push({
+                    type: 'info',
+                    title: '📅 Weekly Pattern',
+                    message: `${busiestDay} is your busiest day. Plan inventory and staffing accordingly. Consider special promotions on slower days to balance the load.`
+                });
+            }
+            
+            return insights;
+        }
+
+        // Update queue performance
+        function updateQueuePerformance(queuePerformance) {
+            const container = document.getElementById('queuePerformance');
+            
+            if (!queuePerformance || queuePerformance.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No queue data available</p>';
+                return;
+            }
+            
+            let html = '<div style="display: grid; gap: 1rem;">';
+            
+            queuePerformance.forEach(queue => {
+                const efficiency = queue.totalCustomers > 0 ? 
+                    Math.round((queue.completedCustomers / queue.totalCustomers) * 100) : 0;
+                
+                html += `
+                    <div style="border: 1px solid #e9ecef; border-radius: 8px; padding: 1.5rem; background: #f8f9fa;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h4 style="margin: 0;">${queue.name}</h4>
+                            <span style="background: ${efficiency > 80 ? '#28a745' : efficiency > 60 ? '#ffc107' : '#dc3545'}; 
+                                         color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">
+                                ${efficiency}% efficiency
+                            </span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+                            <div style="text-align: center;">
+                                <div style="font-weight: bold; color: rgb(255, 140, 0); font-size: 1.5rem;">${queue.totalCustomers}</div>
+                                <div style="font-size: 0.8rem; color: #666;">Total Customers</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-weight: bold; color: #28a745; font-size: 1.5rem;">${queue.completedCustomers}</div>
+                                <div style="font-size: 0.8rem; color: #666;">Completed</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-weight: bold; color: #17a2b8; font-size: 1.5rem;">${queue.averageWaitTime}</div>
+                                <div style="font-size: 0.8rem; color: #666;">Avg Wait (min)</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-weight: bold; color: #6f42c1; font-size: 1.5rem;">${queue.currentLength}</div>
+                                <div style="font-size: 0.8rem; color: #666;">Current Length</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
         
         // Export data
         async function exportData(format) {
             try {
-                const response = await fetch(`/api/analytics/export?format=${format}`);
+                const response = await fetch(`/api/analytics/export?format=${format}&period=${currentPeriod}`);
                 
                 if (format === 'json') {
                     const data = await response.json();
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                    downloadFile(blob, 'analytics.json');
+                    downloadFile(blob, `analytics-${currentPeriod}.json`);
                 } else if (format === 'csv') {
                     const csvData = await response.text();
                     const blob = new Blob([csvData], { type: 'text/csv' });
-                    downloadFile(blob, 'analytics.csv');
+                    downloadFile(blob, `analytics-${currentPeriod}.csv`);
                 }
             } catch (error) {
                 console.error('Error exporting data:', error);

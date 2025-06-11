@@ -38,6 +38,9 @@ router.get('/dashboard', setMockUser, async (req, res) => {
       case '30d':
         startDate = moment().subtract(30, 'days').startOf('day');
         break;
+      case '90d':
+        startDate = moment().subtract(90, 'days').startOf('day');
+        break;
       default:
         startDate = moment().subtract(7, 'days').startOf('day');
     }
@@ -174,6 +177,9 @@ router.get('/queue/:id', setMockUser, async (req, res) => {
         break;
       case '30d':
         startDate = moment().subtract(30, 'days').startOf('day');
+        break;
+      case '90d':
+        startDate = moment().subtract(90, 'days').startOf('day');
         break;
       default:
         startDate = moment().subtract(7, 'days').startOf('day');

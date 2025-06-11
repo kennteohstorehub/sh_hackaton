@@ -19,6 +19,11 @@ router.get('/demo', (req, res) => {
   });
 });
 
+// WhatsApp setup redirect - redirect to dashboard setup
+router.get('/whatsapp', (req, res) => {
+  res.redirect('/dashboard/whatsapp-setup');
+});
+
 // Chatbot demo page
 router.get('/chatbot-demo', (req, res) => {
   res.render('chatbot-demo', {

@@ -79,22 +79,15 @@ router.get('/', setMockUser, async (req, res) => {
   }
 });
 
-// Queue management
+// Queue management - redirect to main dashboard since functionality is integrated there
 router.get('/queues', setMockUser, async (req, res) => {
-  try {
-    const merchantId = req.session.user.id;
-    const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
+  // Redirect to main dashboard since queue management is now integrated there
+  res.redirect('/dashboard');
+});
 
-    res.render('dashboard/queues', {
-      title: 'Queue Management - Smart Queue Manager',
-      queues
-    });
-
-  } catch (error) {
-    logger.error('Queue management error:', error);
-    req.flash('error', 'Error loading queues.');
-    res.redirect('/dashboard');
-  }
+// WhatsApp setup redirect - handle legacy /dashboard/whatsapp route
+router.get('/whatsapp', setMockUser, (req, res) => {
+  res.redirect('/dashboard/whatsapp-setup');
 });
 
 // GET /dashboard/queues/new - Create new queue
