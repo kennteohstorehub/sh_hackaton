@@ -15,11 +15,11 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #000000 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             min-height: 100vh;
-            color: #333;
+            color: #ffffff;
             overflow-x: hidden;
         }
         
@@ -30,9 +30,9 @@
         }
         
         .header {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -40,7 +40,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
         
         .header h1 {
@@ -67,14 +67,14 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.2);
         }
         
         .nav a:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 140, 0, 0.2);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
         }
         
         .nav a.active {
@@ -90,22 +90,22 @@
         }
         
         .whatsapp-status-banner {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 140, 0, 0.3);
             border-radius: 16px;
             padding: 1.5rem 2rem;
             margin-bottom: 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
         }
         
         .whatsapp-status-banner:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 40px rgba(255, 140, 0, 0.2);
         }
         
         .whatsapp-status-banner.connected {
@@ -150,16 +150,16 @@
         }
         
         .stat-card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 140, 0, 0.3);
             padding: 2rem;
             border-radius: 20px;
             text-align: center;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
         .stat-card::before {
@@ -169,14 +169,14 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.1));
             opacity: 0;
             transition: opacity 0.3s ease;
         }
         
         .stat-card:hover {
             transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 60px rgba(255, 140, 0, 0.3);
         }
         
         .stat-card:hover::before {
@@ -204,19 +204,19 @@
         }
         
         .section {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 140, 0, 0.3);
             padding: 2.5rem;
             border-radius: 20px;
             margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
         }
         
         .section:hover {
             transform: translateY(-4px);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 16px 48px rgba(255, 140, 0, 0.2);
         }
         
         .section h2 {
@@ -281,19 +281,19 @@
         }
         
         .tabs-container {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 140, 0, 0.3);
             border-radius: 20px;
             margin-bottom: 2rem;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
         .tabs-header {
             display: flex;
-            background: rgba(255, 255, 255, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
         }
         
         .tab-button {
@@ -324,7 +324,7 @@
         
         .tab-button.active {
             color: white;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.2);
             border-bottom-color: #ff8c00;
         }
         
@@ -333,7 +333,7 @@
         }
         
         .tab-button:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 140, 0, 0.1);
             color: rgba(255, 255, 255, 0.9);
         }
         
@@ -347,17 +347,17 @@
         }
         
         .queue-section {
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 140, 0, 0.3);
             border-radius: 16px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.3);
             overflow: hidden;
             backdrop-filter: blur(10px);
         }
         
         .queue-header {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             padding: 2.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -392,7 +392,7 @@
         .stat-item {
             text-align: center;
             padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.2);
             border-radius: 12px;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
@@ -400,7 +400,7 @@
         
         .stat-item:hover {
             transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 140, 0, 0.3);
         }
         
         .stat-item .stat-number {
@@ -424,7 +424,7 @@
         }
         
         .customer-list {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.2);
         }
         
         .customer-list-header {
@@ -432,11 +432,11 @@
             grid-template-columns: 100px 1fr 150px 80px 100px 150px 120px;
             gap: 1rem;
             padding: 1.5rem 2rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
             font-weight: 600;
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .customer-row {
@@ -444,14 +444,14 @@
             grid-template-columns: 100px 1fr 150px 80px 100px 150px 120px;
             gap: 1rem;
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 140, 0, 0.2);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             align-items: center;
             color: rgba(255, 255, 255, 0.9);
         }
         
         .customer-row:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             transform: translateX(4px);
         }
         
@@ -581,7 +581,7 @@
         
         .particle {
             position: absolute;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             border-radius: 50%;
             animation: float 6s ease-in-out infinite;
         }
@@ -625,7 +625,7 @@
             z-index: 1000;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 140, 0, 0.3);
         }
         
         .connection-status.connected {
@@ -724,7 +724,7 @@
         }
         
         ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
         }
         
         ::-webkit-scrollbar-thumb {
@@ -734,6 +734,147 @@
         
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 140, 0, 0.7);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(26, 26, 26, 0.9));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-header {
+            background: rgba(255, 140, 0, 0.1);
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 140, 0, 0.1);
+        }
+        
+        .close:hover {
+            color: #ffffff;
+            background: rgba(255, 140, 0, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .modal form {
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: rgba(255, 140, 0, 0.6);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+            accent-color: #ff8c00;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 140, 0, 0.2);
+        }
+        
+        .form-actions .btn-secondary {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.8), rgba(73, 80, 87, 0.8));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .form-actions .btn-secondary:hover {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 1), rgba(73, 80, 87, 1));
+            transform: translateY(-2px);
         }
     </style>
 </head>
