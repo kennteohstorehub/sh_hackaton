@@ -617,12 +617,8 @@
                 <div class="stat-label">Avg Wait Time (min)</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number"><%= stats.totalServed %></div>
+                <div class="stat-number"><%= stats.totalServed || 0 %></div>
                 <div class="stat-label">Served Today</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><%= stats.totalQueues %></div>
-                <div class="stat-label">Active Queues</div>
             </div>
         </div>
 
