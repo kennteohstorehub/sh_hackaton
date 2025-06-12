@@ -267,7 +267,7 @@
                 if (result.success) { 
                     // Show success message with customer details
                     const customer = result.customer;
-                    alert(`✅ Successfully called: ${customer.customerName}\n📞 Phone: ${customer.customerPhone}\n🎫 Position: ${customer.position}\n⏰ Called at: ${new Date(customer.calledAt).toLocaleTimeString()}`);
+                    alert(`✅ Successfully called: ${customer.customerName || 'Customer'}\n📞 Phone: ${customer.customerPhone || customer.phoneNumber || 'N/A'}\n🎫 Position: ${customer.position || 'N/A'}\n⏰ Called at: ${new Date(customer.calledAt).toLocaleTimeString()}`);
                     
                     // Real-time update will be handled by socket listener
                     // No need to reload the page 

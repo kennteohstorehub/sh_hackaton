@@ -215,12 +215,21 @@
         
         /* Hourly Heatmap Styles */
         
+        .heatmap-container {
+            overflow-x: auto;
+            padding: 1rem 0;
+            border-radius: 12px;
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+        }
+        
         .heatmap {
             display: grid;
             grid-template-columns: 80px repeat(24, 1fr);
             gap: 3px;
-            min-width: 800px;
+            min-width: 1200px;
             font-size: 0.8rem;
+            padding: 1rem;
         }
         
         .heatmap-header {
@@ -275,17 +284,29 @@
         .heat-5 { background: rgba(255, 140, 0, 0.8); color: white; border: 1px solid rgba(255, 140, 0, 0.6); }
         
         /* Peak Hours Chart */
+        .peak-hours-container {
+            overflow-x: auto;
+            padding: 1rem 0;
+            border-radius: 12px;
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            width: 100%;
+        }
+        
         .peak-hours-chart {
             display: flex;
             align-items: end;
-            gap: 6px;
-            height: 250px;
+            gap: 4px;
+            height: 300px;
             margin: 1.5rem 0;
             padding: 2rem;
             background: rgba(255, 140, 0, 0.05);
             border: 1px solid rgba(255, 140, 0, 0.2);
             border-radius: 16px;
             backdrop-filter: blur(10px);
+            min-width: 1200px;
+            overflow-x: auto;
+            justify-content: space-between;
         }
         
         .peak-bar {
@@ -296,6 +317,8 @@
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             min-height: 8px;
+            min-width: 40px;
+            max-width: 50px;
             box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
         }
         
@@ -307,26 +330,31 @@
         
         .peak-bar-label {
             position: absolute;
-            bottom: -30px;
+            bottom: -35px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
+            white-space: nowrap;
+            text-align: center;
         }
         
         .peak-bar-value {
             position: absolute;
-            top: -30px;
+            top: -35px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.9);
             font-weight: 600;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.25rem 0.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.25rem 0.4rem;
             border-radius: 6px;
             backdrop-filter: blur(10px);
+            white-space: nowrap;
+            text-align: center;
+            min-width: 20px;
         }
         
         /* Insights Cards */
@@ -397,11 +425,17 @@
         }
         
         /* Day comparison */
+        .day-comparison-container {
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+        
         .day-comparison {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            display: flex;
             gap: 1.5rem;
             margin: 1.5rem 0;
+            min-width: 700px;
+            justify-content: space-between;
         }
         
         .day-card {
@@ -413,6 +447,8 @@
             text-align: center;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 90px;
         }
         
         .day-card:hover {
@@ -575,6 +611,64 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* Peak hours chart responsive design */
+        @media (max-width: 1400px) {
+            .peak-hours-chart {
+                min-width: 1000px;
+                gap: 3px;
+            }
+            
+            .peak-bar {
+                min-width: 35px;
+                max-width: 42px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .peak-hours-chart {
+                min-width: 900px;
+                gap: 2px;
+            }
+            
+            .peak-bar {
+                min-width: 30px;
+                max-width: 38px;
+            }
+            
+            .peak-bar-label {
+                font-size: 0.65rem;
+            }
+            
+            .peak-bar-value {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .peak-hours-chart {
+                min-width: 800px;
+                padding: 1rem;
+                gap: 1px;
+            }
+            
+            .peak-bar {
+                min-width: 25px;
+                max-width: 32px;
+            }
+            
+            .peak-bar-label {
+                font-size: 0.6rem;
+                bottom: -30px;
+            }
+            
+            .peak-bar-value {
+                font-size: 0.6rem;
+                padding: 0.15rem 0.25rem;
+                top: -30px;
+            }
+        }
         
         /* Custom scrollbar */
         ::-webkit-scrollbar {
@@ -592,6 +686,149 @@
         
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 140, 0, 0.7);
+        }
+
+        /* Queue Performance Styles */
+        .queue-performance-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .queue-performance-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .queue-performance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .queue-name {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .efficiency-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 80px;
+        }
+        
+        .efficiency-badge.efficiency-high {
+            background: rgba(81, 207, 102, 0.2);
+            border-color: rgba(81, 207, 102, 0.3);
+        }
+        
+        .efficiency-badge.efficiency-medium {
+            background: rgba(255, 212, 59, 0.2);
+            border-color: rgba(255, 212, 59, 0.3);
+        }
+        
+        .efficiency-badge.efficiency-low {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+        
+        .efficiency-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1;
+        }
+        
+        .efficiency-label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+        
+        .queue-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+        
+        .metric-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .queue-progress {
+            margin-top: 1.5rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -648,21 +885,27 @@
         <div class="section">
             <h2>📊 Hourly Customer Flow Heatmap</h2>
             <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1rem;">Visual representation of customer activity by hour and day. Darker colors indicate higher customer volume.</p>
-            <div id="hourlyHeatmap" style="min-height: 300px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Hourly customer flow data will be displayed here</div>
+            <div class="heatmap-container">
+                <div id="hourlyHeatmap" style="min-height: 300px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Hourly customer flow data will be displayed here</div>
+            </div>
         </div>
 
         <!-- Peak Hours Analysis -->
         <div class="section">
             <h2>⏰ Peak Hours Analysis</h2>
             <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1rem;">Identify your busiest hours to optimize staffing and operations.</p>
-            <div id="peakHoursChart" style="min-height: 300px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Peak hours analysis will be displayed here</div>
+            <div class="peak-hours-container">
+                <div id="peakHoursChart" style="min-height: 300px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Peak hours analysis will be displayed here</div>
+            </div>
         </div>
 
         <!-- Day of Week Comparison -->
         <div class="section">
             <h2>📅 Day of Week Performance</h2>
             <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1rem;">Compare customer volume across different days of the week.</p>
-            <div id="dayComparison" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Day of week performance comparison will be displayed here</div>
+            <div class="day-comparison-container">
+                <div id="dayComparison" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Day of week performance comparison will be displayed here</div>
+            </div>
         </div>
 
         <!-- Operational Insights -->
@@ -829,7 +1072,7 @@
             let html = '<div class="heatmap">';
             
             // Header row
-            html += '<div class="heatmap-header"></div>';
+            html += '<div class="heatmap-header">Time</div>';
             for (let hour = 0; hour < 24; hour++) {
                 html += `<div class="heatmap-header">${hour}:00</div>`;
             }
@@ -856,7 +1099,7 @@
             const container = document.getElementById('peakHoursChart');
             
             if (!peakHours || Object.keys(peakHours).length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">No peak hours data available</p>';
+                container.innerHTML = '<p style="text-align: center; color: rgba(255, 255, 255, 0.7);">No peak hours data available</p>';
                 return;
             }
             
@@ -875,11 +1118,12 @@
             let html = '<div class="peak-hours-chart">';
             
             hourlyData.forEach((count, hour) => {
-                const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                const height = maxCount > 0 ? Math.max((count / maxCount) * 100, 2) : 2; // Minimum 2% height for visibility
+                const hourLabel = hour.toString().padStart(2, '0') + ':00';
                 html += `
-                    <div class="peak-bar" style="height: ${height}%" title="${hour}:00 - ${count} customers">
+                    <div class="peak-bar" style="height: ${height}%" title="${hourLabel} - ${count} customers">
                         <div class="peak-bar-value">${count}</div>
-                        <div class="peak-bar-label">${hour}:00</div>
+                        <div class="peak-bar-label">${hourLabel}</div>
                     </div>
                 `;
             });
@@ -893,13 +1137,14 @@
             const container = document.getElementById('dayComparison');
             
             if (!dailyStats || dailyStats.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">No daily data available</p>';
+                container.innerHTML = '<p style="text-align: center; color: rgba(255, 255, 255, 0.7);">No daily data available</p>';
                 return;
             }
             
-            // Group by day of week
+            // Group by day of week - Monday to Sunday order
             const dayTotals = {};
-            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const dayMapping = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
             
             dayNames.forEach(day => {
                 dayTotals[day] = { customers: 0, count: 0 };
@@ -907,7 +1152,7 @@
             
             dailyStats.forEach(day => {
                 const date = new Date(day.date);
-                const dayName = dayNames[date.getDay()];
+                const dayName = dayMapping[date.getDay()];
                 dayTotals[dayName].customers += day.customers;
                 dayTotals[dayName].count += 1;
             });
@@ -924,7 +1169,7 @@
                 }
             });
             
-            // Generate HTML
+            // Generate HTML - Monday to Sunday horizontal layout
             let html = '<div class="day-comparison">';
             
             dayNames.forEach(day => {
@@ -1023,42 +1268,59 @@
             const container = document.getElementById('queuePerformance');
             
             if (!queuePerformance || queuePerformance.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">No queue data available</p>';
+                container.innerHTML = '<p style="text-align: center; color: rgba(255, 255, 255, 0.7);">No queue data available</p>';
                 return;
             }
             
-            let html = '<div style="display: grid; gap: 1rem;">';
+            let html = '<div class="queue-performance-grid">';
             
             queuePerformance.forEach(queue => {
                 const efficiency = queue.totalCustomers > 0 ? 
                     Math.round((queue.completedCustomers / queue.totalCustomers) * 100) : 0;
                 
+                // Determine efficiency status and colors
+                let efficiencyClass = 'efficiency-low';
+                let efficiencyColor = '#ff6b6b';
+                if (efficiency > 80) {
+                    efficiencyClass = 'efficiency-high';
+                    efficiencyColor = '#51cf66';
+                } else if (efficiency > 60) {
+                    efficiencyClass = 'efficiency-medium';
+                    efficiencyColor = '#ffd43b';
+                }
+                
                 html += `
-                    <div style="border: 1px solid #e9ecef; border-radius: 8px; padding: 1.5rem; background: #f8f9fa;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h4 style="margin: 0;">${queue.name}</h4>
-                            <span style="background: ${efficiency > 80 ? '#28a745' : efficiency > 60 ? '#ffc107' : '#dc3545'}; 
-                                         color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">
-                                ${efficiency}% efficiency
-                            </span>
+                    <div class="queue-performance-card">
+                        <div class="queue-header">
+                            <h4 class="queue-name">${queue.name}</h4>
+                            <div class="efficiency-badge ${efficiencyClass}">
+                                <span class="efficiency-value">${efficiency}%</span>
+                                <span class="efficiency-label">efficiency</span>
+                            </div>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
-                            <div style="text-align: center;">
-                                <div style="font-weight: bold; color: rgb(255, 140, 0); font-size: 1.5rem;">${queue.totalCustomers}</div>
-                                <div style="font-size: 0.8rem; color: #666;">Total Customers</div>
+                        <div class="queue-metrics">
+                            <div class="metric-item">
+                                <div class="metric-value" style="color: #ff8c00;">${queue.totalCustomers}</div>
+                                <div class="metric-label">Total Customers</div>
                             </div>
-                            <div style="text-align: center;">
-                                <div style="font-weight: bold; color: #28a745; font-size: 1.5rem;">${queue.completedCustomers}</div>
-                                <div style="font-size: 0.8rem; color: #666;">Completed</div>
+                            <div class="metric-item">
+                                <div class="metric-value" style="color: #51cf66;">${queue.completedCustomers}</div>
+                                <div class="metric-label">Completed</div>
                             </div>
-                            <div style="text-align: center;">
-                                <div style="font-weight: bold; color: #17a2b8; font-size: 1.5rem;">${queue.averageWaitTime}</div>
-                                <div style="font-size: 0.8rem; color: #666;">Avg Wait (min)</div>
+                            <div class="metric-item">
+                                <div class="metric-value" style="color: #74c0fc;">${queue.averageWaitTime}</div>
+                                <div class="metric-label">Avg Wait (min)</div>
                             </div>
-                            <div style="text-align: center;">
-                                <div style="font-weight: bold; color: #6f42c1; font-size: 1.5rem;">${queue.currentLength}</div>
-                                <div style="font-size: 0.8rem; color: #666;">Current Length</div>
+                            <div class="metric-item">
+                                <div class="metric-value" style="color: #da77f2;">${queue.currentLength}</div>
+                                <div class="metric-label">Current Length</div>
                             </div>
+                        </div>
+                        <div class="queue-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${efficiency}%; background: ${efficiencyColor};"></div>
+                            </div>
+                            <div class="progress-text">Queue Efficiency</div>
                         </div>
                     </div>
                 `;

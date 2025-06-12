@@ -198,6 +198,38 @@ MAX_QUEUE_SIZE=100
 - **CSRF Protection**: Cross-site request forgery protection
 - **Helmet.js**: Security headers and protection
 
+## 🛠️ Server Management
+
+Use the provided server management script for easy server control:
+
+```bash
+# Check server status
+./scripts/server-manager.sh status
+
+# Start server (handles port conflicts automatically)
+./scripts/server-manager.sh start
+
+# Stop server
+./scripts/server-manager.sh stop
+
+# Restart server
+./scripts/server-manager.sh restart
+
+# Clean up old processes (useful for WhatsApp service issues)
+./scripts/server-manager.sh cleanup
+```
+
+## 🔧 Troubleshooting
+
+For common issues and solutions, see the [Troubleshooting Guide](TROUBLESHOOTING.md).
+
+**Quick fixes for common problems:**
+
+- **Port already in use**: `./scripts/server-manager.sh start` (handles automatically)
+- **WhatsApp service errors**: `./scripts/server-manager.sh cleanup && ./scripts/server-manager.sh restart`
+- **High CPU usage**: `pkill -f "chrome-mac/Chromium" && ./scripts/server-manager.sh restart`
+- **Template errors**: Check server logs and verify all variables are passed to templates
+
 ## 🚀 Deployment
 
 ### Using PM2 (Recommended)
