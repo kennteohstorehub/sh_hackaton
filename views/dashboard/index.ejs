@@ -16,31 +16,29 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #000000 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
             min-height: 100vh;
             color: #ffffff;
-            overflow-x: hidden;
+            line-height: 1.6;
         }
         
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
+        /* Header */
         .header {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 140, 0, 0.3);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 1rem 0;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .header h1 {
@@ -48,9 +46,8 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            letter-spacing: -0.5px;
         }
         
         .nav {
@@ -62,234 +59,159 @@
             text-decoration: none;
             color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            backdrop-filter: blur(10px);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
             border: 1px solid rgba(255, 140, 0, 0.2);
+            font-size: 0.9rem;
         }
         
         .nav a:hover {
-            background: rgba(255, 140, 0, 0.2);
+            background: rgba(255, 140, 0, 0.1);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
+            border-color: rgba(255, 140, 0, 0.4);
         }
         
         .nav a.active {
             background: linear-gradient(135deg, #ff8c00, #ff6b35);
             color: white;
-            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
+            border-color: transparent;
         }
         
+        /* Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
         
-        .whatsapp-status-banner {
+        /* Status Banner */
+        .status-banner {
             background: rgba(37, 211, 102, 0.1);
-            backdrop-filter: blur(20px);
             border: 1px solid rgba(37, 211, 102, 0.3);
-            border-radius: 16px;
-            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
             margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 8px 32px rgba(37, 211, 102, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .whatsapp-status-banner:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(37, 211, 102, 0.2);
-            border-color: rgba(37, 211, 102, 0.5);
-        }
-        
-        .whatsapp-status-banner.connected {
-            background: rgba(37, 211, 102, 0.15);
-            border-color: rgba(37, 211, 102, 0.5);
-            box-shadow: 0 8px 32px rgba(37, 211, 102, 0.2);
-        }
-        
-        .whatsapp-status-banner.disconnected {
-            background: rgba(244, 67, 54, 0.1);
-            border-color: rgba(244, 67, 54, 0.3);
-        }
-        
-        .whatsapp-status-content {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
         
-        .whatsapp-status-icon {
-            font-size: 1.5rem;
+        .status-banner.disconnected {
+            background: rgba(244, 67, 54, 0.1);
+            border-color: rgba(244, 67, 54, 0.3);
+        }
+        
+        .status-icon {
+            font-size: 1.2rem;
             color: #25D366;
         }
         
-        .whatsapp-status-text h6 {
-            margin: 0;
-            font-size: 1rem;
+        .status-text h6 {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
         }
         
-        .whatsapp-status-text p {
+        .status-text p {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.7);
         }
         
+        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
         
         .stat-card {
             background: rgba(255, 140, 0, 0.1);
-            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 140, 0, 0.3);
-            padding: 2rem;
-            border-radius: 20px;
+            padding: 1.5rem;
+            border-radius: 12px;
             text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: all 0.3s ease;
         }
         
         .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(255, 140, 0, 0.3);
-        }
-        
-        .stat-card:hover::before {
-            opacity: 1;
+            transform: translateY(-2px);
+            border-color: rgba(255, 140, 0, 0.5);
         }
         
         .stat-number {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 700;
             background: linear-gradient(135deg, #ff8c00, #ff6b35);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
         }
         
         .stat-label {
             color: rgba(255, 255, 255, 0.8);
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
-            position: relative;
-            z-index: 1;
         }
         
+        /* Section */
         .section {
             background: rgba(255, 140, 0, 0.1);
-            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 140, 0, 0.3);
-            padding: 2.5rem;
-            border-radius: 20px;
+            padding: 2rem;
+            border-radius: 12px;
             margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .section:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 48px rgba(255, 140, 0, 0.2);
         }
         
         .section h2 {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            font-size: 1.3rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 600;
-            font-size: 1.5rem;
         }
         
+        /* Buttons */
         .btn {
             background: linear-gradient(135deg, #ff8c00, #ff6b35);
             color: white;
-            padding: 0.875rem 2rem;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             text-decoration: none;
             display: inline-block;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 600;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
-        }
-        
-        .btn:hover::before {
-            left: 100%;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
         }
         
         .btn-secondary {
             background: linear-gradient(135deg, #6c757d, #495057);
-            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-        }
-        
-        .btn-secondary:hover {
-            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
         }
         
         .btn-sm {
-            padding: 0.625rem 1.5rem;
-            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
         }
         
+        /* Tabs */
         .tabs-container {
             background: rgba(255, 140, 0, 0.1);
-            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 140, 0, 0.3);
-            border-radius: 20px;
+            border-radius: 12px;
             margin-bottom: 2rem;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
         .tabs-header {
@@ -300,38 +222,21 @@
         
         .tab-button {
             flex: 1;
-            padding: 1.5rem 2rem;
+            padding: 1rem 1.5rem;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.7);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-bottom: 3px solid transparent;
-            position: relative;
-        }
-        
-        .tab-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 107, 53, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
         }
         
         .tab-button.active {
             color: white;
             background: rgba(255, 140, 0, 0.2);
             border-bottom-color: #ff8c00;
-        }
-        
-        .tab-button.active::before {
-            opacity: 1;
         }
         
         .tab-button:hover:not(.active) {
@@ -341,24 +246,24 @@
         
         .tab-content {
             display: none;
-            padding: 2.5rem;
+            padding: 2rem;
         }
         
         .tab-content.active {
             display: block;
         }
         
+        /* Queue Section */
         .queue-section {
             border: 1px solid rgba(255, 140, 0, 0.3);
-            border-radius: 16px;
+            border-radius: 12px;
             background: rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            backdrop-filter: blur(10px);
         }
         
         .queue-header {
             background: rgba(255, 140, 0, 0.1);
-            padding: 2.5rem;
+            padding: 2rem;
             border-bottom: 1px solid rgba(255, 140, 0, 0.3);
             display: flex;
             justify-content: space-between;
@@ -369,246 +274,209 @@
         .queue-title h3 {
             margin: 0 0 0.5rem 0;
             color: rgba(255, 255, 255, 0.9);
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: 600;
         }
         
         .queue-description {
             margin: 0;
             color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
         
         .queue-summary {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 1.5rem;
+            gap: 1rem;
         }
         
         .queue-stats {
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
         }
         
         .stat-item {
             text-align: center;
-            padding: 1rem;
+            padding: 0.75rem;
             background: rgba(255, 140, 0, 0.2);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            min-width: 80px;
         }
         
-        .stat-item:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 140, 0, 0.3);
-        }
-        
-        .stat-item .stat-number {
-            display: block;
-            font-size: 1.8rem;
+        .stat-item .number {
+            font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #ff8c00, #ff6b35);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ff8c00;
             margin-bottom: 0.25rem;
         }
         
-        .stat-item .stat-label {
-            display: block;
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
+        .stat-item .label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
         }
         
+        /* Customer List */
         .customer-list {
-            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
         }
         
         .customer-list-header {
             display: grid;
-            grid-template-columns: 100px 1fr 150px 80px 100px 150px 120px;
+            grid-template-columns: 60px 1fr 120px 80px 80px 1fr 120px;
             gap: 1rem;
-            padding: 1.5rem 2rem;
-            background: rgba(255, 140, 0, 0.2);
-            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
+            padding: 1rem;
+            background: rgba(255, 140, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.9);
         }
         
         .customer-row {
             display: grid;
-            grid-template-columns: 100px 1fr 150px 80px 100px 150px 120px;
+            grid-template-columns: 60px 1fr 120px 80px 80px 1fr 120px;
             gap: 1rem;
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255, 140, 0, 0.2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            align-items: center;
-            color: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            background: rgba(255, 140, 0, 0.05);
         }
         
         .customer-row:hover {
             background: rgba(255, 140, 0, 0.1);
-            transform: translateX(4px);
+            border-color: rgba(255, 140, 0, 0.4);
         }
         
         .customer-row.next-customer {
-            background: rgba(255, 140, 0, 0.2);
-            border-left: 4px solid #ff8c00;
-            box-shadow: 0 0 20px rgba(255, 140, 0, 0.3);
+            border-color: #ff8c00;
+            background: rgba(255, 140, 0, 0.15);
         }
         
         .customer-row.notified-customer {
-            background: rgba(33, 150, 243, 0.2);
-            border-left: 4px solid #2196f3;
-            box-shadow: 0 0 20px rgba(33, 150, 243, 0.3);
+            border-color: #25D366;
+            background: rgba(37, 211, 102, 0.1);
         }
         
-        .customer-row .position {
+        .position {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
-            background: linear-gradient(135deg, #ff8c00, #ff6b35);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
             font-size: 1.1rem;
+            color: #ff8c00;
+            position: relative;
         }
         
         .next-badge {
-            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff8c00;
             color: white;
-            padding: 0.375rem 0.75rem;
-            border-radius: 8px;
-            font-size: 0.75rem;
+            font-size: 0.6rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
             font-weight: 600;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+        }
+        
+        .customer-name {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .phone, .party-size, .wait-time {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        .special-requests {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+        
+        .special-requests-text {
+            background: rgba(255, 140, 0, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .no-requests {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.5rem;
         }
         
         .btn-action {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.8rem;
             border: none;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
         
         .btn-notify {
-            background: linear-gradient(135deg, #4caf50, #45a049);
+            background: #ff8c00;
             color: white;
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-        }
-        
-        .btn-notify:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-        }
-        
-        .btn-select {
-            background: linear-gradient(135deg, #ff8c00, #ff6b35);
-            color: white;
-            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
-        }
-        
-        .btn-select:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
         }
         
         .btn-seated {
-            background: linear-gradient(135deg, #4caf50, #45a049);
+            background: #25D366;
             color: white;
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
         
-        .btn-seated:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        .btn-select {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
+        .btn-action:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+        
+        /* No Customers */
         .no-customers {
-            padding: 4rem 2rem;
             text-align: center;
+            padding: 3rem 2rem;
             color: rgba(255, 255, 255, 0.7);
         }
         
         .empty-queue-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            opacity: 0.6;
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
         
         .no-customers h4 {
-            margin: 0 0 1rem 0;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.3rem;
-            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
         }
         
-        .no-customers p {
-            margin: 0;
-            font-size: 1rem;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 4rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .empty-state h3 {
-            margin-bottom: 1.5rem;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        /* Floating particles animation */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        .particle {
-            position: absolute;
-            background: rgba(255, 140, 0, 0.1);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        
-        /* Loading animations */
+        /* Indicators */
         .updating-indicator {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            background: rgba(255, 140, 0, 0.9);
             color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
             font-weight: 500;
-            z-index: 1000;
             opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
         
         .updating-indicator.show {
@@ -620,107 +488,80 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
             font-weight: 500;
             z-index: 1000;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 140, 0, 0.3);
         }
         
         .connection-status.connected {
-            background: rgba(76, 175, 80, 0.9);
+            background: rgba(37, 211, 102, 0.9);
             color: white;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
         
         .connection-status.disconnected {
             background: rgba(244, 67, 54, 0.9);
             color: white;
-            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
         }
         
         .connection-status.connecting {
             background: rgba(255, 140, 0, 0.9);
             color: white;
-            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
         }
         
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-                padding: 1rem;
-            }
-            
-            .nav {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 0.5rem;
-            }
-            
-            .nav a {
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
-            }
-            
             .container {
                 padding: 1rem;
             }
             
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .nav {
+                gap: 0.25rem;
+            }
+            
+            .nav a {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            
             .stats-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                 gap: 1rem;
-            }
-            
-            .stat-card {
-                padding: 1.5rem;
-            }
-            
-            .stat-number {
-                font-size: 2.5rem;
             }
             
             .queue-header {
                 flex-direction: column;
-                gap: 1.5rem;
-                align-items: flex-start;
-                padding: 2rem;
-            }
-            
-            .queue-summary {
-                align-items: flex-start;
-                width: 100%;
+                gap: 1rem;
             }
             
             .queue-stats {
-                flex-direction: column;
-                gap: 1rem;
-                width: 100%;
-            }
-            
-            .stat-item {
-                text-align: left;
+                flex-direction: row;
+                justify-content: center;
             }
             
             .customer-list-header,
             .customer-row {
-                grid-template-columns: 80px 1fr 60px 80px;
+                grid-template-columns: 50px 1fr 80px 100px;
                 gap: 0.5rem;
-                padding: 1rem;
+                font-size: 0.8rem;
             }
             
             .customer-list-header span:nth-child(3),
             .customer-list-header span:nth-child(5),
+            .customer-list-header span:nth-child(6),
             .customer-row .phone,
-            .customer-row .wait-time {
+            .customer-row .wait-time,
+            .customer-row .special-requests {
                 display: none;
             }
         }
         
-        /* Custom scrollbar */
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -737,311 +578,140 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 140, 0, 0.7);
         }
-        
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-        }
-        
-        .modal-content {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(26, 26, 26, 0.9));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 140, 0, 0.3);
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: modalSlideIn 0.3s ease-out;
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        
-        .modal-header {
-            background: rgba(255, 140, 0, 0.1);
-            padding: 2rem;
-            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
-            border-radius: 20px 20px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-header h3 {
-            margin: 0;
-            color: #ffffff;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        .close {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255, 140, 0, 0.1);
-        }
-        
-        .close:hover {
-            color: #ffffff;
-            background: rgba(255, 140, 0, 0.3);
-            transform: scale(1.1);
-        }
-        
-        .modal form {
-            padding: 2rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #ffffff;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1px solid rgba(255, 140, 0, 0.3);
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            color: #ffffff;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: rgba(255, 140, 0, 0.6);
-            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
-            background: rgba(0, 0, 0, 0.7);
-        }
-        
-        .form-group input::placeholder,
-        .form-group textarea::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .form-group input[type="checkbox"] {
-            width: auto;
-            margin-right: 0.5rem;
-            accent-color: #ff8c00;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 140, 0, 0.2);
-        }
-        
-        .form-actions .btn-secondary {
-            background: linear-gradient(135deg, rgba(108, 117, 125, 0.8), rgba(73, 80, 87, 0.8));
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .form-actions .btn-secondary:hover {
-            background: linear-gradient(135deg, rgba(108, 117, 125, 1), rgba(73, 80, 87, 1));
-            transform: translateY(-2px);
-        }
     </style>
 </head>
 <body>
-    <!-- Floating particles -->
-    <div class="particles">
-        <div class="particle" style="left: 10%; top: 20%; width: 4px; height: 4px; animation-delay: 0s;"></div>
-        <div class="particle" style="left: 20%; top: 80%; width: 6px; height: 6px; animation-delay: 1s;"></div>
-        <div class="particle" style="left: 60%; top: 30%; width: 3px; height: 3px; animation-delay: 2s;"></div>
-        <div class="particle" style="left: 80%; top: 70%; width: 5px; height: 5px; animation-delay: 3s;"></div>
-        <div class="particle" style="left: 30%; top: 10%; width: 4px; height: 4px; animation-delay: 4s;"></div>
-        <div class="particle" style="left: 70%; top: 90%; width: 3px; height: 3px; animation-delay: 5s;"></div>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>Smart Queue Manager</h1>
+            <nav class="nav">
+                <a href="/dashboard" class="active">Dashboard</a>
+                <a href="/dashboard/analytics">Analytics</a>
+                <a href="/dashboard/settings">Settings</a>
+                <a href="/dashboard/whatsapp-setup">WhatsApp</a>
+            </nav>
+        </div>
     </div>
-
-    <header class="header">
-        <h1>Smart Queue Manager</h1>
-        <nav class="nav">
-            <a href="/dashboard" class="active">Dashboard</a>
-            <a href="/dashboard/whatsapp-setup">WhatsApp</a>
-            <a href="/dashboard/analytics">Analytics</a>
-            <a href="/dashboard/settings">Settings</a>
-        </nav>
-    </header>
 
     <div class="container">
         <!-- WhatsApp Status Banner -->
-        <div id="whatsappStatusBanner" class="whatsapp-status-banner" style="display: none;">
-            <div class="whatsapp-status-content">
-                <div class="whatsapp-status-icon">
-                    <i id="whatsappStatusIcon" class="bi bi-whatsapp"></i>
-                </div>
-                <div class="whatsapp-status-text">
-                    <h6 id="whatsappStatusTitle">WhatsApp Status</h6>
-                    <p id="whatsappStatusMessage">Checking connection...</p>
-                </div>
+        <div class="status-banner" id="whatsapp-status">
+            <div class="status-icon">
+                <i class="fab fa-whatsapp"></i>
             </div>
-            <div>
-                <a id="whatsappStatusAction" href="/dashboard/whatsapp-setup" class="btn btn-sm">Setup WhatsApp</a>
+            <div class="status-text">
+                <h6>WhatsApp Integration</h6>
+                <p>Checking connection status...</p>
             </div>
         </div>
-        
-        <!-- Stats Overview -->
+
+        <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number" id="totalWaitingCount"><%= stats.totalWaiting || 0 %></div>
-                <div class="stat-label">Currently Waiting</div>
+                <div class="stat-number" id="totalWaitingCount"><%= stats.totalWaiting %></div>
+                <div class="stat-label">Customers Waiting</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="averageWaitTime"><%= stats.averageWaitTime %></div>
                 <div class="stat-label">Avg Wait Time (min)</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number"><%= stats.totalCustomersToday %></div>
-                <div class="stat-label">Customers Today</div>
+                <div class="stat-number"><%= stats.totalServed %></div>
+                <div class="stat-label">Served Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><%= stats.totalQueues %></div>
+                <div class="stat-label">Active Queues</div>
             </div>
         </div>
 
         <!-- Queue Management Tabs -->
         <div class="tabs-container">
             <div class="tabs-header">
-                <button class="tab-button active" onclick="switchTab('active-queue')">Active Queue</button>
-                <button class="tab-button" onclick="switchTab('seated-customers')">Seated Customers</button>
+                <button class="tab-button active" onclick="showTab('active-queue')">Active Queue</button>
+                <button class="tab-button" onclick="showTab('seated-customers')">Seated Customers</button>
             </div>
-            
+
             <!-- Active Queue Tab -->
             <div id="active-queue" class="tab-content active">
-                <% if (queues.length === 0) { %>
-                    <div class="empty-state">
-                        <h3>Queue not set up yet</h3>
-                        <p>Set up your restaurant queue to start managing customer flow</p>
-                        <button class="btn" onclick="showCreateModal()">Set Up Queue</button>
-                    </div>
-                <% } else { %>
+                <% if (queues.length > 0) { %>
                     <% const activeQueue = queues.find(queue => queue.isActive); %>
-                    <% if (!activeQueue) { %>
-                        <div class="no-active-queues">
-                            <h3>No active queues</h3>
-                            <p>Activate a queue to start managing customers</p>
-                        </div>
-                    <% } else { %>
-                        <div class="single-queue-container">
-                            <div class="queue-section">
-                                <div class="queue-header">
-                                    <div class="queue-title">
-                                        <h3><%= activeQueue.name %></h3>
-                                        <p class="queue-description"><%= activeQueue.description || 'No description provided' %></p>
-                                    </div>
-                                    <div class="queue-summary">
-                                        <div class="queue-stats">
-                                            <div class="stat-item">
-                                                <span class="stat-number"><%= activeQueue.entries.filter(e => e.status === 'waiting' || e.status === 'called').length %></span>
-                                                <span class="stat-label">Waiting</span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-number"><%= activeQueue.averageServiceTime || 0 %></span>
-                                                <span class="stat-label">Avg Time</span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-number"><%= activeQueue.maxCapacity %></span>
-                                                <span class="stat-label">Capacity</span>
-                                            </div>
-                                        </div>
-                                        <div class="queue-actions">
-                                            <button class="btn btn-sm" onclick="addCustomer('<%= activeQueue._id %>')">Add Customer</button>
-                                            <button class="btn btn-secondary btn-sm" onclick="viewQueueDetails('<%= activeQueue._id %>')">View Details</button>
-                                        </div>
-                                    </div>
+                    <% if (activeQueue) { %>
+                        <div class="queue-section">
+                            <div class="queue-header">
+                                <div class="queue-title">
+                                    <h3><%= activeQueue.name %></h3>
+                                    <p class="queue-description"><%= activeQueue.description || 'Main restaurant queue' %></p>
                                 </div>
-                                
-                                <% const waitingCustomers = activeQueue.entries.filter(entry => entry.status === 'waiting' || entry.status === 'called').sort((a, b) => { if (a.status === 'called' && b.status === 'waiting') return -1; if (a.status === 'waiting' && b.status === 'called') return 1; return a.position - b.position; }); %>
-                                
-                                <% if (waitingCustomers.length > 0) { %>
-                                    <div class="customer-list">
-                                        <div class="customer-list-header">
-                                            <span>Position</span>
-                                            <span>Customer</span>
-                                            <span>Phone</span>
-                                            <span>Party</span>
-                                            <span>Wait Time</span>
-                                            <span>Special Requests</span>
-                                            <span>Actions</span>
+                                <div class="queue-summary">
+                                    <div class="queue-stats">
+                                        <div class="stat-item">
+                                            <div class="number"><%= waitingCustomers.filter(c => c.status === 'waiting').length %></div>
+                                            <div class="label">Waiting</div>
                                         </div>
-                                        
-                                        <% waitingCustomers.forEach((customer, index) => { %>
-                                            <% const waitMinutes = Math.floor((new Date() - new Date(customer.joinedAt)) / (1000 * 60)); %>
-                                            <div class="customer-row <%= customer.status === 'called' ? 'notified-customer' : (index === 0 && customer.status === 'waiting' ? 'next-customer' : '') %>">
-                                                <div class="position">
-                                                    <%= customer.position %>
-                                                    <% if (index === 0 && customer.status === 'waiting') { %>
-                                                        <div class="next-badge">NEXT</div>
-                                                    <% } %>
-                                                </div>
-                                                <div class="customer-name"><%= customer.customerName %></div>
-                                                <div class="phone"><%= customer.phoneNumber %></div>
-                                                <div class="party-size"><%= customer.partySize %></div>
-                                                <div class="wait-time"><%= waitMinutes %> min</div>
-                                                <div class="special-requests">
-                                                    <% if (customer.specialRequests && customer.specialRequests.trim()) { %>
-                                                        <span class="special-requests-text" title="<%= customer.specialRequests %>">
-                                                            <%= customer.specialRequests.length > 30 ? customer.specialRequests.substring(0, 30) + '...' : customer.specialRequests %>
-                                                        </span>
-                                                    <% } else { %>
-                                                        <span class="no-requests">-</span>
-                                                    <% } %>
-                                                </div>
-                                                <div class="actions">
-                                                    <% if (customer.status === 'called') { %>
-                                                        <button class="btn-action btn-seated" onclick="markAsSeated('<%= activeQueue._id %>', '<%= customer.customerId %>')">Seated</button>
-                                                    <% } else if (index === 0) { %>
-                                                        <button class="btn-action btn-notify" onclick="notifyNext('<%= activeQueue._id %>')">Notify</button>
-                                                    <% } else { %>
-                                                        <button class="btn-action btn-select" onclick="selectCustomer('<%= activeQueue._id %>', '<%= customer.customerId %>')">Select</button>
-                                                    <% } %>
-                                                </div>
-                                            </div>
-                                        <% }); %>
+                                        <div class="stat-item">
+                                            <div class="number"><%= Math.round((waitingCustomers.filter(c => c.status === 'waiting').reduce((total, c) => total + Math.floor((new Date() - new Date(c.joinedAt)) / (1000 * 60)), 0) / Math.max(waitingCustomers.filter(c => c.status === 'waiting').length, 1)) || 0) %></div>
+                                            <div class="label">Avg Wait</div>
+                                        </div>
                                     </div>
-                                <% } else { %>
-                                    <div class="no-customers">
-                                        <div class="empty-queue-icon">🍽️</div>
-                                        <h4>No customers in queue</h4>
-                                        <p>Your restaurant is ready to welcome the next customer!</p>
-                                    </div>
-                                <% } %>
+                                    <a href="/queue/<%= activeQueue._id %>" class="btn btn-sm">View Public</a>
+                                </div>
                             </div>
+                            
+                            <% if (waitingCustomers.length > 0) { %>
+                                <div class="customer-list">
+                                    <div class="customer-list-header">
+                                        <span>#</span>
+                                        <span>Customer</span>
+                                        <span>Phone</span>
+                                        <span>Party</span>
+                                        <span>Wait</span>
+                                        <span>Special Requests</span>
+                                        <span>Actions</span>
+                                    </div>
+                                    
+                                    <% waitingCustomers.forEach((customer, index) => { %>
+                                        <% const waitMinutes = Math.floor((new Date() - new Date(customer.joinedAt)) / (1000 * 60)); %>
+                                        <div class="customer-row <%= customer.status === 'called' ? 'notified-customer' : (index === 0 && customer.status === 'waiting' ? 'next-customer' : '') %>">
+                                            <div class="position">
+                                                <%= customer.position %>
+                                                <% if (index === 0 && customer.status === 'waiting') { %>
+                                                    <div class="next-badge">NEXT</div>
+                                                <% } %>
+                                            </div>
+                                            <div class="customer-name"><%= customer.customerName %></div>
+                                            <div class="phone"><%= customer.phoneNumber %></div>
+                                            <div class="party-size"><%= customer.partySize %></div>
+                                            <div class="wait-time"><%= waitMinutes %> min</div>
+                                            <div class="special-requests">
+                                                <% if (customer.specialRequests && customer.specialRequests.trim()) { %>
+                                                    <span class="special-requests-text" title="<%= customer.specialRequests %>">
+                                                        <%= customer.specialRequests.length > 30 ? customer.specialRequests.substring(0, 30) + '...' : customer.specialRequests %>
+                                                    </span>
+                                                <% } else { %>
+                                                    <span class="no-requests">-</span>
+                                                <% } %>
+                                            </div>
+                                            <div class="actions">
+                                                <% if (customer.status === 'called') { %>
+                                                    <button class="btn-action btn-seated" onclick="markAsSeated('<%= activeQueue._id %>', '<%= customer.customerId %>')">Seated</button>
+                                                <% } else if (index === 0) { %>
+                                                    <button class="btn-action btn-notify" onclick="notifyNext('<%= activeQueue._id %>')">Notify</button>
+                                                <% } else { %>
+                                                    <button class="btn-action btn-select" onclick="selectCustomer('<%= activeQueue._id %>', '<%= customer.customerId %>')">Select</button>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            <% } else { %>
+                                <div class="no-customers">
+                                    <div class="empty-queue-icon">🍽️</div>
+                                    <h4>No customers in queue</h4>
+                                    <p>Your restaurant is ready to welcome the next customer!</p>
+                                </div>
+                            <% } %>
                         </div>
                     <% } %>
                 <% } %>
@@ -1073,7 +743,7 @@
                                         <div class="customer-name"><%= customer.customerName %></div>
                                         <div class="phone"><%= customer.phoneNumber %></div>
                                         <div class="party-size"><%= customer.partySize %></div>
-                                        <div class="seated-time"><%= seatedMinutes %> min</div>
+                                        <div class="wait-time"><%= seatedMinutes %> min</div>
                                         <div class="special-requests">
                                             <% if (customer.specialRequests && customer.specialRequests.trim()) { %>
                                                 <span class="special-requests-text" title="<%= customer.specialRequests %>">
@@ -1084,7 +754,7 @@
                                             <% } %>
                                         </div>
                                         <div class="actions">
-                                            <button class="requeue-btn" onclick="requeueCustomer('<%= activeQueue._id %>', '<%= customer.customerId %>')">Requeue</button>
+                                            <button class="btn-action btn-select" onclick="requeueCustomer('<%= activeQueue._id %>', '<%= customer.customerId %>')">Requeue</button>
                                         </div>
                                     </div>
                                 <% }); %>
@@ -1097,14 +767,14 @@
                             </div>
                         <% } %>
                     <% } else { %>
-                        <div class="empty-state">
-                            <h3>No active queue</h3>
+                        <div class="no-customers">
+                            <h4>No active queue</h4>
                             <p>Activate a queue to see seated customers</p>
                         </div>
                     <% } %>
                 <% } else { %>
-                    <div class="empty-state">
-                        <h3>No queues available</h3>
+                    <div class="no-customers">
+                        <h4>No queues available</h4>
                         <p>Create a queue first to manage seated customers</p>
                     </div>
                 <% } %>
@@ -1112,18 +782,36 @@
         </div>
     </div>
 
-    <!-- Updating Indicator -->
+    <!-- Indicators -->
     <div id="updating-indicator" class="updating-indicator">
         Updating dashboard...
     </div>
     
-    <!-- Connection Status Indicator -->
     <div id="connection-status" class="connection-status connecting">
         🔄 Connecting...
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Tab functionality
+        function showTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
         const socket = io();
         
         // Connection status monitoring
@@ -1140,13 +828,11 @@
         socket.on('reconnect', () => {
             console.log('Socket.IO reconnected');
             updateConnectionStatus('connected');
-            // Refresh data after reconnection
             setTimeout(() => {
                 refreshDashboardData();
             }, 1000);
         });
         
-        // Update connection status indicator
         function updateConnectionStatus(status) {
             const indicator = document.getElementById('connection-status');
             if (indicator) {
@@ -1171,15 +857,17 @@
         // Update total waiting count on page load
         document.addEventListener('DOMContentLoaded', function() {
             updateTotalWaitingCount();
+            checkWhatsAppStatus();
             
-            // Update stats every 30 seconds to keep wait times current
+            // Update stats every 30 seconds
             setInterval(updateTotalWaitingCount, 30000);
+            setInterval(checkWhatsAppStatus, 60000);
             
-            // Periodic full refresh every 2 minutes as fallback
+            // Periodic full refresh every 2 minutes
             setInterval(refreshDashboardData, 120000);
         });
         
-        // Enhanced Socket.IO event listeners
+        // Socket.IO event listeners
         socket.on('queue-updated', (data) => {
             console.log('Queue updated event received:', data);
             handleQueueUpdate(data);
@@ -1195,77 +883,14 @@
             handleQueueUpdate(data);
         });
         
-        // Comprehensive queue update handler
         function handleQueueUpdate(data) {
-            try {
-                console.log('Processing queue update:', data.action);
-                
-                switch(data.action) {
-                    case 'customer-called':
-                    case 'customer-called-specific':
-                        if (data.customer) {
-                            updateCustomerRowToNotified(data.customer);
-                        }
-                        break;
-                        
-                    case 'customer-completed':
-                        if (data.customer) {
-                            removeCustomerRow(data.customer.customerName);
-                        }
-                        break;
-                        
-                    case 'customer-requeued':
-                        // Full refresh for requeue to update both tabs
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 500);
-                        return;
-                        
-                    default:
-                        // For other actions, do a targeted refresh
-                        refreshDashboardData();
-                        return;
-                }
-                
-                // Update stats after processing specific actions
-                setTimeout(() => {
-                    updateTotalWaitingCount();
-                    updateAverageWaitTime();
-                }, 200);
-                
-            } catch (error) {
-                console.error('Error handling queue update:', error);
-                // Fallback to data refresh
-                refreshDashboardData();
-            }
-        }
-        
-        // Refresh dashboard data from server
-        async function refreshDashboardData() {
-            try {
-                console.log('Refreshing dashboard data...');
+            if (data && data.queue) {
                 showUpdatingIndicator();
-                
-                const response = await fetch('/api/queue');
-                const result = await response.json();
-                
-                if (result.success && result.queues && result.queues.length > 0) {
-                    const activeQueue = result.queues.find(q => q.isActive);
-                    if (activeQueue) {
-                        updateQueueDisplay(activeQueue);
-                        updateTotalWaitingCount();
-                        updateAverageWaitTime();
-                    }
-                }
-                
-                hideUpdatingIndicator();
-            } catch (error) {
-                console.error('Error refreshing dashboard data:', error);
-                hideUpdatingIndicator();
+                updateQueueDisplay(data.queue);
+                setTimeout(hideUpdatingIndicator, 1000);
             }
         }
         
-        // Show updating indicator
         function showUpdatingIndicator() {
             const indicator = document.getElementById('updating-indicator');
             if (indicator) {
@@ -1273,7 +898,6 @@
             }
         }
         
-        // Hide updating indicator
         function hideUpdatingIndicator() {
             const indicator = document.getElementById('updating-indicator');
             if (indicator) {
@@ -1281,21 +905,17 @@
             }
         }
         
-        // Update queue display with fresh data
         function updateQueueDisplay(queueData) {
-            // Update queue stats with fresh data from server
-            const queueStatsElements = document.querySelectorAll('.queue-stats .stat-number');
+            // Update queue stats
+            const queueStatsElements = document.querySelectorAll('.queue-stats .number');
             if (queueStatsElements.length >= 2) {
-                // Calculate current waiting customers from server data
                 const waitingCustomers = queueData.entries.filter(entry => 
                     entry.status === 'waiting' || entry.status === 'called'
                 ).length;
                 
                 queueStatsElements[0].textContent = waitingCustomers;
                 
-
-                
-                // Calculate fresh average wait time from server data
+                // Calculate fresh average wait time
                 const now = new Date();
                 const waitingEntries = queueData.entries.filter(entry => entry.status === 'waiting');
                 let avgWaitTime = 0;
@@ -1310,7 +930,7 @@
                 
                 queueStatsElements[1].textContent = avgWaitTime;
                 
-                // Also update the main stats cards
+                // Update main stats cards
                 const totalWaitingElement = document.getElementById('totalWaitingCount');
                 if (totalWaitingElement) {
                     totalWaitingElement.textContent = waitingCustomers;
@@ -1329,702 +949,169 @@
             }
         }
         
-        // Update active queue customer list
         function updateActiveQueueCustomerList(queueData) {
-            const customerListContainer = document.querySelector('#active-queue .customer-list');
-            const noCustomersContainer = document.querySelector('#active-queue .no-customers');
+            // This would update the customer list dynamically
+            // For now, we'll just refresh the page for simplicity
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+        
+        function updateTotalWaitingCount() {
+            // Update waiting count and average wait time
+            const waitingElements = document.querySelectorAll('.customer-row:not(.notified-customer)');
+            const totalWaitingElement = document.getElementById('totalWaitingCount');
             
-            const waitingCustomers = queueData.entries
-                .filter(entry => entry.status === 'waiting' || entry.status === 'called')
-                .sort((a, b) => {
-                    if (a.status === 'called' && b.status === 'waiting') return -1;
-                    if (a.status === 'waiting' && b.status === 'called') return 1;
-                    return a.position - b.position;
-                });
-            
-            if (waitingCustomers.length === 0) {
-                if (customerListContainer) customerListContainer.style.display = 'none';
-                if (noCustomersContainer) {
-                    noCustomersContainer.style.display = 'block';
-                } else {
-                    // Create no customers message if it doesn't exist
-                    const activeQueueTab = document.getElementById('active-queue');
-                    const queueSection = activeQueueTab.querySelector('.queue-section');
-                    if (queueSection) {
-                        const noCustomersDiv = document.createElement('div');
-                        noCustomersDiv.className = 'no-customers';
-                        noCustomersDiv.innerHTML = `
-                            <div class="empty-queue-icon">🍽️</div>
-                            <h4>No customers in queue</h4>
-                            <p>Your restaurant is ready to welcome the next customer!</p>
-                        `;
-                        queueSection.appendChild(noCustomersDiv);
+            if (totalWaitingElement) {
+                totalWaitingElement.textContent = waitingElements.length;
+            }
+        }
+        
+        function refreshDashboardData() {
+            showUpdatingIndicator();
+            fetch('/dashboard')
+                .then(response => {
+                    if (response.ok) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
                     }
-                }
-            } else {
-                if (noCustomersContainer) noCustomersContainer.style.display = 'none';
-                if (customerListContainer) {
-                    customerListContainer.style.display = 'block';
-                    // Update customer rows
-                    updateCustomerRows(customerListContainer, waitingCustomers, queueData._id);
-                }
-            }
+                })
+                .catch(error => {
+                    console.error('Error refreshing dashboard:', error);
+                })
+                .finally(() => {
+                    setTimeout(hideUpdatingIndicator, 1000);
+                });
         }
         
-        // Update customer rows with fresh data
-        function updateCustomerRows(container, customers, queueId) {
-            const customerRowsContainer = container.querySelector('.customer-list-header').parentNode;
-            const existingRows = customerRowsContainer.querySelectorAll('.customer-row');
-            
-            // Remove existing customer rows
-            existingRows.forEach(row => row.remove());
-            
-            // Add fresh customer rows
-            customers.forEach((customer, index) => {
-                const row = createCustomerRow(customer, index, queueId);
-                customerRowsContainer.appendChild(row);
-            });
+        function checkWhatsAppStatus() {
+            fetch('/api/whatsapp/status')
+                .then(response => response.json())
+                .then(data => {
+                    const banner = document.getElementById('whatsapp-status');
+                    const statusText = banner.querySelector('.status-text p');
+                    
+                    if (data.connected) {
+                        banner.className = 'status-banner connected';
+                        statusText.textContent = 'Connected and ready to receive messages';
+                    } else {
+                        banner.className = 'status-banner disconnected';
+                        statusText.textContent = 'Not connected. Click WhatsApp tab to set up.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking WhatsApp status:', error);
+                });
         }
         
-        // Create a customer row element
-        function createCustomerRow(customer, index, queueId) {
-            const row = document.createElement('div');
-            row.className = `customer-row ${customer.status === 'called' ? 'notified-customer' : (index === 0 && customer.status === 'waiting' ? 'next-customer' : '')}`;
-            
-            const waitMinutes = Math.floor((new Date() - new Date(customer.joinedAt)) / (1000 * 60));
-            const specialRequestsDisplay = customer.specialRequests && customer.specialRequests.trim() 
-                ? `<span class="special-requests-text" title="${customer.specialRequests}">${customer.specialRequests.length > 30 ? customer.specialRequests.substring(0, 30) + '...' : customer.specialRequests}</span>`
-                : '<span class="no-requests">-</span>';
-            
-            let actionButton = '';
-            if (customer.status === 'called') {
-                actionButton = `<button class="btn-action btn-seated" onclick="markAsSeated('${queueId}', '${customer.customerId}')">Seated</button>`;
-            } else if (index === 0) {
-                actionButton = `<button class="btn-action btn-notify" onclick="notifyNext('${queueId}')">Notify</button>`;
-            } else {
-                actionButton = `<button class="btn-action btn-select" onclick="notifySpecificCustomer('${queueId}', '${customer._id}')">Notify</button>`;
-            }
-            
-            // Add NEXT badge for first waiting customer
-            const nextBadge = (index === 0 && customer.status === 'waiting') ? '<div class="next-badge">NEXT</div>' : '';
-            
-            row.innerHTML = `
-                <div class="position">
-                    ${customer.position}
-                    ${nextBadge}
-                </div>
-                <div class="customer-name">${customer.customerName}</div>
-                <div class="phone">${customer.phoneNumber}</div>
-                <div class="party-size">${customer.partySize}</div>
-                <div class="wait-time">${waitMinutes} min</div>
-                <div class="special-requests">${specialRequestsDisplay}</div>
-                <div class="actions">${actionButton}</div>
-            `;
-            
-            return row;
-        }
-        
-        // Notify next customer
+        // Action functions
         async function notifyNext(queueId) {
-            // Add confirmation dialog to prevent accidental notifications
-            if (!confirm('Are you sure you want to notify the next customer? This will send them a WhatsApp message that their table is ready.')) {
+            if (!confirm('Are you sure you want to notify the next customer?')) {
                 return;
             }
             
-            // Find and disable the button
-            const notifyButton = document.querySelector(`button[onclick*="notifyNext('${queueId}')"]`);
-            if (notifyButton) {
-                notifyButton.disabled = true;
-                notifyButton.textContent = 'Sending...';
-                notifyButton.style.opacity = '0.6';
-            }
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Sending...';
             
             try {
                 const response = await fetch(`/api/queue/${queueId}/call-next`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Immediately update the UI
-                    updateCustomerRowToNotified(result.customer);
-                    alert(`Notified: ${result.customer.customerName} (${result.customer.partySize || 1} pax)`);
-                    
-                    // Force refresh dashboard data after a short delay
-                    setTimeout(() => {
-                        refreshDashboardData();
-                    }, 1000);
+                    alert(`Notified: ${result.customer.customerName}`);
+                    setTimeout(() => window.location.reload(), 1000);
                 } else {
-                    alert(result.error || 'Failed to notify next customer');
-                    // Re-enable button on error
-                    if (notifyButton) {
-                        notifyButton.disabled = false;
-                        notifyButton.textContent = 'Notify';
-                        notifyButton.style.opacity = '1';
-                    }
+                    alert(result.error || 'Failed to notify customer');
+                    button.disabled = false;
+                    button.textContent = 'Notify';
                 }
             } catch (error) {
-                console.error('Error notifying next customer:', error);
-                alert('Error notifying next customer');
-                // Re-enable button on error
-                if (notifyButton) {
-                    notifyButton.disabled = false;
-                    notifyButton.textContent = 'Notify';
-                    notifyButton.style.opacity = '1';
-                }
+                console.error('Error notifying customer:', error);
+                alert('Error notifying customer');
+                button.disabled = false;
+                button.textContent = 'Notify';
             }
         }
         
-        // Notify specific customer (override queue order)
-        async function notifySpecificCustomer(queueId, customerId) {
-            if (!confirm('Are you sure you want to notify this customer out of order? This will skip ahead in the queue.')) {
-                return;
-            }
+        async function markAsSeated(queueId, customerId) {
+            const tableNumber = prompt('Enter table number (optional):');
             
-            // Find and disable the button
-            const notifyButton = document.querySelector(`button[onclick*="notifySpecificCustomer('${queueId}', '${customerId}')"]`);
-            if (notifyButton) {
-                notifyButton.disabled = true;
-                notifyButton.textContent = 'Sending...';
-                notifyButton.style.opacity = '0.6';
+            try {
+                const response = await fetch(`/api/queue/${queueId}/seat-customer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerId, tableNumber })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Customer marked as seated');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    alert(result.error || 'Failed to seat customer');
+                }
+            } catch (error) {
+                console.error('Error seating customer:', error);
+                alert('Error seating customer');
+            }
+        }
+        
+        async function selectCustomer(queueId, customerId) {
+            if (!confirm('Are you sure you want to notify this customer?')) {
+                return;
             }
             
             try {
                 const response = await fetch(`/api/queue/${queueId}/call-specific`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ customerId })
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Immediately update the UI
-                    updateCustomerRowToNotified(result.customer);
-                    alert(`Notified: ${result.customer.customerName} (${result.customer.partySize || 1} pax) - Skipped ahead in queue`);
-                    
-                    // Force refresh dashboard data after a short delay
-                    setTimeout(() => {
-                        refreshDashboardData();
-                    }, 1000);
+                    alert(`Notified: ${result.customer.customerName}`);
+                    setTimeout(() => window.location.reload(), 1000);
                 } else {
-                    alert(result.error || 'Failed to notify specific customer');
-                    // Re-enable button on error
-                    if (notifyButton) {
-                        notifyButton.disabled = false;
-                        notifyButton.textContent = 'Notify';
-                        notifyButton.style.opacity = '1';
-                    }
+                    alert(result.error || 'Failed to notify customer');
                 }
             } catch (error) {
-                console.error('Error notifying specific customer:', error);
-                alert('Error notifying specific customer');
-                // Re-enable button on error
-                if (notifyButton) {
-                    notifyButton.disabled = false;
-                    notifyButton.textContent = 'Notify';
-                    notifyButton.style.opacity = '1';
-                }
+                console.error('Error notifying customer:', error);
+                alert('Error notifying customer');
             }
         }
         
-        // Update customer row to notified status immediately
-        function updateCustomerRowToNotified(customer) {
-            // Find the customer row by customer ID or name
-            const customerRows = document.querySelectorAll('.customer-row');
-            customerRows.forEach(row => {
-                const nameSpan = row.querySelector('.customer-name');
-                if (nameSpan && nameSpan.textContent === customer.customerName) {
-                    // Update row styling
-                    row.className = 'customer-row notified-customer';
-                    
-                    // Update position badge
-                    const positionSpan = row.querySelector('.position');
-                    if (positionSpan) {
-                        positionSpan.innerHTML = '<span class="notified-badge">NOTIFIED</span>';
-                    }
-                    
-                    // Update action button
-                    const actionsSpan = row.querySelector('.actions');
-                    if (actionsSpan) {
-                        // Get queue ID from existing notify button
-                        const existingButton = actionsSpan.querySelector('button[onclick*="notify"]');
-                        let queueId = '';
-                        if (existingButton) {
-                            const onclickAttr = existingButton.getAttribute('onclick');
-                            const match = onclickAttr.match(/'([^']+)'/);
-                            queueId = match ? match[1] : '';
-                        }
-                        actionsSpan.innerHTML = `<button class="btn-action btn-seated" onclick="markAsSeated('${queueId}', '${customer.customerId}')">Seated</button>`;
-                    }
-                    
-                    // Add smooth transition effect
-                    row.style.transition = 'all 0.3s ease';
-                    row.style.transform = 'scale(1.02)';
-                    setTimeout(() => {
-                        row.style.transform = 'scale(1)';
-                    }, 300);
-                }
-            });
-            
-            // Update stats
-            updateTotalWaitingCount();
-        }
-        
-        // Mark customer as seated (remove from queue)
-        async function markAsSeated(queueId, customerId) {
-            // Add confirmation dialog to prevent accidental removal
-            if (!confirm('Are you sure you want to mark this customer as seated? This will remove them from the queue.')) {
-                return;
-            }
-            
-            console.log('Marking customer as seated:', { queueId, customerId });
-            
-            try {
-                const response = await fetch(`/api/queue/${queueId}/complete/${customerId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const result = await response.json();
-                console.log('Seat customer response:', result);
-                
-                if (result.success) {
-                    // Immediately remove the customer row from UI
-                    console.log('Removing customer row for:', result.customer.customerName);
-                    removeCustomerRow(result.customer.customerName);
-                    alert(`${result.customer.customerName} has been seated and removed from the queue`);
-                    
-                    // Force refresh dashboard data to update both tabs
-                    setTimeout(() => {
-                        refreshDashboardData();
-                    }, 1000);
-                } else {
-                    console.error('Failed to seat customer:', result.error);
-                    alert(result.error || 'Failed to mark customer as seated');
-                }
-            } catch (error) {
-                console.error('Error marking customer as seated:', error);
-                alert('Error marking customer as seated');
-            }
-        }
-        
-        // Remove customer row from UI immediately
-        function removeCustomerRow(customerName) {
-            console.log('Attempting to remove customer row for:', customerName);
-            const customerRows = document.querySelectorAll('.customer-row');
-            console.log('Found customer rows:', customerRows.length);
-            
-            let found = false;
-            customerRows.forEach((row, index) => {
-                const nameSpan = row.querySelector('.customer-name');
-                console.log(`Row ${index}: nameSpan exists:`, !!nameSpan, 'text:', nameSpan?.textContent);
-                
-                if (nameSpan && nameSpan.textContent === customerName) {
-                    found = true;
-                    console.log('Found matching row, removing...');
-                    
-                    // Add fade out animation
-                    row.style.transition = 'all 0.3s ease';
-                    row.style.opacity = '0';
-                    row.style.transform = 'translateX(-20px)';
-                    
-                    // Remove the row after animation
-                    setTimeout(() => {
-                        row.remove();
-                        console.log('Customer row removed from DOM');
-                        
-                        // Check if no customers left
-                        const remainingRows = document.querySelectorAll('.customer-row');
-                        console.log('Remaining rows after removal:', remainingRows.length);
-                        
-                        if (remainingRows.length === 0) {
-                            const customerList = document.querySelector('.customer-list');
-                            if (customerList) {
-                                customerList.innerHTML = `
-                                    <div class="no-customers">
-                                        <div class="empty-queue-icon">🍽️</div>
-                                        <h4>No customers in queue</h4>
-                                        <p>Your restaurant is ready to welcome the next customer!</p>
-                                    </div>
-                                `;
-                                console.log('Added no customers message');
-                            }
-                        }
-                    }, 300);
-                }
-            });
-            
-            if (!found) {
-                console.warn('Customer row not found for:', customerName);
-            }
-            
-            // Update stats
-            updateTotalWaitingCount();
-        }
-        
-        // Update total waiting count in stats
-        function updateTotalWaitingCount() {
-            // Get data from active queue tab specifically, not from currently visible tab
-            const activeQueueTab = document.getElementById('active-queue');
-            if (!activeQueueTab) return;
-            
-            const waitingCustomers = activeQueueTab.querySelectorAll('.customer-row:not(.notified-customer)').length;
-            const notifiedCustomers = activeQueueTab.querySelectorAll('.notified-customer').length;
-            const totalCustomers = waitingCustomers + notifiedCustomers;
-            
-            // Update the "Currently waiting" stat card
-            const totalWaitingElement = document.getElementById('totalWaitingCount');
-            if (totalWaitingElement) {
-                totalWaitingElement.textContent = totalCustomers;
-            }
-            
-
-            
-            // Update the queue header stats
-            const queueStatElements = document.querySelectorAll('.queue-stats .stat-number');
-            if (queueStatElements.length > 0) {
-                queueStatElements[0].textContent = totalCustomers; // First stat in queue header
-            }
-            
-            // Calculate and update average wait time
-            updateAverageWaitTime();
-        }
-        
-        // Calculate and update average wait time
-        function updateAverageWaitTime() {
-            // Get data from active queue tab specifically, not from currently visible tab
-            const activeQueueTab = document.getElementById('active-queue');
-            if (!activeQueueTab) return;
-            
-            const waitingRows = activeQueueTab.querySelectorAll('.customer-row:not(.notified-customer)');
-            let totalWaitTime = 0;
-            
-            waitingRows.forEach(row => {
-                const timeElement = row.querySelector('.wait-time');
-                if (timeElement) {
-                    const timeText = timeElement.textContent.trim();
-                    const minutes = parseInt(timeText.replace(' min', ''));
-                    if (!isNaN(minutes)) {
-                        totalWaitTime += minutes;
-                    }
-                }
-            });
-            
-            const averageWaitTime = waitingRows.length > 0 ? Math.round(totalWaitTime / waitingRows.length) : 0;
-            
-            // Update the average wait time stat card
-            const averageWaitTimeElement = document.getElementById('averageWaitTime');
-            if (averageWaitTimeElement) {
-                averageWaitTimeElement.textContent = averageWaitTime;
-            }
-            
-            // Update the queue header average wait time
-            const queueStatElements = document.querySelectorAll('.queue-stats .stat-number');
-            if (queueStatElements.length > 1) {
-                queueStatElements[1].textContent = averageWaitTime; // Second stat in queue header
-            }
-        }
-        
-        // Test notification system
-        async function testNotifications() {
-            try {
-                const response = await fetch('/api/test/whatsapp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        phoneNumber: '+1234567890',
-                        message: 'join',
-                        merchantId: 'demo-merchant-id'
-                    })
-                });
-                
-                const result = await response.json();
-                alert('Notification Test: ' + result.message);
-            } catch (error) {
-                console.error('Error testing notifications:', error);
-                alert('Notification system ready! WhatsApp & Messenger integration coming soon.');
-            }
-        }
-        
-        // Debug function to test if JavaScript is working
-        function debugTest() {
-            console.log('Debug test clicked!');
-            alert('JavaScript is working!');
-        }
-        
-        // Test API call
-        async function testApiCall() {
-            console.log('Testing API call...');
-            try {
-                const response = await fetch('/api/queue');
-                const result = await response.json();
-                console.log('API response:', result);
-                alert('API call successful! Check console for details.');
-            } catch (error) {
-                console.error('API call failed:', error);
-                alert('API call failed: ' + error.message);
-            }
-        }
-        
-        // Check WhatsApp connection status
-        async function checkWhatsAppStatus() {
-            try {
-                const response = await fetch('/api/whatsapp/status');
-                const data = await response.json();
-                
-                const banner = document.getElementById('whatsappStatusBanner');
-                const icon = document.getElementById('whatsappStatusIcon');
-                const title = document.getElementById('whatsappStatusTitle');
-                const message = document.getElementById('whatsappStatusMessage');
-                const action = document.getElementById('whatsappStatusAction');
-                
-                if (data.isReady && data.deviceInfo) {
-                    // WhatsApp is connected
-                    banner.className = 'whatsapp-status-banner connected';
-                    icon.className = 'bi bi-whatsapp whatsapp-status-icon';
-                    title.textContent = 'WhatsApp Connected';
-                    message.textContent = `Connected to ${data.deviceInfo.phoneNumber || 'WhatsApp Device'}`;
-                    action.textContent = 'Manage';
-                    action.href = '/dashboard/whatsapp-setup';
-                    banner.style.display = 'flex';
-                } else if (data.status === 'waiting_for_scan') {
-                    // QR code is ready to scan
-                    banner.className = 'whatsapp-status-banner';
-                    icon.className = 'bi bi-qr-code whatsapp-status-icon';
-                    title.textContent = 'WhatsApp Setup Required';
-                    message.textContent = 'QR code is ready - scan to connect WhatsApp for customer notifications';
-                    action.textContent = 'Scan QR Code';
-                    action.href = '/dashboard/whatsapp-setup';
-                    banner.style.display = 'flex';
-                } else {
-                    // WhatsApp is not connected
-                    banner.className = 'whatsapp-status-banner disconnected';
-                    icon.className = 'bi bi-exclamation-triangle whatsapp-status-icon';
-                    title.textContent = 'WhatsApp Not Connected';
-                    message.textContent = 'Connect WhatsApp to send automatic notifications to customers';
-                    action.textContent = 'Setup WhatsApp';
-                    action.href = '/dashboard/whatsapp-setup';
-                    banner.style.display = 'flex';
-                }
-            } catch (error) {
-                console.error('Error checking WhatsApp status:', error);
-                // Show error state
-                const banner = document.getElementById('whatsappStatusBanner');
-                const icon = document.getElementById('whatsappStatusIcon');
-                const title = document.getElementById('whatsappStatusTitle');
-                const message = document.getElementById('whatsappStatusMessage');
-                const action = document.getElementById('whatsappStatusAction');
-                
-                banner.className = 'whatsapp-status-banner disconnected';
-                icon.className = 'bi bi-exclamation-triangle whatsapp-status-icon';
-                title.textContent = 'WhatsApp Status Unknown';
-                message.textContent = 'Unable to check WhatsApp connection status';
-                action.textContent = 'Check Setup';
-                action.href = '/dashboard/whatsapp-setup';
-                banner.style.display = 'flex';
-            }
-        }
-        
-        // Initialize WhatsApp status check when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            checkWhatsAppStatus();
-            
-            // Check status every 30 seconds
-            setInterval(checkWhatsAppStatus, 30000);
-        });
-        
-        // Tab switching functionality
-        function switchTab(tabId) {
-            // Hide all tab contents
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // Remove active class from all tab buttons
-            const tabButtons = document.querySelectorAll('.tab-button');
-            tabButtons.forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            const selectedTab = document.getElementById(tabId);
-            if (selectedTab) {
-                selectedTab.classList.add('active');
-            }
-            
-            // Add active class to clicked button
-            const clickedButton = event.target;
-            if (clickedButton) {
-                clickedButton.classList.add('active');
-            }
-        }
-        
-        // Requeue customer back to waiting list
         async function requeueCustomer(queueId, customerId) {
-            // Add confirmation dialog
-            if (!confirm('Are you sure you want to requeue this customer back to the waiting list? They will be added to the end of the queue.')) {
+            if (!confirm('Are you sure you want to requeue this customer?')) {
                 return;
             }
             
-            console.log('Requeuing customer:', { queueId, customerId });
-            
             try {
-                const response = await fetch(`/api/queue/${queueId}/requeue/${customerId}`, {
+                const response = await fetch(`/api/queue/${queueId}/requeue-customer`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerId })
                 });
                 
                 const result = await response.json();
-                console.log('Requeue customer response:', result);
                 
                 if (result.success) {
-                    alert(`${result.customer.customerName} has been requeued and added back to the waiting list`);
-                    // Refresh the page to update both tabs
-                    window.location.reload();
+                    alert('Customer requeued successfully');
+                    setTimeout(() => window.location.reload(), 1000);
                 } else {
-                    console.error('Failed to requeue customer:', result.error);
                     alert(result.error || 'Failed to requeue customer');
                 }
             } catch (error) {
                 console.error('Error requeuing customer:', error);
                 alert('Error requeuing customer');
-            }
-        }
-    </script>
-    
-    <!-- Queue Creation Modal -->
-    <div id="createModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Create New Queue</h3>
-                <span class="close" onclick="hideCreateModal()">&times;</span>
-            </div>
-            <form id="createQueueForm">
-                <div class="form-group">
-                    <label for="queueName">Queue Name</label>
-                    <input type="text" id="queueName" name="name" required placeholder="e.g., Restaurant Queue">
-                </div>
-                <div class="form-group">
-                    <label for="queueDescription">Description</label>
-                    <textarea id="queueDescription" name="description" placeholder="Brief description of this queue"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="maxCapacity">Maximum Capacity</label>
-                    <input type="number" id="maxCapacity" name="maxCapacity" min="1" max="1000" value="50" required>
-                </div>
-                <div class="form-group">
-                    <label for="averageServiceTime">Average Service Time (minutes)</label>
-                    <input type="number" id="averageServiceTime" name="averageServiceTime" min="1" max="120" value="15" required>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" name="isActive" checked> Activate queue immediately
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="button" onclick="hideCreateModal()" class="btn-secondary">Cancel</button>
-                    <button type="submit" class="btn">Create Queue</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Queue creation modal functions
-        function showCreateModal() { 
-            document.getElementById('createModal').style.display = 'block'; 
-        }
-        
-        function hideCreateModal() { 
-            document.getElementById('createModal').style.display = 'none'; 
-            document.getElementById('createQueueForm').reset(); 
-        }
-        
-        // Handle queue creation form submission
-        document.getElementById('createQueueForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const queueData = Object.fromEntries(formData);
-            
-            // Convert checkbox to boolean
-            queueData.isActive = formData.has('isActive');
-            
-            try {
-                const response = await fetch('/api/queue', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(queueData) 
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) { 
-                    hideCreateModal(); 
-                    alert('Queue created successfully!');
-                    location.reload(); 
-                } else { 
-                    alert(result.error || 'Failed to create queue'); 
-                }
-            } catch (error) { 
-                console.error('Error creating queue:', error); 
-                alert('Error creating queue'); 
-            }
-        });
-        
-        // Activate queue function
-        async function activateQueue() {
-            try {
-                // Get the first inactive queue and activate it
-                const response = await fetch('/api/queue');
-                const result = await response.json();
-                
-                if (result.success && result.queues.length > 0) {
-                    const inactiveQueue = result.queues.find(q => !q.isActive);
-                    if (inactiveQueue) {
-                        const updateResponse = await fetch(`/api/queue/${inactiveQueue._id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ isActive: true })
-                        });
-                        
-                        const updateResult = await updateResponse.json();
-                        if (updateResult.success) {
-                            alert('Queue activated successfully!');
-                            location.reload();
-                        } else {
-                            alert(updateResult.error || 'Failed to activate queue');
-                        }
-                    } else {
-                        alert('No inactive queues found');
-                    }
-                } else {
-                    alert('No queues found. Please create a queue first.');
-                }
-            } catch (error) {
-                console.error('Error activating queue:', error);
-                alert('Error activating queue');
-            }
-        }
-        
-        // Close modal when clicking outside
-        window.onclick = function(event) { 
-            const createModal = document.getElementById('createModal'); 
-            if (event.target === createModal) { 
-                hideCreateModal(); 
             }
         }
     </script>
