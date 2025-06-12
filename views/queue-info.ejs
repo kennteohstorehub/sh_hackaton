@@ -4,322 +4,642 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= queueName %> - Queue Information</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .queue-info-card {
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border: none;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 1.5rem;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #000000 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 140, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 140, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 140, 0, 0.03) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(10px) rotate(-1deg); }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .queue-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 140, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .queue-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff8c00, #ff6b35, #ff8c00);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 200% 0; }
+            50% { background-position: -200% 0; }
+        }
+
+        .header {
             text-align: center;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
         }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
         }
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
+
+        .header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
         }
-        .join-queue-form {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
+
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .queue-status {
+            padding: 1rem 1.5rem;
             border-radius: 15px;
-            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .queue-open {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.1);
+        }
+
+        .queue-closed {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
             margin: 2rem 0;
         }
-        .form-control {
-            border-radius: 10px;
-            border: none;
-            padding: 12px 15px;
-            margin-bottom: 1rem;
+
+        .stat-card {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-join {
-            background: rgba(255,255,255,0.2);
-            border: 2px solid white;
-            color: white;
-            border-radius: 25px;
-            padding: 12px 30px;
-            font-weight: 600;
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
-            transition: all 0.3s ease;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 140, 0, 0.1), transparent);
+            transition: left 0.5s ease;
         }
-        .btn-join:hover {
-            background: white;
-            color: #28a745;
+
+        .stat-card:hover::before {
+            left: 100%;
         }
-        .contact-btn {
-            border-radius: 25px;
-            padding: 12px 30px;
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.2);
+            border-color: rgba(255, 140, 0, 0.4);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .join-form {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .join-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff8c00, #ff6b35);
+        }
+
+        .join-form h3 {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #ffffff;
             font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            margin: 0.5rem;
+            justify-content: center;
+            gap: 0.5rem;
         }
-        .whatsapp-btn {
-            background: #25D366;
-            color: white;
+
+        .join-form p {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
-        .whatsapp-btn:hover {
-            background: #128C7E;
-            color: white;
-            transform: translateY(-2px);
+
+        .form-group {
+            margin-bottom: 1.5rem;
         }
-        .messenger-btn {
-            background: #0084FF;
-            color: white;
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            font-size: 0.9rem;
         }
-        .messenger-btn:hover {
-            background: #0066CC;
-            color: white;
-            transform: translateY(-2px);
-        }
-        .business-info {
-            background: #f8f9fa;
+
+        .form-control {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.3);
             border-radius: 12px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #ff8c00;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-control.is-valid {
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+        }
+
+        .form-text {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.5rem;
+        }
+
+        .btn-join {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-join::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-join:hover::before {
+            left: 100%;
+        }
+
+        .btn-join:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.3);
+        }
+
+        .btn-join:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .business-info {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            border-radius: 15px;
             padding: 1.5rem;
             margin-top: 2rem;
         }
+
+        .business-info h4 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .info-item {
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            background: rgba(255, 140, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .info-item i {
+            font-size: 1.2rem;
+            color: #ff8c00;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .info-item strong {
+            display: block;
+            color: #ffffff;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-item span, .info-item a {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+
+        .info-item a:hover {
+            color: #ff8c00;
+        }
+
         .refresh-btn {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 2rem;
+            right: 2rem;
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: #007bff;
-            color: white;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
             border: none;
-            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+            color: #ffffff;
             font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
+
         .refresh-btn:hover {
-            background: #0056b3;
-            transform: scale(1.1);
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 15px 40px rgba(255, 140, 0, 0.4);
         }
+
         .last-updated {
+            text-align: center;
+            margin-top: 1.5rem;
             font-size: 0.8rem;
-            color: #6c757d;
-            text-align: center;
-            margin-top: 1rem;
+            color: rgba(255, 255, 255, 0.6);
         }
-        .queue-status {
-            padding: 1rem;
-            border-radius: 10px;
+
+        .message {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
             margin: 1rem 0;
-            text-align: center;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .queue-open {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .queue-closed {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+
         .success-message {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1rem 0;
-            display: none;
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
         }
+
         .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1rem 0;
-            display: none;
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
         }
-        .form-control.is-valid {
-            border: 2px solid #28a745;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94 1.44 1.44L7.4 4.5l.94.94L4.66 9.2z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .queue-card {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header h2 {
+                font-size: 1.2rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                gap: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .join-form {
+                padding: 1.5rem;
+            }
+
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .refresh-btn {
+                bottom: 1rem;
+                right: 1rem;
+                width: 50px;
+                height: 50px;
+                font-size: 1rem;
+            }
         }
-        .form-control.is-invalid {
-            border: 2px solid #dc3545;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4M7.2 4.6l-1.4 1.4'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+
+        /* Loading animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading {
+            animation: spin 1s linear infinite;
         }
     </style>
 </head>
-<body class="bg-light">
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <!-- Queue Information Card -->
-                <div class="card queue-info-card">
-                    <div class="card-body p-4">
-                        <div class="text-center mb-4">
-                            <h2 class="card-title mb-2">StoreHub Queue Management System</h2>
-                            <h4 class="text-primary mb-1"><%= businessName %></h4>
-                        </div>
+<body>
+    <div class="container">
+        <div class="queue-card">
+            <!-- Header -->
+            <div class="header">
+                <h1>Smart Queue Manager</h1>
+                <h2><%= businessName %></h2>
+                <p>Real-time queue management system</p>
+            </div>
 
-                        <!-- Queue Status -->
-                        <div class="queue-status <%= queueActive ? 'queue-open' : 'queue-closed' %>">
-                            <i class="bi <%= queueActive ? 'bi-check-circle' : 'bi-x-circle' %> me-2"></i>
-                            <%= queueActive ? 'Queue is Open' : 'Queue is Currently Closed' %>
-                        </div>
+            <!-- Queue Status -->
+            <div class="queue-status <%= queueActive ? 'queue-open' : 'queue-closed' %>">
+                <i class="bi <%= queueActive ? 'bi-check-circle-fill' : 'bi-x-circle-fill' %>"></i>
+                <%= queueActive ? 'Queue is Open' : 'Queue is Currently Closed' %>
+            </div>
 
-                        <!-- Queue Stats -->
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="stat-card">
-                                    <div class="stat-number"><%= totalAhead %></div>
-                                    <div class="stat-label">People Ahead</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="stat-card">
-                                    <div class="stat-number"><%= averageWaitTime %></div>
-                                    <div class="stat-label">Minutes Wait</div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Queue Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number"><%= totalAhead %></div>
+                    <div class="stat-label">People Ahead</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number"><%= averageWaitTime %></div>
+                    <div class="stat-label">Minutes Wait</div>
+                </div>
+            </div>
 
-                        <!-- Success/Error Messages -->
-                        <div id="successMessage" class="success-message">
-                            <i class="bi bi-check-circle me-2"></i>
-                            <span id="successText"></span>
-                        </div>
-                        <div id="errorMessage" class="error-message">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            <span id="errorText"></span>
-                        </div>
+            <!-- Messages -->
+            <div id="successMessage" class="message success-message">
+                <i class="bi bi-check-circle-fill"></i>
+                <span id="successText"></span>
+            </div>
+            <div id="errorMessage" class="message error-message">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span id="errorText"></span>
+            </div>
 
-                        <!-- Join Queue Form -->
-                        <% if (queueActive) { %>
-                        <div class="join-queue-form">
-                            <div class="text-center mb-3">
-                                <h4><i class="bi bi-person-plus me-2"></i>Join the Queue</h4>
-                                <p class="mb-0 opacity-75">Enter your details to secure your spot</p>
-                            </div>
-                            
-                            <form id="joinQueueForm">
-                                <div class="mb-3">
-                                    <input type="text" class="form-control" id="customerName" name="name" placeholder="Your Full Name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="customerPhone" class="form-label small text-muted">
-                                        <i class="bi bi-phone me-1"></i>Phone Number (for WhatsApp notifications)
-                                    </label>
-                                    <input type="tel" 
-                                           class="form-control" 
-                                           id="customerPhone" 
-                                           name="phone" 
-                                           placeholder="+60123456789 (Country code + Phone number)" 
-                                           pattern="^\+?[1-9]\d{1,14}$"
-                                           title="Please enter a valid phone number with country code (e.g., +60123456789)"
-                                           required>
-                                    <div class="form-text">
-                                        <small class="text-muted">
-                                            <i class="bi bi-info-circle me-1"></i>
-                                            Include country code (e.g., +60 for Malaysia, +1 for US, +65 for Singapore)
-                                        </small>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <select class="form-control" id="partySize" name="partySize" required>
-                                        <option value="">Select Pax</option>
-                                        <option value="1">1 Person</option>
-                                        <option value="2">2 People</option>
-                                        <option value="3">3 People</option>
-                                        <option value="4">4 People</option>
-                                        <option value="5">5 People</option>
-                                        <option value="6+">6+ People</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <textarea class="form-control" id="specialRequests" name="specialRequests" placeholder="Special requests or notes (optional)" rows="2"></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-join" id="joinBtn">
-                                    <i class="bi bi-plus-circle me-2"></i>Join Queue
-                                </button>
-                            </form>
-                        </div>
-                        <% } %>
+            <!-- Join Queue Form -->
+            <% if (queueActive) { %>
+            <div class="join-form">
+                <h3>
+                    <i class="bi bi-person-plus-fill"></i>
+                    Join the Queue
+                </h3>
+                <p>Enter your details to secure your spot in line</p>
+                
+                <form id="joinQueueForm">
+                    <div class="form-group">
+                        <label for="customerName" class="form-label">Full Name</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="customerName" 
+                               name="name" 
+                               placeholder="Enter your full name" 
+                               required>
+                    </div>
 
-                        <!-- Alternative Contact Options -->
-                        <div class="text-center mt-4">
-                            <h6 class="mb-3">Or get updates via messaging:</h6>
-                            
-                            <div class="d-flex flex-column flex-sm-row justify-content-center">
-                                <a href="<%= whatsappLink %>" class="contact-btn whatsapp-btn">
-                                    <i class="bi bi-whatsapp"></i>
-                                    WhatsApp
-                                </a>
-                                <a href="<%= messengerLink %>" class="contact-btn messenger-btn">
-                                    <i class="bi bi-messenger"></i>
-                                    Messenger
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Business Information -->
-                        <div class="business-info">
-                            <h6 class="text-center mb-3"><i class="bi bi-building me-2"></i>Business Information</h6>
-                            <div class="row text-center">
-                                <div class="col-6 col-md-3">
-                                    <i class="bi bi-clock text-primary mb-2" style="font-size: 1.2rem;"></i>
-                                    <div class="small">
-                                        <strong>Hours</strong><br>
-                                        <%= businessHours %>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <i class="bi bi-geo-alt text-primary mb-2" style="font-size: 1.2rem;"></i>
-                                    <div class="small">
-                                        <strong>Location</strong><br>
-                                        <%= businessAddress %>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <i class="bi bi-telephone text-primary mb-2" style="font-size: 1.2rem;"></i>
-                                    <div class="small">
-                                        <strong>Phone</strong><br>
-                                        <a href="tel:<%= businessPhone %>" class="text-decoration-none">
-                                            <%= businessPhone %>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <i class="bi bi-envelope text-primary mb-2" style="font-size: 1.2rem;"></i>
-                                    <div class="small">
-                                        <strong>Email</strong><br>
-                                        <a href="mailto:<%= businessEmail %>" class="text-decoration-none">
-                                            <%= businessEmail %>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="last-updated">
-                            Last updated: <span id="lastUpdated"><%= lastUpdated %></span>
+                    <div class="form-group">
+                        <label for="customerPhone" class="form-label">
+                            <i class="bi bi-phone"></i> Phone Number
+                        </label>
+                        <input type="tel" 
+                               class="form-control" 
+                               id="customerPhone" 
+                               name="phone" 
+                               placeholder="+60123456789" 
+                               pattern="^\+?[1-9]\d{1,14}$"
+                               title="Please enter a valid phone number with country code"
+                               required>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            Include country code (e.g., +60 for Malaysia, +1 for US)
                         </div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="partySize" class="form-label">Party Size</label>
+                        <select class="form-control" id="partySize" name="partySize" required>
+                            <option value="">Select number of people</option>
+                            <option value="1">1 Person</option>
+                            <option value="2">2 People</option>
+                            <option value="3">3 People</option>
+                            <option value="4">4 People</option>
+                            <option value="5">5 People</option>
+                            <option value="6+">6+ People</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specialRequests" class="form-label">Special Requests (Optional)</label>
+                        <textarea class="form-control" 
+                                  id="specialRequests" 
+                                  name="specialRequests" 
+                                  placeholder="Any special requests or notes..." 
+                                  rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-join" id="joinBtn">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        Join Queue
+                    </button>
+                </form>
+            </div>
+            <% } %>
+
+            <!-- Business Information -->
+            <div class="business-info">
+                <h4>
+                    <i class="bi bi-building"></i>
+                    Business Information
+                </h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <i class="bi bi-clock-fill"></i>
+                        <strong>Hours</strong>
+                        <span><%= businessHours %></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <strong>Location</strong>
+                        <span><%= businessAddress %></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-telephone-fill"></i>
+                        <strong>Phone</strong>
+                        <a href="tel:<%= businessPhone %>"><%= businessPhone %></a>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-envelope-fill"></i>
+                        <strong>Email</strong>
+                        <a href="mailto:<%= businessEmail %>"><%= businessEmail %></a>
+                    </div>
                 </div>
+            </div>
+
+            <div class="last-updated">
+                Last updated: <span id="lastUpdated"><%= lastUpdated %></span>
             </div>
         </div>
     </div>
@@ -329,13 +649,17 @@
         <i class="bi bi-arrow-clockwise"></i>
     </button>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Auto-refresh every 30 seconds
         setInterval(refreshData, 30000);
 
         function refreshData() {
-            window.location.reload();
+            const refreshBtn = document.querySelector('.refresh-btn i');
+            refreshBtn.classList.add('loading');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
         }
 
         // Update last updated time
@@ -390,7 +714,7 @@
             const originalText = joinBtn.innerHTML;
             
             // Show loading state
-            joinBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Joining...';
+            joinBtn.innerHTML = '<i class="bi bi-hourglass-split loading"></i>Joining...';
             joinBtn.disabled = true;
             
             // Hide previous messages
@@ -415,10 +739,15 @@
                     // Show success message
                     document.getElementById('successText').textContent = 
                         `Successfully joined the queue! You are position ${result.position}. Estimated wait time: ${result.estimatedWait} minutes.`;
-                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('successMessage').style.display = 'flex';
                     
                     // Reset form
                     this.reset();
+                    
+                    // Remove validation classes
+                    document.querySelectorAll('.form-control').forEach(input => {
+                        input.classList.remove('is-valid', 'is-invalid');
+                    });
                     
                     // Refresh queue stats after 2 seconds
                     setTimeout(() => {
@@ -427,17 +756,32 @@
                 } else {
                     // Show error message
                     document.getElementById('errorText').textContent = result.error || 'Failed to join queue. Please try again.';
-                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'flex';
                 }
             } catch (error) {
                 console.error('Error joining queue:', error);
                 document.getElementById('errorText').textContent = 'Network error. Please check your connection and try again.';
-                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'flex';
             } finally {
                 // Restore button
                 joinBtn.innerHTML = originalText;
                 joinBtn.disabled = false;
             }
+        });
+
+        // Add smooth scrolling for better UX
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate elements on load
+            const elements = document.querySelectorAll('.stat-card, .join-form, .business-info');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    el.style.transition = 'all 0.6s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
         });
     </script>
 </body>

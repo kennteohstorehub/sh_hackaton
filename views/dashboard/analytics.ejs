@@ -214,14 +214,6 @@
         }
         
         /* Hourly Heatmap Styles */
-        .heatmap-container {
-            overflow-x: auto;
-            margin: 1.5rem 0;
-            background: rgba(255, 140, 0, 0.05);
-            border: 1px solid rgba(255, 140, 0, 0.2);
-            border-radius: 16px;
-            padding: 1.5rem;
-        }
         
         .heatmap {
             display: grid;
@@ -511,22 +503,7 @@
             font-size: 1.1rem;
         }
         
-        .loading::before {
-            content: '';
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top: 4px solid #ff8c00;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+
         
         /* Floating particles animation */
         .particles {
@@ -671,35 +648,33 @@
         <div class="section">
             <h2>📊 Hourly Customer Flow Heatmap</h2>
             <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1rem;">Visual representation of customer activity by hour and day. Darker colors indicate higher customer volume.</p>
-            <div class="heatmap-container">
-                <div id="hourlyHeatmap" class="loading">Loading heatmap data...</div>
-            </div>
+            <div id="hourlyHeatmap" style="min-height: 300px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Hourly customer flow data will be displayed here</div>
         </div>
 
         <!-- Peak Hours Analysis -->
         <div class="section">
             <h2>⏰ Peak Hours Analysis</h2>
             <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1rem;">Identify your busiest hours to optimize staffing and operations.</p>
-            <div id="peakHoursChart" class="loading">Loading peak hours data...</div>
+            <div id="peakHoursChart" style="min-height: 300px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Peak hours analysis will be displayed here</div>
         </div>
 
         <!-- Day of Week Comparison -->
         <div class="section">
             <h2>📅 Day of Week Performance</h2>
             <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1rem;">Compare customer volume across different days of the week.</p>
-            <div id="dayComparison" class="loading">Loading day comparison...</div>
+            <div id="dayComparison" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Day of week performance comparison will be displayed here</div>
         </div>
 
         <!-- Operational Insights -->
         <div class="section">
             <h2>💡 Operational Insights & Recommendations</h2>
-            <div id="operationalInsights" class="loading">Analyzing patterns...</div>
+            <div id="operationalInsights" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Operational insights and recommendations will be displayed here</div>
         </div>
 
         <!-- Queue Performance -->
         <div class="section">
             <h2>🏪 Queue Performance</h2>
-            <div id="queuePerformance" class="loading">Loading queue performance data...</div>
+            <div id="queuePerformance" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Queue performance metrics will be displayed here</div>
         </div>
 
         <!-- Actions -->
