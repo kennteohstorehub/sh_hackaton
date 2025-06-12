@@ -14,11 +14,11 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #000000 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             min-height: 100vh;
-            color: #333;
+            color: #ffffff;
             overflow-x: hidden;
         }
         
@@ -29,9 +29,9 @@
         }
         
         .header {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -39,7 +39,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
         .header h1 {
@@ -66,20 +66,23 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            background: rgba(255, 140, 0, 0.05);
         }
         
         .nav a:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 140, 0, 0.2);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.2);
+            border-color: rgba(255, 140, 0, 0.4);
         }
         
         .nav a.active {
             background: linear-gradient(135deg, #ff8c00, #ff6b35);
             color: white;
             box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
+            border-color: transparent;
         }
         
         .container {
@@ -89,24 +92,25 @@
         }
         
         .section {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 140, 0, 0.3);
             padding: 2.5rem;
             border-radius: 20px;
             margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
         }
         
         .section:hover {
             transform: translateY(-4px);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 16px 48px rgba(255, 140, 0, 0.2);
+            border-color: rgba(255, 140, 0, 0.4);
         }
         
         .section h2 {
             margin-bottom: 2rem;
-            color: rgba(255, 255, 255, 0.9);
+            color: #ffffff;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -122,16 +126,16 @@
         }
         
         .stat-card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 140, 0, 0.3);
             padding: 2rem;
             border-radius: 20px;
             text-align: center;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         .stat-card::before {
@@ -141,14 +145,15 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 140, 0, 0.05));
             opacity: 0;
             transition: opacity 0.3s ease;
         }
         
         .stat-card:hover {
             transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 60px rgba(255, 140, 0, 0.3);
+            border-color: rgba(255, 140, 0, 0.5);
         }
         
         .stat-card:hover::before {
@@ -168,7 +173,7 @@
         }
         
         .stat-label {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 1rem;
             font-weight: 500;
             position: relative;
@@ -184,15 +189,15 @@
         
         .period-btn {
             padding: 0.75rem 1.5rem;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 140, 0, 0.3);
+            background: rgba(255, 140, 0, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 0.9rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .period-btn.active {
@@ -204,7 +209,7 @@
         
         .period-btn:hover:not(.active) {
             border-color: rgba(255, 140, 0, 0.5);
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 140, 0, 0.15);
             transform: translateY(-2px);
         }
         
@@ -212,7 +217,8 @@
         .heatmap-container {
             overflow-x: auto;
             margin: 1.5rem 0;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.2);
             border-radius: 16px;
             padding: 1.5rem;
         }
@@ -226,23 +232,25 @@
         }
         
         .heatmap-header {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             padding: 0.75rem;
             text-align: center;
             font-weight: 600;
             border-radius: 8px;
-            color: rgba(255, 255, 255, 0.9);
+            color: #ffffff;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 140, 0, 0.2);
         }
         
         .heatmap-day {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             padding: 0.75rem;
             text-align: center;
             font-weight: 600;
             border-radius: 8px;
-            color: rgba(255, 255, 255, 0.9);
+            color: #ffffff;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 140, 0, 0.2);
         }
         
         .heatmap-cell {
@@ -267,12 +275,12 @@
         }
         
         /* Heat intensity colors with glassmorphism */
-        .heat-0 { background: rgba(248, 249, 250, 0.1); color: rgba(255, 255, 255, 0.6); }
-        .heat-1 { background: rgba(255, 243, 205, 0.3); color: rgba(255, 255, 255, 0.9); }
-        .heat-2 { background: rgba(255, 234, 167, 0.4); color: rgba(255, 255, 255, 0.9); }
-        .heat-3 { background: rgba(253, 203, 110, 0.5); color: white; }
-        .heat-4 { background: rgba(225, 112, 85, 0.6); color: white; }
-        .heat-5 { background: rgba(214, 48, 49, 0.7); color: white; }
+        .heat-0 { background: rgba(255, 140, 0, 0.1); color: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 140, 0, 0.1); }
+        .heat-1 { background: rgba(255, 140, 0, 0.2); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 140, 0, 0.2); }
+        .heat-2 { background: rgba(255, 140, 0, 0.3); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 140, 0, 0.3); }
+        .heat-3 { background: rgba(255, 140, 0, 0.4); color: white; border: 1px solid rgba(255, 140, 0, 0.4); }
+        .heat-4 { background: rgba(255, 140, 0, 0.6); color: white; border: 1px solid rgba(255, 140, 0, 0.5); }
+        .heat-5 { background: rgba(255, 140, 0, 0.8); color: white; border: 1px solid rgba(255, 140, 0, 0.6); }
         
         /* Peak Hours Chart */
         .peak-hours-chart {
@@ -282,7 +290,8 @@
             height: 250px;
             margin: 1.5rem 0;
             padding: 2rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.2);
             border-radius: 16px;
             backdrop-filter: blur(10px);
         }
@@ -337,16 +346,16 @@
         }
         
         .insight-card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 0, 0.1);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            color: #ffffff;
             padding: 2rem;
             border-radius: 20px;
             position: relative;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         .insight-card::before {
@@ -356,14 +365,15 @@
             right: 0;
             width: 120px;
             height: 120px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 140, 0, 0.05);
             border-radius: 50%;
             transform: translate(40px, -40px);
         }
         
         .insight-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 16px 48px rgba(255, 140, 0, 0.2);
+            border-color: rgba(255, 140, 0, 0.4);
         }
         
         .insight-card h4 {
