@@ -41,7 +41,7 @@ router.get('/', setMockUser, async (req, res) => {
     const now = new Date();
     
     let totalActualWaitTime = 0;
-    let waitingCustomers = 0;
+    let waitingCustomersCount = 0;
     
     queues.forEach(queue => {
       // Count current waiting customers
@@ -59,17 +59,32 @@ router.get('/', setMockUser, async (req, res) => {
       waitingEntries.forEach(entry => {
         const waitTimeMinutes = Math.floor((now - new Date(entry.joinedAt)) / (1000 * 60));
         totalActualWaitTime += waitTimeMinutes;
-        waitingCustomers++;
+        waitingCustomersCount++;
       });
     });
     
     // Calculate average actual wait time
-    stats.averageWaitTime = waitingCustomers > 0 ? Math.round(totalActualWaitTime / waitingCustomers) : 0;
+    stats.averageWaitTime = waitingCustomersCount > 0 ? Math.round(totalActualWaitTime / waitingCustomersCount) : 0;
+
+    // Prepare waiting customers for the template
+    let templateWaitingCustomers = [];
+    const activeQueue = queues.find(queue => queue.isActive);
+    if (activeQueue) {
+      templateWaitingCustomers = activeQueue.entries
+        .filter(entry => entry.status === 'waiting' || entry.status === 'called')
+        .sort((a, b) => {
+          if (a.status === 'called' && b.status === 'waiting') return -1;
+          if (a.status === 'waiting' && b.status === 'called') return 1;
+          return a.position - b.position;
+        });
+    }
 
     res.render('dashboard/index', {
       title: 'Dashboard - Smart Queue Manager',
       queues,
-      stats
+      stats,
+      waitingCustomers: templateWaitingCustomers,
+      activeQueue
     });
 
   } catch (error) {
