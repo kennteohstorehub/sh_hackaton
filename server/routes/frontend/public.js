@@ -8,14 +8,14 @@ const router = express.Router();
 // Home page
 router.get('/', (req, res) => {
   res.render('index', {
-    title: 'Smart Queue Manager - Reduce Customer Wait Times'
+    title: 'StoreHub Queue Management System - Reduce Customer Wait Times'
   });
 });
 
 // Demo page
 router.get('/demo', (req, res) => {
   res.render('demo', {
-    title: 'Demo - Smart Queue Manager'
+    title: 'Demo - StoreHub Queue Management System'
   });
 });
 
@@ -27,28 +27,28 @@ router.get('/whatsapp', (req, res) => {
 // Chatbot demo page
 router.get('/chatbot-demo', (req, res) => {
   res.render('chatbot-demo', {
-    title: 'Chatbot Demo - Smart Queue Manager'
+    title: 'Chatbot Demo - StoreHub Queue Management System'
   });
 });
 
 // GET /about - About page
 router.get('/about', (req, res) => {
   res.render('public/about', {
-    title: 'About - Smart Queue Manager'
+    title: 'About - StoreHub Queue Management System'
   });
 });
 
 // GET /features - Features page
 router.get('/features', (req, res) => {
   res.render('public/features', {
-    title: 'Features - Smart Queue Manager'
+    title: 'Features - StoreHub Queue Management System'
   });
 });
 
 // GET /pricing - Pricing page
 router.get('/pricing', (req, res) => {
   res.render('public/pricing', {
-    title: 'Pricing - Smart Queue Manager'
+    title: 'Pricing - StoreHub Queue Management System'
   });
 });
 
@@ -149,21 +149,21 @@ router.get('/queue-status/:queueId/:customerId', async (req, res) => {
 // GET /contact - Contact page
 router.get('/contact', (req, res) => {
   res.render('public/contact', {
-    title: 'Contact Us - Smart Queue Manager'
+    title: 'Contact Us - StoreHub Queue Management System'
   });
 });
 
 // GET /privacy - Privacy policy
 router.get('/privacy', (req, res) => {
   res.render('public/privacy', {
-    title: 'Privacy Policy - Smart Queue Manager'
+    title: 'Privacy Policy - StoreHub Queue Management System'
   });
 });
 
 // GET /terms - Terms of service
 router.get('/terms', (req, res) => {
   res.render('public/terms', {
-    title: 'Terms of Service - Smart Queue Manager'
+    title: 'Terms of Service - StoreHub Queue Management System'
   });
 });
 

@@ -80,7 +80,7 @@ router.get('/', setMockUser, async (req, res) => {
     }
 
     res.render('dashboard/index', {
-      title: 'Dashboard - Smart Queue Manager',
+      title: 'Dashboard - StoreHub Queue Management System',
       queues,
       stats,
       waitingCustomers: templateWaitingCustomers,
@@ -113,11 +113,11 @@ router.get('/queues/new', setMockUser, async (req, res) => {
     
     if (!merchant) {
       req.flash('error', 'Merchant not found.');
-      return res.redirect('/dashboard/queues');
+      return res.redirect('/dashboard');
     }
     
     res.render('dashboard/queue-form', {
-      title: 'Create New Queue - Smart Queue Manager',
+      title: 'Create New Queue - StoreHub Queue Management System',
       queue: null,
       serviceTypes: merchant.getActiveServices(),
       isEdit: false
@@ -126,43 +126,11 @@ router.get('/queues/new', setMockUser, async (req, res) => {
   } catch (error) {
     logger.error('New queue page error:', error);
     req.flash('error', 'Error loading form. Please try again.');
-    res.redirect('/dashboard/queues');
+    res.redirect('/dashboard');
   }
 });
 
-// GET /dashboard/queues/:id - View specific queue
-router.get('/queues/:id', setMockUser, async (req, res) => {
-  try {
-    const merchantId = req.session.user.id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
-    
-    if (!queue) {
-      req.flash('error', 'Queue not found.');
-      return res.redirect('/dashboard/queues');
-    }
-    
-    // Sort entries by position for waiting customers, then by status change time for others
-    const waitingCustomers = queue.entries
-      .filter(entry => entry.status === 'waiting')
-      .sort((a, b) => a.position - b.position);
-      
-    const otherCustomers = queue.entries
-      .filter(entry => entry.status !== 'waiting')
-      .sort((a, b) => new Date(b.completedAt || b.calledAt || b.joinedAt) - new Date(a.completedAt || a.calledAt || a.joinedAt));
-    
-    res.render('dashboard/queue-detail', {
-      title: `${queue.name} - Queue Management`,
-      queue,
-      waitingCustomers,
-      otherCustomers
-    });
-    
-  } catch (error) {
-    logger.error('Queue detail error:', error);
-    req.flash('error', 'Error loading queue details. Please try again.');
-    res.redirect('/dashboard/queues');
-  }
-});
+
 
 // GET /dashboard/queues/:id/edit - Edit queue
 router.get('/queues/:id/edit', setMockUser, async (req, res) => {
@@ -173,11 +141,11 @@ router.get('/queues/:id/edit', setMockUser, async (req, res) => {
     
     if (!queue) {
       req.flash('error', 'Queue not found.');
-      return res.redirect('/dashboard/queues');
+      return res.redirect('/dashboard');
     }
     
     res.render('dashboard/queue-form', {
-      title: `Edit ${queue.name} - Smart Queue Manager`,
+      title: `Edit ${queue.name} - StoreHub Queue Management System`,
       queue,
       serviceTypes: merchant.getActiveServices(),
       isEdit: true
@@ -186,7 +154,7 @@ router.get('/queues/:id/edit', setMockUser, async (req, res) => {
   } catch (error) {
     logger.error('Edit queue page error:', error);
     req.flash('error', 'Error loading queue for editing. Please try again.');
-    res.redirect('/dashboard/queues');
+    res.redirect('/dashboard');
   }
 });
 
@@ -196,7 +164,7 @@ router.get('/settings', setMockUser, async (req, res) => {
     const merchant = await Merchant.findById(req.session.user.id);
 
     res.render('dashboard/settings', {
-      title: 'Settings - Smart Queue Manager',
+      title: 'Settings - StoreHub Queue Management System',
       merchant
     });
 
@@ -219,7 +187,7 @@ router.get('/integrations', setMockUser, async (req, res) => {
     }
     
     res.render('dashboard/integrations', {
-      title: 'Integrations - Smart Queue Manager',
+      title: 'Integrations - StoreHub Queue Management System',
       merchant
     });
     
@@ -234,7 +202,7 @@ router.get('/integrations', setMockUser, async (req, res) => {
 router.get('/whatsapp-setup', setMockUser, async (req, res) => {
   try {
     res.render('dashboard/whatsapp-setup', {
-      title: 'WhatsApp Setup - Smart Queue Manager'
+      title: 'WhatsApp Setup - StoreHub Queue Management System'
     });
   } catch (error) {
     logger.error('WhatsApp setup page error:', error);
@@ -247,10 +215,19 @@ router.get('/whatsapp-setup', setMockUser, async (req, res) => {
 });
 
 // Analytics
-router.get('/analytics', setMockUser, (req, res) => {
-  res.render('dashboard/analytics', {
-    title: 'Analytics - Smart Queue Manager'
-  });
+router.get('/analytics', setMockUser, async (req, res) => {
+  try {
+    const merchant = await Merchant.findById(req.session.user.id);
+    
+    res.render('dashboard/analytics', {
+      title: 'Analytics - StoreHub Queue Management System',
+      merchant
+    });
+  } catch (error) {
+    logger.error('Analytics error:', error);
+    req.flash('error', 'Error loading analytics.');
+    res.redirect('/dashboard');
+  }
 });
 
 module.exports = router; 

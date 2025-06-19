@@ -29,17 +29,22 @@
         }
         
         .header {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 140, 0, 0.3);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 1rem 0;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .header h1 {
@@ -47,42 +52,81 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            min-width: 200px;
         }
         
+        /* Fixed Navigation */
         .nav {
             display: flex;
-            gap: 0.5rem;
+            gap: 0;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 0.25rem;
+            border: 1px solid rgba(255, 140, 0, 0.2);
         }
         
         .nav a {
             text-decoration: none;
             color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            text-align: center;
+            min-width: 100px; /* Fixed minimum width for all nav items */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 140, 0, 0.2);
-            background: rgba(255, 140, 0, 0.05);
+            z-index: 1;
         }
         
         .nav a:hover {
-            background: rgba(255, 140, 0, 0.2);
+            background: rgba(255, 140, 0, 0.15);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.2);
-            border-color: rgba(255, 140, 0, 0.4);
+            transform: translateY(-1px);
         }
         
         .nav a.active {
             background: linear-gradient(135deg, #ff8c00, #ff6b35);
             color: white;
-            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
-            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+        }
+        
+        /* User Section */
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 120px; /* Prevent user section from shifting */
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-button {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .user-button:hover {
+            background: rgba(255, 140, 0, 0.2);
+            border-color: rgba(255, 140, 0, 0.5);
         }
         
         .container {
@@ -524,6 +568,302 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 140, 0, 0.7);
         }
+        
+        /* Compact Operating Hours Table */
+        .hours-table {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .hours-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 140, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .hours-row:last-child {
+            border-bottom: none;
+        }
+        
+        .hours-row:not(.hours-header):hover {
+            background: rgba(255, 140, 0, 0.05);
+        }
+        
+        .hours-header {
+            background: rgba(255, 140, 0, 0.1);
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+        
+        .day-col {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .time-col {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .time-input {
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(255, 140, 0, 0.08));
+            border: 1px solid rgba(255, 140, 0, 0.4);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            width: 95px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.1),
+                inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .time-input:hover {
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.12));
+            border-color: rgba(255, 140, 0, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.15),
+                inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        }
+        
+        .time-input:focus {
+            outline: none;
+            border-color: rgba(255, 140, 0, 0.8);
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.25), rgba(255, 140, 0, 0.15));
+            box-shadow: 
+                0 4px 12px rgba(255, 140, 0, 0.2),
+                inset 0 1px 2px rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        /* Custom time picker dropdown styling */
+        .time-input::-webkit-calendar-picker-indicator {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 7l3 3 3-3'/%3e%3c/svg%3e");
+            background-color: rgba(255, 140, 0, 0.2);
+            background-size: 12px 12px;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid rgba(255, 140, 0, 0.4);
+            border-radius: 6px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: 6px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.8;
+        }
+        
+        .time-input::-webkit-calendar-picker-indicator:hover {
+            background-color: rgba(255, 140, 0, 0.4);
+            border-color: rgba(255, 140, 0, 0.6);
+            transform: scale(1.05);
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+        }
+        
+        .time-input:focus::-webkit-calendar-picker-indicator {
+            background-color: rgba(255, 140, 0, 0.3);
+            border-color: rgba(255, 140, 0, 0.7);
+            opacity: 1;
+        }
+        
+        /* Firefox time input styling */
+        .time-input::-moz-focus-inner {
+            border: none;
+        }
+        
+        /* Custom styling for time picker list */
+        .time-input::-webkit-datetime-edit {
+            color: rgba(255, 255, 255, 0.95);
+        }
+        
+        .time-input::-webkit-datetime-edit-fields-wrapper {
+            padding: 0;
+        }
+        
+        .time-input::-webkit-datetime-edit-hour-field,
+        .time-input::-webkit-datetime-edit-minute-field,
+        .time-input::-webkit-datetime-edit-ampm-field {
+            background: rgba(255, 140, 0, 0.1);
+            border-radius: 3px;
+            padding: 2px 4px;
+            margin: 0 1px;
+            color: rgba(255, 255, 255, 0.95);
+            transition: all 0.2s ease;
+        }
+        
+        .time-input::-webkit-datetime-edit-hour-field:hover,
+        .time-input::-webkit-datetime-edit-minute-field:hover,
+        .time-input::-webkit-datetime-edit-ampm-field:hover {
+            background: rgba(255, 140, 0, 0.2);
+            color: rgba(255, 255, 255, 1);
+        }
+        
+        .time-input::-webkit-datetime-edit-hour-field:focus,
+        .time-input::-webkit-datetime-edit-minute-field:focus,
+        .time-input::-webkit-datetime-edit-ampm-field:focus {
+            background: rgba(255, 140, 0, 0.3);
+            color: rgba(255, 255, 255, 1);
+            outline: none;
+        }
+        
+        /* Enhanced focus states for individual time components */
+        .time-input:focus::-webkit-datetime-edit-hour-field,
+        .time-input:focus::-webkit-datetime-edit-minute-field,
+        .time-input:focus::-webkit-datetime-edit-ampm-field {
+            background: rgba(255, 140, 0, 0.25);
+            color: rgba(255, 255, 255, 1);
+        }
+        
+        .status-col {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .compact-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            user-select: none;
+            padding: 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .compact-toggle:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .compact-slider {
+            position: relative;
+            width: 54px;
+            height: 30px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(34, 197, 94, 0.7));
+            border-radius: 30px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 12px rgba(34, 197, 94, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(34, 197, 94, 0.6);
+            overflow: hidden;
+        }
+        
+        .compact-slider:hover {
+            box-shadow: 
+                0 6px 18px rgba(34, 197, 94, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+            transform: scale(1.05);
+            border-color: rgba(34, 197, 94, 0.8);
+        }
+        
+        .compact-slider:before {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            top: 2px;
+            left: 3px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 10px rgba(0, 0, 0, 0.2),
+                0 2px 6px rgba(0, 0, 0, 0.1),
+                inset 0 1px 3px rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        
+
+        
+        .compact-toggle input[type="checkbox"] {
+            display: none;
+        }
+        
+        .compact-toggle input[type="checkbox"]:checked + .compact-slider {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.7));
+            border-color: rgba(239, 68, 68, 0.6);
+            box-shadow: 
+                0 4px 12px rgba(239, 68, 68, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .compact-toggle input[type="checkbox"]:checked + .compact-slider:hover {
+            box-shadow: 
+                0 6px 18px rgba(239, 68, 68, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+            border-color: rgba(239, 68, 68, 0.8);
+        }
+        
+        .compact-toggle input[type="checkbox"]:checked + .compact-slider:before {
+            transform: translateX(26px);
+        }
+        
+
+        
+
+        
+        /* Closed row styling */
+        .hours-row:has(input[type="checkbox"]:checked) {
+            background: rgba(128, 128, 128, 0.1);
+            opacity: 0.6;
+        }
+        
+        .hours-row:has(input[type="checkbox"]:checked) .time-input {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        
+        .hours-row:has(input[type="checkbox"]:checked) .day-col {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .hours-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                padding: 1rem;
+            }
+            
+            .hours-header {
+                display: none;
+            }
+            
+            .day-col {
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+            }
+            
+            .time-col {
+                justify-content: flex-start;
+                margin-bottom: 0.5rem;
+            }
+            
+            .time-input {
+                width: 100px;
+            }
+            
+            .status-col {
+                justify-content: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
@@ -538,13 +878,23 @@
     </div>
 
     <header class="header">
-        <h1>Smart Queue Manager</h1>
-        <nav class="nav">
-            <a href="/dashboard">Dashboard</a>
-            <a href="/dashboard/whatsapp-setup">WhatsApp</a>
-            <a href="/dashboard/analytics">Analytics</a>
-            <a href="/dashboard/settings" class="active">Settings</a>
-        </nav>
+        <div class="header-content">
+            <h1>StoreHub Queue Management System</h1>
+            <nav class="nav">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/dashboard/analytics">Analytics</a>
+                <a href="/dashboard/whatsapp-setup">WhatsApp</a>
+                <a href="/dashboard/settings" class="active">Settings</a>
+            </nav>
+            <div class="user-section">
+                <div class="user-menu">
+                    <a href="/auth/logout" class="user-button">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
     </header>
 
     <div class="container">
@@ -575,27 +925,130 @@
                     <div class="form-help">Complete address including city, state, and postal code</div>
                 </div>
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="operatingHours">Operating Hours</label>
-                        <input type="text" id="operatingHours" name="operatingHours" placeholder="Mon-Sun: 9:00 AM - 10:00 PM">
-                        <div class="form-help">Display format for customer information</div>
+                <!-- Compact Operating Hours -->
+                <div class="form-group">
+                    <label>Operating Hours</label>
+                    <div class="hours-table">
+                        <div class="hours-row hours-header">
+                            <div class="day-col">Day</div>
+                            <div class="time-col">Opening Time</div>
+                            <div class="time-col">Closing Time</div>
+                            <div class="status-col">Status</div>
+                        </div>
+                        
+                        <div class="hours-row" data-day="monday">
+                            <div class="day-col">Monday</div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[monday][start]" value="09:00" class="time-input">
+                            </div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[monday][end]" value="17:00" class="time-input">
+                            </div>
+                            <div class="status-col">
+                                <label class="compact-toggle">
+                                    <input type="checkbox" id="monday-closed" name="businessHours[monday][closed]">
+                                    <span class="compact-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="hours-row" data-day="tuesday">
+                            <div class="day-col">Tuesday</div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[tuesday][start]" value="09:00" class="time-input">
+                            </div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[tuesday][end]" value="17:00" class="time-input">
+                            </div>
+                            <div class="status-col">
+                                <label class="compact-toggle">
+                                    <input type="checkbox" id="tuesday-closed" name="businessHours[tuesday][closed]">
+                                    <span class="compact-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="hours-row" data-day="wednesday">
+                            <div class="day-col">Wednesday</div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[wednesday][start]" value="09:00" class="time-input">
+                            </div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[wednesday][end]" value="17:00" class="time-input">
+                            </div>
+                            <div class="status-col">
+                                <label class="compact-toggle">
+                                    <input type="checkbox" id="wednesday-closed" name="businessHours[wednesday][closed]">
+                                    <span class="compact-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="hours-row" data-day="thursday">
+                            <div class="day-col">Thursday</div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[thursday][start]" value="09:00" class="time-input">
+                            </div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[thursday][end]" value="17:00" class="time-input">
+                            </div>
+                            <div class="status-col">
+                                <label class="compact-toggle">
+                                    <input type="checkbox" id="thursday-closed" name="businessHours[thursday][closed]">
+                                    <span class="compact-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="hours-row" data-day="friday">
+                            <div class="day-col">Friday</div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[friday][start]" value="09:00" class="time-input">
+                            </div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[friday][end]" value="17:00" class="time-input">
+                            </div>
+                            <div class="status-col">
+                                <label class="compact-toggle">
+                                    <input type="checkbox" id="friday-closed" name="businessHours[friday][closed]">
+                                    <span class="compact-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="hours-row" data-day="saturday">
+                            <div class="day-col">Saturday</div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[saturday][start]" value="09:00" class="time-input">
+                            </div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[saturday][end]" value="17:00" class="time-input">
+                            </div>
+                            <div class="status-col">
+                                <label class="compact-toggle">
+                                    <input type="checkbox" id="saturday-closed" name="businessHours[saturday][closed]">
+                                    <span class="compact-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="hours-row" data-day="sunday">
+                            <div class="day-col">Sunday</div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[sunday][start]" value="09:00" class="time-input">
+                            </div>
+                            <div class="time-col">
+                                <input type="time" name="businessHours[sunday][end]" value="17:00" class="time-input">
+                            </div>
+                            <div class="status-col">
+                                <label class="compact-toggle">
+                                    <input type="checkbox" id="sunday-closed" name="businessHours[sunday][closed]" checked>
+                                    <span class="compact-slider"></span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="cuisine">Cuisine Type</label>
-                        <select id="cuisine" name="cuisine">
-                            <option value="">Select cuisine type</option>
-                            <option value="american">American</option>
-                            <option value="italian">Italian</option>
-                            <option value="chinese">Chinese</option>
-                            <option value="mexican">Mexican</option>
-                            <option value="indian">Indian</option>
-                            <option value="japanese">Japanese</option>
-                            <option value="thai">Thai</option>
-                            <option value="mediterranean">Mediterranean</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
+                    <div class="form-help">Configure your business operating hours for each day</div>
                 </div>
                 
                 <button type="submit" class="btn">Save Restaurant Information</button>
@@ -651,27 +1104,7 @@
                     </label>
                 </div>
                 
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>SMS Notifications</h4>
-                        <p>Send queue updates via SMS text messages</p>
-                    </div>
-                    <label class="toggle">
-                        <input type="checkbox" id="smsNotifications">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>Email Notifications</h4>
-                        <p>Send queue updates via email</p>
-                    </div>
-                    <label class="toggle">
-                        <input type="checkbox" id="emailNotifications">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+
                 
                 <div class="notification-item">
                     <div class="notification-info">
@@ -734,37 +1167,7 @@
                     </div>
                 </div>
                 
-                <div class="setting-card">
-                    <h3>Time Zone</h3>
-                    <p>Set your restaurant's local time zone for accurate scheduling</p>
-                    <div class="form-group">
-                        <label for="timezone">Time Zone</label>
-                        <select id="timezone" name="timezone">
-                            <option value="America/New_York">Eastern Time (ET)</option>
-                            <option value="America/Chicago">Central Time (CT)</option>
-                            <option value="America/Denver">Mountain Time (MT)</option>
-                            <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                            <option value="America/Anchorage">Alaska Time (AKT)</option>
-                            <option value="Pacific/Honolulu">Hawaii Time (HST)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="setting-card">
-                    <h3>Language</h3>
-                    <p>Choose the language for customer communications</p>
-                    <div class="form-group">
-                        <label for="language">Default Language</label>
-                        <select id="language" name="language">
-                            <option value="en" selected>English</option>
-                            <option value="es">Spanish</option>
-                            <option value="fr">French</option>
-                            <option value="de">German</option>
-                            <option value="it">Italian</option>
-                            <option value="pt">Portuguese</option>
-                        </select>
-                    </div>
-                </div>
+
                 
                 <div class="setting-card">
                     <h3>Analytics</h3>
@@ -992,14 +1395,14 @@
                 const businessHours = {};
                 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
                 days.forEach(day => {
-                    const closed = document.getElementById(`${day}Closed`).checked;
-                    const start = document.getElementById(`${day}Start`).value;
-                    const end = document.getElementById(`${day}End`).value;
+                    const closedCheckbox = document.getElementById(`${day}-closed`);
+                    const startInput = document.querySelector(`input[name="businessHours[${day}][start]"]`);
+                    const endInput = document.querySelector(`input[name="businessHours[${day}][end]"]`);
                     
                     businessHours[day] = {
-                        closed: closed,
-                        start: start,
-                        end: end
+                        closed: closedCheckbox ? closedCheckbox.checked : false,
+                        start: startInput ? startInput.value : '09:00',
+                        end: endInput ? endInput.value : '17:00'
                     };
                 });
                 
@@ -1084,7 +1487,7 @@
                         },
                         body: JSON.stringify({
                             phoneNumber: whatsappDeviceInfo?.phoneNumber || '+1234567890',
-                            message: 'Test message from Smart Queue Manager - WhatsApp integration is working!',
+                            message: 'Test message from StoreHub Queue Management System - WhatsApp integration is working!',
                             merchantId: '507f1f77bcf86cd799439011'
                         })
                     });
@@ -1127,6 +1530,80 @@
                 }
             }, 5000);
         }
+        
+        // Handle operating hours toggle functionality
+        function initializeOperatingHours() {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            
+            days.forEach(day => {
+                const closedCheckbox = document.getElementById(`${day}-closed`);
+                const hoursRow = document.querySelector(`[data-day="${day}"]`);
+                
+                if (closedCheckbox && hoursRow) {
+                    // Add event listener for toggle
+                    closedCheckbox.addEventListener('change', function() {
+                        // The CSS will handle the visual changes automatically
+                        // No need to manually show/hide elements
+                    });
+                }
+            });
+        }
+        
+        // Load merchant data and populate form
+        async function loadMerchantData() {
+            try {
+                const response = await fetch('/api/merchant/profile');
+                const result = await response.json();
+                
+                if (result.success && result.merchant) {
+                    const merchant = result.merchant;
+                    
+                    // Populate business information
+                    if (merchant.businessName) {
+                        document.querySelector('input[name="restaurantName"]').value = merchant.businessName;
+                    }
+                    if (merchant.phone) {
+                        document.querySelector('input[name="restaurantPhone"]').value = merchant.phone;
+                    }
+                    if (merchant.address?.street) {
+                        document.querySelector('input[name="restaurantAddress"]').value = merchant.address.street;
+                    }
+                    
+                    // Populate business hours
+                    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                    days.forEach(day => {
+                        const dayHours = merchant.businessHours?.[day];
+                        if (dayHours) {
+                            const closedCheckbox = document.getElementById(`${day}-closed`);
+                            const startInput = document.querySelector(`input[name="businessHours[${day}][start]"]`);
+                            const endInput = document.querySelector(`input[name="businessHours[${day}][end]"]`);
+                            const timeInputs = document.getElementById(`${day}-times`);
+                            
+                            if (closedCheckbox) {
+                                closedCheckbox.checked = dayHours.closed || false;
+                            }
+                            if (startInput && dayHours.start) {
+                                startInput.value = dayHours.start;
+                            }
+                            if (endInput && dayHours.end) {
+                                endInput.value = dayHours.end;
+                            }
+                            if (timeInputs) {
+                                timeInputs.style.display = dayHours.closed ? 'none' : 'flex';
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading merchant data:', error);
+            }
+        }
+        
+        // Initialize operating hours toggles when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeOperatingHours();
+            loadMerchantData();
+        });
     </script>
 </body>
 </html> 

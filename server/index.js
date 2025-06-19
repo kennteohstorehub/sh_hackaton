@@ -230,7 +230,7 @@ process.on('SIGTERM', () => {
 });
 
 server.listen(PORT, async () => {
-  logger.info(`Smart Queue Manager server running on port ${PORT}`);
+  logger.info(`StoreHub Queue Management System server running on port ${PORT}`);
   logger.info(`Frontend available at: http://localhost:${PORT}`);
   logger.info(`API available at: http://localhost:${PORT}/api`);
   await initializeServices();

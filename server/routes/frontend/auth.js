@@ -13,7 +13,7 @@ router.get('/login', (req, res) => {
   }
   
   res.render('auth/login', {
-    title: 'Login - Smart Queue Manager'
+    title: 'Login - StoreHub Queue Management System'
   });
 });
 
@@ -24,7 +24,7 @@ router.get('/register', (req, res) => {
   }
   
   res.render('auth/register', {
-    title: 'Register - Smart Queue Manager'
+    title: 'Register - StoreHub Queue Management System'
   });
 });
 
@@ -122,7 +122,7 @@ router.post('/register', [
     };
 
     logger.info(`New merchant registered: ${merchant.email}`);
-    req.flash('success', `Welcome to Smart Queue Manager, ${merchant.businessName}!`);
+    req.flash('success', `Welcome to StoreHub Queue Management System, ${merchant.businessName}!`);
     res.redirect('/dashboard');
 
   } catch (error) {

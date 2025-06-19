@@ -13,7 +13,22 @@ async function createDemoMerchant() {
     const existingMerchant = await Merchant.findById(demoMerchantId);
     
     if (existingMerchant) {
-      console.log('Demo merchant already exists');
+      console.log('Demo merchant already exists, updating business hours...');
+      
+      // Always update business hours to ensure they're properly set
+      existingMerchant.businessHours = {
+        monday: { start: '09:00', end: '18:00', closed: false },
+        tuesday: { start: '09:00', end: '18:00', closed: false },
+        wednesday: { start: '09:00', end: '18:00', closed: false },
+        thursday: { start: '09:00', end: '18:00', closed: false },
+        friday: { start: '09:00', end: '21:00', closed: false },
+        saturday: { start: '10:00', end: '21:00', closed: false },
+        sunday: { start: '11:00', end: '17:00', closed: true }
+      };
+      
+      await existingMerchant.save();
+      console.log('Business hours updated for demo merchant');
+      
       return;
     }
 
@@ -31,6 +46,15 @@ async function createDemoMerchant() {
         state: 'Demo State',
         zipCode: '12345',
         country: 'Demo Country'
+      },
+      businessHours: {
+        monday: { start: '09:00', end: '18:00', closed: false },
+        tuesday: { start: '09:00', end: '18:00', closed: false },
+        wednesday: { start: '09:00', end: '18:00', closed: false },
+        thursday: { start: '09:00', end: '18:00', closed: false },
+        friday: { start: '09:00', end: '21:00', closed: false },
+        saturday: { start: '10:00', end: '21:00', closed: false },
+        sunday: { start: '11:00', end: '17:00', closed: true }
       },
       serviceTypes: [
         {

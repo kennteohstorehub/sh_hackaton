@@ -29,17 +29,22 @@
         }
         
         .header {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 140, 0, 0.3);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 1rem 0;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .header h1 {
@@ -47,42 +52,81 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            min-width: 200px;
         }
         
+        /* Fixed Navigation */
         .nav {
             display: flex;
-            gap: 0.5rem;
+            gap: 0;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 0.25rem;
+            border: 1px solid rgba(255, 140, 0, 0.2);
         }
         
         .nav a {
             text-decoration: none;
             color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            text-align: center;
+            min-width: 100px; /* Fixed minimum width for all nav items */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 140, 0, 0.2);
-            background: rgba(255, 140, 0, 0.05);
+            z-index: 1;
         }
         
         .nav a:hover {
-            background: rgba(255, 140, 0, 0.2);
+            background: rgba(255, 140, 0, 0.15);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.2);
-            border-color: rgba(255, 140, 0, 0.4);
+            transform: translateY(-1px);
         }
         
         .nav a.active {
             background: linear-gradient(135deg, #ff8c00, #ff6b35);
             color: white;
-            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
-            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+        }
+        
+        /* User Section */
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 120px; /* Prevent user section from shifting */
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-button {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .user-button:hover {
+            background: rgba(255, 140, 0, 0.2);
+            border-color: rgba(255, 140, 0, 0.5);
         }
         
         .container {
@@ -286,6 +330,34 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
         
+        /* Operating Hours Specific Styles */
+        .closed-day {
+            color: rgba(255, 255, 255, 0.4) !important;
+            background: rgba(128, 128, 128, 0.1) !important;
+        }
+        
+        .closed-day-cell {
+            background: rgba(128, 128, 128, 0.1) !important;
+            color: rgba(255, 255, 255, 0.3) !important;
+            cursor: not-allowed;
+        }
+        
+        .closed-day-cell:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .non-operating-hour {
+            background: rgba(64, 64, 64, 0.2) !important;
+            color: rgba(255, 255, 255, 0.2) !important;
+            cursor: help;
+        }
+        
+        .non-operating-hour:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(64, 64, 64, 0.3);
+        }
+        
         /* Heat intensity colors with glassmorphism */
         .heat-0 { background: rgba(255, 140, 0, 0.1); color: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 140, 0, 0.1); }
         .heat-1 { background: rgba(255, 140, 0, 0.2); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 140, 0, 0.2); }
@@ -431,7 +503,183 @@
             background: rgba(33, 150, 243, 0.1);
         }
         
-        /* Day comparison */
+        /* Day comparison line chart */
+        .day-line-chart-container {
+            overflow-x: auto;
+            padding: 1rem 0;
+            border-radius: 12px;
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+        }
+        
+        .day-line-chart {
+            position: relative;
+            height: 300px;
+            margin: 2rem;
+            padding: 2rem;
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            min-width: 600px;
+        }
+        
+        .chart-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        
+        .grid-line-horizontal {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .grid-line-vertical {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .chart-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        
+        .chart-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .chart-path {
+            fill: none;
+            stroke: url(#lineGradient);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 2px 8px rgba(255, 140, 0, 0.4));
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawLine 2s ease-in-out forwards;
+        }
+        
+        .chart-area {
+            fill: url(#areaGradient);
+            opacity: 0;
+            animation: fadeInArea 2s ease-in-out 0.5s forwards;
+        }
+        
+        @keyframes drawLine {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        @keyframes fadeInArea {
+            to {
+                opacity: 0.3;
+            }
+        }
+        
+        .day-line-chart .chart-point:nth-child(1) { animation-delay: 1.8s; }
+        .day-line-chart .chart-point:nth-child(2) { animation-delay: 1.9s; }
+        .day-line-chart .chart-point:nth-child(3) { animation-delay: 2.0s; }
+        .day-line-chart .chart-point:nth-child(4) { animation-delay: 2.1s; }
+        .day-line-chart .chart-point:nth-child(5) { animation-delay: 2.2s; }
+        .day-line-chart .chart-point:nth-child(6) { animation-delay: 2.3s; }
+        .day-line-chart .chart-point:nth-child(7) { animation-delay: 2.4s; }
+        
+        @keyframes fadeInPoint {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.3);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        .day-line-chart .chart-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+            z-index: 10;
+            opacity: 0;
+            animation: fadeInPoint 0.6s ease-out forwards;
+        }
+        
+        .chart-point:hover {
+            transform: scale(1.3);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.5);
+        }
+        
+        .chart-point.peak-point {
+            background: linear-gradient(135deg, #ff6b35, #ff4500);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+            transform: scale(1.2);
+        }
+        
+        .chart-label {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .chart-label.x-axis {
+            bottom: -25px;
+            transform: translateX(-50%);
+        }
+        
+        .chart-label.y-axis {
+            left: -35px;
+            transform: translateY(-50%);
+        }
+        
+        .chart-value-label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            white-space: nowrap;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        /* Legacy day comparison styles for fallback */
         .day-comparison {
             display: flex;
             gap: 1.5rem;
@@ -706,13 +954,23 @@
     </div>
 
     <header class="header">
-        <h1>Smart Queue Manager</h1>
-        <nav class="nav">
-            <a href="/dashboard">Dashboard</a>
-            <a href="/dashboard/whatsapp-setup">WhatsApp</a>
-            <a href="/dashboard/analytics" class="active">Analytics</a>
-            <a href="/dashboard/settings">Settings</a>
-        </nav>
+        <div class="header-content">
+            <h1>StoreHub Queue Management System</h1>
+            <nav class="nav">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/dashboard/analytics" class="active">Analytics</a>
+                <a href="/dashboard/whatsapp-setup">WhatsApp</a>
+                <a href="/dashboard/settings">Settings</a>
+            </nav>
+            <div class="user-section">
+                <div class="user-menu">
+                    <a href="/auth/logout" class="user-button">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
     </header>
 
     <div class="container">
@@ -764,8 +1022,10 @@
         <!-- Day of Week Comparison -->
         <div class="section">
             <h2>📅 Day of Week Performance</h2>
-            <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1rem;">Compare customer volume across different days of the week.</p>
-            <div id="dayComparison" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Day of week performance comparison will be displayed here</div>
+            <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; font-size: 1rem;">Track customer volume trends across your operating days of the week.</p>
+            <div class="day-line-chart-container">
+                <div id="dayComparison" style="min-height: 300px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-size: 1rem;">Day of week performance comparison will be displayed here</div>
+            </div>
         </div>
 
         <!-- Operational Insights -->
@@ -893,14 +1153,48 @@
         function updateHourlyHeatmap(analytics) {
             const container = document.getElementById('hourlyHeatmap');
             
+            // Get business hours from server-side data
+            const businessHours = window.merchantData?.businessHours || {};
+            
             // Create heatmap data structure
             const heatmapData = {};
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const dayMapping = {
+                'Mon': 'monday',
+                'Tue': 'tuesday', 
+                'Wed': 'wednesday',
+                'Thu': 'thursday',
+                'Fri': 'friday',
+                'Sat': 'saturday',
+                'Sun': 'sunday'
+            };
             
-            // Initialize with zeros
+            // Filter out closed days and get operating hours for open days
+            const operatingDays = [];
+            const operatingHours = new Set();
+            
             days.forEach(day => {
-                heatmapData[day] = Array(24).fill(0);
+                const dayKey = dayMapping[day];
+                const dayHours = businessHours[dayKey];
+                const isClosed = dayHours?.closed || false;
+                
+                if (!isClosed) {
+                    operatingDays.push(day);
+                    heatmapData[day] = Array(24).fill(0);
+                    
+                    // Track all operating hours across all days
+                    if (dayHours?.start && dayHours?.end) {
+                        const startHour = parseInt(dayHours.start.split(':')[0]);
+                        const endHour = parseInt(dayHours.end.split(':')[0]);
+                        for (let hour = startHour; hour <= endHour; hour++) {
+                            operatingHours.add(hour);
+                        }
+                    }
+                }
             });
+            
+            // Convert operating hours to sorted array
+            const sortedOperatingHours = Array.from(operatingHours).sort((a, b) => a - b);
             
             // Populate with actual data from dailyStats and peakHours
             if (analytics.dailyStats) {
@@ -908,47 +1202,81 @@
                     const date = new Date(dayData.date);
                     const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
                     
-                    // Distribute customers across hours (simplified simulation)
-                    if (analytics.peakHours) {
-                        Object.entries(analytics.peakHours).forEach(([hour, count]) => {
-                            const hourIndex = parseInt(hour);
-                            if (heatmapData[dayName]) {
-                                heatmapData[dayName][hourIndex] = Math.round(count / 7); // Average across week
-                            }
-                        });
+                    // Only process data for operating days
+                    if (operatingDays.includes(dayName)) {
+                        // Distribute customers across hours (simplified simulation)
+                        if (analytics.peakHours) {
+                            Object.entries(analytics.peakHours).forEach(([hour, count]) => {
+                                const hourIndex = parseInt(hour);
+                                if (heatmapData[dayName]) {
+                                    heatmapData[dayName][hourIndex] = Math.round(count / 7); // Average across week
+                                }
+                            });
+                        }
                     }
                 });
             }
             
-            // Find max value for normalization
+            // Find max value for normalization (only from operating hours)
             let maxValue = 0;
-            Object.values(heatmapData).forEach(dayData => {
-                dayData.forEach(value => {
-                    if (value > maxValue) maxValue = value;
-                });
+            operatingDays.forEach(day => {
+                const dayKey = dayMapping[day];
+                const dayHours = businessHours[dayKey];
+                if (dayHours?.start && dayHours?.end) {
+                    const startHour = parseInt(dayHours.start.split(':')[0]);
+                    const endHour = parseInt(dayHours.end.split(':')[0]);
+                    for (let hour = startHour; hour <= endHour; hour++) {
+                        if (heatmapData[day][hour] > maxValue) {
+                            maxValue = heatmapData[day][hour];
+                        }
+                    }
+                }
             });
             
-            // Generate heatmap HTML
+            // Generate heatmap HTML - show all 24 hours but filter closed days
             let html = '<div class="heatmap">';
             
-            // Header row
+            // Header row - show all 24 hours
             html += '<div class="heatmap-header"></div>';
             for (let hour = 0; hour < 24; hour++) {
                 const hourLabel = hour.toString().padStart(2, '0') + ':00';
                 html += `<div class="heatmap-header">${hourLabel}</div>`;
             }
             
-            // Data rows
-            days.forEach(day => {
+            // Data rows - only show operating days
+            operatingDays.forEach(day => {
+                const dayKey = dayMapping[day];
+                const dayHours = businessHours[dayKey];
+                
                 html += `<div class="heatmap-day">${day}</div>`;
                 
                 for (let hour = 0; hour < 24; hour++) {
                     const value = heatmapData[day][hour];
-                    const intensity = maxValue > 0 ? Math.ceil((value / maxValue) * 5) : 0;
-                    const heatClass = `heat-${intensity}`;
-                    
                     const hourLabel = hour.toString().padStart(2, '0') + ':00';
-                    html += `<div class="heatmap-cell ${heatClass}" title="${day} ${hourLabel} - ${value} customers">${value}</div>`;
+                    
+                    // Check if this hour is within this day's business hours
+                    let isOperatingHour = false;
+                    if (dayHours?.start && dayHours?.end) {
+                        const startHour = parseInt(dayHours.start.split(':')[0]);
+                        const endHour = parseInt(dayHours.end.split(':')[0]);
+                        isOperatingHour = hour >= startHour && hour <= endHour;
+                    }
+                    
+                    let cellClass = 'heatmap-cell';
+                    let displayValue = '';
+                    let tooltip = `${day} ${hourLabel}`;
+                    
+                    if (isOperatingHour) {
+                        const intensity = maxValue > 0 ? Math.ceil((value / maxValue) * 5) : 0;
+                        cellClass += ` heat-${intensity}`;
+                        displayValue = value;
+                        tooltip += ` - ${value} customers`;
+                    } else {
+                        cellClass += ' non-operating-hour';
+                        tooltip += ' - Outside operating hours';
+                    }
+                    
+                    html += `<div class="${cellClass}" title="${tooltip}">${displayValue}</div>`;
                 }
             });
             
@@ -998,7 +1326,7 @@
             container.innerHTML = html;
         }
 
-        // Update day comparison
+        // Update day comparison with line chart
         function updateDayComparison(dailyStats) {
             const container = document.getElementById('dayComparison');
             
@@ -1007,49 +1335,214 @@
                 return;
             }
             
-            // Group by day of week
+            // Get business hours to filter out closed days
+            const businessHours = window.merchantData?.businessHours || {};
+            const dayMapping = {
+                'Sun': 'sunday',
+                'Mon': 'monday',
+                'Tue': 'tuesday',
+                'Wed': 'wednesday',
+                'Thu': 'thursday',
+                'Fri': 'friday',
+                'Sat': 'saturday'
+            };
+            
+            // Group by day of week - only include operating days
             const dayTotals = {};
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const operatingDays = [];
             
             dayNames.forEach(day => {
-                dayTotals[day] = { customers: 0, count: 0 };
-            });
-            
-            dailyStats.forEach(day => {
-                const date = new Date(day.date);
-                const dayName = dayNames[date.getDay()];
-                dayTotals[dayName].customers += day.customers;
-                dayTotals[dayName].count += 1;
-            });
-            
-            // Find peak day
-            let peakDay = '';
-            let maxAvg = 0;
-            
-            Object.entries(dayTotals).forEach(([day, data]) => {
-                const avg = data.count > 0 ? data.customers / data.count : 0;
-                if (avg > maxAvg) {
-                    maxAvg = avg;
-                    peakDay = day;
+                const dayKey = dayMapping[day];
+                const dayHours = businessHours[dayKey];
+                const isClosed = dayHours?.closed || false;
+                
+                if (!isClosed) {
+                    operatingDays.push(day);
+                    dayTotals[day] = { customers: 0, count: 0 };
                 }
             });
             
-            // Generate HTML
-            let html = '<div class="day-comparison">';
+            // Only process data for operating days
+            dailyStats.forEach(day => {
+                const date = new Date(day.date);
+                const dayName = dayNames[date.getDay()];
+                if (operatingDays.includes(dayName)) {
+                    dayTotals[dayName].customers += day.customers;
+                    dayTotals[dayName].count += 1;
+                }
+            });
             
-            dayNames.forEach(day => {
+            // Calculate averages and prepare data for line chart
+            const chartData = [];
+            operatingDays.forEach(day => {
                 const data = dayTotals[day];
                 const avgCustomers = data.count > 0 ? Math.round(data.customers / data.count) : 0;
-                const isPeak = day === peakDay;
+                chartData.push({ day, value: avgCustomers });
+            });
+            
+            if (chartData.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No operating days configured</p>';
+                return;
+            }
+            
+            // Dynamic scaling with padding for better visualization
+            const values = chartData.map(d => d.value);
+            const maxValue = Math.max(...values);
+            const minValue = Math.min(...values);
+            const range = maxValue - minValue;
+            
+            // Add 20% padding to top and bottom for better visual spacing
+            const padding = Math.max(range * 0.2, 5); // Minimum 5 units padding
+            const chartMax = maxValue + padding;
+            const chartMin = Math.max(0, minValue - padding);
+            const chartRange = chartMax - chartMin;
+            
+            // Find peak day
+            const peakDay = chartData.find(d => d.value === maxValue)?.day || '';
+            
+            // Generate smooth curve points using SVG
+            const svgWidth = 100; // percentage
+            const svgHeight = 100; // percentage
+            const chartPadding = 10; // percentage padding from edges
+            
+            // Convert data to SVG coordinates
+            const svgPoints = chartData.map((point, index) => {
+                const x = chartPadding + (index / (chartData.length - 1)) * (svgWidth - 2 * chartPadding);
+                const y = chartPadding + ((chartMax - point.value) / chartRange) * (svgHeight - 2 * chartPadding);
+                return { x, y, ...point };
+            });
+            
+            // Generate smooth curve path using cubic bezier curves
+            let pathData = '';
+            let areaData = '';
+            
+            if (svgPoints.length > 0) {
+                // Start the path
+                pathData = `M ${svgPoints[0].x} ${svgPoints[0].y}`;
+                areaData = `M ${svgPoints[0].x} ${svgHeight - chartPadding} L ${svgPoints[0].x} ${svgPoints[0].y}`;
                 
+                if (svgPoints.length === 1) {
+                    // Single point - just draw a horizontal line
+                    pathData += ` L ${svgPoints[0].x + 10} ${svgPoints[0].y}`;
+                    areaData += ` L ${svgPoints[0].x + 10} ${svgPoints[0].y} L ${svgPoints[0].x + 10} ${svgHeight - chartPadding}`;
+                } else {
+                    // Multiple points - create smooth curves
+                    for (let i = 1; i < svgPoints.length; i++) {
+                        const prevPoint = svgPoints[i - 1];
+                        const currentPoint = svgPoints[i];
+                        const nextPoint = svgPoints[i + 1];
+                        
+                        // Calculate control points for smooth curve
+                        const tension = 0.3; // Curve smoothness (0 = straight lines, 1 = very curved)
+                        
+                        let cp1x, cp1y, cp2x, cp2y;
+                        
+                        if (i === 1) {
+                            // First curve
+                            cp1x = prevPoint.x + (currentPoint.x - prevPoint.x) * tension;
+                            cp1y = prevPoint.y;
+                            cp2x = currentPoint.x - (nextPoint ? (nextPoint.x - prevPoint.x) * tension : (currentPoint.x - prevPoint.x) * tension);
+                            cp2y = currentPoint.y;
+                        } else if (i === svgPoints.length - 1) {
+                            // Last curve
+                            const prevPrevPoint = svgPoints[i - 2];
+                            cp1x = prevPoint.x + (currentPoint.x - prevPrevPoint.x) * tension;
+                            cp1y = prevPoint.y;
+                            cp2x = currentPoint.x - (currentPoint.x - prevPoint.x) * tension;
+                            cp2y = currentPoint.y;
+                        } else {
+                            // Middle curves
+                            const prevPrevPoint = svgPoints[i - 2];
+                            cp1x = prevPoint.x + (currentPoint.x - prevPrevPoint.x) * tension;
+                            cp1y = prevPoint.y;
+                            cp2x = currentPoint.x - (nextPoint.x - prevPoint.x) * tension;
+                            cp2y = currentPoint.y;
+                        }
+                        
+                        pathData += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${currentPoint.x} ${currentPoint.y}`;
+                        areaData += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${currentPoint.x} ${currentPoint.y}`;
+                    }
+                }
+                
+                // Close the area path
+                areaData += ` L ${svgPoints[svgPoints.length - 1].x} ${svgHeight - chartPadding} Z`;
+            }
+            
+            // Generate line chart HTML
+            let html = '<div class="day-line-chart">';
+            
+            // Add SVG with smooth curves
+            html += `
+                <svg class="chart-svg" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#ff8c00;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#ff6b35;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#ff4500;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff8c00;stop-opacity:0.3" />
+                            <stop offset="100%" style="stop-color:#ff8c00;stop-opacity:0.05" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- Grid lines -->
+                    ${Array.from({length: 5}, (_, i) => {
+                        const y = chartPadding + (i / 4) * (svgHeight - 2 * chartPadding);
+                        return `<line x1="${chartPadding}" y1="${y}" x2="${svgWidth - chartPadding}" y2="${y}" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>`;
+                    }).join('')}
+                    
+                    ${svgPoints.map((_, index) => {
+                        const x = chartPadding + (index / (chartData.length - 1)) * (svgWidth - 2 * chartPadding);
+                        return `<line x1="${x}" y1="${chartPadding}" x2="${x}" y2="${svgHeight - chartPadding}" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>`;
+                    }).join('')}
+                    
+                    <!-- Area under curve -->
+                    <path d="${areaData}" class="chart-area"/>
+                    
+                    <!-- Main curve -->
+                    <path d="${pathData}" class="chart-path"/>
+                </svg>
+            `;
+            
+            // Add data points and labels
+            svgPoints.forEach((point, index) => {
+                const isPeak = point.day === peakDay;
+                
+                // Data point
                 html += `
-                    <div class="day-card ${isPeak ? 'peak-day' : ''}">
-                        <div class="day-name">${day}</div>
-                        <div class="day-customers">${avgCustomers}</div>
-                        <div class="day-label">avg customers</div>
+                    <div class="chart-point ${isPeak ? 'peak-point' : ''}" 
+                         style="left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%)"
+                         title="${point.day}: ${point.value} avg customers">
+                    </div>
+                `;
+                
+                // X-axis label (day name)
+                html += `
+                    <div class="chart-label x-axis" style="left: ${point.x}%">
+                        ${point.day}
+                    </div>
+                `;
+                
+                // Value label above point
+                html += `
+                    <div class="chart-value-label" style="left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -120%)">
+                        ${point.value}
                     </div>
                 `;
             });
+            
+            // Add Y-axis labels with dynamic scaling
+            for (let i = 0; i <= 4; i++) {
+                const y = chartPadding + (i / 4) * (svgHeight - 2 * chartPadding);
+                const value = Math.round(chartMax - (i * chartRange / 4));
+                html += `
+                    <div class="chart-label y-axis" style="top: ${y}%">
+                        ${value}
+                    </div>
+                `;
+            }
             
             html += '</div>';
             container.innerHTML = html;
@@ -1215,8 +1708,42 @@
             loadAnalytics();
         }
         
+        // Load merchant data
+        async function loadMerchantData() {
+            try {
+                const response = await fetch('/api/merchant/profile');
+                const result = await response.json();
+                
+                if (result.success && result.merchant) {
+                    window.merchantData = {
+                        businessHours: result.merchant.businessHours || {}
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading merchant data:', error);
+            }
+        }
+        
         // Load data on page load
-        document.addEventListener('DOMContentLoaded', loadAnalytics);
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadMerchantData();
+            loadAnalytics();
+        });
+    </script>
+    
+    <script>
+        // Merchant Data for Client-Side Access
+        window.merchantData = {
+            businessHours: {
+                monday: { start: '09:00', end: '17:00', closed: false },
+                tuesday: { start: '09:00', end: '17:00', closed: false },
+                wednesday: { start: '09:00', end: '17:00', closed: false },
+                thursday: { start: '09:00', end: '17:00', closed: false },
+                friday: { start: '09:00', end: '17:00', closed: false },
+                saturday: { start: '09:00', end: '17:00', closed: false },
+                sunday: { start: '09:00', end: '17:00', closed: true }
+            }
+        };
     </script>
 </body>
 </html> 

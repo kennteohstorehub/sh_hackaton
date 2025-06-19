@@ -1,5 +1,5 @@
 {
-  "name": "smart-queue-manager",
+  "name": "storehub-queue-management-system",
   "version": "1.0.0",
   "description": "AI-powered queue management system with WhatsApp/FB Messenger integration",
   "main": "server/index.js",
