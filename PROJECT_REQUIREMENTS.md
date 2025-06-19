@@ -1,9 +1,9 @@
-# Smart Queue Manager - Project Requirements Document
+# StoreHub Queue Management System - Project Requirements Document
 
 ## 1. Project Overview
 
 ### 1.1 Project Name
-**Smart Queue Manager** - Digital Queue Management System for Shopping Mall Restaurants
+**StoreHub Queue Management System** - Digital Queue Management System for Shopping Mall Restaurants
 
 ### 1.2 Project Description
 A comprehensive web-based queue management system designed to reduce customer friction during peak hours by enabling digital queue joining and real-time notifications via WhatsApp and Facebook Messenger. The system focuses on shopping mall restaurants where customers are physically present and can check queue status while in the vicinity.

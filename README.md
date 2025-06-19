@@ -1,15 +1,26 @@
-# Smart Queue Manager 🚀
+# StoreHub Queue Management System 🚀
 
 An AI-powered queue management system that reduces customer friction and manages expectations during busy peak hours by allowing customers to join and track virtual queues via WhatsApp or Facebook Messenger.
+
+## 🔥 Recent Updates (Latest Version)
+
+- **Complete Rebranding**: Updated from "Smart Queue Manager" to "StoreHub Queue Management System"
+- **Streamlined Interface**: Removed redundant queue detail pages, consolidated all management into main dashboard  
+- **Enhanced Analytics**: Added comprehensive demo data and improved analytics visualization
+- **Dynamic Operating Hours**: Implemented business hours management with real-time status indicators
+- **Improved Settings**: Simplified merchant settings with focus on core functionality
+- **Better UX**: Enhanced toggle buttons, improved mobile responsiveness, and modern UI elements
 
 ## 🌟 Features
 
 ### For Merchants
-- **Real-time Dashboard**: Monitor all queues, customer status, and analytics in real-time
+- **Consolidated Dashboard**: Streamlined interface with all queue management in one place
+- **Real-time Monitoring**: Monitor all queues, customer status, and analytics in real-time
 - **Multi-Queue Management**: Create and manage multiple service queues
+- **Operating Hours Management**: Dynamic business hours with real-time status indicators
 - **AI-Powered Insights**: Get intelligent recommendations for queue optimization
 - **WhatsApp & Messenger Integration**: Automated chatbot responses for customers
-- **Analytics & Reporting**: Track performance metrics and customer satisfaction
+- **Analytics & Reporting**: Track performance metrics and customer satisfaction with demo data
 - **Customizable Settings**: Configure business hours, service types, and notifications
 
 ### For Customers
@@ -99,7 +110,7 @@ PORT=3001
 NODE_ENV=development
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/smart-queue-manager
+MONGODB_URI=mongodb://localhost:27017/storehub-queue-management
 
 # JWT Secret
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -235,7 +246,7 @@ For common issues and solutions, see the [Troubleshooting Guide](TROUBLESHOOTING
 ### Using PM2 (Recommended)
 ```bash
 npm install -g pm2
-pm2 start server/index.js --name "smart-queue-manager"
+pm2 start server/index.js --name "storehub-queue-management"
 pm2 startup
 pm2 save
 ```
@@ -243,10 +254,10 @@ pm2 save
 ### Using Docker
 ```bash
 # Build image
-docker build -t smart-queue-manager .
+docker build -t storehub-queue-management .
 
 # Run container
-docker run -p 3001:3001 -e MONGODB_URI=mongodb://host.docker.internal:27017/smart-queue-manager smart-queue-manager
+docker run -p 3001:3001 -e MONGODB_URI=mongodb://host.docker.internal:27017/storehub-queue-management storehub-queue-management
 ```
 
 ## 🤝 Contributing

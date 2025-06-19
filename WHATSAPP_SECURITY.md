@@ -2,7 +2,7 @@
 
 ## 🔒 Security Overview
 
-The Smart Queue Manager includes robust security features to prevent accidental WhatsApp messages to unauthorized phone numbers during testing and development.
+The StoreHub Queue Management System includes robust security features to prevent accidental WhatsApp messages to unauthorized phone numbers during testing and development.
 
 ## 🛡️ Phone Number Whitelist
 
@@ -106,7 +106,7 @@ When a message to an unauthorized number is blocked, you'll see:
 ```
 
 ### Log Monitoring
-All security events are logged with the `smart-queue-manager` logger:
+All security events are logged with the `storehub-queue-management-system` logger:
 - ✅ Successful message sends to whitelisted numbers
 - 🚫 Blocked attempts to unauthorized numbers
 - 📱 Whitelist modifications

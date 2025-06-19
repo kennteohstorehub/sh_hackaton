@@ -1,9 +1,9 @@
-# Smart Queue Manager - Functionality Document
+# StoreHub Queue Management System - Functionality Document
 
 ## 1. System Overview
 
 ### 1.1 Architecture Summary
-The Smart Queue Manager is a full-stack web application built with Node.js, Express.js, MongoDB, and Socket.IO, featuring real-time queue management capabilities with WhatsApp integration and AI-powered features.
+The StoreHub Queue Management System is a full-stack web application built with Node.js, Express.js, MongoDB, and Socket.IO, featuring real-time queue management capabilities with WhatsApp integration and AI-powered features.
 
 ### 1.2 Core Components
 - **Backend API**: RESTful services for queue and customer management
@@ -123,14 +123,13 @@ Please come to the service counter now. Thank you for waiting!
 - Average actual wait time
 - Queue utilization rates
 
-#### 3.1.2 Queue Detail Management
-**Endpoint**: `GET /dashboard/queues/:id`
+#### 3.1.2 Integrated Queue Management
 **Functionality**:
-- Individual queue monitoring
-- Customer list with details
-- Real-time position updates
-- Customer action buttons (Call, Seat, Remove, Requeue)
-- Queue statistics and analytics
+- All queue management consolidated in main dashboard
+- Real-time customer monitoring for all queues
+- Individual customer action buttons (Call, Seat, Remove, Requeue)
+- Queue statistics and analytics integrated in dashboard
+- No separate queue detail pages (streamlined interface)
 
 ### 3.2 Queue Configuration
 

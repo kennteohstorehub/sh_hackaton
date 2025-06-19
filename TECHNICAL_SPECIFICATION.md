@@ -1,4 +1,4 @@
-# Smart Queue Manager - Technical Specification
+# StoreHub Queue Management System - Technical Specification
 
 ## 1. System Overview
 

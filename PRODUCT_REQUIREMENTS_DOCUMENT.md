@@ -1,9 +1,9 @@
-# Smart Queue Manager - Product Requirements Document (PRD)
+# StoreHub Queue Management System - Product Requirements Document (PRD)
 
 ## 1. Executive Summary
 
 ### 1.1 Product Overview
-**Smart Queue Manager** is an AI-powered digital queue management system designed to eliminate customer friction during peak hours at restaurants, particularly in shopping mall environments. The system enables customers to join virtual queues via WhatsApp, web interface, or other messaging platforms, providing real-time updates and intelligent notifications to enhance the dining experience.
+**StoreHub Queue Management System** is an AI-powered digital queue management system designed to eliminate customer friction during peak hours at restaurants, particularly in shopping mall environments. The system enables customers to join virtual queues via WhatsApp, web interface, or other messaging platforms, providing real-time updates and intelligent notifications to enhance the dining experience.
 
 ### 1.2 Business Objectives
 - **Primary Goal**: Reduce customer wait time frustration and improve overall dining experience

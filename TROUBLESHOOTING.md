@@ -1,4 +1,4 @@
-# Smart Queue Manager - Troubleshooting Guide
+# StoreHub Queue Management System - Troubleshooting Guide
 
 ## Common Issues and Solutions
 
