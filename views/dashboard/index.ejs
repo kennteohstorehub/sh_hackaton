@@ -811,7 +811,7 @@
                 <% if (queues.length > 0) { %>
                     <% const activeQueue = queues.find(queue => queue.isActive); %>
                     <% if (activeQueue) { %>
-                        <% const seatedCustomers = activeQueue.entries.filter(entry => entry.status === 'seated').sort((a, b) => new Date(b.seatedAt) - new Date(a.seatedAt)); %>
+                        <% const seatedCustomers = activeQueue.entries.filter(entry => entry.status === 'completed').sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt)); %>
                         
                         <% if (seatedCustomers.length > 0) { %>
                             <div class="customer-list">
@@ -826,11 +826,11 @@
                                 </div>
                                 
                                 <% seatedCustomers.forEach((customer) => { %>
-                                    <% const seatedMinutes = Math.floor((new Date() - new Date(customer.seatedAt)) / (1000 * 60)); %>
+                                    <% const seatedMinutes = Math.floor((new Date() - new Date(customer.completedAt)) / (1000 * 60)); %>
                                     <div class="customer-row seated-customer-row">
                                         <div class="position">T<%= customer.tableNumber || '-' %></div>
                                         <div class="customer-name"><%= customer.customerName %></div>
-                                        <div class="phone"><%= customer.phoneNumber %></div>
+                                        <div class="phone"><%= customer.customerPhone %></div>
                                         <div class="party-size"><%= customer.partySize %></div>
                                         <div class="wait-time"><%= seatedMinutes %> min</div>
                                         <div class="special-requests">
@@ -1047,11 +1047,13 @@
         }
         
         function updateTotalWaitingCount() {
-            // Update waiting count and average wait time
-            const waitingElements = document.querySelectorAll('.customer-row:not(.notified-customer)');
+            // Update waiting count by counting only customers in "waiting" status from active queue tab
+            const activeQueueTab = document.getElementById('active-queue');
             const totalWaitingElement = document.getElementById('totalWaitingCount');
             
-            if (totalWaitingElement) {
+            if (totalWaitingElement && activeQueueTab) {
+                // Only count customers in the active queue tab that are actually waiting (not seated customers)
+                const waitingElements = activeQueueTab.querySelectorAll('.customer-row');
                 totalWaitingElement.textContent = waitingElements.length;
             }
         }
@@ -1129,26 +1131,40 @@
         }
         
         async function markAsSeated(queueId, customerId) {
-            const tableNumber = prompt('Enter table number (optional):');
+            // Get customer name for confirmation
+            const customerRow = event.target.closest('.customer-row');
+            const customerName = customerRow.querySelector('.customer-name').textContent;
+            
+            // Confirmation dialog to prevent accidental clicks
+            if (!confirm(`Are you sure you want to seat ${customerName}?\n\nThis will send them a welcome message with the menu link.`)) {
+                return;
+            }
+            
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Seating...';
             
             try {
-                const response = await fetch(`/api/queue/${queueId}/seat-customer`, {
+                const response = await fetch(`/api/queue/${queueId}/complete/${customerId}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ customerId, tableNumber })
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('Customer marked as seated');
-                    setTimeout(() => window.location.reload(), 1000);
+                    alert(`✅ ${customerName} successfully seated!`);
+                    setTimeout(() => window.location.reload(), 500);
                 } else {
                     alert(result.error || 'Failed to seat customer');
+                    button.disabled = false;
+                    button.textContent = 'Seated';
                 }
             } catch (error) {
                 console.error('Error seating customer:', error);
                 alert('Error seating customer');
+                button.disabled = false;
+                button.textContent = 'Seated';
             }
         }
         
@@ -1184,10 +1200,9 @@
             }
             
             try {
-                const response = await fetch(`/api/queue/${queueId}/requeue-customer`, {
+                const response = await fetch(`/api/queue/${queueId}/requeue/${customerId}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ customerId })
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 
                 const result = await response.json();

@@ -349,19 +349,37 @@ class WhatsAppService {
       
       logger.info(`Received WhatsApp message from ${contact.number}: ${message.body}`);
       
-      // Check for cancel queue keywords first
-      const cancelResponse = await this.handleCancelQueue(message.body, contact.number);
-      if (cancelResponse) {
-        await message.reply(cancelResponse);
-        logger.info(`Cancel queue response sent to ${contact.number}: ${cancelResponse}`);
-        return; // Don't process other responses if cancel was handled
-      }
+      // Check if this person is actually in a queue before responding
+      const isQueueCustomer = await this.isCustomerInQueue(contact.number);
       
-      // Simple auto-response for queue-related queries
-      const response = this.generateResponse(message.body, contact.number);
-      if (response) {
-        await message.reply(response);
-        logger.info(`Auto-replied to ${contact.number}: ${response}`);
+      // Only process queue-related commands if the person is in a queue
+      if (isQueueCustomer) {
+        // Check for cancel queue keywords first
+        const cancelResponse = await this.handleCancelQueue(message.body, contact.number);
+        if (cancelResponse) {
+          await message.reply(cancelResponse);
+          logger.info(`Cancel queue response sent to ${contact.number}: ${cancelResponse}`);
+          return; // Don't process other responses if cancel was handled
+        }
+        
+        // Only auto-respond to queue customers
+        const response = this.generateResponse(message.body, contact.number);
+        if (response) {
+          await message.reply(response);
+          logger.info(`Auto-replied to queue customer ${contact.number}: ${response}`);
+        }
+      } else {
+        // For non-queue customers, only respond to very specific queue-related commands
+        const body = message.body.toLowerCase().trim();
+        if (body === 'cancel' || body === 'help' || body === 'status') {
+          const response = this.generateResponse(message.body, contact.number);
+          if (response) {
+            await message.reply(response);
+            logger.info(`Responded to non-queue customer ${contact.number} for specific command: ${body}`);
+          }
+        } else {
+          logger.info(`Ignoring message from non-queue customer ${contact.number}: ${message.body}`);
+        }
       }
       
       // Emit to frontend for real-time message display
@@ -543,30 +561,65 @@ class WhatsAppService {
     }
   }
 
+  async isCustomerInQueue(phoneNumber) {
+    try {
+      const Queue = require('../models/Queue');
+      
+      // Try multiple phone number formats to match database entries
+      const phoneFormats = [
+        phoneNumber, // Original format (e.g., 60126368832)
+        '+' + phoneNumber.replace(/\D/g, ''), // Add + prefix (e.g., +60126368832)
+        phoneNumber.replace(/\D/g, ''), // Remove all non-digits
+      ];
+      
+      // If the number doesn't start with country code, add Malaysia code
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      if (!cleanNumber.startsWith('60') && cleanNumber.length <= 10) {
+        phoneFormats.push('60' + cleanNumber);
+        phoneFormats.push('+60' + cleanNumber);
+      }
+      
+      // Check if any phone format exists in any queue with waiting status
+      for (const format of phoneFormats) {
+        const queue = await Queue.findOne({
+          'entries.customerPhone': format,
+          'entries.status': 'waiting'
+        });
+        
+        if (queue) {
+          const customerEntry = queue.entries.find(entry => 
+            entry.customerPhone === format && entry.status === 'waiting'
+          );
+          if (customerEntry) {
+            return true; // Customer is in a queue
+          }
+        }
+      }
+      
+      return false; // Customer is not in any queue
+    } catch (error) {
+      logger.error('Error checking if customer is in queue:', error);
+      return false; // Default to false on error
+    }
+  }
+
   generateResponse(messageBody, phoneNumber) {
     const body = messageBody.toLowerCase().trim();
     
-    if (body.includes('hello') || body.includes('hi')) {
-      return 'Hello! Welcome to our Smart Queue system. How can I help you today?\n\n💡 Tip: Send "CANCEL" if you want to leave the queue (confirmation required).';
-    }
-    
-    if (body.includes('queue') || body.includes('wait')) {
-      return 'I can help you check your queue status. Please provide your name or phone number.\n\n💡 Tip: Send "CANCEL" if you want to leave the queue (confirmation required).';
-    }
-    
-    if (body.includes('join')) {
-      return 'To join our queue, please visit our restaurant and use our queue system, or ask our staff for assistance.';
-    }
-    
-    if (body.includes('status')) {
-      return 'To check your queue status, please provide your queue number or the name you registered with.\n\n💡 Tip: Send "CANCEL" if you want to leave the queue (confirmation required).';
-    }
-    
-    if (body.includes('help')) {
+    // Only respond to very specific commands
+    if (body === 'help') {
       return '🤖 Smart Queue Bot Commands:\n\n• Send "CANCEL" to leave the queue (requires confirmation)\n• Send "STATUS" to check your position\n• Send "HELP" to see this menu\n\nFor other assistance, please contact our staff.';
     }
     
-    // Don't auto-respond to everything - only to specific keywords
+    if (body === 'status') {
+      return 'To check your queue status, I can see you are currently in our queue. We\'ll notify you when it\'s your turn!\n\n💡 Tip: Send "CANCEL" if you want to leave the queue (confirmation required).';
+    }
+    
+    if (body === 'cancel') {
+      return 'To cancel your queue position, please send "CANCEL" and I\'ll help you leave the queue.';
+    }
+    
+    // Don't auto-respond to general messages anymore
     return null;
   }
 }

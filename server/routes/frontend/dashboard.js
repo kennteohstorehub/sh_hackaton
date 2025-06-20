@@ -44,9 +44,14 @@ router.get('/', setMockUser, async (req, res) => {
     let waitingCustomersCount = 0;
     
     queues.forEach(queue => {
-      // Count current waiting customers
-      const currentWaiting = queue.entries.filter(entry => entry.status === 'waiting').length;
-      stats.totalWaiting += currentWaiting;
+      // Count ONLY current waiting customers (filter out old entries)
+      const currentWaitingEntries = queue.entries.filter(entry => {
+        const isWaiting = entry.status === 'waiting';
+        const isRecent = new Date(entry.joinedAt) >= new Date(Date.now() - 24 * 60 * 60 * 1000); // Last 24 hours
+        return isWaiting && isRecent;
+      });
+      
+      stats.totalWaiting += currentWaitingEntries.length;
       
       // Count today's customers
       const todayEntries = queue.entries.filter(entry => 
@@ -55,8 +60,7 @@ router.get('/', setMockUser, async (req, res) => {
       stats.totalCustomersToday += todayEntries.length;
       
       // Calculate actual wait time for currently waiting customers
-      const waitingEntries = queue.entries.filter(entry => entry.status === 'waiting');
-      waitingEntries.forEach(entry => {
+      currentWaitingEntries.forEach(entry => {
         const waitTimeMinutes = Math.floor((now - new Date(entry.joinedAt)) / (1000 * 60));
         totalActualWaitTime += waitTimeMinutes;
         waitingCustomersCount++;
@@ -66,12 +70,17 @@ router.get('/', setMockUser, async (req, res) => {
     // Calculate average actual wait time
     stats.averageWaitTime = waitingCustomersCount > 0 ? Math.round(totalActualWaitTime / waitingCustomersCount) : 0;
 
-    // Prepare waiting customers for the template
+    // Prepare waiting customers for the template (only recent entries)
     let templateWaitingCustomers = [];
     const activeQueue = queues.find(queue => queue.isActive);
     if (activeQueue) {
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       templateWaitingCustomers = activeQueue.entries
-        .filter(entry => entry.status === 'waiting' || entry.status === 'called')
+        .filter(entry => {
+          const isActiveStatus = entry.status === 'waiting' || entry.status === 'called';
+          const isRecent = new Date(entry.joinedAt) >= oneDayAgo;
+          return isActiveStatus && isRecent;
+        })
         .sort((a, b) => {
           if (a.status === 'called' && b.status === 'waiting') return -1;
           if (a.status === 'waiting' && b.status === 'called') return 1;
