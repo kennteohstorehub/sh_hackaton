@@ -80,6 +80,46 @@ router.post('/send', setMockUser, async (req, res) => {
   }
 });
 
+// POST /api/whatsapp/refresh - Refresh WhatsApp connection
+router.post('/refresh', setMockUser, async (req, res) => {
+  try {
+    // Destroy current connection and reinitialize
+    await whatsappService.destroy();
+    
+    // Get io instance from app
+    const io = req.app.get('io');
+    await whatsappService.initialize(io);
+    
+    res.json({ success: true, message: 'WhatsApp connection refreshed' });
+    logger.info('WhatsApp connection refreshed via API');
+  } catch (error) {
+    logger.error('Error refreshing WhatsApp connection:', error);
+    res.status(500).json({ error: 'Failed to refresh connection' });
+  }
+});
+
+// POST /api/whatsapp/test-message - Send test message
+router.post('/test-message', setMockUser, async (req, res) => {
+  try {
+    const { phoneNumber, message } = req.body;
+    
+    if (!phoneNumber || !message) {
+      return res.status(400).json({ error: 'Phone number and message are required' });
+    }
+    
+    const result = await whatsappService.sendMessage(phoneNumber, message);
+    
+    if (result.success) {
+      res.json({ success: true, message: 'Test message sent successfully', result });
+    } else {
+      res.status(500).json({ error: result.error || 'Failed to send test message', result });
+    }
+  } catch (error) {
+    logger.error('Error sending test message:', error);
+    res.status(500).json({ error: 'Failed to send test message' });
+  }
+});
+
 // GET /api/whatsapp/sessions - Get active sessions count
 router.get('/sessions', setMockUser, async (req, res) => {
   try {

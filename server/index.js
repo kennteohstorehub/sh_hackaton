@@ -115,6 +115,7 @@ app.use(session({
 app.use(flash());
 
 // Make io and user data accessible to all routes
+app.set('io', io); // Store io instance on app for route access
 app.use((req, res, next) => {
   req.io = io;
   res.locals.user = req.session.user || null;
