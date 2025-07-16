@@ -95,4 +95,76 @@ router.put('/profile', setMockUser, [
   }
 });
 
+// PUT /api/merchant/settings/queue - Update queue-specific settings
+router.put('/settings/queue', setMockUser, async (req, res) => {
+  try {
+    const merchant = await Merchant.findById(req.session.user.id);
+    if (!merchant) {
+      return res.status(404).json({ error: 'Merchant not found' });
+    }
+
+    // Update queue settings
+    merchant.settings = merchant.settings || {};
+    merchant.settings.queue = {
+      ...merchant.settings.queue,
+      ...req.body
+    };
+
+    await merchant.save();
+    res.json({ success: true, settings: merchant.settings.queue });
+
+  } catch (error) {
+    logger.error('Error updating queue settings:', error);
+    res.status(500).json({ error: 'Failed to update queue settings' });
+  }
+});
+
+// PUT /api/merchant/settings/notifications - Update notification settings
+router.put('/settings/notifications', setMockUser, async (req, res) => {
+  try {
+    const merchant = await Merchant.findById(req.session.user.id);
+    if (!merchant) {
+      return res.status(404).json({ error: 'Merchant not found' });
+    }
+
+    // Update notification settings
+    merchant.settings = merchant.settings || {};
+    merchant.settings.notifications = {
+      ...merchant.settings.notifications,
+      ...req.body
+    };
+
+    await merchant.save();
+    res.json({ success: true, settings: merchant.settings.notifications });
+
+  } catch (error) {
+    logger.error('Error updating notification settings:', error);
+    res.status(500).json({ error: 'Failed to update notification settings' });
+  }
+});
+
+// PUT /api/merchant/settings/operations - Update operations settings
+router.put('/settings/operations', setMockUser, async (req, res) => {
+  try {
+    const merchant = await Merchant.findById(req.session.user.id);
+    if (!merchant) {
+      return res.status(404).json({ error: 'Merchant not found' });
+    }
+
+    // Update operations settings
+    merchant.settings = merchant.settings || {};
+    merchant.settings.operations = {
+      ...merchant.settings.operations,
+      ...req.body
+    };
+
+    await merchant.save();
+    res.json({ success: true, settings: merchant.settings.operations });
+
+  } catch (error) {
+    logger.error('Error updating operations settings:', error);
+    res.status(500).json({ error: 'Failed to update operations settings' });
+  }
+});
+
 module.exports = router; 

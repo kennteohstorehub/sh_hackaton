@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/settings.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>StoreHub Queue Management System</h1>
+            <nav class="nav">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/dashboard/analytics">Analytics</a>
+                <a href="/dashboard/whatsapp-setup">WhatsApp</a>
+                <a href="/dashboard/settings" class="active">Settings</a>
+            </nav>
+            <div class="user-section">
+                <div class="user-menu">
+                    <a href="/auth/logout" class="user-button">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Success/Error Messages -->
+        <div id="alertContainer"></div>
+
+        <!-- Settings Tabs -->
+        <div class="settings-tabs">
+            <button class="tab-btn active" data-tab="restaurant">
+                <i class="bi bi-shop"></i> Restaurant
+            </button>
+            <button class="tab-btn" data-tab="queue">
+                <i class="bi bi-people"></i> Queue Management
+            </button>
+            <button class="tab-btn" data-tab="notifications">
+                <i class="bi bi-bell"></i> Notifications
+            </button>
+            <button class="tab-btn" data-tab="operations">
+                <i class="bi bi-gear"></i> Operations
+            </button>
+        </div>
+
+        <!-- Restaurant Tab -->
+        <div id="restaurantTab" class="tab-content">
+            <!-- Basic Information -->
+            <div class="section">
+                <h2><i class="bi bi-info-circle"></i> Restaurant Information</h2>
+                <p class="section-description">Basic information about your restaurant that customers will see</p>
+                
+                <form id="restaurantForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="restaurantName">Restaurant Name *</label>
+                            <input type="text" id="restaurantName" name="restaurantName" required>
+                            <div class="form-help">Displayed to customers in all communications</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="restaurantPhone">Phone Number *</label>
+                            <input type="tel" id="restaurantPhone" name="restaurantPhone" required>
+                            <div class="form-help">Synced with WhatsApp when connected</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="restaurantAddress">Full Address</label>
+                        <textarea id="restaurantAddress" name="restaurantAddress" rows="2"></textarea>
+                        <div class="form-help">Help customers find your location</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="seatingCapacity">Total Seating Capacity *</label>
+                            <input type="number" id="seatingCapacity" name="seatingCapacity" min="1" max="1000" required>
+                            <div class="form-help">Total number of seats available</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="avgMealDuration">Average Meal Duration (minutes) *</label>
+                            <input type="number" id="avgMealDuration" name="avgMealDuration" min="15" max="180" value="45" required>
+                            <div class="form-help">Used to calculate accurate wait times</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Operating Hours -->
+            <div class="section">
+                <h2><i class="bi bi-clock"></i> Operating Hours</h2>
+                <p class="section-description">Set your business hours - queue will automatically pause outside these hours</p>
+                
+                <div class="hours-table">
+                    <div class="hours-row hours-header">
+                        <div>Day</div>
+                        <div>Opening</div>
+                        <div>Closing</div>
+                        <div>Status</div>
+                    </div>
+                    
+                    <% ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach((day, index) => { %>
+                    <div class="hours-row" data-day="<%= day.toLowerCase() %>">
+                        <div class="day-col"><%= day %></div>
+                        <div>
+                            <input type="time" 
+                                   name="hours[<%= day.toLowerCase() %>][open]" 
+                                   class="time-input" 
+                                   value="<%= index < 5 ? '09:00' : '10:00' %>">
+                        </div>
+                        <div>
+                            <input type="time" 
+                                   name="hours[<%= day.toLowerCase() %>][close]" 
+                                   class="time-input" 
+                                   value="<%= index < 5 ? '22:00' : '23:00' %>">
+                        </div>
+                        <div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" 
+                                       name="hours[<%= day.toLowerCase() %>][closed]" 
+                                       class="day-closed-toggle">
+                                <div class="toggle-switch-slider"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+                
+                <button type="button" class="btn" onclick="saveRestaurantSettings()">
+                    <i class="bi bi-check-circle"></i> Save Restaurant Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- Queue Management Tab -->
+        <div id="queueTab" class="tab-content" style="display: none;">
+            <!-- Queue Behavior -->
+            <div class="section">
+                <h2><i class="bi bi-diagram-3"></i> Queue Behavior</h2>
+                <p class="section-description">Configure how your queue operates during different scenarios</p>
+                
+                <form id="queueForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maxQueueSize">Maximum Queue Size *</label>
+                            <input type="number" id="maxQueueSize" name="maxQueueSize" min="10" max="500" value="50" required>
+                            <div class="form-help">Queue auto-pauses when this limit is reached</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="autoPauseThreshold">Auto-Pause at % Capacity</label>
+                            <div class="capacity-group">
+                                <input type="range" id="autoPauseThreshold" name="autoPauseThreshold" 
+                                       min="50" max="100" value="90" class="range-slider">
+                                <span class="range-value" id="pauseValue">90%</span>
+                            </div>
+                            <div class="form-help">Pause new joins when restaurant reaches this capacity</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="noShowTimeout">No-Show Timeout (minutes) *</label>
+                            <input type="number" id="noShowTimeout" name="noShowTimeout" min="5" max="60" value="15" required>
+                            <div class="form-help">Auto-remove customer after being called</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="gracePeriod">Late Arrival Grace Period (minutes)</label>
+                            <input type="number" id="gracePeriod" name="gracePeriod" min="0" max="30" value="5">
+                            <div class="form-help">Extra time before marking as no-show</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="joinCutoffTime">Stop Queue Before Closing (minutes)</label>
+                            <input type="number" id="joinCutoffTime" name="joinCutoffTime" min="0" max="120" value="30">
+                            <div class="form-help">Prevent new joins X minutes before closing</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="advanceBookingHours">Max Advance Booking (hours)</label>
+                            <input type="number" id="advanceBookingHours" name="advanceBookingHours" min="0" max="24" value="0">
+                            <div class="form-help">0 = same-day only, 24 = next day allowed</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Party Size Management -->
+            <div class="section">
+                <h2><i class="bi bi-people-fill"></i> Party Size Configuration</h2>
+                <p class="section-description">Set party size limits for different times of day</p>
+                
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <div class="info-icon">i</div>
+                        <span>Smart Tip: Limit large parties during peak hours to optimize table turnover</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Regular Hours (Off-Peak)</label>
+                        <div class="capacity-group">
+                            <div class="capacity-input">
+                                <span class="capacity-label">Min:</span>
+                                <input type="number" name="regularMinParty" min="1" max="20" value="1">
+                            </div>
+                            <div class="capacity-input">
+                                <span class="capacity-label">Max:</span>
+                                <input type="number" name="regularMaxParty" min="1" max="20" value="8">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Peak Hours</label>
+                        <div class="capacity-group">
+                            <div class="capacity-input">
+                                <span class="capacity-label">Min:</span>
+                                <input type="number" name="peakMinParty" min="1" max="20" value="1">
+                            </div>
+                            <div class="capacity-input">
+                                <span class="capacity-label">Max:</span>
+                                <input type="number" name="peakMaxParty" min="1" max="20" value="4">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn" onclick="saveQueueSettings()">
+                    <i class="bi bi-check-circle"></i> Save Queue Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div id="notificationsTab" class="tab-content" style="display: none;">
+            <!-- Notification Timing -->
+            <div class="section">
+                <h2><i class="bi bi-stopwatch"></i> Notification Timing</h2>
+                <p class="section-description">Optimize when customers receive notifications</p>
+                
+                <form id="notificationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstNotification">First "Get Ready" Alert (minutes before)</label>
+                            <input type="number" id="firstNotification" name="firstNotification" min="5" max="30" value="10">
+                            <div class="form-help">Alert when ~10 minutes from their turn</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="finalNotification">Final "Table Ready" Alert</label>
+                            <select id="finalNotification" name="finalNotification">
+                                <option value="0">When table is ready</option>
+                                <option value="2">2 minutes before</option>
+                                <option value="5">5 minutes before</option>
+                            </select>
+                            <div class="form-help">Final notification before seating</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Smart Notification Features</label>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="adjustForPeakHours" checked>
+                                <span>Adjust timing during peak hours</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="sendNoShowWarning" checked>
+                                <span>Send warning before marking as no-show</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="confirmTableAcceptance" checked>
+                                <span>Request confirmation when table is ready</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Message Templates -->
+            <div class="section">
+                <h2><i class="bi bi-chat-quote"></i> Smart Message Templates</h2>
+                <p class="section-description">Personalized messages for different scenarios</p>
+                
+                <div class="form-group">
+                    <label for="joinTemplate">Queue Join Confirmation</label>
+                    <textarea id="joinTemplate" name="joinTemplate" rows="2">
+Welcome to {RestaurantName}! 🍽️ You're #{Position} in queue (Party of {PartySize}). 
+Estimated wait: ~{WaitTime} minutes. We'll notify you when your table is ready!</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="almostReadyTemplate">Get Ready Notification</label>
+                    <textarea id="almostReadyTemplate" name="almostReadyTemplate" rows="2">
+Hi {CustomerName}! Your table at {RestaurantName} will be ready in ~{Minutes} minutes. 
+Please start making your way to the restaurant 🚶‍♂️</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="tableReadyTemplate">Table Ready Alert</label>
+                    <textarea id="tableReadyTemplate" name="tableReadyTemplate" rows="2">
+🎉 {CustomerName}, your table is NOW READY! 
+Please see our host at {RestaurantName}. You have {Timeout} minutes to claim your table.</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="noShowWarningTemplate">No-Show Warning</label>
+                    <textarea id="noShowWarningTemplate" name="noShowWarningTemplate" rows="2">
+⚠️ {CustomerName}, we've been holding your table for {Minutes} minutes. 
+Please respond within {Remaining} minutes or we'll need to release your table to the next guest.</textarea>
+                </div>
+
+                <button type="button" class="btn" onclick="saveNotificationSettings()">
+                    <i class="bi bi-check-circle"></i> Save Notification Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- Operations Tab -->
+        <div id="operationsTab" class="tab-content" style="display: none;">
+            <!-- Peak Hours Definition -->
+            <div class="section">
+                <h2><i class="bi bi-graph-up"></i> Peak Hours Configuration</h2>
+                <p class="section-description">Define your busy periods for optimized queue management</p>
+                
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <div class="info-icon">i</div>
+                        <span>During peak hours: Shorter party size limits, adjusted wait times, and priority notifications</span>
+                    </div>
+                </div>
+
+                <div class="peak-hours-grid">
+                    <% ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(day => { %>
+                    <div class="peak-hour-day">
+                        <label><%= day %></label>
+                        <div class="peak-hour-slots">
+                            <div class="peak-slot" data-day="<%= day %>" data-time="lunch">
+                                12-2 PM
+                            </div>
+                            <div class="peak-slot active" data-day="<%= day %>" data-time="dinner">
+                                6-9 PM
+                            </div>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label for="peakMultiplier">Wait Time Multiplier During Peak Hours</label>
+                    <div class="capacity-group">
+                        <input type="range" id="peakMultiplier" name="peakMultiplier" 
+                               min="1.0" max="2.0" step="0.1" value="1.5" class="range-slider">
+                        <span class="range-value" id="multiplierValue">1.5x</span>
+                    </div>
+                    <div class="form-help">Multiply estimated wait times during peak hours for accuracy</div>
+                </div>
+            </div>
+
+            <!-- VIP & Priority Queue -->
+            <div class="section">
+                <h2><i class="bi bi-star"></i> Priority Queue Settings</h2>
+                <p class="section-description">Manage VIP customers and special reservations</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Enable Priority Queue</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="enablePriorityQueue" checked>
+                            <div class="toggle-switch-slider"></div>
+                        </label>
+                        <div class="form-help">Allow VIP customers to skip ahead</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="prioritySlots">Reserved Priority Slots</label>
+                        <input type="number" id="prioritySlots" name="prioritySlots" min="0" max="10" value="2">
+                        <div class="form-help">Tables reserved for VIP/priority customers</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Priority Queue Rules</label>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="prioritySkipRegular" checked>
+                            <span>Priority customers skip regular queue</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="priorityNotifyFirst">
+                            <span>Notify priority customers 5 minutes earlier</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="priorityLongerGrace" checked>
+                            <span>Extended grace period for priority customers</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Special Events -->
+            <div class="section">
+                <h2><i class="bi bi-calendar-event"></i> Special Events & Holidays</h2>
+                <p class="section-description">Configure queue behavior for special occasions</p>
+                
+                <div class="form-group">
+                    <label>Quick Presets</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem;">
+                        <button type="button" class="btn btn-secondary" onclick="applyPreset('valentine')">
+                            <i class="bi bi-heart"></i> Valentine's Day
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="applyPreset('weekend')">
+                            <i class="bi bi-calendar-week"></i> Weekend Rush
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="applyPreset('holiday')">
+                            <i class="bi bi-gift"></i> Public Holiday
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="applyPreset('normal')">
+                            <i class="bi bi-arrow-clockwise"></i> Normal Day
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn" onclick="saveOperationsSettings()">
+                    <i class="bi bi-check-circle"></i> Save Operations Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update button states
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Show corresponding content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.getElementById(btn.dataset.tab + 'Tab').style.display = 'block';
+            });
+        });
+
+        // Range slider updates
+        document.getElementById('autoPauseThreshold').addEventListener('input', (e) => {
+            document.getElementById('pauseValue').textContent = e.target.value + '%';
+        });
+
+        document.getElementById('peakMultiplier').addEventListener('input', (e) => {
+            document.getElementById('multiplierValue').textContent = e.target.value + 'x';
+        });
+
+        // Peak hour slot toggling
+        document.querySelectorAll('.peak-slot').forEach(slot => {
+            slot.addEventListener('click', () => {
+                slot.classList.toggle('active');
+            });
+        });
+
+        // Day closed toggle functionality
+        document.querySelectorAll('.day-closed-toggle').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const row = e.target.closest('.hours-row');
+                const inputs = row.querySelectorAll('.time-input');
+                inputs.forEach(input => {
+                    input.disabled = e.target.checked;
+                    input.style.opacity = e.target.checked ? '0.5' : '1';
+                });
+            });
+        });
+
+        // Alert function
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = '';
+            container.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Save functions
+        async function saveRestaurantSettings() {
+            try {
+                // Gather form data
+                const formData = {
+                    businessName: document.getElementById('restaurantName').value,
+                    phone: document.getElementById('restaurantPhone').value,
+                    address: { street: document.getElementById('restaurantAddress').value },
+                    settings: {
+                        seatingCapacity: parseInt(document.getElementById('seatingCapacity').value),
+                        avgMealDuration: parseInt(document.getElementById('avgMealDuration').value)
+                    },
+                    businessHours: {}
+                };
+
+                // Collect operating hours
+                const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                days.forEach(day => {
+                    const row = document.querySelector(`[data-day="${day}"]`);
+                    const closed = row.querySelector('.day-closed-toggle').checked;
+                    const openTime = row.querySelector(`input[name="hours[${day}][open]"]`).value;
+                    const closeTime = row.querySelector(`input[name="hours[${day}][close]"]`).value;
+                    
+                    formData.businessHours[day] = {
+                        closed,
+                        start: openTime,
+                        end: closeTime
+                    };
+                });
+
+                // Save via API
+                const response = await fetch('/api/merchant/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Restaurant settings saved successfully!');
+                } else {
+                    showAlert('Error saving settings: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error saving settings', 'error');
+                console.error(error);
+            }
+        }
+
+        async function saveQueueSettings() {
+            try {
+                const settings = {
+                    maxQueueSize: parseInt(document.getElementById('maxQueueSize').value),
+                    autoPauseThreshold: parseInt(document.getElementById('autoPauseThreshold').value),
+                    noShowTimeout: parseInt(document.getElementById('noShowTimeout').value),
+                    gracePeriod: parseInt(document.getElementById('gracePeriod').value),
+                    joinCutoffTime: parseInt(document.getElementById('joinCutoffTime').value),
+                    advanceBookingHours: parseInt(document.getElementById('advanceBookingHours').value),
+                    partySize: {
+                        regular: {
+                            min: parseInt(document.querySelector('input[name="regularMinParty"]').value),
+                            max: parseInt(document.querySelector('input[name="regularMaxParty"]').value)
+                        },
+                        peak: {
+                            min: parseInt(document.querySelector('input[name="peakMinParty"]').value),
+                            max: parseInt(document.querySelector('input[name="peakMaxParty"]').value)
+                        }
+                    }
+                };
+
+                const response = await fetch('/api/merchant/settings/queue', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Queue settings saved successfully!');
+                } else {
+                    showAlert('Error saving settings: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error saving settings', 'error');
+                console.error(error);
+            }
+        }
+
+        async function saveNotificationSettings() {
+            try {
+                const settings = {
+                    timing: {
+                        firstNotification: parseInt(document.getElementById('firstNotification').value),
+                        finalNotification: parseInt(document.getElementById('finalNotification').value),
+                        adjustForPeakHours: document.querySelector('input[name="adjustForPeakHours"]').checked,
+                        sendNoShowWarning: document.querySelector('input[name="sendNoShowWarning"]').checked,
+                        confirmTableAcceptance: document.querySelector('input[name="confirmTableAcceptance"]').checked
+                    },
+                    templates: {
+                        join: document.getElementById('joinTemplate').value,
+                        almostReady: document.getElementById('almostReadyTemplate').value,
+                        tableReady: document.getElementById('tableReadyTemplate').value,
+                        noShowWarning: document.getElementById('noShowWarningTemplate').value
+                    }
+                };
+
+                const response = await fetch('/api/merchant/settings/notifications', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Notification settings saved successfully!');
+                } else {
+                    showAlert('Error saving settings: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error saving settings', 'error');
+                console.error(error);
+            }
+        }
+
+        async function saveOperationsSettings() {
+            try {
+                // Collect peak hours
+                const peakHours = {};
+                document.querySelectorAll('.peak-hour-day').forEach(dayEl => {
+                    const day = dayEl.querySelector('label').textContent;
+                    const slots = [];
+                    dayEl.querySelectorAll('.peak-slot.active').forEach(slot => {
+                        slots.push(slot.dataset.time);
+                    });
+                    peakHours[day] = slots;
+                });
+
+                const settings = {
+                    peakHours,
+                    peakMultiplier: parseFloat(document.getElementById('peakMultiplier').value),
+                    priority: {
+                        enabled: document.querySelector('input[name="enablePriorityQueue"]').checked,
+                        slots: parseInt(document.getElementById('prioritySlots').value),
+                        skipRegular: document.querySelector('input[name="prioritySkipRegular"]').checked,
+                        notifyFirst: document.querySelector('input[name="priorityNotifyFirst"]').checked,
+                        longerGrace: document.querySelector('input[name="priorityLongerGrace"]').checked
+                    }
+                };
+
+                const response = await fetch('/api/merchant/settings/operations', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Operations settings saved successfully!');
+                } else {
+                    showAlert('Error saving settings: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error saving settings', 'error');
+                console.error(error);
+            }
+        }
+
+        // Apply preset configurations
+        function applyPreset(preset) {
+            const presets = {
+                valentine: {
+                    maxQueue: 100,
+                    autoPause: 95,
+                    noShow: 10,
+                    grace: 10,
+                    peakMultiplier: 1.8
+                },
+                weekend: {
+                    maxQueue: 75,
+                    autoPause: 90,
+                    noShow: 15,
+                    grace: 5,
+                    peakMultiplier: 1.6
+                },
+                holiday: {
+                    maxQueue: 100,
+                    autoPause: 95,
+                    noShow: 10,
+                    grace: 5,
+                    peakMultiplier: 1.7
+                },
+                normal: {
+                    maxQueue: 50,
+                    autoPause: 85,
+                    noShow: 15,
+                    grace: 5,
+                    peakMultiplier: 1.5
+                }
+            };
+
+            const config = presets[preset];
+            if (config) {
+                document.getElementById('maxQueueSize').value = config.maxQueue;
+                document.getElementById('autoPauseThreshold').value = config.autoPause;
+                document.getElementById('pauseValue').textContent = config.autoPause + '%';
+                document.getElementById('noShowTimeout').value = config.noShow;
+                document.getElementById('gracePeriod').value = config.grace;
+                document.getElementById('peakMultiplier').value = config.peakMultiplier;
+                document.getElementById('multiplierValue').textContent = config.peakMultiplier + 'x';
+                
+                showAlert(`Applied ${preset} preset configuration`);
+            }
+        }
+
+        // Load existing settings on page load
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/merchant/profile');
+                const data = await response.json();
+                
+                if (data.success && data.merchant) {
+                    const merchant = data.merchant;
+                    
+                    // Populate restaurant info
+                    document.getElementById('restaurantName').value = merchant.businessName || '';
+                    document.getElementById('restaurantPhone').value = merchant.phone || '';
+                    document.getElementById('restaurantAddress').value = merchant.address?.street || '';
+                    
+                    // Populate other settings if available
+                    if (merchant.settings) {
+                        document.getElementById('seatingCapacity').value = merchant.settings.seatingCapacity || 50;
+                        document.getElementById('avgMealDuration').value = merchant.settings.avgMealDuration || 45;
+                        document.getElementById('maxQueueSize').value = merchant.settings.maxQueueSize || 50;
+                    }
+                    
+                    // Populate business hours
+                    if (merchant.businessHours) {
+                        Object.keys(merchant.businessHours).forEach(day => {
+                            const row = document.querySelector(`[data-day="${day}"]`);
+                            if (row && merchant.businessHours[day]) {
+                                const dayData = merchant.businessHours[day];
+                                row.querySelector('.day-closed-toggle').checked = dayData.closed || false;
+                                row.querySelector(`input[name="hours[${day}][open]"]`).value = dayData.start || '09:00';
+                                row.querySelector(`input[name="hours[${day}][close]"]`).value = dayData.end || '22:00';
+                                
+                                // Disable inputs if closed
+                                if (dayData.closed) {
+                                    row.querySelectorAll('.time-input').forEach(input => {
+                                        input.disabled = true;
+                                        input.style.opacity = '0.5';
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+</body>
+</html>

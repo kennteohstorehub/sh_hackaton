@@ -172,7 +172,7 @@ router.get('/settings', setMockUser, async (req, res) => {
   try {
     const merchant = await Merchant.findById(req.session.user.id);
 
-    res.render('dashboard/settings', {
+    res.render('dashboard/settings-improved', {
       title: 'Settings - StoreHub Queue Management System',
       merchant
     });
