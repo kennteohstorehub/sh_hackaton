@@ -179,7 +179,7 @@ router.post('/:id/call-next', setMockUser, async (req, res) => {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    const nextCustomer = queue.callNext();
+    const nextCustomer = await queue.callNext();
     
     if (!nextCustomer) {
       return res.status(400).json({ error: 'No customers waiting in queue' });
@@ -340,7 +340,7 @@ router.post('/:id/complete/:customerId', setMockUser, async (req, res) => {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    const customer = queue.removeCustomer(req.params.customerId, 'completed');
+    const customer = await queue.removeCustomer(req.params.customerId, 'completed');
     
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found in queue' });
@@ -351,7 +351,11 @@ router.post('/:id/complete/:customerId', setMockUser, async (req, res) => {
     // Send welcome message with menu link to the seated customer
     try {
       const whatsappService = require('../services/whatsappService');
-      const welcomeMessage = `🎉 Welcome ${customer.customerName}!\n\n✅ You've been seated successfully!\n👥 Party size: ${customer.partySize} pax\n\n🍽️ Ready to order? Check out our menu:\n\n📱 Online Menu: https://beepdeliveryops.beepit.com/dine?s=5e806691322bdd231653d70c&from=home\n\n🛎️ If you prefer to be served by a human, please shout for help!\n\nEnjoy your dining experience!`;
+      const merchant = await Merchant.findById(merchantId);
+      // Get merchant menu URL if available
+      const menuUrl = merchant?.settings?.menuUrl || 'https://beepdeliveryops.beepit.com/dine?s=5e806691322bdd231653d70c&from=home';
+      
+      const welcomeMessage = `🎉 Welcome ${customer.customerName}!\n\n✅ You've been seated successfully!\n👥 Party size: ${customer.partySize} pax\n\n🍽️ Ready to order? Check out our menu:\n\n📱 Online Menu: ${menuUrl}\n\n🛎️ Need assistance? Our staff will be right with you!\n\nEnjoy your dining experience!`;
       
       await whatsappService.sendMessage(customer.customerPhone, welcomeMessage);
       logger.info(`Welcome message with menu link sent to ${customer.customerPhone} for queue ${queue.name}`);
@@ -436,7 +440,7 @@ router.post('/:id/requeue/:customerId', setMockUser, async (req, res) => {
     customerEntry.requeuedAt = new Date();
 
     // Update positions for all waiting customers
-    queue.updatePositions();
+    await queue.updatePositions();
 
     await queue.save();
 

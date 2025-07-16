@@ -211,9 +211,9 @@ queueSchema.virtual('nextPosition').get(function() {
 });
 
 // Method to add customer to queue
-queueSchema.methods.addCustomer = function(customerData) {
+queueSchema.methods.addCustomer = async function(customerData) {
   const position = this.nextPosition;
-  const estimatedWaitTime = this.calculateEstimatedWaitTime(position);
+  const estimatedWaitTime = await this.calculateEstimatedWaitTime(position);
   
   const newEntry = {
     ...customerData,
@@ -227,26 +227,37 @@ queueSchema.methods.addCustomer = function(customerData) {
 };
 
 // Method to calculate estimated wait time
-queueSchema.methods.calculateEstimatedWaitTime = function(position) {
+queueSchema.methods.calculateEstimatedWaitTime = async function(position) {
   const waitingAhead = position - 1;
-  const avgServiceTime = this.averageServiceTime || 15;
-  return waitingAhead * avgServiceTime;
+  
+  // Get merchant settings for accurate calculation
+  const Merchant = require('./Merchant');
+  const merchant = await Merchant.findById(this.merchantId);
+  
+  // Use merchant's average meal duration if available
+  const baseServiceTime = merchant?.settings?.avgMealDuration || this.averageServiceTime || 15;
+  
+  // Apply peak hour multiplier if applicable
+  const multiplier = merchant?.getWaitTimeMultiplier() || 1.0;
+  
+  return Math.round(waitingAhead * baseServiceTime * multiplier);
 };
 
 // Method to update queue positions
-queueSchema.methods.updatePositions = function() {
+queueSchema.methods.updatePositions = async function() {
   const waitingEntries = this.entries
     .filter(entry => entry.status === 'waiting')
     .sort((a, b) => a.joinedAt - b.joinedAt);
   
-  waitingEntries.forEach((entry, index) => {
+  for (let index = 0; index < waitingEntries.length; index++) {
+    const entry = waitingEntries[index];
     entry.position = index + 1;
-    entry.estimatedWaitTime = this.calculateEstimatedWaitTime(entry.position);
-  });
+    entry.estimatedWaitTime = await this.calculateEstimatedWaitTime(entry.position);
+  }
 };
 
 // Method to call next customer
-queueSchema.methods.callNext = function() {
+queueSchema.methods.callNext = async function() {
   const nextCustomer = this.entries
     .filter(entry => entry.status === 'waiting')
     .sort((a, b) => a.position - b.position)[0];
@@ -255,7 +266,7 @@ queueSchema.methods.callNext = function() {
     nextCustomer.status = 'called';
     nextCustomer.calledAt = new Date();
     this.currentServing = nextCustomer.position;
-    this.updatePositions();
+    await this.updatePositions();
     return nextCustomer;
   }
   
@@ -268,7 +279,7 @@ queueSchema.methods.getCustomer = function(customerId) {
 };
 
 // Method to remove customer from queue
-queueSchema.methods.removeCustomer = function(customerId, reason = 'cancelled') {
+queueSchema.methods.removeCustomer = async function(customerId, reason = 'cancelled') {
   const customerIndex = this.entries.findIndex(entry => entry.customerId === customerId);
   
   if (customerIndex !== -1) {
@@ -280,7 +291,7 @@ queueSchema.methods.removeCustomer = function(customerId, reason = 'cancelled') 
     // This ensures "Customers Today" count remains accurate
     
     // Update positions for remaining waiting customers
-    this.updatePositions();
+    await this.updatePositions();
     
     return customer;
   }

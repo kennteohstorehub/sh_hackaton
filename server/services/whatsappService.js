@@ -346,6 +346,24 @@ class WhatsAppService {
     }
   }
 
+  // Send templated notification
+  async sendTemplatedNotification(phoneNumber, template, replacements) {
+    try {
+      let message = template;
+      
+      // Replace all placeholders in the template
+      for (const [key, value] of Object.entries(replacements)) {
+        const placeholder = `{${key}}`;
+        message = message.replace(new RegExp(placeholder, 'g'), value);
+      }
+      
+      return await this.sendMessage(phoneNumber, message);
+    } catch (error) {
+      logger.error('Error sending templated notification:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   async handleMessage(message) {
     try {
       const contact = await message.getContact();

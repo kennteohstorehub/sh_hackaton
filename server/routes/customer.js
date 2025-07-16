@@ -28,14 +28,44 @@ router.post('/join/:queueId', [
       return res.status(404).json({ error: 'Queue not found or inactive' });
     }
 
-    // Check if business is open (simplified check)
-    // For demo purposes, we'll allow joining even if closed
+    const merchant = queue.merchantId;
+    
+    // Check if business is open
+    if (!merchant.isBusinessOpen()) {
+      const joinCutoff = merchant.settings?.queue?.joinCutoffTime || 30;
+      return res.status(400).json({ 
+        error: 'Restaurant is closed or not accepting new customers',
+        message: `Queue closes ${joinCutoff} minutes before restaurant closing time`
+      });
+    }
+    
+    // Check party size limits
+    const partySizeLimits = merchant.getPartySizeLimits();
+    const requestedPartySize = partySize || 1;
+    
+    if (requestedPartySize < partySizeLimits.min || requestedPartySize > partySizeLimits.max) {
+      return res.status(400).json({
+        error: 'Party size not allowed',
+        message: `Party size must be between ${partySizeLimits.min} and ${partySizeLimits.max} during ${merchant.isPeakHour() ? 'peak hours' : 'regular hours'}`,
+        limits: partySizeLimits
+      });
+    }
+    
+    // Check if queue should auto-pause
+    const currentOccupancy = queue.entries.filter(e => e.status === 'serving').length;
+    if (merchant.shouldAutoPause(currentOccupancy)) {
+      return res.status(400).json({
+        error: 'Queue temporarily paused',
+        message: 'Restaurant is at capacity. Please try again in a few minutes.'
+      });
+    }
     
     // Check queue capacity
-    if (queue.currentLength >= queue.maxCapacity) {
+    const maxQueueSize = merchant.settings?.queue?.maxQueueSize || queue.maxCapacity;
+    if (queue.currentLength >= maxQueueSize) {
       return res.status(400).json({ 
         error: 'Queue is full',
-        maxCapacity: queue.maxCapacity,
+        maxCapacity: maxQueueSize,
         currentLength: queue.currentLength
       });
     }
@@ -57,7 +87,7 @@ router.post('/join/:queueId', [
     }
 
     // Add customer to queue
-    const newEntry = queue.addCustomer({
+    const newEntry = await queue.addCustomer({
       customerId,
       customerName: name,
       customerPhone: phone,
@@ -76,7 +106,18 @@ router.post('/join/:queueId', [
     // Send welcome WhatsApp message to customer
     try {
       const whatsappService = require('../services/whatsappService');
-      const welcomeMessage = `🎉 Welcome to ${queue.name}!\n\n✅ You've successfully joined the queue!\n\n📋 Details:\n👤 Name: ${name}\n📱 Phone: ${phone}\n👥 Party size: ${newEntry.partySize} pax\n📍 Your position: #${position}\n⏱️ Estimated wait: ${estimatedWait} minutes\n\n💬 We'll notify you when it's your turn!\n\n💡 Need to leave? Simply reply "CANCEL" to this chat. You'll be asked to confirm before removal.\n\nThank you for choosing us! 🙏`;
+      
+      // Use merchant's custom join template or fallback to default
+      const template = merchant.settings?.notifications?.templates?.join || 
+        'Welcome to {RestaurantName}! 🍽️ You\'re #{Position} in queue (Party of {PartySize}). Estimated wait: ~{WaitTime} minutes. We\'ll notify you when your table is ready!';
+      
+      // Replace placeholders in template
+      const welcomeMessage = template
+        .replace('{RestaurantName}', merchant.businessName || queue.name)
+        .replace('{CustomerName}', name)
+        .replace('{Position}', position)
+        .replace('{PartySize}', newEntry.partySize)
+        .replace('{WaitTime}', estimatedWait);
       
       await whatsappService.sendMessage(phone, welcomeMessage);
       logger.info(`Welcome message sent to ${phone} for joining queue ${queue.name}`);
@@ -186,7 +227,19 @@ router.post('/join', [
     // Send confirmation WhatsApp message to customer
     try {
       const whatsappService = require('../services/whatsappService');
-      const confirmationMessage = `✅ You've joined the queue!\n\n📍 Queue: ${queue.name}\n🎫 Your position: #${newEntry.position}\n⏱️ Estimated wait: ${newEntry.estimatedWaitTime} minutes\n\n💬 We'll notify you when it's your turn!\n\n💡 Need to leave? Simply reply "CANCEL" to this chat (confirmation required).`;
+      const merchant = queue.merchantId;
+      
+      // Use merchant's custom join template or fallback to default
+      const template = merchant.settings?.notifications?.templates?.join || 
+        'Welcome to {RestaurantName}! 🍽️ You\'re #{Position} in queue (Party of {PartySize}). Estimated wait: ~{WaitTime} minutes. We\'ll notify you when your table is ready!';
+      
+      // Replace placeholders in template
+      const confirmationMessage = template
+        .replace('{RestaurantName}', merchant.businessName || queue.name)
+        .replace('{CustomerName}', customerName)
+        .replace('{Position}', newEntry.position)
+        .replace('{PartySize}', newEntry.partySize)
+        .replace('{WaitTime}', newEntry.estimatedWaitTime);
       
       await whatsappService.sendMessage(newEntry.customerPhone, confirmationMessage);
       logger.info(`Confirmation sent to ${newEntry.customerPhone} for joining queue ${queue.name}`);
@@ -307,7 +360,7 @@ router.post('/cancel', [
     }
 
     // Remove customer from queue
-    const removedCustomer = queue.removeCustomer(customerId, 'cancelled');
+    const removedCustomer = await queue.removeCustomer(customerId, 'cancelled');
     await queue.save();
 
     // Emit real-time update

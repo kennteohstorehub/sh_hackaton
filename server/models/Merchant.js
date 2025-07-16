@@ -84,16 +84,148 @@ const merchantSchema = new mongoose.Schema({
     }
   },
   settings: {
+    // Restaurant capacity
+    seatingCapacity: {
+      type: Number,
+      default: 50
+    },
+    avgMealDuration: {
+      type: Number, // in minutes
+      default: 45
+    },
+    
+    // Queue behavior settings
+    queue: {
+      maxQueueSize: {
+        type: Number,
+        default: 50
+      },
+      autoPauseThreshold: {
+        type: Number, // percentage
+        default: 90
+      },
+      noShowTimeout: {
+        type: Number, // in minutes
+        default: 15
+      },
+      gracePeriod: {
+        type: Number, // in minutes
+        default: 5
+      },
+      joinCutoffTime: {
+        type: Number, // minutes before closing
+        default: 30
+      },
+      advanceBookingHours: {
+        type: Number, // 0 = same day only
+        default: 0
+      },
+      partySize: {
+        regular: {
+          min: { type: Number, default: 1 },
+          max: { type: Number, default: 8 }
+        },
+        peak: {
+          min: { type: Number, default: 1 },
+          max: { type: Number, default: 4 }
+        }
+      }
+    },
+    
+    // Notification settings
+    notifications: {
+      timing: {
+        firstNotification: {
+          type: Number, // minutes before turn
+          default: 10
+        },
+        finalNotification: {
+          type: Number, // 0 = when ready, >0 = minutes before
+          default: 0
+        },
+        adjustForPeakHours: {
+          type: Boolean,
+          default: true
+        },
+        sendNoShowWarning: {
+          type: Boolean,
+          default: true
+        },
+        confirmTableAcceptance: {
+          type: Boolean,
+          default: true
+        }
+      },
+      templates: {
+        join: {
+          type: String,
+          default: 'Welcome to {RestaurantName}! 🍽️ You\'re #{Position} in queue (Party of {PartySize}). Estimated wait: ~{WaitTime} minutes. We\'ll notify you when your table is ready!'
+        },
+        almostReady: {
+          type: String,
+          default: 'Hi {CustomerName}! Your table at {RestaurantName} will be ready in ~{Minutes} minutes. Please start making your way to the restaurant 🚶‍♂️'
+        },
+        tableReady: {
+          type: String,
+          default: '🎉 {CustomerName}, your table is NOW READY! Please see our host at {RestaurantName}. You have {Timeout} minutes to claim your table.'
+        },
+        noShowWarning: {
+          type: String,
+          default: '⚠️ {CustomerName}, we\'ve been holding your table for {Minutes} minutes. Please respond within {Remaining} minutes or we\'ll need to release your table to the next guest.'
+        }
+      }
+    },
+    
+    // Operations settings
+    operations: {
+      peakHours: {
+        monday: [String], // ['lunch', 'dinner']
+        tuesday: [String],
+        wednesday: [String],
+        thursday: [String],
+        friday: [String],
+        saturday: [String],
+        sunday: [String]
+      },
+      peakMultiplier: {
+        type: Number,
+        default: 1.5
+      },
+      priority: {
+        enabled: {
+          type: Boolean,
+          default: false
+        },
+        slots: {
+          type: Number,
+          default: 2
+        },
+        skipRegular: {
+          type: Boolean,
+          default: true
+        },
+        notifyFirst: {
+          type: Boolean,
+          default: false
+        },
+        longerGrace: {
+          type: Boolean,
+          default: true
+        }
+      }
+    },
+    
+    // Legacy settings (kept for backward compatibility)
     maxQueueSize: {
       type: Number,
-      default: 100
+      default: 50
     },
     autoNotifications: {
       type: Boolean,
       default: true
     },
     notificationInterval: {
-      type: Number, // in minutes
+      type: Number,
       default: 5
     },
     allowCustomerCancellation: {
@@ -107,17 +239,6 @@ const merchantSchema = new mongoose.Schema({
     language: {
       type: String,
       default: 'en'
-    },
-    welcomeMessage: {
-      type: String,
-      default: 'Welcome! Please select a service to join the queue.'
-    },
-    customMessages: {
-      queueJoined: String,
-      positionUpdate: String,
-      nowServing: String,
-      cancelled: String,
-      completed: String
     }
   },
   subscription: {
@@ -208,6 +329,46 @@ merchantSchema.methods.isBusinessOpen = function() {
   if (!todayHours || todayHours.closed) return false;
   
   return currentTime >= todayHours.start && currentTime <= todayHours.end;
+};
+
+// Check if current time is peak hours
+merchantSchema.methods.isPeakHour = function() {
+  const now = new Date();
+  const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  const currentHour = now.getHours();
+  
+  const peakHours = this.settings?.operations?.peakHours?.[dayOfWeek] || [];
+  
+  // Check if current hour falls in any peak period
+  for (const period of peakHours) {
+    if (period === 'lunch' && currentHour >= 12 && currentHour <= 14) return true;
+    if (period === 'dinner' && currentHour >= 18 && currentHour <= 21) return true;
+  }
+  
+  return false;
+};
+
+// Get current party size limits
+merchantSchema.methods.getPartySizeLimits = function() {
+  const isPeak = this.isPeakHour();
+  return isPeak ? this.settings?.queue?.partySize?.peak : this.settings?.queue?.partySize?.regular;
+};
+
+// Check if queue should auto-pause based on capacity
+merchantSchema.methods.shouldAutoPause = function(currentOccupancy) {
+  const threshold = this.settings?.queue?.autoPauseThreshold || 90;
+  const capacity = this.settings?.seatingCapacity || 50;
+  const occupancyPercentage = (currentOccupancy / capacity) * 100;
+  
+  return occupancyPercentage >= threshold;
+};
+
+// Get wait time multiplier for current conditions
+merchantSchema.methods.getWaitTimeMultiplier = function() {
+  if (this.isPeakHour()) {
+    return this.settings?.operations?.peakMultiplier || 1.5;
+  }
+  return 1.0;
 };
 
 // Get active service types
