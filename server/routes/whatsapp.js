@@ -14,10 +14,37 @@ const setMockUser = (req, res, next) => {
   next();
 };
 
-// GET /api/whatsapp/status - Get WhatsApp connection status
+// GET /api/whatsapp/status - Get WhatsApp connection status with performance metrics
 router.get('/status', setMockUser, async (req, res) => {
   try {
     const status = whatsappService.getStatus();
+    
+    // Add performance recommendations if available
+    if (status.performance) {
+      status.recommendations = [];
+      
+      if (status.performance.queueLength > 500) {
+        status.recommendations.push({
+          type: 'warning',
+          message: 'Message queue is getting full. Consider increasing rate limits or checking for issues.'
+        });
+      }
+      
+      if (status.performance.cacheSize > 1000) {
+        status.recommendations.push({
+          type: 'info',
+          message: 'Cache is large. This is normal during peak hours.'
+        });
+      }
+      
+      if (!status.isConnected && status.performance.queueLength > 0) {
+        status.recommendations.push({
+          type: 'error',
+          message: 'Messages are queued but WhatsApp is disconnected. Please reconnect.'
+        });
+      }
+    }
+    
     res.json(status);
   } catch (error) {
     logger.error('Error getting WhatsApp status:', error);
@@ -131,6 +158,69 @@ router.get('/sessions', setMockUser, async (req, res) => {
   } catch (error) {
     logger.error('Error getting sessions:', error);
     res.status(500).json({ error: 'Failed to get sessions' });
+  }
+});
+
+// GET /api/whatsapp/health - Health check endpoint with performance metrics
+router.get('/health', setMockUser, async (req, res) => {
+  try {
+    const status = whatsappService.getStatus();
+    const uptime = process.uptime();
+    
+    // Calculate health score
+    let healthScore = 100;
+    const issues = [];
+    
+    if (!status.isConnected) {
+      healthScore -= 50;
+      issues.push('WhatsApp not connected');
+    }
+    
+    if (status.performance) {
+      if (status.performance.queueLength > 500) {
+        healthScore -= 20;
+        issues.push('High message queue length');
+      }
+      
+      if (status.performance.queueLength > 800) {
+        healthScore -= 20;
+        issues.push('Critical message queue length');
+      }
+      
+      if (status.performance.conversationStates > 100) {
+        healthScore -= 10;
+        issues.push('High conversation state count');
+      }
+    }
+    
+    const health = {
+      status: healthScore >= 80 ? 'healthy' : healthScore >= 50 ? 'degraded' : 'unhealthy',
+      score: healthScore,
+      issues,
+      uptime: {
+        seconds: Math.floor(uptime),
+        formatted: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`
+      },
+      connection: {
+        isConnected: status.isConnected,
+        status: status.status,
+        deviceInfo: status.deviceInfo
+      },
+      performance: status.performance || {},
+      timestamp: new Date().toISOString()
+    };
+    
+    // Set appropriate HTTP status code
+    const httpStatus = healthScore >= 50 ? 200 : 503;
+    res.status(httpStatus).json(health);
+    
+  } catch (error) {
+    logger.error('Error checking WhatsApp health:', error);
+    res.status(503).json({ 
+      status: 'error',
+      error: 'Failed to check health',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
