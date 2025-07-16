@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -46,8 +47,24 @@ const PORT = process.env.PORT || 3001;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
-// Static files
-app.use(express.static(path.join(__dirname, '../public')));
+// Static files with caching
+app.use(express.static(path.join(__dirname, '../public'), {
+  maxAge: '1d',
+  etag: true
+}));
+
+// Response compression - compress all responses
+app.use(compression({
+  filter: (req, res) => {
+    // Don't compress responses with this request header
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Fallback to standard filter function
+    return compression.filter(req, res);
+  },
+  level: 6 // Balanced compression level
+}));
 
 // Security middleware
 app.use(helmet({
@@ -96,9 +113,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-que
   process.exit(1);
 });
 
+// Ensure critical environment variables are set
+if (!process.env.JWT_SECRET) {
+  logger.error('JWT_SECRET environment variable is required');
+  process.exit(1);
+}
+
 // Session configuration
 app.use(session({
-  secret: process.env.JWT_SECRET || 'your-session-secret',
+  secret: process.env.JWT_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
@@ -167,24 +190,21 @@ io.on('connection', (socket) => {
 // Initialize services
 const initializeServices = async () => {
   try {
-    // Initialize WhatsApp service
-    await whatsappService.initialize(io);
-    logger.info('WhatsApp service initialized');
+    // Parallelize service initialization for faster startup
+    const initPromises = [
+      whatsappService.initialize(io).then(() => logger.info('WhatsApp service initialized')),
+      messengerService.initialize(io).then(() => logger.info('Messenger service initialized')),
+      aiService.initialize().then(() => logger.info('AI service initialized')),
+      Promise.resolve(chatbotService.setSocketIO(io)).then(() => logger.info('Chatbot service initialized'))
+    ];
     
-    // Initialize Messenger service
-    await messengerService.initialize(io);
-    logger.info('Messenger service initialized');
-    
-    // Initialize AI service
-    await aiService.initialize();
-    logger.info('AI service initialized');
-    
-    // Initialize chatbot service
-    chatbotService.setSocketIO(io);
-    logger.info('Chatbot service initialized');
+    // Wait for all services to initialize
+    await Promise.all(initPromises);
+    logger.info('All services initialized successfully');
     
   } catch (error) {
     logger.error('Error initializing services:', error);
+    // Don't exit on service initialization failure - app can still work partially
   }
 };
 

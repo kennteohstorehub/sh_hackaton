@@ -13,6 +13,7 @@ class WhatsAppService {
     this.sessionCount = 0;
     this.io = null;
     this.deviceInfo = null; // Store connected device information
+    this.cleanupInterval = null;
     
     // Log whitelist status on initialization
     const securityInfo = whatsappSecurity.getWhitelistInfo();
@@ -22,6 +23,9 @@ class WhatsAppService {
     } else {
       logger.warn('⚠️  WhatsApp Security: Phone number whitelist is DISABLED (production mode)');
     }
+    
+    // Start cleanup interval for conversation states
+    this.startCleanupInterval();
   }
 
   /**
@@ -484,16 +488,15 @@ class WhatsAppService {
       }
       
       // Store pending cancellation state
-      if (!this.conversationStates.has(phoneNumber)) {
-        this.conversationStates.set(phoneNumber, {});
-      }
-      this.conversationStates.get(phoneNumber).pendingCancellation = {
-        queueId: queue._id,
-        customerId: customerEntry.customerId,
-        customerName: customerEntry.customerName,
-        queueName: queue.name,
-        position: customerEntry.position
-      };
+      this.updateConversationState(phoneNumber, {
+        pendingCancellation: {
+          queueId: queue._id,
+          customerId: customerEntry.customerId,
+          customerName: customerEntry.customerName,
+          queueName: queue.name,
+          position: customerEntry.position
+        }
+      });
       
       logger.info(`Stored pending cancellation for ${customerEntry.customerName}`);
       
@@ -621,6 +624,67 @@ class WhatsAppService {
     
     // Don't auto-respond to general messages anymore
     return null;
+  }
+  
+  /**
+   * Start cleanup interval to prevent memory leaks
+   */
+  startCleanupInterval() {
+    // Clean up old conversation states every 30 minutes
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupConversationStates();
+    }, 30 * 60 * 1000);
+  }
+  
+  /**
+   * Clean up old conversation states to prevent memory leaks
+   */
+  cleanupConversationStates() {
+    const oneHourAgo = Date.now() - (60 * 60 * 1000);
+    let cleanedCount = 0;
+    
+    for (const [phoneNumber, state] of this.conversationStates) {
+      // Check if state has a lastActivity timestamp, if not use current time
+      const lastActivity = state.lastActivity || Date.now();
+      
+      if (lastActivity < oneHourAgo) {
+        this.conversationStates.delete(phoneNumber);
+        cleanedCount++;
+      }
+    }
+    
+    if (cleanedCount > 0) {
+      logger.info(`Cleaned up ${cleanedCount} old conversation states`);
+    }
+  }
+  
+  /**
+   * Update conversation state with activity timestamp
+   */
+  updateConversationState(phoneNumber, updates) {
+    const existingState = this.conversationStates.get(phoneNumber) || {};
+    this.conversationStates.set(phoneNumber, {
+      ...existingState,
+      ...updates,
+      lastActivity: Date.now()
+    });
+  }
+  
+  /**
+   * Clean up resources when shutting down
+   */
+  async cleanup() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    
+    if (this.client) {
+      await this.disconnect();
+    }
+    
+    this.conversationStates.clear();
+    logger.info('WhatsApp service cleanup completed');
   }
 }
 

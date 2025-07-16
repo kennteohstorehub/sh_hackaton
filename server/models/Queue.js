@@ -190,11 +190,14 @@ const queueSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for performance
+// Indexes for performance optimization
 queueSchema.index({ merchantId: 1, isActive: 1 });
-queueSchema.index({ 'entries.customerId': 1 });
-queueSchema.index({ 'entries.status': 1 });
-queueSchema.index({ 'entries.joinedAt': 1 });
+queueSchema.index({ merchantId: 1, 'entries.status': 1, 'entries.joinedAt': -1 });
+queueSchema.index({ 'entries.customerId': 1, 'entries.status': 1 });
+queueSchema.index({ 'entries.status': 1, 'entries.position': 1 });
+queueSchema.index({ 'entries.joinedAt': -1 });
+queueSchema.index({ merchantId: 1, createdAt: -1 });
+queueSchema.index({ 'entries.platform': 1, 'entries.joinedAt': -1 });
 
 // Virtual for current queue length
 queueSchema.virtual('currentLength').get(function() {

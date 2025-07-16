@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta http-equiv="refresh" content="30">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #000000 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 140, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            text-align: center;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-waiting {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-called {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .status-completed {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .status-cancelled {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .position-display {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .position-number {
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .position-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .customer-info {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .refresh-note {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.3);
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .status-card {
+                padding: 1.5rem;
+            }
+            
+            .position-number {
+                font-size: 3rem;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status-card">
+            <!-- Header -->
+            <div class="header">
+                <h1>Queue Status</h1>
+                <h2><%= queue.name %></h2>
+                <p><%= merchant.businessName %></p>
+            </div>
+
+            <!-- Status Badge -->
+            <div class="status-badge status-<%= customer.status %>">
+                <% if (customer.status === 'waiting') { %>
+                    <i class="bi bi-hourglass-split"></i>
+                    Waiting in Queue
+                <% } else if (customer.status === 'called') { %>
+                    <i class="bi bi-megaphone"></i>
+                    Your Turn! Please Come Forward
+                <% } else if (customer.status === 'completed') { %>
+                    <i class="bi bi-check-circle"></i>
+                    Service Completed
+                <% } else if (customer.status === 'cancelled') { %>
+                    <i class="bi bi-x-circle"></i>
+                    Cancelled
+                <% } %>
+            </div>
+
+            <% if (customer.status === 'waiting' || customer.status === 'called') { %>
+                <!-- Position Display -->
+                <div class="position-display">
+                    <div class="position-number"><%= currentPosition %></div>
+                    <div class="position-label">
+                        <%= customer.status === 'waiting' ? 'Position in Queue' : 'You are being served!' %>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Customer Information -->
+            <div class="customer-info">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Customer Name</div>
+                        <div class="info-value"><%= customer.customerName %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Party Size</div>
+                        <div class="info-value"><%= customer.partySize %> people</div>
+                    </div>
+                    <% if (customer.status === 'waiting') { %>
+                        <div class="info-item">
+                            <div class="info-label">Estimated Wait</div>
+                            <div class="info-value"><%= customer.estimatedWaitTime %> minutes</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">People Ahead</div>
+                            <div class="info-value"><%= currentPosition - 1 %></div>
+                        </div>
+                    <% } %>
+                    <div class="info-item">
+                        <div class="info-label">Joined At</div>
+                        <div class="info-value">
+                            <%= new Date(customer.joinedAt).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                            }) %>
+                        </div>
+                    </div>
+                    <% if (customer.calledAt) { %>
+                        <div class="info-item">
+                            <div class="info-label">Called At</div>
+                            <div class="info-value">
+                                <%= new Date(customer.calledAt).toLocaleTimeString('en-US', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                }) %>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <% if (customer.status === 'waiting' || customer.status === 'called') { %>
+                    <button class="btn" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Refresh Status
+                    </button>
+                <% } %>
+                
+                <a href="/queue/<%= queue._id %>" class="btn">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to Queue
+                </a>
+            </div>
+
+            <!-- Auto-refresh note -->
+            <% if (customer.status === 'waiting' || customer.status === 'called') { %>
+                <div class="refresh-note">
+                    <i class="bi bi-arrow-repeat"></i>
+                    This page automatically refreshes every 30 seconds
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh logic for active statuses
+        <% if (customer.status === 'waiting' || customer.status === 'called') { %>
+            // Add visual feedback for auto-refresh
+            let refreshCounter = 30;
+            const refreshNote = document.querySelector('.refresh-note');
+            
+            function updateCountdown() {
+                if (refreshNote && refreshCounter > 0) {
+                    refreshNote.innerHTML = `
+                        <i class="bi bi-arrow-repeat"></i>
+                        Refreshing in ${refreshCounter} seconds...
+                    `;
+                    refreshCounter--;
+                    
+                    if (refreshCounter === 0) {
+                        refreshNote.innerHTML = `
+                            <i class="bi bi-hourglass-split"></i>
+                            Refreshing now...
+                        `;
+                    }
+                }
+            }
+            
+            // Update countdown every second
+            const countdownInterval = setInterval(updateCountdown, 1000);
+            
+            // Clear interval when page is about to refresh
+            setTimeout(() => {
+                clearInterval(countdownInterval);
+            }, 29000);
+        <% } %>
+    </script>
+</body>
+</html> 
