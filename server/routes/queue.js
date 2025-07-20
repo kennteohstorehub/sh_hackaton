@@ -4,27 +4,14 @@ const Queue = require('../models/Queue');
 const Merchant = require('../models/Merchant');
 const logger = require('../utils/logger');
 const { generateQueueQR, generateQueueQRSVG } = require('../utils/qrGenerator');
+const { requireAuth, loadUser } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Mock user for demo purposes
-const mockUser = {
-  id: '507f1f77bcf86cd799439011',
-  email: 'demo@smartqueue.com',
-  businessName: 'Demo Restaurant',
-  businessType: 'restaurant'
-};
-
-// Middleware to set mock user for API
-const setMockUser = (req, res, next) => {
-  req.session.user = mockUser;
-  next();
-};
-
 // GET /api/queue - Get all queues for merchant
-router.get('/', setMockUser, async (req, res) => {
+router.get('/', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
     
     res.json({
@@ -42,7 +29,7 @@ router.get('/', setMockUser, async (req, res) => {
 });
 
 // POST /api/queue - Create new queue
-router.post('/', setMockUser, [
+router.post('/', [requireAuth, loadUser], [
   body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Queue name is required'),
   body('description').optional().isLength({ max: 500 }).withMessage('Description too long'),
   body('maxCapacity').isInt({ min: 1, max: 1000 }).withMessage('Max capacity must be between 1 and 1000'),
@@ -54,7 +41,7 @@ router.post('/', setMockUser, [
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
     }
 
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const { name, description, maxCapacity, averageServiceTime } = req.body;
 
     // Check if merchant can create more queues
@@ -94,9 +81,9 @@ router.post('/', setMockUser, [
 });
 
 // GET /api/queue/:id - Get specific queue
-router.get('/:id', setMockUser, async (req, res) => {
+router.get('/:id', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
 
     if (!queue) {
@@ -119,7 +106,7 @@ router.get('/:id', setMockUser, async (req, res) => {
 });
 
 // PUT /api/queue/:id - Update queue
-router.put('/:id', setMockUser, [
+router.put('/:id', [requireAuth, loadUser], [
   body('name').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Queue name is required'),
   body('description').optional().isLength({ max: 500 }).withMessage('Description too long'),
   body('maxCapacity').optional().isInt({ min: 1, max: 1000 }).withMessage('Max capacity must be between 1 and 1000'),
@@ -131,7 +118,7 @@ router.put('/:id', setMockUser, [
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
     }
 
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
 
     if (!queue) {
@@ -170,9 +157,9 @@ router.put('/:id', setMockUser, [
 });
 
 // POST /api/queue/:id/call-next - Call next customer
-router.post('/:id/call-next', setMockUser, async (req, res) => {
+router.post('/:id/call-next', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
 
     if (!queue) {
@@ -232,7 +219,7 @@ router.post('/:id/call-next', setMockUser, async (req, res) => {
 });
 
 // POST /api/queue/:id/call-specific - Call specific customer (override queue order)
-router.post('/:id/call-specific', setMockUser, [
+router.post('/:id/call-specific', [requireAuth, loadUser], [
   body('customerId').notEmpty().withMessage('Customer ID is required')
 ], async (req, res) => {
   try {
@@ -241,7 +228,7 @@ router.post('/:id/call-specific', setMockUser, [
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
     }
 
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const { customerId } = req.body;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
 
@@ -331,9 +318,9 @@ async function sendPositionUpdateNotifications(queue, io, merchantId) {
 }
 
 // POST /api/queue/:id/complete/:customerId - Mark customer service as completed
-router.post('/:id/complete/:customerId', setMockUser, async (req, res) => {
+router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
 
     if (!queue) {
@@ -407,9 +394,9 @@ router.post('/:id/complete/:customerId', setMockUser, async (req, res) => {
 });
 
 // POST /api/queue/:id/requeue/:customerId - Requeue completed customer back to waiting list
-router.post('/:id/requeue/:customerId', setMockUser, async (req, res) => {
+router.post('/:id/requeue/:customerId', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
 
     if (!queue) {
@@ -490,9 +477,9 @@ router.post('/:id/requeue/:customerId', setMockUser, async (req, res) => {
 });
 
 // DELETE /api/queue/:id - Delete queue
-router.delete('/:id', setMockUser, async (req, res) => {
+router.delete('/:id', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
 
     if (!queue) {
@@ -522,9 +509,9 @@ router.delete('/:id', setMockUser, async (req, res) => {
 });
 
 // GET /api/queue/:id/qr - Generate QR code for queue
-router.get('/:id/qr', setMockUser, async (req, res) => {
+router.get('/:id/qr', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
 
     if (!queue) {

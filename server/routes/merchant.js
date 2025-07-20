@@ -1,28 +1,21 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Merchant = require('../models/Merchant');
+const Queue = require('../models/Queue');
 const logger = require('../utils/logger');
+const { requireAuth, loadUser } = require('../middleware/auth');
+const { generateQRPosterPDF, generateSimpleQRPDF } = require('../utils/pdfGenerator');
 
 const router = express.Router();
 
-// Mock user for demo purposes
-const mockUser = {
-  id: '507f1f77bcf86cd799439011',
-  email: 'demo@smartqueue.com',
-  businessName: 'Demo Restaurant',
-  businessType: 'restaurant'
-};
-
-// Middleware to set mock user for API
-const setMockUser = (req, res, next) => {
-  req.session.user = mockUser;
-  next();
-};
+// Apply authentication to all merchant API routes
+router.use(requireAuth);
+router.use(loadUser);
 
 // GET /api/merchant/profile - Get merchant profile
-router.get('/profile', setMockUser, async (req, res) => {
+router.get('/profile', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.session.user.id);
+    const merchant = await Merchant.findById(req.user.id);
     
     if (!merchant) {
       return res.status(404).json({ error: 'Merchant not found' });
@@ -40,7 +33,7 @@ router.get('/profile', setMockUser, async (req, res) => {
 });
 
 // PUT /api/merchant/profile - Update merchant profile
-router.put('/profile', setMockUser, [
+router.put('/profile', [
   body('businessName').optional().trim().isLength({ min: 2, max: 100 }),
   body('email').optional().isEmail(),
   body('phone').optional().isMobilePhone(),
@@ -54,7 +47,7 @@ router.put('/profile', setMockUser, [
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
     }
 
-    const merchant = await Merchant.findById(req.session.user.id);
+    const merchant = await Merchant.findById(req.user.id);
     
     if (!merchant) {
       return res.status(404).json({ error: 'Merchant not found' });
@@ -79,10 +72,7 @@ router.put('/profile', setMockUser, [
 
     await merchant.save();
 
-    // Update session data
-    req.session.user.businessName = merchant.businessName;
-    req.session.user.businessType = merchant.businessType;
-    req.session.user.email = merchant.email;
+    // Session data will be updated via loadUser middleware on next request
 
     res.json({
       success: true,
@@ -96,9 +86,9 @@ router.put('/profile', setMockUser, [
 });
 
 // PUT /api/merchant/settings/queue - Update queue-specific settings
-router.put('/settings/queue', setMockUser, async (req, res) => {
+router.put('/settings/queue', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.session.user.id);
+    const merchant = await Merchant.findById(req.user.id);
     if (!merchant) {
       return res.status(404).json({ error: 'Merchant not found' });
     }
@@ -120,9 +110,9 @@ router.put('/settings/queue', setMockUser, async (req, res) => {
 });
 
 // PUT /api/merchant/settings/notifications - Update notification settings
-router.put('/settings/notifications', setMockUser, async (req, res) => {
+router.put('/settings/notifications', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.session.user.id);
+    const merchant = await Merchant.findById(req.user.id);
     if (!merchant) {
       return res.status(404).json({ error: 'Merchant not found' });
     }
@@ -144,9 +134,9 @@ router.put('/settings/notifications', setMockUser, async (req, res) => {
 });
 
 // PUT /api/merchant/settings/operations - Update operations settings
-router.put('/settings/operations', setMockUser, async (req, res) => {
+router.put('/settings/operations', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.session.user.id);
+    const merchant = await Merchant.findById(req.user.id);
     if (!merchant) {
       return res.status(404).json({ error: 'Merchant not found' });
     }
@@ -164,6 +154,64 @@ router.put('/settings/operations', setMockUser, async (req, res) => {
   } catch (error) {
     logger.error('Error updating operations settings:', error);
     res.status(500).json({ error: 'Failed to update operations settings' });
+  }
+});
+
+// GET /api/merchant/qr-pdf - Generate QR code PDF
+router.get('/qr-pdf', async (req, res) => {
+  try {
+    const { queueId, type = 'professional' } = req.query;
+    
+    if (!queueId) {
+      return res.status(400).json({ error: 'Queue ID is required' });
+    }
+    
+    // Verify the queue belongs to this merchant
+    const queue = await Queue.findOne({ _id: queueId, merchantId: req.user._id });
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+    
+    // Get merchant details
+    const merchant = await Merchant.findById(req.user._id);
+    if (!merchant) {
+      return res.status(404).json({ error: 'Merchant not found' });
+    }
+    
+    // Determine base URL (use HTTPS in production)
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : req.protocol;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+    const queueUrl = `${baseUrl}/queue/${queueId}`;
+    
+    // Generate PDF based on type
+    let pdfBuffer;
+    const options = {
+      merchantName: merchant.businessName,
+      queueId: queueId,
+      queueUrl: queueUrl,
+      baseUrl: baseUrl
+    };
+    
+    if (type === 'simple') {
+      pdfBuffer = await generateSimpleQRPDF(options);
+    } else {
+      pdfBuffer = await generateQRPosterPDF(options);
+    }
+    
+    // Set response headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="queue-qr-${type}.pdf"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    
+    // Send the PDF
+    res.send(pdfBuffer);
+    
+    logger.info(`QR PDF generated for merchant ${merchant._id}, queue ${queueId}, type: ${type}`);
+    
+  } catch (error) {
+    logger.error('Error generating QR PDF:', error);
+    res.status(500).json({ error: 'Failed to generate PDF' });
   }
 });
 

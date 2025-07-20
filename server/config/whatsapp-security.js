@@ -18,10 +18,9 @@ const ALLOWED_PHONE_NUMBERS = [
 ];
 
 // Environment-based configuration
-// DEMO MODE: Temporarily disable whitelist for demo purposes
-const ENFORCE_WHITELIST = false; // Set to true to re-enable security
-// const ENFORCE_WHITELIST = process.env.NODE_ENV !== 'production' || 
-//                          process.env.WHATSAPP_ENFORCE_WHITELIST === 'true';
+// PRODUCTION MODE: Whitelist disabled to allow all numbers
+const ENFORCE_WHITELIST = process.env.WHATSAPP_ENFORCE_WHITELIST === 'true' || false;
+// Set WHATSAPP_ENFORCE_WHITELIST=true in environment to re-enable whitelist
 
 // Load additional numbers from environment variable if provided
 if (process.env.WHATSAPP_ALLOWED_NUMBERS) {

@@ -18,6 +18,7 @@
                 <a href="/dashboard/analytics">Analytics</a>
                 <a href="/dashboard/whatsapp-setup">WhatsApp</a>
                 <a href="/dashboard/settings" class="active">Settings</a>
+                <a href="/dashboard/help">Help</a>
             </nav>
             <div class="user-section">
                 <div class="user-menu">
@@ -47,6 +48,9 @@
             </button>
             <button class="tab-btn" data-tab="operations">
                 <i class="bi bi-gear"></i> Operations
+            </button>
+            <button class="tab-btn" data-tab="qrcode">
+                <i class="bi bi-qr-code"></i> QR Code
             </button>
         </div>
 
@@ -120,13 +124,14 @@
                                    class="time-input" 
                                    value="<%= index < 5 ? '22:00' : '23:00' %>">
                         </div>
-                        <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
                             <label class="toggle-switch">
                                 <input type="checkbox" 
                                        name="hours[<%= day.toLowerCase() %>][closed]" 
                                        class="day-closed-toggle">
                                 <div class="toggle-switch-slider"></div>
                             </label>
+                            <span class="toggle-label" style="font-size: 0.85rem; color: rgba(255,255,255,0.7); min-width: 50px;">Open</span>
                         </div>
                     </div>
                     <% }) %>
@@ -431,6 +436,86 @@ Please respond within {Remaining} minutes or we'll need to release your table to
                 </button>
             </div>
         </div>
+        
+        <!-- QR Code Tab -->
+        <div id="qrcodeTab" class="tab-content" style="display: none;">
+            <div class="section">
+                <h2><i class="bi bi-qr-code"></i> Queue QR Code</h2>
+                <p class="section-description">Generate and download QR codes for customers to join your queue</p>
+                
+                <div class="qr-code-container">
+                    <!-- QR Code Preview -->
+                    <div class="qr-preview-section">
+                        <h3>QR Code Preview</h3>
+                        <div class="qr-code-preview" id="qrCodePreview">
+                            <div class="qr-loading">
+                                <i class="bi bi-arrow-clockwise spin"></i>
+                                <p>Loading QR Code...</p>
+                            </div>
+                        </div>
+                        <div class="queue-url-display" id="queueUrlDisplay">
+                            <label>Queue URL:</label>
+                            <div class="url-copy-container">
+                                <input type="text" id="queueUrlInput" readonly>
+                                <button onclick="copyQueueUrl()" class="btn-copy">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Download Options -->
+                    <div class="qr-download-section">
+                        <h3>Download Options</h3>
+                        
+                        <div class="download-option">
+                            <div class="option-info">
+                                <h4><i class="bi bi-file-earmark-pdf"></i> Professional Poster (PDF)</h4>
+                                <p>A4 size poster with your restaurant name, QR code, and instructions. Perfect for printing and displaying at your entrance.</p>
+                            </div>
+                            <button onclick="downloadQRPoster('professional')" class="btn btn-primary">
+                                <i class="bi bi-download"></i> Download Poster
+                            </button>
+                        </div>
+                        
+                        <div class="download-option">
+                            <div class="option-info">
+                                <h4><i class="bi bi-file-earmark-pdf"></i> Simple QR Code (PDF)</h4>
+                                <p>Minimal design with just the QR code and restaurant name. Ideal for table tents or small prints.</p>
+                            </div>
+                            <button onclick="downloadQRPoster('simple')" class="btn btn-secondary">
+                                <i class="bi bi-download"></i> Download Simple
+                            </button>
+                        </div>
+                        
+                        <div class="download-option">
+                            <div class="option-info">
+                                <h4><i class="bi bi-image"></i> QR Code Image (PNG)</h4>
+                                <p>Just the QR code as an image file. Use this to create your own custom materials.</p>
+                            </div>
+                            <button onclick="downloadQRImage()" class="btn btn-secondary">
+                                <i class="bi bi-download"></i> Download Image
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Usage Tips -->
+                <div class="info-card" style="margin-top: 2rem;">
+                    <div class="info-card-header">
+                        <div class="info-icon">💡</div>
+                        <span>Tips for Using QR Codes</span>
+                    </div>
+                    <ul style="margin: 1rem 0 0 2rem; color: rgba(255,255,255,0.8);">
+                        <li>Place QR codes at your entrance where customers can easily see them</li>
+                        <li>Print in color for better visibility and scanning</li>
+                        <li>Ensure good lighting where QR codes are displayed</li>
+                        <li>Test scanning from different phones and distances</li>
+                        <li>Consider laminating printed codes for durability</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -470,10 +555,23 @@ Please respond within {Remaining} minutes or we'll need to release your table to
             toggle.addEventListener('change', (e) => {
                 const row = e.target.closest('.hours-row');
                 const inputs = row.querySelectorAll('.time-input');
+                const label = e.target.closest('div').querySelector('.toggle-label');
+                
                 inputs.forEach(input => {
                     input.disabled = e.target.checked;
                     input.style.opacity = e.target.checked ? '0.5' : '1';
                 });
+                
+                // Update label text and style
+                if (e.target.checked) {
+                    label.textContent = 'Closed';
+                    label.style.color = '#dc3545';
+                    label.style.fontWeight = '500';
+                } else {
+                    label.textContent = 'Open';
+                    label.style.color = 'rgba(255,255,255,0.7)';
+                    label.style.fontWeight = '400';
+                }
             });
         });
 
@@ -740,12 +838,20 @@ Please respond within {Remaining} minutes or we'll need to release your table to
                                 row.querySelector(`input[name="hours[${day}][open]"]`).value = dayData.start || '09:00';
                                 row.querySelector(`input[name="hours[${day}][close]"]`).value = dayData.end || '22:00';
                                 
-                                // Disable inputs if closed
+                                // Update UI if closed
                                 if (dayData.closed) {
                                     row.querySelectorAll('.time-input').forEach(input => {
                                         input.disabled = true;
                                         input.style.opacity = '0.5';
                                     });
+                                    
+                                    // Update label text
+                                    const label = row.querySelector('.toggle-label');
+                                    if (label) {
+                                        label.textContent = 'Closed';
+                                        label.style.color = '#dc3545';
+                                        label.style.fontWeight = '500';
+                                    }
                                 }
                             }
                         });
@@ -757,7 +863,134 @@ Please respond within {Remaining} minutes or we'll need to release your table to
         }
 
         // Initialize on load
-        document.addEventListener('DOMContentLoaded', loadSettings);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadQRCode();
+        });
+        
+        // QR Code Functions
+        let currentQueueId = null;
+        let currentQueueUrl = null;
+        
+        async function loadQRCode() {
+            try {
+                // Get the active queue for this merchant
+                const response = await fetch('/api/queue');
+                const data = await response.json();
+                
+                if (data.success && data.queues && data.queues.length > 0) {
+                    // Find active queue or use the first one
+                    const activeQueue = data.queues.find(q => q.isActive) || data.queues[0];
+                    currentQueueId = activeQueue._id;
+                    
+                    // Generate QR code
+                    const qrResponse = await fetch(`/api/queue/${currentQueueId}/qr`);
+                    const qrData = await qrResponse.json();
+                    
+                    if (qrData.success) {
+                        currentQueueUrl = qrData.queueUrl;
+                        
+                        // Display QR code
+                        const qrPreview = document.getElementById('qrCodePreview');
+                        qrPreview.innerHTML = `<img src="${qrData.qrCode}" alt="Queue QR Code" />`;
+                        
+                        // Display URL
+                        document.getElementById('queueUrlInput').value = currentQueueUrl;
+                        document.getElementById('queueUrlDisplay').style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('qrCodePreview').innerHTML = `
+                        <div class="no-queue-message">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <p>No active queue found. Please create a queue first.</p>
+                            <a href="/dashboard/queues/new" class="btn btn-primary">Create Queue</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading QR code:', error);
+                document.getElementById('qrCodePreview').innerHTML = `
+                    <div class="error-message">
+                        <i class="bi bi-x-circle"></i>
+                        <p>Error loading QR code. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function copyQueueUrl() {
+            const urlInput = document.getElementById('queueUrlInput');
+            urlInput.select();
+            document.execCommand('copy');
+            
+            // Show feedback
+            const btn = event.target.closest('.btn-copy');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check"></i>';
+            btn.classList.add('copied');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+        
+        async function downloadQRPoster(type) {
+            if (!currentQueueId) {
+                showAlert('No queue available', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/merchant/qr-pdf?queueId=${currentQueueId}&type=${type}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to generate PDF');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `queue-qr-${type}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showAlert('PDF downloaded successfully!');
+            } catch (error) {
+                console.error('Error downloading PDF:', error);
+                showAlert('Error downloading PDF. Please try again.', 'error');
+            }
+        }
+        
+        async function downloadQRImage() {
+            if (!currentQueueId) {
+                showAlert('No queue available', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/queue/${currentQueueId}/qr?format=svg`);
+                const svgText = await response.text();
+                
+                const blob = new Blob([svgText], { type: 'image/svg+xml' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'queue-qr.svg';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showAlert('QR code image downloaded successfully!');
+            } catch (error) {
+                console.error('Error downloading QR image:', error);
+                showAlert('Error downloading QR image. Please try again.', 'error');
+            }
+        }
     </script>
 </body>
 </html>

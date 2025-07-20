@@ -6,26 +6,98 @@
     <title><%= title %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/dashboard.css?v=<%= Date.now() %>" rel="stylesheet">
 </head>
 <body>
     <!-- Header -->
     <div class="header">
         <div class="header-content">
             <h1>StoreHub Queue Management System</h1>
-            <nav class="nav">
-                <a href="/dashboard" class="active">Dashboard</a>
-                <a href="/dashboard/analytics">Analytics</a>
-                <a href="/dashboard/whatsapp-setup">WhatsApp</a>
-                <a href="/dashboard/settings">Settings</a>
-            </nav>
+            
+            <!-- Mobile Hamburger Menu -->
+            <button class="mobile-nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <div class="nav-container">
+                <% if (typeof queues !== 'undefined' && queues.length > 0) { %>
+                    <% const activeQueue = queues.find(queue => queue.isActive); %>
+                    <% if (activeQueue) { %>
+                        <a href="/queue/<%= activeQueue._id %>" class="btn-view-public" target="_blank">
+                            <i class="bi bi-eye"></i> View Public
+                        </a>
+                    <% } %>
+                <% } %>
+                <nav class="nav">
+                    <a href="/dashboard" class="active">Dashboard</a>
+                    <a href="/dashboard/analytics">Analytics</a>
+                    <a href="/dashboard/whatsapp-setup">WhatsApp</a>
+                    <a href="/dashboard/settings">Settings</a>
+                    <a href="/dashboard/help">Help</a>
+                </nav>
+            </div>
             <div class="user-section">
                 <div class="user-menu">
-                    <a href="/auth/logout" class="user-button">
+                    <form action="/auth/logout" method="POST" style="display: inline;">
+                        <button type="submit" class="user-button">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav-overlay">
+        <div class="mobile-nav-menu">
+            <div class="mobile-nav-header">
+                <h3><%= user.businessName %></h3>
+                <button class="mobile-nav-close" aria-label="Close navigation">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <nav class="mobile-nav-links">
+                <a href="/dashboard" class="active">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+                <a href="/dashboard/analytics">
+                    <i class="bi bi-bar-chart"></i>
+                    Analytics
+                </a>
+                <a href="/dashboard/whatsapp-setup">
+                    <i class="bi bi-whatsapp"></i>
+                    WhatsApp
+                </a>
+                <a href="/dashboard/settings">
+                    <i class="bi bi-gear"></i>
+                    Settings
+                </a>
+                <a href="/dashboard/help">
+                    <i class="bi bi-question-circle"></i>
+                    Help
+                </a>
+                <% if (typeof queues !== 'undefined' && queues.length > 0) { %>
+                    <% const activeQueue = queues.find(queue => queue.isActive); %>
+                    <% if (activeQueue) { %>
+                        <a href="/queue/<%= activeQueue._id %>" target="_blank">
+                            <i class="bi bi-eye"></i>
+                            View Public Queue
+                        </a>
+                    <% } %>
+                <% } %>
+            </nav>
+            <div class="mobile-nav-footer">
+                <form action="/auth/logout" method="POST">
+                    <button type="submit" class="mobile-logout-btn">
                         <i class="bi bi-box-arrow-right"></i>
                         Logout
-                    </a>
-                </div>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -87,12 +159,21 @@
                                             <div class="label">Avg Wait</div>
                                         </div>
                                     </div>
-                                    <a href="/queue/<%= activeQueue._id %>" class="btn btn-sm">View Public</a>
+                                </div>
+                            </div>
+                            
+                            <!-- Queue Actions Bar -->
+                            <div class="queue-actions">
+                                <div class="queue-actions-left">
+                                    <button class="btn btn-outline" onclick="refreshQueue()">
+                                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                                    </button>
                                 </div>
                             </div>
                             
                             <% if (waitingCustomers.length > 0) { %>
-                                <div class="customer-list">
+                                <!-- Desktop Table View -->
+                                <div class="customer-list customer-list-desktop">
                                     <div class="customer-list-header">
                                         <span>#</span>
                                         <span>Customer</span>
@@ -133,6 +214,57 @@
                                                 <% } else { %>
                                                     <button class="btn-action btn-select" onclick="selectCustomer('<%= activeQueue._id %>', '<%= customer.customerId %>')">Select</button>
                                                 <% } %>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                                
+                                <!-- Mobile Card View -->
+                                <div class="customer-list-mobile">
+                                    <% waitingCustomers.forEach((customer, index) => { %>
+                                        <% const waitMinutes = Math.floor((new Date() - new Date(customer.joinedAt)) / (1000 * 60)); %>
+                                        <div class="customer-card <%= customer.status === 'called' ? 'notified-customer' : (index === 0 && customer.status === 'waiting' ? 'next-customer' : '') %>">
+                                            <div class="customer-card-header">
+                                                <span class="position-badge"><%= customer.position %></span>
+                                                <h3><%= customer.name %></h3>
+                                                <% if (customer.status === 'called') { %>
+                                                    <span class="status-badge notified">CALLED</span>
+                                                <% } else if (index === 0 && customer.status === 'waiting') { %>
+                                                    <span class="status-badge next">NEXT</span>
+                                                <% } %>
+                                            </div>
+                                            <div class="customer-card-body">
+                                                <div class="customer-info-row">
+                                                    <i class="bi bi-phone"></i>
+                                                    <span><%= customer.phone %></span>
+                                                </div>
+                                                <div class="customer-info-row">
+                                                    <i class="bi bi-people"></i>
+                                                    <span><%= customer.partySize %> people</span>
+                                                </div>
+                                                <div class="customer-info-row">
+                                                    <i class="bi bi-clock"></i>
+                                                    <span><%= waitMinutes %> min</span>
+                                                </div>
+                                                <% if (customer.specialRequests) { %>
+                                                    <div class="customer-info-row">
+                                                        <i class="bi bi-chat-text"></i>
+                                                        <span><%= customer.specialRequests %></span>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                            <div class="customer-card-actions">
+                                                <% if (customer.status === 'waiting') { %>
+                                                    <button onclick="callCustomer('<%= activeQueue._id %>', '<%= customer._id %>')" class="action-button call-button">
+                                                        <i class="bi bi-megaphone"></i> Call
+                                                    </button>
+                                                <% } %>
+                                                <button onclick="completeService('<%= activeQueue._id %>', '<%= customer._id %>')" class="action-button complete-button">
+                                                    <i class="bi bi-check-circle"></i> Complete
+                                                </button>
+                                                <button onclick="requeueCustomer('<%= activeQueue._id %>', '<%= customer._id %>')" class="action-button requeue-button">
+                                                    <i class="bi bi-arrow-repeat"></i> Requeue
+                                                </button>
                                             </div>
                                         </div>
                                     <% }); %>
@@ -225,6 +357,35 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Mobile Navigation Toggle
+        const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+        const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
+        const mobileNavClose = document.querySelector('.mobile-nav-close');
+        
+        if (mobileNavToggle) {
+            mobileNavToggle.addEventListener('click', () => {
+                mobileNavOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+        
+        if (mobileNavClose) {
+            mobileNavClose.addEventListener('click', () => {
+                mobileNavOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
+        
+        // Close mobile nav when clicking overlay
+        if (mobileNavOverlay) {
+            mobileNavOverlay.addEventListener('click', (e) => {
+                if (e.target === mobileNavOverlay) {
+                    mobileNavOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+        
         // Tab functionality
         function showTab(tabId) {
             // Hide all tab contents
@@ -537,6 +698,29 @@
             }
         }
         
+        function refreshQueue() {
+            window.location.reload();
+        }
+        
+        function copyQueueLink(queuePath) {
+            const fullUrl = window.location.origin + queuePath;
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                // Show copy feedback
+                const button = event.target.closest('.btn-copy');
+                const originalIcon = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check"></i>';
+                button.style.color = '#25D366';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalIcon;
+                    button.style.color = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy link:', err);
+                alert('Failed to copy link');
+            });
+        }
+
         async function requeueCustomer(queueId, customerId) {
             if (!confirm('Are you sure you want to requeue this customer?')) {
                 return;
@@ -559,6 +743,57 @@
             } catch (error) {
                 console.error('Error requeuing customer:', error);
                 alert('Error requeuing customer');
+            }
+        }
+    </script>
+    
+    <!-- Bottom Navigation for Mobile -->
+    <nav class="bottom-nav">
+        <a href="/dashboard" class="bottom-nav-item active">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="/dashboard/analytics" class="bottom-nav-item">
+            <i class="bi bi-bar-chart"></i>
+            <span>Analytics</span>
+        </a>
+        <button onclick="showQuickActions()" class="bottom-nav-item bottom-nav-fab">
+            <i class="bi bi-plus-lg"></i>
+        </button>
+        <a href="/dashboard/whatsapp-setup" class="bottom-nav-item">
+            <i class="bi bi-whatsapp"></i>
+            <span>WhatsApp</span>
+        </a>
+        <a href="/dashboard/settings" class="bottom-nav-item">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+        </a>
+        <a href="/dashboard/help" class="bottom-nav-item">
+            <i class="bi bi-question-circle"></i>
+            <span>Help</span>
+        </a>
+    </nav>
+    
+    <script>
+        // Quick Actions for FAB
+        function showQuickActions() {
+            // You can implement a modal or action sheet here
+            const actions = [
+                { label: 'Create Queue', action: () => window.location.href = '/dashboard/queues/new' },
+                { label: 'Call Next', action: () => callNextCustomer() },
+                { label: 'View Public Queue', action: () => {
+                    const activeQueue = document.querySelector('[data-active-queue-id]');
+                    if (activeQueue) {
+                        window.open('/queue/' + activeQueue.dataset.activeQueueId, '_blank');
+                    }
+                }}
+            ];
+            
+            // Simple implementation - you can enhance this
+            const actionLabels = actions.map(a => a.label).join('\n');
+            const choice = prompt('Quick Actions:\n' + actionLabels + '\n\nEnter action number (1-' + actions.length + ')');
+            if (choice && actions[parseInt(choice) - 1]) {
+                actions[parseInt(choice) - 1].action();
             }
         }
     </script>

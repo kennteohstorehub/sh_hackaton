@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Merchant = require('../server/models/Merchant');
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-queue-manager');
+mongoose.connect('mongodb://localhost:27017/smart-queue-manager');
 
 // Use a fixed ObjectId for demo merchant
 const demoMerchantId = new mongoose.Types.ObjectId('507f1f77bcf86cd799439011');

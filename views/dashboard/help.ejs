@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .help-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .help-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .help-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .help-section {
+            background: rgba(255, 140, 0, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .help-section h2 {
+            color: #ff8c00;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .help-section h3 {
+            color: #ff8c00;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step-list {
+            list-style: none;
+            padding: 0;
+            counter-reset: step-counter;
+        }
+        
+        .step-list li {
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 1rem;
+            counter-increment: step-counter;
+        }
+        
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #ff8c00;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .faq-item {
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .faq-item h4 {
+            color: #ff8c00;
+            margin-bottom: 0.5rem;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: rgba(255, 140, 0, 0.1);
+            border-radius: 15px;
+            margin: 1rem 0;
+        }
+        
+        .video-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .support-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .support-btn {
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .support-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/dashboard">StoreHub Queue</a>
+            </div>
+            
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/dashboard/analytics" class="nav-link">Analytics</a></li>
+                <li><a href="/dashboard/whatsapp-setup" class="nav-link">WhatsApp</a></li>
+                <li><a href="/dashboard/settings" class="nav-link">Settings</a></li>
+                <li><a href="/dashboard/help" class="nav-link active">Help</a></li>
+                <li><a href="/auth/logout" class="nav-link">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="help-container">
+        <div class="help-header">
+            <h1>Help & FAQ</h1>
+            <p>Everything you need to know about StoreHub Queue Management System</p>
+        </div>
+
+        <!-- Getting Started -->
+        <div class="help-section">
+            <h2>🚀 Getting Started</h2>
+            
+            <h3>How to Set Up Your First Queue</h3>
+            <ol class="step-list">
+                <li>From your dashboard, click "Create New Queue" to create your first queue</li>
+                <li>Enter a name for your queue (e.g., "Main Dining", "Takeout", "VIP Service")</li>
+                <li>Set your average service time per customer</li>
+                <li>Configure your maximum queue size if needed</li>
+                <li>Save your queue and it will appear on your dashboard</li>
+            </ol>
+
+            <h3>Share Your Queue with Customers</h3>
+            <ol class="step-list">
+                <li>Go to Settings → QR Code tab</li>
+                <li>Download the QR code poster (PDF)</li>
+                <li>Print and display it at your business location</li>
+                <li>Customers can scan to join your queue instantly</li>
+            </ol>
+        </div>
+
+        <!-- Customer Experience -->
+        <div class="help-section">
+            <h2>📱 Customer Experience</h2>
+            
+            <h3>How Customers Join Your Queue</h3>
+            <p>Customers have multiple ways to join your queue:</p>
+            <ul>
+                <li><strong>QR Code:</strong> Scan the QR code at your location</li>
+                <li><strong>WhatsApp:</strong> Send a message to your WhatsApp business number</li>
+                <li><strong>Facebook Messenger:</strong> Message your Facebook page</li>
+                <li><strong>Web Link:</strong> Visit your queue URL directly</li>
+            </ul>
+
+            <h3>What Customers See</h3>
+            <p>When customers join your queue, they receive:</p>
+            <ul>
+                <li>Queue position number</li>
+                <li>Estimated wait time</li>
+                <li>Real-time updates on their position</li>
+                <li>Notification when it's their turn</li>
+            </ul>
+        </div>
+
+        <!-- Managing Your Queue -->
+        <div class="help-section">
+            <h2>👥 Managing Your Queue</h2>
+            
+            <h3>Dashboard Features</h3>
+            <div class="faq-item">
+                <h4>Call Next Customer</h4>
+                <p>Click the "Call Next" button to notify the next customer in line. They'll receive an instant notification via their chosen platform.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Mark as Served</h4>
+                <p>After serving a customer, click "Mark as Served" to remove them from the queue and update your statistics.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>No-Show Management</h4>
+                <p>If a customer doesn't show up when called, mark them as "No Show" to skip to the next customer.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Pause/Resume Queue</h4>
+                <p>Need a break? Pause your queue to temporarily stop accepting new customers while continuing to serve existing ones.</p>
+            </div>
+        </div>
+
+        <!-- Integrations -->
+        <div class="help-section">
+            <h2>🔗 Integrations</h2>
+            
+            <h3>WhatsApp Integration</h3>
+            <ol class="step-list">
+                <li>Go to WhatsApp Setup in your dashboard</li>
+                <li>Scan the QR code with WhatsApp on your phone</li>
+                <li>Keep the browser tab open for the connection to remain active</li>
+                <li>Customers can now join by messaging your WhatsApp number</li>
+            </ol>
+            
+            <h3>Facebook Messenger Integration</h3>
+            <p>Coming soon! Facebook Messenger integration will allow customers to join your queue through your Facebook page.</p>
+        </div>
+
+        <!-- Analytics -->
+        <div class="help-section">
+            <h2>📊 Understanding Analytics</h2>
+            
+            <div class="faq-item">
+                <h4>Peak Hours</h4>
+                <p>Shows your busiest times of day and days of week, helping you staff appropriately.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Average Wait Time</h4>
+                <p>Tracks how long customers typically wait, helping you optimize your service speed.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Customer Satisfaction</h4>
+                <p>AI-powered sentiment analysis of customer messages shows satisfaction trends.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>No-Show Rate</h4>
+                <p>Percentage of customers who don't show up when called, helping you adjust your queue strategy.</p>
+            </div>
+        </div>
+
+        <!-- Frequently Asked Questions -->
+        <div class="help-section">
+            <h2>❓ Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <h4>How many queues can I create?</h4>
+                <p>You can create unlimited queues. Many businesses use separate queues for different services (e.g., dine-in, takeout, VIP).</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>What happens if I lose internet connection?</h4>
+                <p>Your queue data is saved continuously. When you reconnect, you'll see all updates. Customers already in queue can still view their status.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Can customers join without a smartphone?</h4>
+                <p>Yes! You can manually add walk-in customers through your dashboard by clicking "Add Customer".</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>How do I handle multiple locations?</h4>
+                <p>Create separate merchant accounts for each location, or use different queues with location-specific names.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Is customer data secure?</h4>
+                <p>Yes, we use enterprise-grade security with encrypted connections and secure data storage. Customer data is only accessible by you.</p>
+            </div>
+        </div>
+
+        <!-- Support -->
+        <div class="help-section">
+            <h2>💬 Need More Help?</h2>
+            <p>Our support team is here to help you get the most out of StoreHub Queue Management System.</p>
+            
+            <div class="support-buttons">
+                <a href="mailto:support@storehub.com" class="support-btn">
+                    <i>✉️</i> Email Support
+                </a>
+                <a href="https://wa.me/1234567890" class="support-btn" target="_blank">
+                    <i>💬</i> WhatsApp Support
+                </a>
+                <a href="/dashboard" class="support-btn">
+                    <i>🏠</i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/dashboard" class="bottom-nav-item">
+            <i>🏠</i>
+            <span>Home</span>
+        </a>
+        <a href="/dashboard/analytics" class="bottom-nav-item">
+            <i>📊</i>
+            <span>Analytics</span>
+        </a>
+        <a href="/dashboard/whatsapp-setup" class="bottom-nav-item">
+            <i>💬</i>
+            <span>WhatsApp</span>
+        </a>
+        <a href="/dashboard/settings" class="bottom-nav-item">
+            <i>⚙️</i>
+            <span>Settings</span>
+        </a>
+        <a href="/dashboard/help" class="bottom-nav-item active">
+            <i>❓</i>
+            <span>Help</span>
+        </a>
+    </nav>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('hamburger').addEventListener('click', function() {
+            document.getElementById('navMenu').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

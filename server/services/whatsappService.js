@@ -95,14 +95,22 @@ class WhatsAppService {
       // Set up event listeners
       this.setupEventListeners();
       
-      // Initialize the client
+      // Initialize the client with timeout
+      const initTimeout = setTimeout(() => {
+        logger.error('WhatsApp initialization timeout - continuing without WhatsApp');
+        this.client = null;
+      }, 30000); // 30 second timeout
+      
       await this.client.initialize();
+      clearTimeout(initTimeout);
       
       logger.info('WhatsApp service initialized (real mode)');
       return true;
     } catch (error) {
       logger.error('Error initializing WhatsApp service:', error);
-      throw error;
+      // Don't throw - allow server to continue without WhatsApp
+      this.client = null;
+      return false;
     }
   }
 
@@ -336,8 +344,8 @@ class WhatsAppService {
       
       return { 
         success: true, 
-        messageId: sentMessage.id._serialized,
-        timestamp: sentMessage.timestamp
+        messageId: sentMessage?.id?._serialized || 'unknown',
+        timestamp: sentMessage?.timestamp || Date.now()
       };
       
     } catch (error) {
@@ -585,6 +593,12 @@ class WhatsAppService {
   async isCustomerInQueue(phoneNumber) {
     try {
       const Queue = require('../models/Queue');
+      
+      // Check if phoneNumber is valid
+      if (!phoneNumber) {
+        logger.warn('isCustomerInQueue called with invalid phone number');
+        return false;
+      }
       
       // Try multiple phone number formats to match database entries
       const phoneFormats = [

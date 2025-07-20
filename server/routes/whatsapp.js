@@ -147,6 +147,27 @@ router.post('/test-message', setMockUser, async (req, res) => {
   }
 });
 
+// POST /api/whatsapp/init - Manually initialize WhatsApp
+router.post('/init', setMockUser, async (req, res) => {
+  try {
+    if (whatsappService.isConnected) {
+      return res.json({ success: true, message: 'WhatsApp already initialized' });
+    }
+    
+    const io = req.app.get('io');
+    const result = await whatsappService.initialize(io);
+    
+    if (result) {
+      res.json({ success: true, message: 'WhatsApp initialization started' });
+    } else {
+      res.status(500).json({ error: 'WhatsApp initialization failed' });
+    }
+  } catch (error) {
+    logger.error('Error initializing WhatsApp:', error);
+    res.status(500).json({ error: 'Failed to initialize WhatsApp', details: error.message });
+  }
+});
+
 // GET /api/whatsapp/sessions - Get active sessions count
 router.get('/sessions', setMockUser, async (req, res) => {
   try {

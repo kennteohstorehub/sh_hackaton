@@ -3,26 +3,21 @@ const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const Merchant = require('../../models/Merchant');
 const logger = require('../../utils/logger');
+const { requireGuest } = require('../../middleware/auth');
 
 const router = express.Router();
 
 // Login page
-router.get('/login', (req, res) => {
-  if (req.session.user) {
-    return res.redirect('/dashboard');
-  }
-  
+router.get('/login', requireGuest, (req, res) => {
+  const redirect = req.query.redirect || '/dashboard';
   res.render('auth/login', {
-    title: 'Login - StoreHub Queue Management System'
+    title: 'Login - StoreHub Queue Management System',
+    redirect
   });
 });
 
 // Register page
-router.get('/register', (req, res) => {
-  if (req.session.user) {
-    return res.redirect('/dashboard');
-  }
-  
+router.get('/register', requireGuest, (req, res) => {
   res.render('auth/register', {
     title: 'Register - StoreHub Queue Management System'
   });
@@ -56,17 +51,15 @@ router.post('/login', [
       return res.redirect('/auth/login');
     }
 
-    // Create session
-    req.session.user = {
-      id: merchant._id,
-      email: merchant.email,
-      businessName: merchant.businessName,
-      businessType: merchant.businessType
-    };
+    // Create session with userId
+    req.session.userId = merchant._id.toString();
 
     logger.info(`Merchant logged in: ${merchant.email}`);
     req.flash('success', `Welcome back, ${merchant.businessName}!`);
-    res.redirect('/dashboard');
+    
+    // Redirect to original URL if provided
+    const redirectUrl = req.body.redirect || req.query.redirect || '/dashboard';
+    res.redirect(redirectUrl);
 
   } catch (error) {
     logger.error('Login error:', error);
@@ -113,13 +106,8 @@ router.post('/register', [
 
     await merchant.save();
 
-    // Create session
-    req.session.user = {
-      id: merchant._id,
-      email: merchant.email,
-      businessName: merchant.businessName,
-      businessType: merchant.businessType
-    };
+    // Create session with userId
+    req.session.userId = merchant._id.toString();
 
     logger.info(`New merchant registered: ${merchant.email}`);
     req.flash('success', `Welcome to StoreHub Queue Management System, ${merchant.businessName}!`);
@@ -132,7 +120,16 @@ router.post('/register', [
   }
 });
 
-// Logout
+// Logout (support both GET and POST)
+router.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      logger.error('Logout error:', err);
+    }
+    res.redirect('/');
+  });
+});
+
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {

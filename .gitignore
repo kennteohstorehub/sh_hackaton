@@ -145,3 +145,4 @@ dist/
 # Test files
 test-results/
 coverage/ 
+/generated/prisma

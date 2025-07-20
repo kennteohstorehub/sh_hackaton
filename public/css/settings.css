@@ -336,35 +336,79 @@ body {
 /* Toggle Switch */
 .toggle-switch {
     position: relative;
-    width: 48px;
-    height: 26px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 13px;
+    display: inline-block;
+    width: 56px;
+    height: 28px;
     cursor: pointer;
-    transition: all var(--transition-fast);
 }
 
 .toggle-switch input {
-    display: none;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .toggle-switch-slider {
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 20px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 28px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-switch-slider:before {
+    position: absolute;
+    content: "";
     height: 20px;
-    background: white;
+    width: 20px;
+    left: 4px;
+    bottom: 2px;
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 50%;
-    transition: all var(--transition-fast);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.toggle-switch input:checked + .toggle-switch {
-    background: var(--success-green);
+/* Checked state */
+.toggle-switch input:checked + .toggle-switch-slider {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.4);
 }
 
-.toggle-switch input:checked + .toggle-switch .toggle-switch-slider {
-    transform: translateX(22px);
+.toggle-switch input:checked + .toggle-switch-slider:before {
+    transform: translateX(28px);
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Hover effects */
+.toggle-switch:hover .toggle-switch-slider {
+    border-color: rgba(255, 140, 0, 0.5);
+}
+
+.toggle-switch input:checked:hover + .toggle-switch-slider {
+    background: #ff6b35;
+    box-shadow: 0 0 25px rgba(255, 140, 0, 0.6);
+}
+
+/* Focus state for accessibility */
+.toggle-switch input:focus + .toggle-switch-slider {
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.3);
+}
+
+/* Disabled state */
+.toggle-switch input:disabled + .toggle-switch-slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.toggle-switch input:disabled + .toggle-switch-slider:before {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* Capacity Input Groups */
@@ -586,4 +630,203 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 140, 0, 0.7);
+}
+
+/* QR Code Section Styles */
+.qr-code-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.qr-preview-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.qr-preview-section h3 {
+    color: #ff8c00;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+}
+
+.qr-code-preview {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.qr-code-preview img {
+    width: 256px;
+    height: 256px;
+    display: block;
+}
+
+.qr-loading {
+    padding: 4rem 2rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.qr-loading i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.queue-url-display {
+    display: none;
+    margin-top: 1.5rem;
+    text-align: left;
+}
+
+.queue-url-display label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.url-copy-container {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.url-copy-container input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.btn-copy {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 140, 0, 0.2);
+    border: 1px solid rgba(255, 140, 0, 0.4);
+    border-radius: 8px;
+    color: #ff8c00;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-copy:hover {
+    background: rgba(255, 140, 0, 0.3);
+    border-color: #ff8c00;
+}
+
+.btn-copy.copied {
+    background: rgba(37, 211, 102, 0.2);
+    border-color: rgba(37, 211, 102, 0.4);
+    color: #25D366;
+}
+
+.qr-download-section {
+    padding: 2rem;
+}
+
+.qr-download-section h3 {
+    color: #ff8c00;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+}
+
+.download-option {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.download-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 140, 0, 0.3);
+}
+
+.option-info h4 {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.option-info h4 i {
+    color: #ff8c00;
+}
+
+.option-info p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin: 0;
+    max-width: 500px;
+}
+
+.no-queue-message,
+.error-message {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.no-queue-message i,
+.error-message i {
+    font-size: 3rem;
+    color: #ff8c00;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.no-queue-message p,
+.error-message p {
+    margin-bottom: 1.5rem;
+}
+
+/* Mobile responsiveness for QR code section */
+@media (max-width: 768px) {
+    .qr-code-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .qr-preview-section {
+        margin-bottom: 1rem;
+    }
+    
+    .qr-code-preview img {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .download-option {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .download-option .btn {
+        width: 100%;
+    }
 }

@@ -110,7 +110,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-que
 })
 .catch((error) => {
   logger.error('MongoDB connection error:', error);
-  process.exit(1);
+  logger.warn('Server will continue without database - some features may not work');
+  // Don't exit - let the server run without database
 });
 
 // Ensure critical environment variables are set
@@ -190,17 +191,27 @@ io.on('connection', (socket) => {
 // Initialize services
 const initializeServices = async () => {
   try {
-    // Parallelize service initialization for faster startup
+    // Initialize services with individual error handling
     const initPromises = [
-      whatsappService.initialize(io).then(() => logger.info('WhatsApp service initialized')),
-      messengerService.initialize(io).then(() => logger.info('Messenger service initialized')),
-      aiService.initialize().then(() => logger.info('AI service initialized')),
-      Promise.resolve(chatbotService.setSocketIO(io)).then(() => logger.info('Chatbot service initialized'))
+      whatsappService.initialize(io)
+        .then(() => logger.info('WhatsApp service initialized'))
+        .catch(err => logger.warn('WhatsApp initialization failed (non-critical):', err.message)),
+      
+      messengerService.initialize(io)
+        .then(() => logger.info('Messenger service initialized'))
+        .catch(err => logger.warn('Messenger initialization failed (non-critical):', err.message)),
+      
+      aiService.initialize()
+        .then(() => logger.info('AI service initialized'))
+        .catch(err => logger.warn('AI service initialization failed (non-critical):', err.message)),
+      
+      Promise.resolve(chatbotService.setSocketIO(io))
+        .then(() => logger.info('Chatbot service initialized'))
     ];
     
-    // Wait for all services to initialize
-    await Promise.all(initPromises);
-    logger.info('All services initialized successfully');
+    // Wait for all services to initialize (failures won't stop the server)
+    await Promise.allSettled(initPromises);
+    logger.info('Service initialization complete');
     
   } catch (error) {
     logger.error('Error initializing services:', error);
@@ -250,11 +261,16 @@ process.on('SIGTERM', () => {
   });
 });
 
-server.listen(PORT, async () => {
+server.listen(PORT, () => {
   logger.info(`StoreHub Queue Management System server running on port ${PORT}`);
   logger.info(`Frontend available at: http://localhost:${PORT}`);
   logger.info(`API available at: http://localhost:${PORT}/api`);
-  await initializeServices();
+  
+  // Initialize services in the background (non-blocking)
+  initializeServices().catch(err => {
+    logger.error('Failed to initialize some services:', err);
+    logger.info('Server is still running - some features may be limited');
+  });
 });
 
 module.exports = { app, io }; 

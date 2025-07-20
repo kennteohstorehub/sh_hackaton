@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css?v=<%= Date.now() %>">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #000000 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      padding: 2rem 0;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .register-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 140, 0, 0.3);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 450px;
+      margin: 1rem;
+    }
+    
+    .register-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .register-header h1 {
+      background: linear-gradient(135deg, #ff8c00, #ff6b35);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+    
+    .register-header p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.95rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 140, 0, 0.2);
+      border-radius: 10px;
+      font-size: 1rem;
+      color: white;
+      transition: all 0.3s;
+      box-sizing: border-box;
+    }
+    
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .form-group select option {
+      background: #1a1a1a;
+      color: white;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: rgba(255, 140, 0, 0.6);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+    }
+    
+    .btn-register {
+      width: 100%;
+      padding: 0.875rem;
+      background: linear-gradient(135deg, #ff8c00, #ff6b35);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+    }
+    
+    .btn-register:hover {
+      background: linear-gradient(135deg, #ff6b35, #ff8c00);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+    }
+    
+    .btn-register:active {
+      transform: translateY(0);
+    }
+    
+    .auth-links {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 140, 0, 0.2);
+    }
+    
+    .auth-links a {
+      color: #ff8c00;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    
+    .auth-links a:hover {
+      color: #ff6b35;
+      text-decoration: underline;
+    }
+    
+    .auth-links p {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .alert {
+      padding: 0.875rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .alert-success {
+      background: rgba(34, 197, 94, 0.1);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .logo {
+      display: block;
+      margin: 0 auto 1rem;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #ff8c00, #ff6b35);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 480px) {
+      .register-container {
+        padding: 2rem 1.5rem;
+        margin: 0.5rem;
+      }
+      
+      .register-header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .form-group input,
+      .form-group select {
+        padding: 0.875rem 1rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      
+      .btn-register {
+        padding: 0.875rem;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <div class="register-header">
+      <div class="logo">SQ</div>
+      <h1>Create Your Account</h1>
+      <p>Start managing queues efficiently</p>
+    </div>
+    
+    <% if (messages.error) { %>
+      <div class="alert alert-error">
+        <%= messages.error %>
+      </div>
+    <% } %>
+    
+    <% if (messages.success) { %>
+      <div class="alert alert-success">
+        <%= messages.success %>
+      </div>
+    <% } %>
+    
+    <form action="/auth/register" method="POST">
+      <div class="form-group">
+        <label for="businessName">Business Name</label>
+        <input 
+          type="text" 
+          id="businessName" 
+          name="businessName" 
+          required 
+          placeholder="Your Business Name"
+          minlength="2"
+          maxlength="100"
+        >
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          required 
+          placeholder="merchant@example.com"
+          autocomplete="email"
+        >
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required 
+            placeholder="Min 6 characters"
+            minlength="6"
+            autocomplete="new-password"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input 
+            type="tel" 
+            id="phone" 
+            name="phone" 
+            required 
+            placeholder="+60123456789"
+          >
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="businessType">Business Type</label>
+        <select id="businessType" name="businessType" required>
+          <option value="">Select business type</option>
+          <option value="restaurant">Restaurant</option>
+          <option value="retail">Retail Store</option>
+        </select>
+      </div>
+      
+      <button type="submit" class="btn-register">Create Account</button>
+    </form>
+    
+    <div class="auth-links">
+      <p>Already have an account? <a href="/auth/login">Sign in</a></p>
+      <p style="margin-top: 0.75rem;"><a href="/">Back to Home</a></p>
+    </div>
+  </div>
+</body>
+</html>

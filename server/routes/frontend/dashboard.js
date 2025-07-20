@@ -2,28 +2,18 @@ const express = require('express');
 const Queue = require('../../models/Queue');
 const Merchant = require('../../models/Merchant');
 const logger = require('../../utils/logger');
+const { requireAuth, loadUser } = require('../../middleware/auth');
 
 const router = express.Router();
 
-// Mock user for demo purposes
-const mockUser = {
-  id: '507f1f77bcf86cd799439011',
-  email: 'demo@smartqueue.com',
-  businessName: 'Demo Restaurant',
-  businessType: 'restaurant'
-};
-
-// Middleware to set mock user
-const setMockUser = (req, res, next) => {
-  req.session.user = mockUser;
-  res.locals.user = mockUser;
-  next();
-};
+// Apply authentication to all dashboard routes
+router.use(requireAuth);
+router.use(loadUser);
 
 // Dashboard home
-router.get('/', setMockUser, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
     
     // Calculate basic stats
@@ -104,20 +94,20 @@ router.get('/', setMockUser, async (req, res) => {
 });
 
 // Queue management - redirect to main dashboard since functionality is integrated there
-router.get('/queues', setMockUser, async (req, res) => {
+router.get('/queues', async (req, res) => {
   // Redirect to main dashboard since queue management is now integrated there
   res.redirect('/dashboard');
 });
 
 // WhatsApp setup redirect - handle legacy /dashboard/whatsapp route
-router.get('/whatsapp', setMockUser, (req, res) => {
+router.get('/whatsapp', (req, res) => {
   res.redirect('/dashboard/whatsapp-setup');
 });
 
 // GET /dashboard/queues/new - Create new queue
-router.get('/queues/new', setMockUser, async (req, res) => {
+router.get('/queues/new', async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const merchant = await Merchant.findById(merchantId);
     
     if (!merchant) {
@@ -142,9 +132,9 @@ router.get('/queues/new', setMockUser, async (req, res) => {
 
 
 // GET /dashboard/queues/:id/edit - Edit queue
-router.get('/queues/:id/edit', setMockUser, async (req, res) => {
+router.get('/queues/:id/edit', async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
     const merchant = await Merchant.findById(merchantId);
     
@@ -168,9 +158,9 @@ router.get('/queues/:id/edit', setMockUser, async (req, res) => {
 });
 
 // Settings
-router.get('/settings', setMockUser, async (req, res) => {
+router.get('/settings', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.session.user.id);
+    const merchant = await Merchant.findById(req.user._id);
 
     res.render('dashboard/settings-improved', {
       title: 'Settings - StoreHub Queue Management System',
@@ -185,9 +175,9 @@ router.get('/settings', setMockUser, async (req, res) => {
 });
 
 // GET /dashboard/integrations - Integrations page
-router.get('/integrations', setMockUser, async (req, res) => {
+router.get('/integrations', async (req, res) => {
   try {
-    const merchantId = req.session.user.id;
+    const merchantId = req.user._id;
     const merchant = await Merchant.findById(merchantId);
     
     if (!merchant) {
@@ -208,7 +198,7 @@ router.get('/integrations', setMockUser, async (req, res) => {
 });
 
 // WhatsApp Setup page
-router.get('/whatsapp-setup', setMockUser, async (req, res) => {
+router.get('/whatsapp-setup', async (req, res) => {
   try {
     res.render('dashboard/whatsapp-setup', {
       title: 'WhatsApp Setup - StoreHub Queue Management System'
@@ -224,9 +214,9 @@ router.get('/whatsapp-setup', setMockUser, async (req, res) => {
 });
 
 // Analytics
-router.get('/analytics', setMockUser, async (req, res) => {
+router.get('/analytics', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.session.user.id);
+    const merchant = await Merchant.findById(req.user._id);
     
     res.render('dashboard/analytics', {
       title: 'Analytics - StoreHub Queue Management System',
@@ -235,6 +225,19 @@ router.get('/analytics', setMockUser, async (req, res) => {
   } catch (error) {
     logger.error('Analytics error:', error);
     req.flash('error', 'Error loading analytics.');
+    res.redirect('/dashboard');
+  }
+});
+
+// Help/FAQ page
+router.get('/help', async (req, res) => {
+  try {
+    res.render('dashboard/help', {
+      title: 'Help & FAQ - StoreHub Queue Management System'
+    });
+  } catch (error) {
+    logger.error('Help page error:', error);
+    req.flash('error', 'Error loading help page.');
     res.redirect('/dashboard');
   }
 });

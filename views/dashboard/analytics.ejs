@@ -269,9 +269,9 @@
         
         .heatmap {
             display: grid;
-            grid-template-columns: 80px repeat(24, 1fr);
+            /* Grid columns will be set dynamically via inline style */
             gap: 3px;
-            min-width: 1200px;
+            min-width: 800px;
             font-size: 0.8rem;
             padding: 1rem;
         }
@@ -365,6 +365,19 @@
         .heat-3 { background: rgba(255, 140, 0, 0.4); color: white; border: 1px solid rgba(255, 140, 0, 0.4); }
         .heat-4 { background: rgba(255, 140, 0, 0.6); color: white; border: 1px solid rgba(255, 140, 0, 0.5); }
         .heat-5 { background: rgba(255, 140, 0, 0.8); color: white; border: 1px solid rgba(255, 140, 0, 0.6); }
+        
+        /* Non-operating hour cells */
+        .non-operating-hour {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            font-style: italic;
+        }
+        
+        .non-operating-hour:hover {
+            transform: none;
+            cursor: not-allowed;
+        }
         
         /* Peak Hours Chart */
         .peak-hours-container {
@@ -856,7 +869,7 @@
             
             .heatmap {
                 font-size: 0.6rem;
-                min-width: 900px;
+                min-width: 600px;
                 padding: 0.5rem;
                 gap: 2px;
             }
@@ -961,6 +974,7 @@
                 <a href="/dashboard/analytics" class="active">Analytics</a>
                 <a href="/dashboard/whatsapp-setup">WhatsApp</a>
                 <a href="/dashboard/settings">Settings</a>
+                <a href="/dashboard/help">Help</a>
             </nav>
             <div class="user-section">
                 <div class="user-menu">
@@ -1169,9 +1183,10 @@
                 'Sun': 'sunday'
             };
             
-            // Filter out closed days and get operating hours for open days
+            // Filter out closed days and calculate the overall operating hours range
             const operatingDays = [];
-            const operatingHours = new Set();
+            let minOperatingHour = 24;
+            let maxOperatingHour = 0;
             
             days.forEach(day => {
                 const dayKey = dayMapping[day];
@@ -1182,19 +1197,27 @@
                     operatingDays.push(day);
                     heatmapData[day] = Array(24).fill(0);
                     
-                    // Track all operating hours across all days
+                    // Track minimum and maximum operating hours across all days
                     if (dayHours?.start && dayHours?.end) {
                         const startHour = parseInt(dayHours.start.split(':')[0]);
                         const endHour = parseInt(dayHours.end.split(':')[0]);
-                        for (let hour = startHour; hour <= endHour; hour++) {
-                            operatingHours.add(hour);
-                        }
+                        minOperatingHour = Math.min(minOperatingHour, startHour);
+                        maxOperatingHour = Math.max(maxOperatingHour, endHour);
                     }
                 }
             });
             
-            // Convert operating hours to sorted array
-            const sortedOperatingHours = Array.from(operatingHours).sort((a, b) => a - b);
+            // If no valid operating hours found, use defaults
+            if (minOperatingHour === 24 || maxOperatingHour === 0) {
+                minOperatingHour = 9;
+                maxOperatingHour = 17;
+            }
+            
+            // Create array of hours to display (only operating hours)
+            const hoursToDisplay = [];
+            for (let hour = minOperatingHour; hour <= maxOperatingHour; hour++) {
+                hoursToDisplay.push(hour);
+            }
             
             // Populate with actual data from dailyStats and peakHours
             if (analytics.dailyStats) {
@@ -1233,24 +1256,26 @@
                 }
             });
             
-            // Generate heatmap HTML - show all 24 hours but filter closed days
-            let html = '<div class="heatmap">';
+            // Generate heatmap HTML - only show operational hours
+            // Update CSS grid columns dynamically based on hours displayed
+            const gridColumns = `80px repeat(${hoursToDisplay.length}, 1fr)`;
+            let html = `<div class="heatmap" style="grid-template-columns: ${gridColumns}">`;
             
-            // Header row - show all 24 hours
+            // Header row - only show operational hours
             html += '<div class="heatmap-header"></div>';
-            for (let hour = 0; hour < 24; hour++) {
+            hoursToDisplay.forEach(hour => {
                 const hourLabel = hour.toString().padStart(2, '0') + ':00';
                 html += `<div class="heatmap-header">${hourLabel}</div>`;
-            }
+            });
             
-            // Data rows - only show operating days
+            // Data rows - only show operating days and operational hours
             operatingDays.forEach(day => {
                 const dayKey = dayMapping[day];
                 const dayHours = businessHours[dayKey];
                 
                 html += `<div class="heatmap-day">${day}</div>`;
                 
-                for (let hour = 0; hour < 24; hour++) {
+                hoursToDisplay.forEach(hour => {
                     const value = heatmapData[day][hour];
                     const hourLabel = hour.toString().padStart(2, '0') + ':00';
                     
@@ -1269,15 +1294,15 @@
                     if (isOperatingHour) {
                         const intensity = maxValue > 0 ? Math.ceil((value / maxValue) * 5) : 0;
                         cellClass += ` heat-${intensity}`;
-                        displayValue = value;
-                        tooltip += ` - ${value} customers`;
+                        displayValue = value || 0;
+                        tooltip += ` - ${value || 0} customers`;
                     } else {
                         cellClass += ' non-operating-hour';
-                        tooltip += ' - Outside operating hours';
+                        tooltip += ' - Closed';
                     }
                     
                     html += `<div class="${cellClass}" title="${tooltip}">${displayValue}</div>`;
-                }
+                });
             });
             
             html += '</div>';
@@ -1293,24 +1318,44 @@
                 return;
             }
             
-            // Create 24-hour array
-            const hourlyData = Array(24).fill(0);
+            // Get business hours from server-side data
+            const businessHours = window.merchantData?.businessHours || {};
             
-            // Populate with peak hours data
-            Object.entries(peakHours).forEach(([hour, count]) => {
-                const hourIndex = parseInt(hour);
-                if (hourIndex >= 0 && hourIndex < 24) {
-                    hourlyData[hourIndex] = count;
+            // Calculate the overall operating hours range
+            let minOperatingHour = 24;
+            let maxOperatingHour = 0;
+            
+            Object.values(businessHours).forEach(dayHours => {
+                if (!dayHours.closed && dayHours.start && dayHours.end) {
+                    const startHour = parseInt(dayHours.start.split(':')[0]);
+                    const endHour = parseInt(dayHours.end.split(':')[0]);
+                    minOperatingHour = Math.min(minOperatingHour, startHour);
+                    maxOperatingHour = Math.max(maxOperatingHour, endHour);
                 }
             });
             
+            // If no valid operating hours found, use defaults
+            if (minOperatingHour === 24 || maxOperatingHour === 0) {
+                minOperatingHour = 9;
+                maxOperatingHour = 17;
+            }
+            
+            // Create array for operational hours only
+            const operationalHours = [];
+            for (let hour = minOperatingHour; hour <= maxOperatingHour; hour++) {
+                operationalHours.push({
+                    hour: hour,
+                    count: peakHours[hour] || 0
+                });
+            }
+            
             // Find max for scaling
-            const maxCount = Math.max(...hourlyData);
+            const maxCount = Math.max(...operationalHours.map(h => h.count));
             
             // Generate chart HTML
             let html = '<div class="peak-hours-chart">';
             
-            hourlyData.forEach((count, hour) => {
+            operationalHours.forEach(({hour, count}) => {
                 const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
                 const hourLabel = hour.toString().padStart(2, '0') + ':00';
                 
