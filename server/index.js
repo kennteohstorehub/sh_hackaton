@@ -14,6 +14,14 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const logger = require('./utils/logger');
+const { 
+  configureSecurityMiddleware, 
+  generateCSRFToken, 
+  csrfProtection,
+  authLimiter,
+  apiLimiter 
+} = require('./middleware/security');
+const { registerHelpers } = require('./utils/templateHelpers');
 
 // API Routes
 const queueRoutes = require('./routes/queue');
@@ -47,6 +55,9 @@ const PORT = process.env.PORT || 3001;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
+// Register template security helpers
+registerHelpers(app);
+
 // Static files with caching
 app.use(express.static(path.join(__dirname, '../public'), {
   maxAge: '1d',
@@ -66,20 +77,8 @@ app.use(compression({
   level: 6 // Balanced compression level
 }));
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdn.socket.io"],
-      scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers like onclick
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:"]
-    }
-  }
-}));
+// Apply comprehensive security middleware
+configureSecurityMiddleware(app);
 
 // CORS for API routes only
 app.use('/api', cors({
@@ -87,12 +86,7 @@ app.use('/api', cors({
   credentials: true
 }));
 
-// Rate limiting for API
-const apiLimiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-  message: 'Too many API requests from this IP, please try again later.'
-});
+// Apply rate limiting to API routes
 app.use('/api/', apiLimiter);
 
 // Body parsing middleware
@@ -132,11 +126,16 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
-  }
+    sameSite: 'strict',
+    maxAge: 1000 * 60 * 60 * 2 // 2 hours for better security
+  },
+  name: 'sessionId' // Use custom name instead of default
 }));
 
 app.use(flash());
+
+// Generate CSRF token for all requests
+app.use(generateCSRFToken);
 
 // Make io and user data accessible to all routes
 app.set('io', io); // Store io instance on app for route access
@@ -147,9 +146,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Apply CSRF protection to all POST/PUT/DELETE routes
+app.use(csrfProtection);
+
 // Frontend Routes
 app.use('/', publicRoutes);
-app.use('/auth', authRoutes);
+app.use('/auth', authLimiter, authRoutes); // Apply rate limiting to auth routes
 app.use('/dashboard', dashboardRoutes);
 
 // API Routes
@@ -169,16 +171,45 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Socket.IO connection handling
+// Socket.IO authentication middleware
+io.use((socket, next) => {
+  const sessionMiddleware = session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-queue-manager',
+    })
+  });
+  
+  sessionMiddleware(socket.request, {}, next);
+});
+
+// Socket.IO connection handling with authentication
 io.on('connection', (socket) => {
-  logger.info(`Client connected: ${socket.id}`);
+  const session = socket.request.session;
+  
+  if (!session || !session.user) {
+    logger.warn(`Unauthorized socket connection attempt: ${socket.id}`);
+    socket.disconnect();
+    return;
+  }
+  
+  logger.info(`Client connected: ${socket.id}, User: ${session.user.email}`);
   
   socket.on('join-merchant-room', (merchantId) => {
-    socket.join(`merchant-${merchantId}`);
-    logger.info(`Merchant ${merchantId} joined room`);
+    // Verify the user has access to this merchant
+    if (session.user.id === merchantId || session.user.merchantId === merchantId) {
+      socket.join(`merchant-${merchantId}`);
+      logger.info(`Merchant ${merchantId} joined room`);
+    } else {
+      logger.warn(`Unauthorized room join attempt by ${session.user.email} for merchant ${merchantId}`);
+    }
   });
   
   socket.on('join-customer-room', (customerId) => {
+    // For now, allow customers to join their own rooms
+    // In production, validate the customer ID against session
     socket.join(`customer-${customerId}`);
     logger.info(`Customer ${customerId} joined room`);
   });

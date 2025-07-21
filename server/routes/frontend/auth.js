@@ -4,6 +4,8 @@ const { body, validationResult } = require('express-validator');
 const Merchant = require('../../models/Merchant');
 const logger = require('../../utils/logger');
 const { requireGuest } = require('../../middleware/auth');
+const { validateLogin, validateRegister } = require('../../middleware/validators');
+const { handleValidationErrors } = require('../../middleware/security');
 
 const router = express.Router();
 
@@ -24,16 +26,11 @@ router.get('/register', requireGuest, (req, res) => {
 });
 
 // Login POST
-router.post('/login', [
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
-], async (req, res) => {
+router.post('/login', 
+  validateLogin,
+  handleValidationErrors,
+  async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      req.flash('error', 'Please check your input and try again.');
-      return res.redirect('/auth/login');
-    }
 
     const { email, password } = req.body;
 
@@ -51,15 +48,37 @@ router.post('/login', [
       return res.redirect('/auth/login');
     }
 
-    // Create session with userId
-    req.session.userId = merchant._id.toString();
+    // Regenerate session to prevent fixation attacks
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regeneration error:', err);
+        req.flash('error', 'Login error. Please try again.');
+        return res.redirect('/auth/login');
+      }
+      
+      // Create session with userId
+      req.session.userId = merchant._id.toString();
+      req.session.user = {
+        id: merchant._id.toString(),
+        email: merchant.email,
+        businessName: merchant.businessName,
+        merchantId: merchant._id.toString()
+      };
 
-    logger.info(`Merchant logged in: ${merchant.email}`);
-    req.flash('success', `Welcome back, ${merchant.businessName}!`);
-    
-    // Redirect to original URL if provided
-    const redirectUrl = req.body.redirect || req.query.redirect || '/dashboard';
-    res.redirect(redirectUrl);
+      logger.info(`Merchant logged in: ${merchant.email}`);
+      req.flash('success', `Welcome back, ${merchant.businessName}!`);
+      
+      // Save session before redirect
+      req.session.save((err) => {
+        if (err) {
+          logger.error('Session save error:', err);
+        }
+        
+        // Redirect to original URL if provided
+        const redirectUrl = req.body.redirect || req.query.redirect || '/dashboard';
+        res.redirect(redirectUrl);
+      });
+    });
 
   } catch (error) {
     logger.error('Login error:', error);
@@ -69,19 +88,11 @@ router.post('/login', [
 });
 
 // Register POST
-router.post('/register', [
-  body('businessName').trim().isLength({ min: 2, max: 100 }).withMessage('Business name must be 2-100 characters'),
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('phone').isMobilePhone().withMessage('Valid phone number is required'),
-  body('businessType').isIn(['restaurant', 'retail']).withMessage('Valid business type is required')
-], async (req, res) => {
+router.post('/register', 
+  validateRegister,
+  handleValidationErrors,
+  async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      req.flash('error', 'Please check your input and try again.');
-      return res.redirect('/auth/register');
-    }
 
     const { businessName, email, password, phone, businessType } = req.body;
 
@@ -106,12 +117,34 @@ router.post('/register', [
 
     await merchant.save();
 
-    // Create session with userId
-    req.session.userId = merchant._id.toString();
+    // Regenerate session to prevent fixation attacks
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regeneration error:', err);
+        req.flash('error', 'Registration error. Please try again.');
+        return res.redirect('/auth/register');
+      }
+      
+      // Create session with userId
+      req.session.userId = merchant._id.toString();
+      req.session.user = {
+        id: merchant._id.toString(),
+        email: merchant.email,
+        businessName: merchant.businessName,
+        merchantId: merchant._id.toString()
+      };
 
-    logger.info(`New merchant registered: ${merchant.email}`);
-    req.flash('success', `Welcome to StoreHub Queue Management System, ${merchant.businessName}!`);
-    res.redirect('/dashboard');
+      logger.info(`New merchant registered: ${merchant.email}`);
+      req.flash('success', `Welcome to StoreHub Queue Management System, ${merchant.businessName}!`);
+      
+      // Save session before redirect
+      req.session.save((err) => {
+        if (err) {
+          logger.error('Session save error:', err);
+        }
+        res.redirect('/dashboard');
+      });
+    });
 
   } catch (error) {
     logger.error('Registration error:', error);

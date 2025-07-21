@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Smart Queue Manager Server Management Script
+# StoreHub Queue Management System Server Management Script
 
 PORT=3001
 SERVER_SCRIPT="server/index.js"
@@ -25,7 +25,7 @@ kill_port() {
 
 # Function to start server
 start_server() {
-    echo -e "${GREEN}Starting Smart Queue Manager server...${NC}"
+    echo -e "${GREEN}Starting StoreHub Queue Management System server...${NC}"
     
     if check_port; then
         echo -e "${RED}Port $PORT is already in use!${NC}"
@@ -45,7 +45,7 @@ start_server() {
 
 # Function to stop server
 stop_server() {
-    echo -e "${YELLOW}Stopping Smart Queue Manager server...${NC}"
+    echo -e "${YELLOW}Stopping StoreHub Queue Management System server...${NC}"
     
     if check_port; then
         kill_port
@@ -57,7 +57,7 @@ stop_server() {
 
 # Function to restart server
 restart_server() {
-    echo -e "${YELLOW}Restarting Smart Queue Manager server...${NC}"
+    echo -e "${YELLOW}Restarting StoreHub Queue Management System server...${NC}"
     stop_server
     sleep 3
     start_server
@@ -126,7 +126,7 @@ case "$1" in
         show_logs
         ;;
     *)
-        echo -e "${GREEN}Smart Queue Manager Server Management${NC}"
+        echo -e "${GREEN}StoreHub Queue Management System Server Management${NC}"
         echo ""
         echo "Usage: $0 {start|stop|restart|status|cleanup|logs}"
         echo ""

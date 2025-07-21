@@ -4,7 +4,7 @@ echo "🚀 Starting StoreHub Queue Management System on port 3838..."
 echo ""
 
 # Change to the project directory
-cd /Users/kennteoh/Development/Hack
+cd /Users/kennteoh/Development/StoreHubQueue
 
 # Export the port
 export PORT=3838

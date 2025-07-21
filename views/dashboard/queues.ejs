@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title><%- escapeHtml(title) %></title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; color: #333; }
@@ -106,49 +106,49 @@
                     <% queues.forEach(queue => { %>
                         <div class="queue-item">
                             <div class="queue-header">
-                                <div class="queue-title"><%= queue.name %></div>
+                                <div class="queue-title"><%- escapeHtml(queue.name) %></div>
                                 <div class="queue-status <%= queue.isActive ? 'status-active' : 'status-inactive' %>">
                                     <%= queue.isActive ? 'Active' : 'Inactive' %>
                                 </div>
                             </div>
                             <% if (queue.description) { %>
-                                <p style="margin-bottom: 1rem; color: #666;"><%= queue.description %></p>
+                                <p style="margin-bottom: 1rem; color: #666;"><%- escapeHtml(queue.description) %></p>
                             <% } %>
                             <div class="queue-stats">
                                 <div class="stat">
-                                    <div class="stat-number"><%= queue.currentLength %></div>
+                                    <div class="stat-number"><%- escapeHtml(queue.currentLength) %></div>
                                     <div class="stat-label">Waiting</div>
                                 </div>
                                 <div class="stat">
-                                    <div class="stat-number"><%= queue.maxCapacity %></div>
+                                    <div class="stat-number"><%- escapeHtml(queue.maxCapacity) %></div>
                                     <div class="stat-label">Capacity</div>
                                 </div>
                                 <div class="stat">
-                                    <div class="stat-number"><%= queue.averageServiceTime %></div>
+                                    <div class="stat-number"><%- escapeHtml(queue.averageServiceTime) %></div>
                                     <div class="stat-label">Avg Service (min)</div>
                                 </div>
                                 <div class="stat">
-                                    <div class="stat-number"><%= queue.nextPosition %></div>
+                                    <div class="stat-number"><%- escapeHtml(queue.nextPosition) %></div>
                                     <div class="stat-label">Next Position</div>
                                 </div>
                             </div>
                             <div class="queue-actions">
                                 <% if (queue.currentLength > 0) { %>
-                                    <button class="btn btn-sm btn-primary" onclick="callNext('<%= queue._id %>')">
-                                        <i class="bi bi-telephone"></i> Call Next (<%= queue.currentLength %> waiting)
+                                    <button class="btn btn-sm btn-primary" onclick="callNext('<%- escapeHtml(queue._id) %>')">
+                                        <i class="bi bi-telephone"></i> Call Next (<%- escapeHtml(queue.currentLength) %> waiting)
                                     </button>
                                 <% } else { %>
                                     <button class="btn btn-sm" disabled style="opacity: 0.5;">
                                         <i class="bi bi-telephone"></i> No customers waiting
                                     </button>
                                 <% } %>
-                                <button class="btn btn-sm btn-success" onclick="addCustomer('<%= queue._id %>')">
+                                <button class="btn btn-sm btn-success" onclick="addCustomer('<%- escapeHtml(queue._id) %>')">
                                     <i class="bi bi-person-plus"></i> Add Customer
                                 </button>
-                                <button class="btn btn-sm btn-info" onclick="showQRCode('<%= queue._id %>', '<%= queue.name %>')">
+                                <button class="btn btn-sm btn-info" onclick="showQRCode('<%- escapeHtml(queue._id) %>', '<%- escapeHtml(queue.name) %>')">
                                     <i class="bi bi-qr-code"></i> Show QR Code
                                 </button>
-                                <button class="btn btn-sm <%= queue.isActive ? 'btn-warning' : 'btn-secondary' %>" onclick="toggleQueue('<%= queue._id %>', <%= queue.isActive %>)">
+                                <button class="btn btn-sm <%= queue.isActive ? 'btn-warning' : 'btn-secondary' %>" onclick="toggleQueue('<%- escapeHtml(queue._id) %>', <%- queue.isActive ? 'true' : 'false' %>)">
                                     <% if (queue.isActive) { %>
                                         <i class="bi bi-pause-fill"></i>
                                     <% } else { %>
@@ -219,6 +219,22 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        const csrfToken = '<%- csrfToken %>';
+        
+        // Client-side HTML escape function
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;',
+                '/': '&#x2F;'
+            };
+            return String(str).replace(/[&<>"'\/]/g, (s) => map[s]);
+        }
+        
         const socket = io();
         socket.emit('join-merchant-room', '507f1f77bcf86cd799439011');
         
@@ -249,7 +265,7 @@
             // Update waiting count
             const waitingElement = queueElement.querySelector('.stat-number');
             if (waitingElement && data.queue) {
-                waitingElement.textContent = data.queue.currentLength || 0;
+                waitingElement.textContent = escapeHtml(data.queue.currentLength) || 0;
             }
             
             // Update call next button
@@ -257,7 +273,7 @@
             if (callNextButton && data.queue) {
                 const waitingCount = data.queue.currentLength || 0;
                 if (waitingCount > 0) {
-                    callNextButton.innerHTML = '<i class="bi bi-telephone"></i> Call Next (' + waitingCount + ' waiting)';
+                    callNextButton.innerHTML = '<i class="bi bi-telephone"></i> Call Next (' + escapeHtml(waitingCount) + ' waiting)';
                     callNextButton.disabled = false;
                     callNextButton.style.opacity = '1';
                 } else {
@@ -276,7 +292,14 @@
             const formData = new FormData(e.target);
             const queueData = Object.fromEntries(formData);
             try {
-                const response = await fetch('/api/queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(queueData) });
+                const response = await fetch('/api/queue', { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken 
+                    }, 
+                    body: JSON.stringify(queueData) 
+                });
                 const result = await response.json();
                 if (result.success) { hideCreateModal(); location.reload(); } else { alert(result.error || 'Failed to create queue'); }
             } catch (error) { console.error('Error creating queue:', error); alert('Error creating queue'); }
@@ -290,13 +313,19 @@
             button.disabled = true;
             
             try {
-                const response = await fetch(`/api/queue/${queueId}/call-next`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                const response = await fetch(`/api/queue/${queueId}/call-next`, { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken 
+                    } 
+                });
                 const result = await response.json();
                 
                 if (result.success) { 
                     // Show success message with customer details
                     const customer = result.customer;
-                    alert(`✅ Successfully called: ${customer.customerName || 'Customer'}\n📞 Phone: ${customer.customerPhone || customer.phoneNumber || 'N/A'}\n🎫 Position: ${customer.position || 'N/A'}\n⏰ Called at: ${new Date(customer.calledAt).toLocaleTimeString()}`);
+                    alert(`✅ Successfully called: ${escapeHtml(customer.customerName) || 'Customer'}\n📞 Phone: ${escapeHtml(customer.customerPhone) || escapeHtml(customer.phoneNumber) || 'N/A'}\n🎫 Position: ${customer.position || 'N/A'}\n⏰ Called at: ${new Date(customer.calledAt).toLocaleTimeString()}`);
                     
                     // Real-time update will be handled by socket listener
                     // No need to reload the page 
