@@ -6,22 +6,11 @@ const moment = require('moment');
 
 const router = express.Router();
 
-// Mock user for demo purposes
-const mockUser = {
-  id: '507f1f77bcf86cd799439011',
-  email: 'demo@smartqueue.com',
-  businessName: 'Demo Restaurant',
-  businessType: 'restaurant'
-};
-
-// Middleware to set mock user for API
-const setMockUser = (req, res, next) => {
-  req.session.user = mockUser;
-  next();
-};
+// Authentication middleware
+const { authMiddleware } = require('../middleware/auth');
 
 // GET /api/analytics/dashboard - Get dashboard analytics
-router.get('/dashboard', setMockUser, async (req, res) => {
+router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const { period = '7d' } = req.query;
@@ -154,7 +143,7 @@ router.get('/dashboard', setMockUser, async (req, res) => {
 });
 
 // GET /api/analytics/queue/:id - Get specific queue analytics
-router.get('/queue/:id', setMockUser, async (req, res) => {
+router.get('/queue/:id', authMiddleware, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const queueId = req.params.id;
@@ -257,7 +246,7 @@ router.get('/queue/:id', setMockUser, async (req, res) => {
 });
 
 // GET /api/analytics/export - Export analytics data
-router.get('/export', setMockUser, async (req, res) => {
+router.get('/export', authMiddleware, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const { format = 'json', period = '30d' } = req.query;

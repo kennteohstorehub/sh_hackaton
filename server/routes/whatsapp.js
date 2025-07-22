@@ -4,18 +4,11 @@ const logger = require('../utils/logger');
 
 const router = express.Router();
 
-// Mock user middleware
-const setMockUser = (req, res, next) => {
-  req.session.user = {
-    id: '507f1f77bcf86cd799439011',
-    email: 'demo@smartqueue.com',
-    businessName: 'Demo Restaurant'
-  };
-  next();
-};
+// Authentication middleware
+const { authMiddleware } = require('../middleware/auth');
 
 // GET /api/whatsapp/status - Get WhatsApp connection status with performance metrics
-router.get('/status', setMockUser, async (req, res) => {
+router.get('/status', authMiddleware, async (req, res) => {
   try {
     const status = whatsappService.getStatus();
     
@@ -53,7 +46,7 @@ router.get('/status', setMockUser, async (req, res) => {
 });
 
 // GET /api/whatsapp/qr - Get QR code for authentication
-router.get('/qr', setMockUser, async (req, res) => {
+router.get('/qr', authMiddleware, async (req, res) => {
   try {
     const qrData = await whatsappService.getQRCode();
     
@@ -75,7 +68,7 @@ router.get('/qr', setMockUser, async (req, res) => {
 });
 
 // POST /api/whatsapp/disconnect - Disconnect WhatsApp
-router.post('/disconnect', setMockUser, async (req, res) => {
+router.post('/disconnect', authMiddleware, async (req, res) => {
   try {
     await whatsappService.destroy();
     res.json({ success: true, message: 'WhatsApp disconnected' });
@@ -86,7 +79,7 @@ router.post('/disconnect', setMockUser, async (req, res) => {
 });
 
 // POST /api/whatsapp/send - Send message (for testing)
-router.post('/send', setMockUser, async (req, res) => {
+router.post('/send', authMiddleware, async (req, res) => {
   try {
     const { phoneNumber, message } = req.body;
     
@@ -108,7 +101,7 @@ router.post('/send', setMockUser, async (req, res) => {
 });
 
 // POST /api/whatsapp/refresh - Refresh WhatsApp connection
-router.post('/refresh', setMockUser, async (req, res) => {
+router.post('/refresh', authMiddleware, async (req, res) => {
   try {
     // Destroy current connection and reinitialize
     await whatsappService.destroy();
@@ -126,7 +119,7 @@ router.post('/refresh', setMockUser, async (req, res) => {
 });
 
 // POST /api/whatsapp/test-message - Send test message
-router.post('/test-message', setMockUser, async (req, res) => {
+router.post('/test-message', authMiddleware, async (req, res) => {
   try {
     const { phoneNumber, message } = req.body;
     
@@ -148,7 +141,7 @@ router.post('/test-message', setMockUser, async (req, res) => {
 });
 
 // POST /api/whatsapp/init - Manually initialize WhatsApp
-router.post('/init', setMockUser, async (req, res) => {
+router.post('/init', authMiddleware, async (req, res) => {
   try {
     if (whatsappService.isConnected) {
       return res.json({ success: true, message: 'WhatsApp already initialized' });
@@ -169,7 +162,7 @@ router.post('/init', setMockUser, async (req, res) => {
 });
 
 // GET /api/whatsapp/sessions - Get active sessions count
-router.get('/sessions', setMockUser, async (req, res) => {
+router.get('/sessions', authMiddleware, async (req, res) => {
   try {
     const status = whatsappService.getStatus();
     res.json({ 
@@ -183,7 +176,7 @@ router.get('/sessions', setMockUser, async (req, res) => {
 });
 
 // GET /api/whatsapp/health - Health check endpoint with performance metrics
-router.get('/health', setMockUser, async (req, res) => {
+router.get('/health', authMiddleware, async (req, res) => {
   try {
     const status = whatsappService.getStatus();
     const uptime = process.uptime();

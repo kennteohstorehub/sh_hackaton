@@ -4,7 +4,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const pgSession = require('connect-pg-simple')(session);
 const flash = require('express-flash');
 const methodOverride = require('method-override');
 const path = require('path');
@@ -12,15 +12,20 @@ const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const { config, initialize: initializeConfig } = require('./config');
 
 const logger = require('./utils/logger');
 const { 
   configureSecurityMiddleware, 
-  generateCSRFToken, 
-  csrfProtection,
   authLimiter,
   apiLimiter 
 } = require('./middleware/security');
+const { captureRawBody } = require('./middleware/webhook-auth');
+const { 
+  csrfTokenManager, 
+  csrfValidation, 
+  csrfHelpers 
+} = require('./middleware/csrf-protection');
 const { registerHelpers } = require('./utils/templateHelpers');
 
 // API Routes
@@ -49,7 +54,10 @@ const io = socketIo(server, {
   }
 });
 
-const PORT = process.env.PORT || 3001;
+// Initialize configuration with validation
+initializeConfig();
+
+const PORT = config.server.port;
 
 // View engine setup
 app.set('view engine', 'ejs');
@@ -89,16 +97,20 @@ app.use('/api', cors({
 // Apply rate limiting to API routes
 app.use('/api/', apiLimiter);
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Body parsing middleware with raw body capture for webhooks
+app.use(express.json({ 
+  limit: '10mb',
+  verify: captureRawBody // Capture raw body for webhook signature verification
+}));
+app.use(express.urlencoded({ 
+  extended: true, 
+  limit: '10mb',
+  verify: captureRawBody 
+}));
 app.use(methodOverride('_method'));
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-queue-manager', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(config.database.mongodb.uri, config.database.mongodb.options)
 .then(() => {
   logger.info('Connected to MongoDB');
 })
@@ -108,34 +120,26 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-que
   // Don't exit - let the server run without database
 });
 
-// Ensure critical environment variables are set
-if (!process.env.JWT_SECRET) {
-  logger.error('JWT_SECRET environment variable is required');
-  process.exit(1);
-}
+// Configuration validation is now handled by initializeConfig()
 
 // Session configuration
 app.use(session({
-  secret: process.env.JWT_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-queue-manager',
-    touchAfter: 24 * 3600 // lazy session update
-  }),
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'strict',
-    maxAge: 1000 * 60 * 60 * 2 // 2 hours for better security
-  },
-  name: 'sessionId' // Use custom name instead of default
+  secret: config.security.sessionSecret,
+  ...config.session,
+  store: new pgSession({
+    conString: config.database.postgres.url || process.env.DATABASE_URL,
+    tableName: 'session', // This matches our Prisma schema
+    ttl: 24 * 60 * 60, // 24 hours
+    disableTouch: false,
+    createTableIfMissing: true
+  })
 }));
 
 app.use(flash());
 
-// Generate CSRF token for all requests
-app.use(generateCSRFToken);
+// CSRF Protection
+app.use(csrfTokenManager);
+app.use(csrfHelpers);
 
 // Make io and user data accessible to all routes
 app.set('io', io); // Store io instance on app for route access
@@ -146,8 +150,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Apply CSRF protection to all POST/PUT/DELETE routes
-app.use(csrfProtection);
+// Apply CSRF validation to all state-changing routes
+app.use(csrfValidation);
 
 // Frontend Routes
 app.use('/', publicRoutes);
@@ -161,6 +165,7 @@ app.use('/api/customer', customerRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/chatbot', require('./routes/chatbot'));
+app.use('/api/webhooks', require('./routes/webhooks'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -174,11 +179,13 @@ app.get('/api/health', (req, res) => {
 // Socket.IO authentication middleware
 io.use((socket, next) => {
   const sessionMiddleware = session({
-    secret: process.env.JWT_SECRET,
+    secret: config.security.sessionSecret,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-queue-manager',
+    store: new pgSession({
+      conString: config.database.postgres.url || process.env.DATABASE_URL,
+      tableName: 'session',
+      ttl: 24 * 60 * 60
     })
   });
   

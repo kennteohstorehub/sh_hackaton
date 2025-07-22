@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,7 +8,234 @@ datasource db {
   directUrl = env("DATABASE_URL_DIRECT")
 }
 
-// Enums
+model Merchant {
+  id                     String                @id @default(uuid())
+  businessName           String
+  email                  String                @unique
+  password               String
+  phone                  String
+  businessType           BusinessType
+  timezone               String                @default("UTC")
+  isActive               Boolean               @default(true)
+  lastLogin              DateTime?
+  emailVerified          Boolean               @default(false)
+  emailVerificationToken String?
+  passwordResetToken     String?
+  passwordResetExpires   DateTime?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  businessHours          BusinessHours[]
+  address                MerchantAddress?
+  integrations           MerchantIntegrations?
+  settings               MerchantSettings?
+  subscription           MerchantSubscription?
+  queues                 Queue[]
+  serviceTypes           ServiceType[]
+
+  @@index([email])
+  @@index([businessName])
+  @@index([businessType])
+}
+
+model MerchantAddress {
+  id         String   @id @default(uuid())
+  merchantId String   @unique
+  street     String?
+  city       String?
+  state      String?
+  zipCode    String?
+  country    String?
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+}
+
+model BusinessHours {
+  id         String   @id @default(uuid())
+  merchantId String
+  dayOfWeek  String
+  start      String?
+  end        String?
+  closed     Boolean  @default(false)
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, dayOfWeek])
+  @@index([merchantId])
+}
+
+model ServiceType {
+  id                String       @id @default(uuid())
+  merchantId        String
+  name              String
+  estimatedDuration Int
+  description       String?
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  queueEntries      QueueEntry[]
+  merchant          Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId])
+}
+
+model MerchantIntegrations {
+  id                     String    @id @default(uuid())
+  merchantId             String    @unique
+  whatsappEnabled        Boolean   @default(false)
+  whatsappPhoneNumber    String?
+  whatsappSessionData    String?
+  whatsappLastConnected  DateTime?
+  messengerEnabled       Boolean   @default(false)
+  messengerPageId        String?
+  messengerAccessToken   String?
+  messengerLastConnected DateTime?
+  merchant               Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+}
+
+model MerchantSettings {
+  id                     String                 @id @default(uuid())
+  merchantId             String                 @unique
+  seatingCapacity        Int                    @default(50)
+  avgMealDuration        Int                    @default(45)
+  maxQueueSize           Int                    @default(50)
+  autoPauseThreshold     Float                  @default(0.9)
+  noShowTimeout          Int                    @default(15)
+  gracePeriod            Int                    @default(5)
+  joinCutoffTime         Int                    @default(30)
+  advanceBookingHours    Int                    @default(0)
+  partySizeRegularMin    Int                    @default(1)
+  partySizeRegularMax    Int                    @default(8)
+  partySizePeakMin       Int                    @default(1)
+  partySizePeakMax       Int                    @default(4)
+  firstNotification      Int                    @default(10)
+  finalNotification      Int                    @default(0)
+  adjustForPeakHours     Boolean                @default(true)
+  sendNoShowWarning      Boolean                @default(true)
+  confirmTableAcceptance Boolean                @default(true)
+  peakHours              Json?
+  peakMultiplier         Float                  @default(1.5)
+  priorityEnabled        Boolean                @default(false)
+  prioritySlots          Int                    @default(2)
+  prioritySkipRegular    Boolean                @default(false)
+  priorityNotifyFirst    Boolean                @default(true)
+  priorityLongerGrace    Boolean                @default(true)
+  merchant               Merchant               @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  notificationTemplates  NotificationTemplate[]
+}
+
+model NotificationTemplate {
+  id         String           @id @default(uuid())
+  settingsId String
+  type       String
+  template   String
+  settings   MerchantSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+
+  @@unique([settingsId, type])
+}
+
+model MerchantSubscription {
+  id                   String           @id @default(uuid())
+  merchantId           String           @unique
+  plan                 SubscriptionPlan @default(free)
+  startDate            DateTime         @default(now())
+  endDate              DateTime?
+  isActive             Boolean          @default(true)
+  maxQueues            Int              @default(1)
+  maxCustomersPerQueue Int              @default(50)
+  aiFeatures           Boolean          @default(false)
+  analytics            Boolean          @default(false)
+  customBranding       Boolean          @default(false)
+  merchant             Merchant         @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+}
+
+model Queue {
+  id                    String          @id @default(uuid())
+  merchantId            String
+  name                  String
+  description           String?
+  isActive              Boolean         @default(true)
+  maxCapacity           Int             @default(100)
+  averageServiceTime    Int             @default(15)
+  currentServing        Int             @default(0)
+  autoNotifications     Boolean         @default(true)
+  notificationInterval  Int             @default(5)
+  allowCancellation     Boolean         @default(true)
+  requireConfirmation   Boolean         @default(true)
+  businessHoursStart    String          @default("09:00")
+  businessHoursEnd      String          @default("17:00")
+  businessHoursTimezone String          @default("UTC")
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  merchant              Merchant        @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  analytics             QueueAnalytics?
+  entries               QueueEntry[]
+
+  @@index([merchantId, isActive])
+  @@index([merchantId, createdAt])
+}
+
+model QueueEntry {
+  id                String              @id @default(uuid())
+  queueId           String
+  customerId        String
+  customerName      String
+  customerPhone     String
+  platform          Platform
+  position          Int
+  estimatedWaitTime Int?
+  status            QueueEntryStatus    @default(waiting)
+  priority          Priority            @default(normal)
+  serviceTypeId     String?
+  partySize         Int                 @default(1) @db.SmallInt
+  notes             String?
+  specialRequests   String?
+  joinedAt          DateTime            @default(now())
+  calledAt          DateTime?
+  servedAt          DateTime?
+  completedAt       DateTime?
+  requeuedAt        DateTime?
+  lastNotified      DateTime?
+  notificationCount Int                 @default(0)
+  sentimentScore    Float?
+  queue             Queue               @relation(fields: [queueId], references: [id], onDelete: Cascade)
+  serviceType       ServiceType?        @relation(fields: [serviceTypeId], references: [id])
+  feedback          QueueEntryFeedback?
+
+  @@index([queueId, status, joinedAt])
+  @@index([customerId, status])
+  @@index([status, position])
+  @@index([joinedAt(sort: Desc)])
+  @@index([platform, joinedAt])
+}
+
+model QueueEntryFeedback {
+  id          String     @id @default(uuid())
+  entryId     String     @unique
+  rating      Int?       @db.SmallInt
+  comment     String?
+  submittedAt DateTime   @default(now())
+  entry       QueueEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+}
+
+model QueueAnalytics {
+  id                   String   @id @default(uuid())
+  queueId              String   @unique
+  totalServed          Int      @default(0)
+  averageWaitTime      Float?
+  averageServiceTime   Float?
+  customerSatisfaction Float?
+  noShowRate           Float?
+  lastUpdated          DateTime @default(now())
+  queue                Queue    @relation(fields: [queueId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
 enum BusinessType {
   restaurant
   retail
@@ -44,287 +268,4 @@ enum Platform {
   whatsapp
   messenger
   web
-}
-
-// Main Models
-model Merchant {
-  id                     String            @id @default(uuid())
-  businessName           String
-  email                  String            @unique
-  password               String
-  phone                  String
-  businessType           BusinessType
-  timezone               String            @default("UTC")
-  isActive               Boolean           @default(true)
-  lastLogin              DateTime?
-  emailVerified          Boolean           @default(false)
-  emailVerificationToken String?
-  passwordResetToken     String?
-  passwordResetExpires   DateTime?
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
-
-  // Relations
-  address       MerchantAddress?
-  businessHours BusinessHours[]
-  serviceTypes  ServiceType[]
-  integrations  MerchantIntegrations?
-  settings      MerchantSettings?
-  subscription  MerchantSubscription?
-  queues        Queue[]
-
-  @@index([email])
-  @@index([businessName])
-  @@index([businessType])
-}
-
-model MerchantAddress {
-  id         String   @id @default(uuid())
-  merchantId String   @unique
-  street     String?
-  city       String?
-  state      String?
-  zipCode    String?
-  country    String?
-
-  // Relations
-  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-}
-
-model BusinessHours {
-  id         String   @id @default(uuid())
-  merchantId String
-  dayOfWeek  String   // monday, tuesday, etc.
-  start      String?  // HH:MM format
-  end        String?  // HH:MM format
-  closed     Boolean  @default(false)
-
-  // Relations
-  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-
-  @@unique([merchantId, dayOfWeek])
-  @@index([merchantId])
-}
-
-model ServiceType {
-  id                String   @id @default(uuid())
-  merchantId        String
-  name              String
-  estimatedDuration Int      // in minutes
-  description       String?
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relations
-  merchant     Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  queueEntries QueueEntry[]
-
-  @@index([merchantId])
-}
-
-model MerchantIntegrations {
-  id                      String    @id @default(uuid())
-  merchantId              String    @unique
-  
-  // WhatsApp
-  whatsappEnabled         Boolean   @default(false)
-  whatsappPhoneNumber     String?
-  whatsappSessionData     String?   @db.Text
-  whatsappLastConnected   DateTime?
-  
-  // Messenger
-  messengerEnabled        Boolean   @default(false)
-  messengerPageId         String?
-  messengerAccessToken    String?   @db.Text
-  messengerLastConnected  DateTime?
-
-  // Relations
-  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-}
-
-model MerchantSettings {
-  id                    String   @id @default(uuid())
-  merchantId            String   @unique
-  
-  // Capacity Settings
-  seatingCapacity       Int      @default(50)
-  avgMealDuration       Int      @default(45) // minutes
-  
-  // Queue Settings
-  maxQueueSize          Int      @default(50)
-  autoPauseThreshold    Float    @default(0.9) // 90%
-  noShowTimeout         Int      @default(15) // minutes
-  gracePeriod           Int      @default(5) // minutes
-  joinCutoffTime        Int      @default(30) // minutes before closing
-  advanceBookingHours   Int      @default(0)
-  
-  // Party Size Settings
-  partySizeRegularMin   Int      @default(1)
-  partySizeRegularMax   Int      @default(8)
-  partySizePeakMin      Int      @default(1)
-  partySizePeakMax      Int      @default(4)
-  
-  // Notification Timing
-  firstNotification     Int      @default(10) // minutes before ready
-  finalNotification     Int      @default(0)
-  adjustForPeakHours    Boolean  @default(true)
-  sendNoShowWarning     Boolean  @default(true)
-  confirmTableAcceptance Boolean @default(true)
-  
-  // Peak Hours (stored as JSON)
-  peakHours             Json?    @db.JsonB
-  peakMultiplier        Float    @default(1.5)
-  
-  // Priority Settings
-  priorityEnabled       Boolean  @default(false)
-  prioritySlots         Int      @default(2)
-  prioritySkipRegular   Boolean  @default(false)
-  priorityNotifyFirst   Boolean  @default(true)
-  priorityLongerGrace   Boolean  @default(true)
-
-  // Relations
-  merchant              Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  notificationTemplates NotificationTemplate[]
-}
-
-model NotificationTemplate {
-  id               String   @id @default(uuid())
-  settingsId       String
-  type             String   // join, almostReady, tableReady, noShowWarning
-  template         String   @db.Text
-  
-  // Relations
-  settings MerchantSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
-
-  @@unique([settingsId, type])
-}
-
-model MerchantSubscription {
-  id               String           @id @default(uuid())
-  merchantId       String           @unique
-  plan             SubscriptionPlan @default(free)
-  startDate        DateTime         @default(now())
-  endDate          DateTime?
-  isActive         Boolean          @default(true)
-  
-  // Features
-  maxQueues        Int              @default(1)
-  maxCustomersPerQueue Int         @default(50)
-  aiFeatures       Boolean          @default(false)
-  analytics        Boolean          @default(false)
-  customBranding   Boolean          @default(false)
-
-  // Relations
-  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-}
-
-model Queue {
-  id                  String    @id @default(uuid())
-  merchantId          String
-  name                String
-  description         String?
-  isActive            Boolean   @default(true)
-  maxCapacity         Int       @default(100)
-  averageServiceTime  Int       @default(15) // minutes
-  currentServing      Int       @default(0)
-  
-  // Settings
-  autoNotifications   Boolean   @default(true)
-  notificationInterval Int      @default(5) // minutes
-  allowCancellation   Boolean   @default(true)
-  requireConfirmation Boolean   @default(true)
-  
-  // Business Hours for this queue
-  businessHoursStart  String    @default("09:00")
-  businessHoursEnd    String    @default("17:00")
-  businessHoursTimezone String  @default("UTC")
-  
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-
-  // Relations
-  merchant            Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  entries             QueueEntry[]
-  analytics           QueueAnalytics?
-
-  @@index([merchantId, isActive])
-  @@index([merchantId, createdAt])
-}
-
-model QueueEntry {
-  id                String           @id @default(uuid())
-  queueId           String
-  customerId        String
-  customerName      String
-  customerPhone     String
-  platform          Platform
-  position          Int
-  estimatedWaitTime Int?             // minutes
-  status            QueueEntryStatus @default(waiting)
-  priority          Priority         @default(normal)
-  serviceTypeId     String?
-  partySize         Int              @default(1) @db.SmallInt
-  notes             String?
-  specialRequests   String?
-  
-  // Timestamps
-  joinedAt          DateTime         @default(now())
-  calledAt          DateTime?
-  servedAt          DateTime?
-  completedAt       DateTime?
-  requeuedAt        DateTime?
-  
-  // Notification tracking
-  lastNotified      DateTime?
-  notificationCount Int              @default(0)
-  
-  // AI features
-  sentimentScore    Float?           // -1 to 1
-  
-  // Relations
-  queue             Queue            @relation(fields: [queueId], references: [id], onDelete: Cascade)
-  serviceType       ServiceType?     @relation(fields: [serviceTypeId], references: [id])
-  feedback          QueueEntryFeedback?
-
-  @@index([queueId, status, joinedAt])
-  @@index([customerId, status])
-  @@index([status, position])
-  @@index([joinedAt(sort: Desc)])
-  @@index([platform, joinedAt])
-}
-
-model QueueEntryFeedback {
-  id          String     @id @default(uuid())
-  entryId     String     @unique
-  rating      Int?       @db.SmallInt // 1-5
-  comment     String?
-  submittedAt DateTime   @default(now())
-  
-  // Relations
-  entry QueueEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-}
-
-model QueueAnalytics {
-  id                    String    @id @default(uuid())
-  queueId               String    @unique
-  totalServed           Int       @default(0)
-  averageWaitTime       Float?    // minutes
-  averageServiceTime    Float?    // minutes
-  customerSatisfaction  Float?    // 1-5
-  noShowRate            Float?    // percentage
-  lastUpdated           DateTime  @default(now())
-  
-  // Relations
-  queue Queue @relation(fields: [queueId], references: [id], onDelete: Cascade)
-}
-
-// Session storage for express-session
-model Session {
-  id        String   @id
-  sid       String   @unique
-  data      String   @db.Text
-  expiresAt DateTime
-  
-  @@index([expiresAt])
 }

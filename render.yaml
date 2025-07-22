@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: storehub-queue-system
+    runtime: node
+    plan: free
+    buildCommand: npm install && npx prisma generate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      - key: PORT
+        fromGroup: render
+      # Note: You'll need to add these manually in Render dashboard:
+      # - DATABASE_URL (your Neon pooled connection)
+      # - DATABASE_URL_DIRECT (your Neon direct connection)
+    healthCheckPath: /api/health
+    autoDeploy: true

@@ -1,7 +1,7 @@
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss');
+const { xssProtection } = require('./xss-protection');
 const { validationResult } = require('express-validator');
 
 // Security middleware configuration
@@ -29,28 +29,8 @@ const configureSecurityMiddleware = (app) => {
     }
   }));
 
-  // XSS protection
-  app.use((req, res, next) => {
-    // Sanitize request body
-    if (req.body) {
-      for (const key in req.body) {
-        if (typeof req.body[key] === 'string') {
-          req.body[key] = xss(req.body[key]);
-        }
-      }
-    }
-    
-    // Sanitize query parameters
-    if (req.query) {
-      for (const key in req.query) {
-        if (typeof req.query[key] === 'string') {
-          req.query[key] = xss(req.query[key]);
-        }
-      }
-    }
-    
-    next();
-  });
+  // XSS protection - provides sanitized getters instead of modifying data
+  app.use(xssProtection);
 };
 
 // Rate limiting configurations
@@ -115,9 +95,12 @@ const generateCSRFToken = (req, res, next) => {
   next();
 };
 
-// Sanitize user input helper
+// Sanitize user input helper - deprecated
 const sanitizeInput = (input) => {
+  // Deprecated - use req.getSanitized() from xssProtection middleware
+  console.warn('sanitizeInput is deprecated. Use req.getSanitized() instead.');
   if (typeof input !== 'string') return input;
+  const xss = require('xss');
   return xss(input.trim());
 };
 

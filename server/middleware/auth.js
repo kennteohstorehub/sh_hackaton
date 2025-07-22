@@ -48,6 +48,7 @@ const loadUser = async (req, res, next) => {
 
 module.exports = {
   requireAuth,
+  authMiddleware: requireAuth, // Alias for compatibility
   requireGuest,
   loadUser
 };
