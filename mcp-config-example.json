@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context-labs/context7"
+      ]
+    },
+    "zen": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@zenbase/zen-cli"
+      ]
+    },
+    "dev-magic": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@dev-magic/mcp-server"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@automatalabs/mcp-server-playwright"
+      ]
+    }
+  }
+}
