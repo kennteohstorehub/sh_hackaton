@@ -16,8 +16,14 @@ services:
         generateValue: true
       - key: PORT
         fromGroup: render
+      - key: ENABLE_WHATSAPP_WEB
+        value: "false"
+      # MongoDB is optional - app will run without it
+      # - key: MONGODB_URI
+      #   value: "your_mongodb_uri_here"
       # Note: You'll need to add these manually in Render dashboard:
       # - DATABASE_URL (your Neon pooled connection)
       # - DATABASE_URL_DIRECT (your Neon direct connection)
+      # - MONGODB_URI (if using MongoDB Atlas instead of local)
     healthCheckPath: /api/health
     autoDeploy: true

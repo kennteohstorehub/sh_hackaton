@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/storehub_queue?schema=public
+      - DATABASE_URL_DIRECT=postgresql://postgres:postgres@postgres:5432/storehub_queue?schema=public
+      - MONGODB_URI=mongodb://mongodb:27017/smart-queue-manager
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-minimum-32-chars}
+      - SESSION_SECRET=${SESSION_SECRET:-your-session-secret-minimum-32-chars}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-your-webhook-secret}
+    volumes:
+      - whatsapp_sessions:/app/.wwebjs_auth
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - mongodb
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=storehub_queue
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:6
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mongo_data:
+  whatsapp_sessions:

@@ -1,145 +1,121 @@
-# 🚀 Render Deployment Guide
+# 🚀 Render Deployment Guide for StoreHub Queue Management System
 
-This guide will walk you through deploying the StoreHub Queue Management System to Render.
+## Quick Start Deployment
 
-## Prerequisites
+### Step 1: Fix render.yaml (Already Done ✅)
+The `render.yaml` has been updated with:
+- `NODE_ENV=production` (fixes the crash)
+- `ENABLE_WHATSAPP_WEB=false` (disables WhatsApp for now)
 
-- [ ] GitHub account with your code pushed
-- [ ] Render account (sign up at render.com)
-- [ ] Your Neon database credentials ready
+### Step 2: Set Up Database
 
-## Step-by-Step Deployment
+#### Option A: MongoDB Atlas (Easiest)
+1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a free M0 cluster
+3. Click "Connect" → "Connect your application"
+4. Copy the connection string
+5. Replace `<password>` with your actual password
 
-### 1. Push Your Code to GitHub
+#### Option B: Use Existing Neon PostgreSQL
+If you already have Neon set up, just use those credentials.
+
+### Step 3: Deploy to Render
 
 ```bash
-git add .
-git commit -m "Prepare for Render deployment - PostgreSQL only"
+# Commit the changes
+git add render.yaml
+git commit -m "Fix Render deployment - disable WhatsApp, add NODE_ENV"
 git push origin main
 ```
 
-### 2. Deploy to Render
+### Step 4: Create Service on Render
 
-1. **Log in to Render** at https://render.com
+1. Go to [Render Dashboard](https://dashboard.render.com)
+2. Click **"New +" → "Web Service"**
+3. Connect your GitHub repo
+4. Render will auto-detect the `render.yaml`
+5. Click **"Create Web Service"**
 
-2. **Click "New +" → "Web Service"**
+### Step 5: Add Database URL
 
-3. **Connect your GitHub repository**
-   - Authorize Render to access your GitHub
-   - Select your repository
+In Render Dashboard → Environment tab, add:
 
-4. **Configure your service:**
-   - **Name**: storehub-queue-system
-   - **Region**: Choose closest to your users (Singapore if available)
-   - **Branch**: main
-   - **Runtime**: Node
-   - **Build Command**: `npm install && npx prisma generate`
-   - **Start Command**: `npm start`
-
-5. **Choose the Free plan**
-
-### 3. Set Environment Variables
-
-In the Render dashboard, go to your service → Environment tab and add:
-
-#### Required Variables:
 ```
-DATABASE_URL = [Your Neon pooled connection string]
-DATABASE_URL_DIRECT = [Your Neon direct connection string]
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/storehub-queue
 ```
 
-#### Optional Variables (if using these features):
+Or if using PostgreSQL:
 ```
-# WhatsApp
-WHATSAPP_ENFORCE_WHITELIST = false
-WHATSAPP_PRODUCTION_MODE = true
-
-# Facebook Messenger
-FB_PAGE_ACCESS_TOKEN = [Your token]
-FB_VERIFY_TOKEN = [Your verify token]
-FB_APP_SECRET = [Your app secret]
-
-# AI Services
-OPENAI_API_KEY = [Your OpenAI key]
+DATABASE_URL=your_neon_pooled_connection
+DATABASE_URL_DIRECT=your_neon_direct_connection
 ```
 
-### 4. Deploy
+### Step 6: Deploy!
 
-Click "Create Web Service" - Render will:
-1. Clone your repository
-2. Install dependencies
-3. Generate Prisma client
-4. Start your application
+Render will automatically:
+1. Install dependencies
+2. Generate Prisma client
+3. Start the server
 
-### 5. Post-Deployment Setup
+## ✅ Success Indicators
 
-Once deployed, your app will be available at:
+Look for these in the logs:
+- "StoreHub Queue Management System server running on port"
+- "Connected to MongoDB" or database connection success
+- "Service initialization complete"
+
+## 🌐 Access Your App
+
+Once deployed:
+- Dashboard: `https://your-app.onrender.com/dashboard`
+- Health Check: `https://your-app.onrender.com/api/health`
+- Customer Queue: `https://your-app.onrender.com/`
+
+## 🔧 Troubleshooting
+
+### If it still crashes:
+1. Check Render logs for the exact error
+2. Verify `NODE_ENV` is set in Environment tab
+3. Make sure database URL is correct
+4. Check if MongoDB Atlas whitelist includes `0.0.0.0/0` (allow all IPs)
+
+### WhatsApp Options for Later:
+
+1. **Twilio WhatsApp Business API** (Recommended)
+   ```
+   TWILIO_ACCOUNT_SID=your_sid
+   TWILIO_AUTH_TOKEN=your_token
+   TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+   ENABLE_WHATSAPP_WEB=false
+   ```
+
+2. **Deploy WhatsApp on VPS** (If you need WhatsApp Web.js)
+   - Use DigitalOcean or AWS EC2
+   - Run without Docker (just `npm start`)
+   - Sessions will persist properly
+
+## 🎯 Next Steps
+
+1. **Get it running first** without WhatsApp
+2. **Test the queue system** works
+3. **Then decide** on messaging strategy (Twilio vs VPS)
+
+## Quick Commands
+
+```bash
+# Check deployment status
+git status
+
+# Push changes
+git add .
+git commit -m "Update for Render deployment"
+git push
+
+# View Render logs (from dashboard)
+# Or use Render CLI:
+render logs --tail
 ```
-https://storehub-queue-system.onrender.com
-```
-
-1. **Session table will be created automatically** on first run
-
-2. **Create first merchant account**:
-   - Visit: https://your-app.onrender.com/auth/register
-
-3. **Configure webhooks** (if using):
-   - WhatsApp: https://your-app.onrender.com/api/webhooks/whatsapp
-   - Messenger: https://your-app.onrender.com/api/webhooks/messenger
-
-## What's Changed?
-
-- **No MongoDB Required!** Sessions now use PostgreSQL
-- **Simpler Setup** - Only one database to manage
-- **Better Performance** - Everything in one database
-
-## Troubleshooting
-
-### Common Issues:
-
-1. **"Build failed"**
-   - Check build logs for missing dependencies
-   - Ensure all environment variables are set
-
-2. **"Database connection failed"**
-   - Verify DATABASE_URL is correct
-   - Check if Neon allows connections from Render's IPs
-
-3. **"Session store error"**
-   - The session table will be created automatically
-   - If issues persist, check PostgreSQL logs
-
-4. **"Port binding error"**
-   - Render provides PORT automatically, don't hardcode it
-
-### Monitoring
-
-- **Logs**: Check Render dashboard → Logs
-- **Health**: Monitor at https://your-app.onrender.com/api/health
-- **Database**: Check Neon dashboard for connection metrics
-
-## Free Tier Limitations
-
-- Service spins down after 15 minutes of inactivity
-- First request after spin-down takes ~30 seconds
-- Limited build minutes per month
-
-## Production Recommendations
-
-1. **Upgrade to paid plan** for always-on service
-2. **Set up custom domain**
-3. **Enable auto-deploy** from GitHub
-4. **Configure alerts** for downtime
-5. **Monitor database connections** in Neon
-
-## Next Steps
-
-1. Test all features in production
-2. Configure your messaging integrations
-3. Set up monitoring and alerts
-4. Create merchant accounts
-5. Start accepting customers!
 
 ---
 
-Need help? Check the logs in Render dashboard or refer to the main README.
+**Remember**: The app works perfectly WITHOUT WhatsApp! Get it deployed first, then add messaging.
