@@ -1,6 +1,6 @@
 # StoreHub Queue Management System 🚀
 
-An AI-powered queue management system that reduces customer friction and manages expectations during busy peak hours by allowing customers to join and track virtual queues via WhatsApp or Facebook Messenger.
+An AI-powered queue management system that reduces customer friction and manages expectations during busy peak hours by allowing customers to join and track virtual queues via WhatsApp or web interface.
 
 ## 🔥 Recent Updates (Latest Version)
 
@@ -19,12 +19,12 @@ An AI-powered queue management system that reduces customer friction and manages
 - **Multi-Queue Management**: Create and manage multiple service queues
 - **Operating Hours Management**: Dynamic business hours with real-time status indicators
 - **AI-Powered Insights**: Get intelligent recommendations for queue optimization
-- **WhatsApp & Messenger Integration**: Automated chatbot responses for customers
+- **WhatsApp Integration**: Automated chatbot responses for customers
 - **Analytics & Reporting**: Track performance metrics and customer satisfaction with demo data
 - **Customizable Settings**: Configure business hours, service types, and notifications
 
 ### For Customers
-- **Easy Queue Joining**: Join queues via WhatsApp, Messenger, or web interface
+- **Easy Queue Joining**: Join queues via WhatsApp or web interface
 - **Real-time Updates**: Get live position updates and estimated wait times
 - **Smart Notifications**: AI-optimized notification timing based on sentiment analysis
 - **Multi-platform Support**: Access from any device or messaging platform
@@ -41,7 +41,7 @@ An AI-powered queue management system that reduces customer friction and manages
 
 ### Backend (Node.js)
 - **Express.js** server with EJS templating
-- **MongoDB** for data persistence
+- **PostgreSQL** with Prisma ORM for data persistence
 - **Socket.IO** for real-time updates
 - **WhatsApp Web.js** for WhatsApp integration
 - **Natural.js** for AI/ML features
@@ -54,15 +54,14 @@ An AI-powered queue management system that reduces customer friction and manages
 
 ### Integrations
 - **WhatsApp Business API**
-- **Facebook Messenger Platform**
 - **AI/ML Services** for predictions and analysis
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js (v16 or higher)
-- MongoDB (v4.4 or higher)
-- WhatsApp account for business integration
+- PostgreSQL (v12 or higher)
+- WhatsApp account for business integration (optional)
 
 ### Installation
 
@@ -83,10 +82,10 @@ An AI-powered queue management system that reduces customer friction and manages
    # Edit .env with your configuration
    ```
 
-4. **Start MongoDB**
+4. **Set up PostgreSQL Database**
    ```bash
-   # Make sure MongoDB is running on your system
-   mongod
+   # Create database and run migrations
+   npx prisma migrate dev
    ```
 
 5. **Run the application**

@@ -10,7 +10,6 @@ const methodOverride = require('method-override');
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
-const mongoose = require('mongoose');
 require('dotenv').config();
 const { config, initialize: initializeConfig } = require('./config');
 
@@ -41,7 +40,6 @@ const publicRoutes = require('./routes/frontend/public');
 
 // Services
 const whatsappService = require('./services/whatsappService');
-const messengerService = require('./services/messengerService');
 const aiService = require('./services/aiService');
 const chatbotService = require('./services/chatbotService');
 
@@ -108,17 +106,6 @@ app.use(express.urlencoded({
   verify: captureRawBody 
 }));
 app.use(methodOverride('_method'));
-
-// Database connection
-mongoose.connect(config.database.mongodb.uri, config.database.mongodb.options)
-.then(() => {
-  logger.info('Connected to MongoDB');
-})
-.catch((error) => {
-  logger.error('MongoDB connection error:', error);
-  logger.warn('Server will continue without database - some features may not work');
-  // Don't exit - let the server run without database
-});
 
 // Configuration validation is now handled by initializeConfig()
 
@@ -249,10 +236,6 @@ const initializeServices = async () => {
         .then(() => logger.info('WhatsApp service initialized'))
         .catch(err => logger.warn('WhatsApp initialization failed (non-critical):', err.message)),
       
-      messengerService.initialize(io)
-        .then(() => logger.info('Messenger service initialized'))
-        .catch(err => logger.warn('Messenger initialization failed (non-critical):', err.message)),
-      
       aiService.initialize()
         .then(() => logger.info('AI service initialized'))
         .catch(err => logger.warn('AI service initialization failed (non-critical):', err.message)),
@@ -308,7 +291,6 @@ app.use('*', (req, res) => {
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
   server.close(() => {
-    mongoose.connection.close();
     process.exit(0);
   });
 });

@@ -158,27 +158,6 @@ const whatsappWebhookAuth = (req, res, next) => {
   return verifier(req, res, next);
 };
 
-// Facebook Messenger webhook verifier - lazy initialization
-const messengerWebhookAuth = (req, res, next) => {
-  const secret = process.env.FB_APP_SECRET;
-  if (!secret) {
-    logger.warn('Facebook Messenger app secret not configured, skipping verification');
-    return next();
-  }
-  
-  const verifier = createWebhookVerifier({
-    secret,
-  headerName: 'x-hub-signature',
-  algorithm: 'sha1',
-  service: 'messenger',
-    getPayload: (req) => {
-      // Facebook uses raw body
-      return req.rawBody || JSON.stringify(req.body);
-    }
-  });
-  
-  return verifier(req, res, next);
-};
 
 // Generic webhook verifier (for custom integrations) - lazy initialization
 const genericWebhookAuth = (req, res, next) => {
@@ -239,7 +218,6 @@ const handleWebhookChallenge = (req, res, next) => {
 module.exports = {
   createWebhookVerifier,
   whatsappWebhookAuth,
-  messengerWebhookAuth,
   genericWebhookAuth,
   captureRawBody,
   handleWebhookChallenge

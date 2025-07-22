@@ -83,10 +83,6 @@ model MerchantIntegrations {
   whatsappPhoneNumber    String?
   whatsappSessionData    String?
   whatsappLastConnected  DateTime?
-  messengerEnabled       Boolean   @default(false)
-  messengerPageId        String?
-  messengerAccessToken   String?
-  messengerLastConnected DateTime?
   merchant               Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 }
 
@@ -266,6 +262,5 @@ enum Priority {
 
 enum Platform {
   whatsapp
-  messenger
   web
 }

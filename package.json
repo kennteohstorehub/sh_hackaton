@@ -1,7 +1,7 @@
 {
   "name": "storehub-queue-management-system",
   "version": "1.0.0",
-  "description": "AI-powered queue management system with WhatsApp/FB Messenger integration",
+  "description": "AI-powered queue management system with WhatsApp integration",
   "main": "server/index.js",
   "scripts": {
     "dev": "nodemon server/index.js",
@@ -13,7 +13,6 @@
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.8.0",
-    "connect-mongo": "^5.0.0",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
     "csurf": "^1.11.0",
@@ -21,7 +20,6 @@
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-flash": "^0.0.2",
-    "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^6.11.2",
     "express-session": "^1.17.3",
     "express-validator": "^7.2.1",
@@ -30,7 +28,6 @@
     "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
     "moment": "^2.29.4",
-    "mongoose": "^7.5.0",
     "natural": "^6.5.0",
     "pdfkit": "^0.17.1",
     "pg": "^8.16.3",

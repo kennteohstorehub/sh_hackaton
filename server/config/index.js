@@ -93,13 +93,6 @@ const config = {
 
   // Database
   database: {
-    mongodb: {
-      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-queue-manager',
-      options: {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      }
-    },
     postgres: {
       url: process.env.DATABASE_URL,
       directUrl: process.env.DATABASE_URL_DIRECT,
@@ -154,12 +147,6 @@ const config = {
     webhookSecret: process.env.WHATSAPP_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET
   },
 
-  // Facebook Messenger
-  messenger: {
-    pageAccessToken: process.env.FB_PAGE_ACCESS_TOKEN,
-    verifyToken: process.env.FB_VERIFY_TOKEN || process.env.WEBHOOK_VERIFY_TOKEN,
-    appSecret: process.env.FB_APP_SECRET
-  },
 
   // AI Services
   ai: {

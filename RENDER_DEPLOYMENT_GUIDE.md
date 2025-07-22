@@ -7,17 +7,13 @@ The `render.yaml` has been updated with:
 - `NODE_ENV=production` (fixes the crash)
 - `ENABLE_WHATSAPP_WEB=false` (disables WhatsApp for now)
 
-### Step 2: Set Up Database
+### Step 2: Set Up PostgreSQL Database (Required)
 
-#### Option A: MongoDB Atlas (Easiest)
-1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a free M0 cluster
-3. Click "Connect" → "Connect your application"
-4. Copy the connection string
-5. Replace `<password>` with your actual password
-
-#### Option B: Use Existing Neon PostgreSQL
-If you already have Neon set up, just use those credentials.
+1. Go to [Neon](https://neon.tech) or use your existing PostgreSQL provider
+2. Create a new database
+3. Get your connection strings:
+   - Pooled connection (for DATABASE_URL)
+   - Direct connection (for DATABASE_URL_DIRECT)
 
 ### Step 3: Deploy to Render
 
@@ -39,12 +35,6 @@ git push origin main
 ### Step 5: Add Database URL
 
 In Render Dashboard → Environment tab, add:
-
-```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/storehub-queue
-```
-
-Or if using PostgreSQL:
 ```
 DATABASE_URL=your_neon_pooled_connection
 DATABASE_URL_DIRECT=your_neon_direct_connection
@@ -61,7 +51,7 @@ Render will automatically:
 
 Look for these in the logs:
 - "StoreHub Queue Management System server running on port"
-- "Connected to MongoDB" or database connection success
+- "PostgreSQL session store initialized"
 - "Service initialization complete"
 
 ## 🌐 Access Your App
@@ -76,8 +66,8 @@ Once deployed:
 ### If it still crashes:
 1. Check Render logs for the exact error
 2. Verify `NODE_ENV` is set in Environment tab
-3. Make sure database URL is correct
-4. Check if MongoDB Atlas whitelist includes `0.0.0.0/0` (allow all IPs)
+3. Make sure PostgreSQL database URLs are correct
+4. Ensure Prisma migrations have been run
 
 ### WhatsApp Options for Later:
 
@@ -118,4 +108,4 @@ render logs --tail
 
 ---
 
-**Remember**: The app works perfectly WITHOUT WhatsApp! Get it deployed first, then add messaging.
+**Remember**: The app now uses PostgreSQL only - no MongoDB required! WhatsApp can be added later via Twilio or a separate VPS deployment.
