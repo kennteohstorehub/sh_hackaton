@@ -136,37 +136,67 @@ const createWebhookVerifier = (options) => {
  * Pre-configured webhook verifiers for common services
  */
 
-// WhatsApp webhook verifier
-const whatsappWebhookAuth = createWebhookVerifier({
-  secret: process.env.WHATSAPP_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET,
-  headerName: 'x-hub-signature-256',
-  algorithm: 'sha256',
-  service: 'whatsapp',
-  getPayload: (req) => {
-    // WhatsApp sends the raw body
-    return req.rawBody || JSON.stringify(req.body);
+// WhatsApp webhook verifier - lazy initialization
+const whatsappWebhookAuth = (req, res, next) => {
+  const secret = process.env.WHATSAPP_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET;
+  if (!secret) {
+    logger.warn('WhatsApp webhook secret not configured, skipping verification');
+    return next();
   }
-});
+  
+  const verifier = createWebhookVerifier({
+    secret,
+    headerName: 'x-hub-signature-256',
+    algorithm: 'sha256',
+    service: 'whatsapp',
+    getPayload: (req) => {
+      // WhatsApp sends the raw body
+      return req.rawBody || JSON.stringify(req.body);
+    }
+  });
+  
+  return verifier(req, res, next);
+};
 
-// Facebook Messenger webhook verifier
-const messengerWebhookAuth = createWebhookVerifier({
-  secret: process.env.FB_APP_SECRET,
+// Facebook Messenger webhook verifier - lazy initialization
+const messengerWebhookAuth = (req, res, next) => {
+  const secret = process.env.FB_APP_SECRET;
+  if (!secret) {
+    logger.warn('Facebook Messenger app secret not configured, skipping verification');
+    return next();
+  }
+  
+  const verifier = createWebhookVerifier({
+    secret,
   headerName: 'x-hub-signature',
   algorithm: 'sha1',
   service: 'messenger',
-  getPayload: (req) => {
-    // Facebook uses raw body
-    return req.rawBody || JSON.stringify(req.body);
-  }
-});
+    getPayload: (req) => {
+      // Facebook uses raw body
+      return req.rawBody || JSON.stringify(req.body);
+    }
+  });
+  
+  return verifier(req, res, next);
+};
 
-// Generic webhook verifier (for custom integrations)
-const genericWebhookAuth = createWebhookVerifier({
-  secret: process.env.WEBHOOK_SECRET,
-  headerName: 'x-webhook-signature',
-  algorithm: 'sha256',
-  service: 'generic'
-});
+// Generic webhook verifier (for custom integrations) - lazy initialization
+const genericWebhookAuth = (req, res, next) => {
+  const secret = process.env.WEBHOOK_SECRET;
+  if (!secret) {
+    logger.warn('Generic webhook secret not configured, skipping verification');
+    return next();
+  }
+  
+  const verifier = createWebhookVerifier({
+    secret,
+    headerName: 'x-webhook-signature',
+    algorithm: 'sha256',
+    service: 'generic'
+  });
+  
+  return verifier(req, res, next);
+};
 
 /**
  * Middleware to capture raw body for webhook verification
