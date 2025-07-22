@@ -123,17 +123,31 @@ mongoose.connect(config.database.mongodb.uri, config.database.mongodb.options)
 // Configuration validation is now handled by initializeConfig()
 
 // Session configuration
-app.use(session({
+const sessionConfig = {
   secret: config.security.sessionSecret,
-  ...config.session,
-  store: new pgSession({
-    conString: config.database.postgres.url || process.env.DATABASE_URL,
-    tableName: 'session', // This matches our Prisma schema
-    ttl: 24 * 60 * 60, // 24 hours
-    disableTouch: false,
-    createTableIfMissing: true
-  })
-}));
+  ...config.session
+};
+
+// Only use PostgreSQL session store if database URL is available
+if (config.database.postgres.url || process.env.DATABASE_URL) {
+  try {
+    sessionConfig.store = new pgSession({
+      conString: config.database.postgres.url || process.env.DATABASE_URL,
+      tableName: 'session', // This matches our Prisma schema
+      ttl: 24 * 60 * 60, // 24 hours
+      disableTouch: false,
+      createTableIfMissing: true
+    });
+    logger.info('PostgreSQL session store initialized');
+  } catch (error) {
+    logger.error('Failed to initialize PostgreSQL session store:', error);
+    logger.warn('Falling back to memory session store (not suitable for production)');
+  }
+} else {
+  logger.warn('No PostgreSQL URL provided - using memory session store (not suitable for production)');
+}
+
+app.use(session(sessionConfig));
 
 app.use(flash());
 
