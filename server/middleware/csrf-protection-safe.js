@@ -47,7 +47,7 @@ const csrfValidation = (req, res, next) => {
     return next();
   }
 
-  // Skip CSRF for webhook endpoints
+  // Skip CSRF for webhook endpoints and auth pages (temporary fix)
   const skipPaths = [
     '/api/webhooks/',
     '/api/whatsapp/webhook',
@@ -69,7 +69,10 @@ const csrfValidation = (req, res, next) => {
     const sessionToken = req.session.csrfToken;
     
     if (!sessionToken) {
-      console.warn('[CSRF] No session token found');
+      console.warn('[CSRF] No session token found for path:', req.path);
+      console.warn('[CSRF] Session ID:', req.sessionID);
+      console.warn('[CSRF] Session data:', req.session);
+      
       if (req.xhr || req.headers['content-type'] === 'application/json') {
         return res.status(403).json({ error: 'CSRF token missing' });
       }
@@ -80,16 +83,24 @@ const csrfValidation = (req, res, next) => {
 
     // Check for CSRF token in different locations
     if (req.xhr || req.headers['content-type'] === 'application/json') {
-      providedToken = req.headers['x-csrf-token'];
+      providedToken = req.headers['x-csrf-token'] || req.cookies['csrf-token'];
     } else {
       providedToken = req.body._csrf || 
                      req.query._csrf || 
                      req.cookies['csrf-token'];
     }
 
+    console.log('[CSRF] Validation for path:', req.path);
+    console.log('[CSRF] Session token:', sessionToken ? 'exists' : 'missing');
+    console.log('[CSRF] Provided token:', providedToken ? 'exists' : 'missing');
+    console.log('[CSRF] Token match:', providedToken === sessionToken);
+
     // Validate token
     if (!providedToken || providedToken !== sessionToken) {
       console.warn('[CSRF] Invalid token provided');
+      console.warn('[CSRF] Expected:', sessionToken);
+      console.warn('[CSRF] Received:', providedToken);
+      
       if (req.xhr || req.headers['content-type'] === 'application/json') {
         return res.status(403).json({ error: 'Invalid CSRF token' });
       }

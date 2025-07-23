@@ -16,10 +16,15 @@ router.get('/login', requireGuest, (req, res) => {
   // Ensure messages object exists
   const messages = res.locals.messages || { error: null, success: null };
   
+  // Debug CSRF token
+  console.log('[AUTH] Login GET - CSRF Token available:', !!res.locals.csrfToken);
+  console.log('[AUTH] Login GET - Session exists:', !!req.session);
+  
   res.render('auth/login', {
     title: 'Login - StoreHub Queue Management System',
     redirect,
-    messages: messages
+    messages: messages,
+    csrfToken: res.locals.csrfToken || ''
   });
 });
 
@@ -30,7 +35,8 @@ router.get('/register', requireGuest, (req, res) => {
   
   res.render('auth/register', {
     title: 'Register - StoreHub Queue Management System',
-    messages: messages
+    messages: messages,
+    csrfToken: res.locals.csrfToken || ''
   });
 });
 
