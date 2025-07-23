@@ -64,7 +64,7 @@ class Merchant {
         integrations: true,
         address: true,
         businessHours: true,
-        services: true
+        serviceTypes: true
       }
     });
     
