@@ -36,10 +36,16 @@ router.get('/register', requireGuest, (req, res) => {
 
 // Login POST
 router.post('/login', 
+  (req, res, next) => {
+    console.log('[AUTH] Login POST - Raw request received');
+    console.log('[AUTH] Body:', req.body);
+    next();
+  },
   validateLogin,
   handleValidationErrors,
   async (req, res) => {
   try {
+    console.log('[AUTH] Login POST route hit - email:', req.body.email);
     logger.info(`Login attempt for email: ${req.body.email}`);
     logger.debug('Session state before login:', {
       sessionId: req.sessionID,
@@ -212,6 +218,21 @@ router.get('/debug', (req, res) => {
       hasDbUrl: !!process.env.DATABASE_URL
     }
   });
+});
+
+// Test login endpoint
+router.post('/test-login', async (req, res) => {
+  try {
+    console.log('[TEST] Test login endpoint hit');
+    res.json({ 
+      success: true, 
+      message: 'Test endpoint working',
+      body: req.body
+    });
+  } catch (error) {
+    console.error('[TEST] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router; 

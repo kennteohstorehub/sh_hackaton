@@ -1,11 +1,17 @@
 const winston = require('winston');
 const path = require('path');
 
-// Create logs directory if it doesn't exist
+// Create logs directory if it doesn't exist (only in development)
 const fs = require('fs');
 const logsDir = path.join(__dirname, '../../logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+  } catch (error) {
+    console.error('Failed to create logs directory:', error.message);
+  }
 }
 
 // Define log format
@@ -18,11 +24,11 @@ const logFormat = winston.format.combine(
 );
 
 // Create logger instance
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: logFormat,
-  defaultMeta: { service: 'storehub-queue-management-system' },
-  transports: [
+const transports = [];
+
+// Only use file transports in development
+if (process.env.NODE_ENV !== 'production') {
+  transports.push(
     // Write all logs with level 'error' and below to error.log
     new winston.transports.File({
       filename: path.join(logsDir, 'error.log'),
@@ -37,20 +43,25 @@ const logger = winston.createLogger({
       maxsize: 5242880, // 5MB
       maxFiles: 5
     })
-  ]
+  );
+}
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: logFormat,
+  defaultMeta: { service: 'storehub-queue-management-system' },
+  transports: transports
 });
 
-// If we're not in production, log to the console as well
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple(),
-      winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
-        return `${timestamp} [${service}] ${level}: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''}`;
-      })
-    )
-  }));
-}
+// Always log to console (especially important for cloud deployments like Render)
+logger.add(new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple(),
+    winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
+      return `${timestamp} [${service}] ${level}: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''}`;
+    })
+  )
+}));
 
 module.exports = logger; 
