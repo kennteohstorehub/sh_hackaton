@@ -58,6 +58,12 @@ initializeConfig();
 
 const PORT = config.server.port;
 
+// Trust proxy for Render deployment
+if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY) {
+  app.set('trust proxy', true);
+  logger.info('Trust proxy enabled for production environment');
+}
+
 // View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
