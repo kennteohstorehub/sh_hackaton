@@ -128,7 +128,7 @@ if (config.database.postgres.url || process.env.DATABASE_URL) {
   try {
     sessionConfig.store = new pgSession({
       conString: config.database.postgres.url || process.env.DATABASE_URL,
-      tableName: 'session', // This matches our Prisma schema
+      tableName: 'Session', // This matches our Prisma schema (capital S)
       ttl: 24 * 60 * 60, // 24 hours
       disableTouch: false,
       createTableIfMissing: true
@@ -253,7 +253,7 @@ io.use((socket, next) => {
     try {
       sessionStore = new pgSession({
         conString: config.database.postgres.url || process.env.DATABASE_URL,
-        tableName: 'session',
+        tableName: 'Session', // Fixed to match Prisma schema (capital S)
         ttl: 24 * 60 * 60
       });
     } catch (error) {
