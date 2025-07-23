@@ -20,12 +20,12 @@ const {
   apiLimiter 
 } = require('./middleware/security');
 const { captureRawBody } = require('./middleware/webhook-auth');
-// Use safer CSRF middleware that won't crash if session is unavailable
+// Use ultra-safe CSRF middleware with comprehensive error handling
 const { 
   csrfTokenManager, 
   csrfValidation, 
   csrfHelpers 
-} = require('./middleware/csrf-protection-safe');
+} = require('./middleware/csrf-protection-ultra-safe');
 const { registerHelpers } = require('./utils/templateHelpers');
 
 // API Routes
@@ -57,6 +57,22 @@ const io = socketIo(server, {
 initializeConfig();
 
 const PORT = config.server.port;
+
+// Process-level error handlers to prevent crashes
+process.on('uncaughtException', (err) => {
+  logger.error('[FATAL] Uncaught Exception:', err);
+  logger.error(err.stack);
+  // Give some time to log the error before exiting
+  setTimeout(() => {
+    process.exit(1);
+  }, 1000);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+  // Convert to exception
+  throw reason;
+});
 
 // Trust proxy for Render deployment
 if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY) {
