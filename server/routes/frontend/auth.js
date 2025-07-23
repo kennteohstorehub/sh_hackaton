@@ -5,7 +5,7 @@ const Merchant = require('../../models/Merchant');
 const logger = require('../../utils/logger');
 const { requireGuest } = require('../../middleware/auth');
 const { validateLogin, validateRegister } = require('../../middleware/validators');
-const { handleValidationErrors } = require('../../middleware/security');
+const { handleValidationErrors, authLimiter } = require('../../middleware/security');
 
 const router = express.Router();
 
@@ -42,6 +42,7 @@ router.get('/register', requireGuest, (req, res) => {
 
 // Login POST
 router.post('/login', 
+  authLimiter, // Apply rate limiting to POST only
   (req, res, next) => {
     console.log('[AUTH] Login POST - Raw request received');
     console.log('[AUTH] Body:', req.body);
@@ -123,6 +124,7 @@ router.post('/login',
 
 // Register POST
 router.post('/register', 
+  authLimiter, // Apply rate limiting to POST only
   validateRegister,
   handleValidationErrors,
   async (req, res) => {

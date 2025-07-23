@@ -51,7 +51,7 @@ const createRateLimiter = (windowMs = 15 * 60 * 1000, max = 100, message = 'Too 
 };
 
 // Specific rate limiters
-const authLimiter = createRateLimiter(15 * 60 * 1000, 5, 'Too many authentication attempts');
+const authLimiter = createRateLimiter(15 * 60 * 1000, 30, 'Too many authentication attempts'); // Increased from 5 to 30
 const apiLimiter = createRateLimiter(15 * 60 * 1000, 100, 'API rate limit exceeded');
 const strictLimiter = createRateLimiter(60 * 1000, 10, 'Too many requests to this endpoint');
 

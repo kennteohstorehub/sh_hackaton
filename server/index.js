@@ -205,7 +205,7 @@ app.use(csrfValidation);
 
 // Frontend Routes
 app.use('/', publicRoutes);
-app.use('/auth', authLimiter, authRoutes); // Apply rate limiting to auth routes
+app.use('/auth', authRoutes); // Rate limiting now applied per route
 app.use('/dashboard', dashboardRoutes);
 
 // API Routes
