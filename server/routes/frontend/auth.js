@@ -76,13 +76,13 @@ router.post('/login',
       return res.redirect('/auth/login');
     }
 
-    // Regenerate session to prevent fixation attacks
-    req.session.regenerate((err) => {
-      if (err) {
-        logger.error('Session regeneration error:', err);
-        req.flash('error', 'Login error. Please try again.');
-        return res.redirect('/auth/login');
-      }
+    // Skip regeneration for now - just update the existing session
+    // req.session.regenerate((err) => {
+    //   if (err) {
+    //     logger.error('Session regeneration error:', err);
+    //     req.flash('error', 'Login error. Please try again.');
+    //     return res.redirect('/auth/login');
+    //   }
       
       // Create session with userId
       req.session.userId = merchant.id || merchant._id?.toString();
@@ -112,7 +112,7 @@ router.post('/login',
         logger.info(`Login successful, redirecting to: ${redirectUrl}`);
         res.redirect(redirectUrl);
       });
-    });
+    // }); // End of regenerate
 
   } catch (error) {
     logger.error('Login error:', error);
