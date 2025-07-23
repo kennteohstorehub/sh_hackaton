@@ -91,8 +91,14 @@ const csrfValidation = (req, res, next) => {
     }
 
     console.log('[CSRF] Validation for path:', req.path);
-    console.log('[CSRF] Session token:', sessionToken ? 'exists' : 'missing');
-    console.log('[CSRF] Provided token:', providedToken ? 'exists' : 'missing');
+    console.log('[CSRF] Session token:', sessionToken ? sessionToken.substring(0, 10) + '...' : 'missing');
+    console.log('[CSRF] Provided token:', providedToken ? providedToken.substring(0, 10) + '...' : 'missing');
+    console.log('[CSRF] Token sources checked:', {
+      body_csrf: !!req.body._csrf,
+      query_csrf: !!req.query._csrf,
+      cookie_csrf: !!req.cookies['csrf-token'],
+      header_csrf: !!req.headers['x-csrf-token']
+    });
     console.log('[CSRF] Token match:', providedToken === sessionToken);
 
     // Validate token
@@ -108,6 +114,14 @@ const csrfValidation = (req, res, next) => {
     }
   } catch (error) {
     console.error('[CSRF] Error in validation:', error.message);
+    console.error('[CSRF] Full error:', error.stack);
+    console.error('[CSRF] Request details:', {
+      method: req.method,
+      path: req.path,
+      hasSession: !!req.session,
+      sessionId: req.sessionID,
+      body: req.body ? Object.keys(req.body) : []
+    });
     // In case of error, fail open in development, fail closed in production
     if (process.env.NODE_ENV === 'production') {
       return res.status(500).json({ error: 'Security validation error' });

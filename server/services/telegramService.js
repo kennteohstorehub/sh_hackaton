@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const logger = require('../utils/logger');
-const prisma = require('../utils/prismaClient');
+const prisma = require('../utils/prisma');
 
 class TelegramService {
   constructor() {
