@@ -5,11 +5,15 @@ const logger = require('../../utils/logger');
 
 const router = express.Router();
 
-// Home page
+// Home page - redirect to login if not authenticated
 router.get('/', (req, res) => {
-  res.render('index', {
-    title: 'StoreHub Queue Management System - Reduce Customer Wait Times'
-  });
+  // Check if user is already logged in
+  if (req.session && req.session.userId) {
+    // User is logged in, redirect to dashboard
+    return res.redirect('/dashboard');
+  }
+  // User is not logged in, redirect to login page
+  res.redirect('/auth/login');
 });
 
 // Demo page
