@@ -9,7 +9,15 @@
     "start:debug": "node debug-startup.js",
     "start:test": "node test-render-endpoint.js",
     "diagnose": "node diagnose-render-issue.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report",
+    "test:login": "playwright test 01-login.spec.js",
+    "test:dashboard": "playwright test 02-dashboard.spec.js",
+    "test:queue": "playwright test 03-queue-management.spec.js",
+    "test:api": "playwright test 04-api-integration.spec.js",
     "seed": "node prisma/seed.js",
     "seed:production": "node seed-production.js"
   },
@@ -24,8 +32,8 @@
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-flash": "^0.0.2",
-    "express-rate-limit": "^6.11.2",
     "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^6.11.2",
     "express-session": "^1.17.3",
     "express-validator": "^7.2.1",
     "helmet": "^7.2.0",
@@ -44,7 +52,9 @@
     "xss": "^1.0.15"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.1",
     "nodemon": "^3.0.1",
+    "playwright": "^1.54.1",
     "prisma": "^6.12.0"
   },
   "keywords": [
