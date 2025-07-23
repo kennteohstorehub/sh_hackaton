@@ -21,7 +21,7 @@ class Merchant {
           integrations: true,
           address: true,
           businessHours: true,
-          services: true
+          serviceTypes: true
         }
       });
       return merchant ? new Merchant(merchant) : null;
@@ -44,7 +44,7 @@ class Merchant {
         integrations: true,
         address: true,
         businessHours: true,
-        services: true
+        serviceTypes: true
       }
     });
     
