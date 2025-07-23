@@ -85,12 +85,12 @@ router.post('/login',
       }
       
       // Create session with userId
-      req.session.userId = merchant._id.toString();
+      req.session.userId = merchant.id || merchant._id?.toString();
       req.session.user = {
-        id: merchant._id.toString(),
+        id: merchant.id || merchant._id?.toString(),
         email: merchant.email,
         businessName: merchant.businessName,
-        merchantId: merchant._id.toString()
+        merchantId: merchant.id || merchant._id?.toString()
       };
 
       logger.info(`Merchant logged in: ${merchant.email}`);
@@ -162,12 +162,12 @@ router.post('/register',
       }
       
       // Create session with userId
-      req.session.userId = merchant._id.toString();
+      req.session.userId = merchant.id || merchant._id?.toString();
       req.session.user = {
-        id: merchant._id.toString(),
+        id: merchant.id || merchant._id?.toString(),
         email: merchant.email,
         businessName: merchant.businessName,
-        merchantId: merchant._id.toString()
+        merchantId: merchant.id || merchant._id?.toString()
       };
 
       logger.info(`New merchant registered: ${merchant.email}`);
