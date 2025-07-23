@@ -116,10 +116,11 @@ app.use(methodOverride('_method'));
 
 // Configuration validation is now handled by initializeConfig()
 
-// Session configuration
+// Session configuration - use explicit fix for production
+const sessionFixConfig = require('./config/session-fix');
 const sessionConfig = {
-  secret: config.security.sessionSecret,
-  ...config.session
+  ...sessionFixConfig,
+  secret: config.security.sessionSecret || process.env.SESSION_SECRET
 };
 
 // Only use PostgreSQL session store if database URL is available
@@ -140,6 +141,18 @@ if (config.database.postgres.url || process.env.DATABASE_URL) {
 } else {
   logger.warn('No PostgreSQL URL provided - using memory session store (not suitable for production)');
 }
+
+// Log session configuration for debugging
+logger.info('Session configuration:', {
+  name: sessionConfig.name,
+  proxy: sessionConfig.proxy,
+  cookie: {
+    secure: sessionConfig.cookie?.secure,
+    httpOnly: sessionConfig.cookie?.httpOnly,
+    sameSite: sessionConfig.cookie?.sameSite,
+    maxAge: sessionConfig.cookie?.maxAge
+  }
+});
 
 app.use(session(sessionConfig));
 
