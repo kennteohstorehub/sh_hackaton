@@ -71,9 +71,14 @@ const csrfValidation = (req, res, next) => {
     if (!sessionToken) {
       console.warn('[CSRF] No session token found for path:', req.path);
       console.warn('[CSRF] Session ID:', req.sessionID);
-      console.warn('[CSRF] Session data:', req.session);
+      console.warn('[CSRF] Session data keys:', Object.keys(req.session || {}));
       
-      if (req.xhr || req.headers['content-type'] === 'application/json') {
+      // Fixed: Check content type to return appropriate error format
+      const isJsonRequest = req.xhr || 
+                           (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) ||
+                           req.headers['accept'] && req.headers['accept'].includes('application/json');
+      
+      if (isJsonRequest) {
         return res.status(403).json({ error: 'CSRF token missing' });
       }
       return res.status(403).send('CSRF token missing');
@@ -82,7 +87,7 @@ const csrfValidation = (req, res, next) => {
     let providedToken = null;
 
     // Check for CSRF token in different locations
-    if (req.xhr || req.headers['content-type'] === 'application/json') {
+    if (req.xhr || (req.headers['content-type'] && req.headers['content-type'].includes('application/json'))) {
       providedToken = req.headers['x-csrf-token'] || req.cookies['csrf-token'];
     } else {
       providedToken = req.body._csrf || 
@@ -90,23 +95,55 @@ const csrfValidation = (req, res, next) => {
                      req.cookies['csrf-token'];
     }
 
-    // Temporarily disable all debugging to isolate the issue
-    // console.log('[CSRF] Validation for path:', req.path);
+    console.log('[CSRF] Validation for path:', req.path);
+    console.log('[CSRF] Session token:', sessionToken ? sessionToken.substring(0, 10) + '...' : 'missing');
+    console.log('[CSRF] Provided token:', providedToken ? providedToken.substring(0, 10) + '...' : 'missing');
+    console.log('[CSRF] Token sources checked:', {
+      body_csrf: !!req.body._csrf,
+      query_csrf: !!req.query._csrf,
+      cookie_csrf: !!req.cookies['csrf-token'],
+      header_csrf: !!req.headers['x-csrf-token']
+    });
+    console.log('[CSRF] Token match:', providedToken === sessionToken);
 
     // Validate token
     if (!providedToken || providedToken !== sessionToken) {
       console.warn('[CSRF] Invalid token provided');
+      console.warn('[CSRF] Expected:', sessionToken ? 'token exists' : 'no token');
+      console.warn('[CSRF] Received:', providedToken ? 'token provided' : 'no token');
       
-      if (req.xhr || req.headers['content-type'] === 'application/json') {
+      // Fixed: Check content type to return appropriate error format
+      const isJsonRequest = req.xhr || 
+                           (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) ||
+                           req.headers['accept'] && req.headers['accept'].includes('application/json');
+      
+      if (isJsonRequest) {
         return res.status(403).json({ error: 'Invalid CSRF token' });
       }
       return res.status(403).send('Invalid CSRF token');
     }
   } catch (error) {
     console.error('[CSRF] Error in validation:', error.message);
-    // In case of error, fail open in development, fail closed in production
+    console.error('[CSRF] Full error:', error.stack);
+    console.error('[CSRF] Request details:', {
+      method: req.method,
+      path: req.path,
+      hasSession: !!req.session,
+      sessionId: req.sessionID,
+      body: req.body ? Object.keys(req.body) : []
+    });
+    
+    // Fixed: Return appropriate error based on request type
     if (process.env.NODE_ENV === 'production') {
-      return res.status(500).json({ error: 'Security validation error' });
+      const isJsonRequest = req.xhr || 
+                           (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) ||
+                           req.headers['accept'] && req.headers['accept'].includes('application/json');
+      
+      if (isJsonRequest) {
+        return res.status(500).json({ error: 'Security validation error' });
+      }
+      // For HTML requests, render an error page or redirect
+      return res.status(500).send('Security validation error');
     }
   }
 
