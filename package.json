@@ -9,7 +9,9 @@
     "start:debug": "node debug-startup.js",
     "start:test": "node test-render-endpoint.js",
     "diagnose": "node diagnose-render-issue.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "node prisma/seed.js",
+    "seed:production": "node seed-production.js"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
