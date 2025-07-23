@@ -147,7 +147,13 @@ if (config.database.postgres.url || process.env.DATABASE_URL) {
       tableName: 'Session', // This matches our Prisma schema (capital S)
       ttl: 24 * 60 * 60, // 24 hours
       disableTouch: false,
-      createTableIfMissing: true
+      createTableIfMissing: true,
+      // Map column names to match Prisma schema
+      columnNames: {
+        session_id: 'sid',
+        session_data: 'data',
+        expire: 'expiresAt'
+      }
     });
     logger.info('PostgreSQL session store initialized');
   } catch (error) {
@@ -270,7 +276,13 @@ io.use((socket, next) => {
       sessionStore = new pgSession({
         conString: config.database.postgres.url || process.env.DATABASE_URL,
         tableName: 'Session', // Fixed to match Prisma schema (capital S)
-        ttl: 24 * 60 * 60
+        ttl: 24 * 60 * 60,
+        // Map column names to match Prisma schema
+        columnNames: {
+          session_id: 'sid',
+          session_data: 'data',
+          expire: 'expiresAt'
+        }
       });
     } catch (error) {
       logger.warn('Socket.IO: Failed to create PostgreSQL session store, using memory store');
