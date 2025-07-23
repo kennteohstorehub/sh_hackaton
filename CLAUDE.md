@@ -95,7 +95,7 @@ server/
 3. Ensure MongoDB is running locally
 4. Run `npm install` to install dependencies
 
-### Common Patterns
+![alt text](image.png)### Common Patterns
 
 **Route Structure**:
 ```javascript

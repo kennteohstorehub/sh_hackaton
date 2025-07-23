@@ -226,6 +226,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug routes (only in development/debugging)
+if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_DEBUG === 'true') {
+  app.use('/debug', require('./routes/debug-session'));
+}
+
 // Socket.IO authentication middleware
 io.use((socket, next) => {
   let sessionStore;

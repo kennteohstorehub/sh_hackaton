@@ -116,14 +116,16 @@ const config = {
 
   // Session
   session: {
-    name: 'sessionId',
+    name: 'qms_session',
     resave: false,
     saveUninitialized: false,
+    proxy: true, // Trust the reverse proxy
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      maxAge: parseInt(process.env.SESSION_MAX_AGE, 10) || 2 * 60 * 60 * 1000, // 2 hours
-      sameSite: 'lax'
+      maxAge: parseInt(process.env.SESSION_MAX_AGE, 10) || 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : false,
+      path: '/' // Ensure cookie is available site-wide
     }
   },
 
