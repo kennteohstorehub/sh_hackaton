@@ -12,16 +12,25 @@ const router = express.Router();
 // Login page
 router.get('/login', requireGuest, (req, res) => {
   const redirect = req.query.redirect || '/dashboard';
+  
+  // Ensure messages object exists
+  const messages = res.locals.messages || { error: null, success: null };
+  
   res.render('auth/login', {
     title: 'Login - StoreHub Queue Management System',
-    redirect
+    redirect,
+    messages: messages
   });
 });
 
 // Register page
 router.get('/register', requireGuest, (req, res) => {
+  // Ensure messages object exists
+  const messages = res.locals.messages || { error: null, success: null };
+  
   res.render('auth/register', {
-    title: 'Register - StoreHub Queue Management System'
+    title: 'Register - StoreHub Queue Management System',
+    messages: messages
   });
 });
 
@@ -169,6 +178,26 @@ router.post('/logout', (req, res) => {
       logger.error('Logout error:', err);
     }
     res.redirect('/');
+  });
+});
+
+// Debug endpoint (remove in production)
+router.get('/debug', (req, res) => {
+  res.json({
+    session: {
+      exists: !!req.session,
+      hasFlash: typeof req.flash === 'function',
+      userId: req.session?.userId || null
+    },
+    locals: {
+      hasMessages: !!res.locals.messages,
+      messages: res.locals.messages || {}
+    },
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      hasSessionSecret: !!process.env.SESSION_SECRET,
+      hasDbUrl: !!process.env.DATABASE_URL
+    }
   });
 });
 

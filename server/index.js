@@ -147,7 +147,22 @@ app.set('io', io); // Store io instance on app for route access
 app.use((req, res, next) => {
   req.io = io;
   res.locals.user = req.session.user || null;
-  res.locals.messages = req.flash();
+  
+  // Ensure messages is always an object
+  try {
+    res.locals.messages = req.flash ? req.flash() : {};
+  } catch (error) {
+    logger.warn('Flash messages error:', error);
+    res.locals.messages = {};
+  }
+  
+  // Ensure messages has default structure
+  if (!res.locals.messages || typeof res.locals.messages !== 'object') {
+    res.locals.messages = {};
+  }
+  if (!res.locals.messages.error) res.locals.messages.error = null;
+  if (!res.locals.messages.success) res.locals.messages.success = null;
+  
   next();
 });
 
@@ -179,15 +194,26 @@ app.get('/api/health', (req, res) => {
 
 // Socket.IO authentication middleware
 io.use((socket, next) => {
+  let sessionStore;
+  
+  // Try to create PostgreSQL session store
+  if (config.database.postgres.url || process.env.DATABASE_URL) {
+    try {
+      sessionStore = new pgSession({
+        conString: config.database.postgres.url || process.env.DATABASE_URL,
+        tableName: 'session',
+        ttl: 24 * 60 * 60
+      });
+    } catch (error) {
+      logger.warn('Socket.IO: Failed to create PostgreSQL session store, using memory store');
+    }
+  }
+  
   const sessionMiddleware = session({
     secret: config.security.sessionSecret,
     resave: false,
     saveUninitialized: false,
-    store: new pgSession({
-      conString: config.database.postgres.url || process.env.DATABASE_URL,
-      tableName: 'session',
-      ttl: 24 * 60 * 60
-    })
+    store: sessionStore
   });
   
   sessionMiddleware(socket.request, {}, next);
@@ -258,19 +284,30 @@ const initializeServices = async () => {
 app.use((error, req, res, next) => {
   logger.error('Unhandled error:', error);
   
-  // Check if it's an API request
-  if (req.path.startsWith('/api/')) {
-    res.status(500).json({
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
-    });
-  } else {
-    // Render error page for frontend requests
-    res.status(500).render('error', {
-      title: 'Server Error',
-      status: 500,
-      message: 'Something went wrong. Please try again later.'
-    });
+  // Prevent sending headers twice
+  if (res.headersSent) {
+    return next(error);
+  }
+  
+  try {
+    // Check if it's an API request
+    if (req.path.startsWith('/api/')) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+      });
+    } else {
+      // Render error page for frontend requests
+      res.status(500).render('error', {
+        title: 'Server Error',
+        status: 500,
+        message: 'Something went wrong. Please try again later.'
+      });
+    }
+  } catch (renderError) {
+    // If rendering fails, send plain text response
+    logger.error('Error rendering error page:', renderError);
+    res.status(500).send('Internal Server Error');
   }
 });
 
