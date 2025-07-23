@@ -40,6 +40,12 @@ router.post('/login',
   handleValidationErrors,
   async (req, res) => {
   try {
+    logger.info(`Login attempt for email: ${req.body.email}`);
+    logger.debug('Session state before login:', {
+      sessionId: req.sessionID,
+      hasSession: !!req.session,
+      sessionData: req.session
+    });
 
     const { email, password } = req.body;
 
@@ -75,6 +81,11 @@ router.post('/login',
       };
 
       logger.info(`Merchant logged in: ${merchant.email}`);
+      logger.debug('Session after login:', {
+        sessionId: req.sessionID,
+        userId: req.session.userId,
+        user: req.session.user
+      });
       req.flash('success', `Welcome back, ${merchant.businessName}!`);
       
       // Save session before redirect
@@ -85,12 +96,14 @@ router.post('/login',
         
         // Redirect to original URL if provided
         const redirectUrl = req.body.redirect || req.query.redirect || '/dashboard';
+        logger.info(`Login successful, redirecting to: ${redirectUrl}`);
         res.redirect(redirectUrl);
       });
     });
 
   } catch (error) {
     logger.error('Login error:', error);
+    logger.error('Error stack:', error.stack);
     req.flash('error', 'An error occurred during login. Please try again.');
     res.redirect('/auth/login');
   }

@@ -13,6 +13,18 @@ router.use(loadUser);
 // Dashboard home
 router.get('/', async (req, res) => {
   try {
+    logger.info('Dashboard access attempt', {
+      hasUser: !!req.user,
+      userId: req.user?._id,
+      sessionId: req.sessionID,
+      sessionUserId: req.session?.userId
+    });
+    
+    if (!req.user || !req.user._id) {
+      logger.error('No user object found in dashboard route');
+      throw new Error('User not found in request');
+    }
+    
     const merchantId = req.user._id;
     const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
     

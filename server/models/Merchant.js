@@ -5,19 +5,30 @@ const bcrypt = require('bcryptjs');
 class Merchant {
   constructor(data) {
     Object.assign(this, data);
+    // Map Prisma 'id' to Mongoose-style '_id'
+    if (data && data.id) {
+      this._id = data.id;
+    }
   }
 
   static async findById(id) {
-    const merchant = await prisma.merchant.findUnique({
-      where: { id },
-      include: {
-        settings: true,
-        subscription: true,
-        integrations: true,
-        address: true
-      }
-    });
-    return merchant ? new Merchant(merchant) : null;
+    try {
+      const merchant = await prisma.merchant.findUnique({
+        where: { id: id.toString() },
+        include: {
+          settings: true,
+          subscription: true,
+          integrations: true,
+          address: true,
+          businessHours: true,
+          services: true
+        }
+      });
+      return merchant ? new Merchant(merchant) : null;
+    } catch (error) {
+      console.error('Error in Merchant.findById:', error);
+      return null;
+    }
   }
 
   static async findOne(filter = {}) {
@@ -31,7 +42,9 @@ class Merchant {
         settings: true,
         subscription: true,
         integrations: true,
-        address: true
+        address: true,
+        businessHours: true,
+        services: true
       }
     });
     
@@ -49,7 +62,9 @@ class Merchant {
         settings: true,
         subscription: true,
         integrations: true,
-        address: true
+        address: true,
+        businessHours: true,
+        services: true
       }
     });
     
@@ -125,6 +140,34 @@ class Merchant {
   canCreateQueue(existingQueues) {
     const maxQueues = this.subscription?.maxQueues || 1;
     return existingQueues < maxQueues;
+  }
+  
+  isBusinessOpen() {
+    // Check if business is currently open based on business hours
+    const now = new Date();
+    const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+    
+    if (!this.businessHours || !Array.isArray(this.businessHours)) {
+      return true; // Default to open if no hours specified
+    }
+    
+    const todayHours = this.businessHours.find(bh => bh.dayOfWeek === dayOfWeek);
+    if (!todayHours || todayHours.closed) {
+      return false;
+    }
+    
+    // Check if current time is within business hours
+    const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+    return currentTime >= todayHours.start && currentTime <= todayHours.end;
+  }
+  
+  getActiveServices() {
+    // Return active service types
+    const services = [];
+    if (this.services?.dinein) services.push('Dine In');
+    if (this.services?.takeaway) services.push('Takeaway');
+    if (this.services?.delivery) services.push('Delivery');
+    return services.length > 0 ? services : ['General Queue'];
   }
 
   // Static methods

@@ -142,6 +142,33 @@ app.use(flash());
 app.use(csrfTokenManager);
 app.use(csrfHelpers);
 
+// Request logging middleware
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  
+  // Log incoming request
+  logger.info(`Incoming ${req.method} ${req.path}`, {
+    sessionId: req.sessionID,
+    userId: req.session?.userId,
+    hasSession: !!req.session
+  });
+  
+  // Log response when finished
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    if (res.statusCode >= 400) {
+      logger.error(`Response ${req.method} ${req.path} - ${res.statusCode}`, {
+        duration: `${duration}ms`,
+        statusCode: res.statusCode,
+        sessionId: req.sessionID,
+        userId: req.session?.userId
+      });
+    }
+  });
+  
+  next();
+});
+
 // Make io and user data accessible to all routes
 app.set('io', io); // Store io instance on app for route access
 app.use((req, res, next) => {
@@ -282,7 +309,16 @@ const initializeServices = async () => {
 
 // Error handling middleware
 app.use((error, req, res, next) => {
-  logger.error('Unhandled error:', error);
+  logger.error('Unhandled error:', {
+    message: error.message,
+    stack: error.stack,
+    path: req.path,
+    method: req.method,
+    sessionId: req.sessionID,
+    userId: req.session?.userId,
+    body: req.body,
+    query: req.query
+  });
   
   // Prevent sending headers twice
   if (res.headersSent) {
@@ -294,14 +330,16 @@ app.use((error, req, res, next) => {
     if (req.path.startsWith('/api/')) {
       res.status(500).json({
         error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     } else {
       // Render error page for frontend requests
       res.status(500).render('error', {
         title: 'Server Error',
         status: 500,
-        message: 'Something went wrong. Please try again later.'
+        message: 'Something went wrong. Please try again later.',
+        error: process.env.NODE_ENV === 'development' ? error : null
       });
     }
   } catch (renderError) {
