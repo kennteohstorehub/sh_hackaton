@@ -1,7 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const Queue = require('../models/Queue');
-const Merchant = require('../models/Merchant');
+const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
 const { generateQueueQR, generateQueueQRSVG } = require('../utils/qrGenerator');
 const { requireAuth, loadUser } = require('../middleware/auth');
