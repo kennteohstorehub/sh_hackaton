@@ -15,17 +15,17 @@ router.get('/', async (req, res) => {
   try {
     logger.info('Dashboard access attempt', {
       hasUser: !!req.user,
-      userId: req.user?._id,
+      userId: req.user?.id || req.user?._id,
       sessionId: req.sessionID,
       sessionUserId: req.session?.userId
     });
     
-    if (!req.user || !req.user._id) {
+    if (!req.user || (!req.user.id && !req.user._id)) {
       logger.error('No user object found in dashboard route');
       throw new Error('User not found in request');
     }
     
-    const merchantId = req.user._id;
+    const merchantId = req.user.id || req.user._id;
     const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
     
     // Calculate basic stats
@@ -119,7 +119,7 @@ router.get('/whatsapp', (req, res) => {
 // GET /dashboard/queues/new - Create new queue
 router.get('/queues/new', async (req, res) => {
   try {
-    const merchantId = req.user._id;
+    const merchantId = req.user.id || req.user._id;
     const merchant = await Merchant.findById(merchantId);
     
     if (!merchant) {
@@ -146,7 +146,7 @@ router.get('/queues/new', async (req, res) => {
 // GET /dashboard/queues/:id/edit - Edit queue
 router.get('/queues/:id/edit', async (req, res) => {
   try {
-    const merchantId = req.user._id;
+    const merchantId = req.user.id || req.user._id;
     const queue = await Queue.findOne({ _id: req.params.id, merchantId });
     const merchant = await Merchant.findById(merchantId);
     
@@ -172,7 +172,7 @@ router.get('/queues/:id/edit', async (req, res) => {
 // Settings
 router.get('/settings', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.user._id);
+    const merchant = await Merchant.findById(req.user.id || req.user._id);
 
     res.render('dashboard/settings-improved', {
       title: 'Settings - StoreHub Queue Management System',
@@ -189,7 +189,7 @@ router.get('/settings', async (req, res) => {
 // GET /dashboard/integrations - Integrations page
 router.get('/integrations', async (req, res) => {
   try {
-    const merchantId = req.user._id;
+    const merchantId = req.user.id || req.user._id;
     const merchant = await Merchant.findById(merchantId);
     
     if (!merchant) {
@@ -228,7 +228,7 @@ router.get('/whatsapp-setup', async (req, res) => {
 // Analytics
 router.get('/analytics', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.user._id);
+    const merchant = await Merchant.findById(req.user.id || req.user._id);
     
     res.render('dashboard/analytics', {
       title: 'Analytics - StoreHub Queue Management System',

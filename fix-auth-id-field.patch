@@ -1,0 +1,31 @@
+--- a/server/routes/frontend/auth.js
++++ b/server/routes/frontend/auth.js
+@@ -85,11 +85,11 @@ router.post('/login',
+       }
+       
+       // Create session with userId
+-      req.session.userId = merchant._id.toString();
++      req.session.userId = merchant.id || merchant._id?.toString();
+       req.session.user = {
+-        id: merchant._id.toString(),
++        id: merchant.id || merchant._id?.toString(),
+         email: merchant.email,
+         businessName: merchant.businessName,
+-        merchantId: merchant._id.toString()
++        merchantId: merchant.id || merchant._id?.toString()
+       };
+ 
+@@ -163,11 +163,11 @@ router.post('/register',
+       }
+       
+       // Create session with userId
+-      req.session.userId = merchant._id.toString();
++      req.session.userId = merchant.id || merchant._id?.toString();
+       req.session.user = {
+-        id: merchant._id.toString(),
++        id: merchant.id || merchant._id?.toString(),
+         email: merchant.email,
+         businessName: merchant.businessName,
+-        merchantId: merchant._id.toString()
++        merchantId: merchant.id || merchant._id?.toString()
+       };

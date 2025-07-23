@@ -43,7 +43,7 @@ const loadUser = async (req, res, next) => {
     try {
       const Merchant = require('../models/Merchant');
       logger.info(`Loading user data for userId: ${req.session.userId}`);
-      const user = await Merchant.findById(req.session.userId).select('-password');
+      const user = await Merchant.findById(req.session.userId);
       
       if (!user) {
         // User not found, clear session
@@ -55,8 +55,14 @@ const loadUser = async (req, res, next) => {
       // Attach user to request
       req.user = user;
       res.locals.user = user; // Make user available in views
+      
+      // Ensure _id is always available for backward compatibility
+      if (user.id && !user._id) {
+        req.user._id = user.id;
+      }
+      
       logger.debug('User loaded successfully:', {
-        userId: user._id,
+        userId: user.id || user._id,
         email: user.email
       });
     } catch (error) {
