@@ -20,11 +20,12 @@ const {
   apiLimiter 
 } = require('./middleware/security');
 const { captureRawBody } = require('./middleware/webhook-auth');
+// Use safer CSRF middleware that won't crash if session is unavailable
 const { 
   csrfTokenManager, 
   csrfValidation, 
   csrfHelpers 
-} = require('./middleware/csrf-protection');
+} = require('./middleware/csrf-protection-safe');
 const { registerHelpers } = require('./utils/templateHelpers');
 
 // API Routes
