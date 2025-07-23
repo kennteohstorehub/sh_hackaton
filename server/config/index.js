@@ -231,7 +231,6 @@ function initialize() {
   logger.info('Configuration loaded', {
     env: config.env,
     port: config.server.port,
-    mongodbConfigured: !!config.database.mongodb.uri,
     postgresConfigured: !!config.database.postgres.url,
     whatsappWhitelist: config.whatsapp.enforceWhitelist,
     aiEnabled: config.ai.enabled,
