@@ -291,18 +291,31 @@ io.on('connection', (socket) => {
 const initializeServices = async () => {
   try {
     // Initialize services with individual error handling
-    const initPromises = [
-      whatsappService.initialize(io)
-        .then(() => logger.info('WhatsApp service initialized'))
-        .catch(err => logger.warn('WhatsApp initialization failed (non-critical):', err.message)),
-      
+    const initPromises = [];
+    
+    // Only initialize WhatsApp if enabled
+    if (process.env.ENABLE_WHATSAPP_WEB !== 'false') {
+      initPromises.push(
+        whatsappService.initialize(io)
+          .then(() => logger.info('WhatsApp service initialized'))
+          .catch(err => logger.warn('WhatsApp initialization failed (non-critical):', err.message))
+      );
+    } else {
+      logger.info('WhatsApp service disabled by ENABLE_WHATSAPP_WEB=false');
+    }
+    
+    // Always initialize AI service
+    initPromises.push(
       aiService.initialize()
         .then(() => logger.info('AI service initialized'))
-        .catch(err => logger.warn('AI service initialization failed (non-critical):', err.message)),
-      
+        .catch(err => logger.warn('AI service initialization failed (non-critical):', err.message))
+    );
+    
+    // Always initialize chatbot service
+    initPromises.push(
       Promise.resolve(chatbotService.setSocketIO(io))
         .then(() => logger.info('Chatbot service initialized'))
-    ];
+    );
     
     // Wait for all services to initialize (failures won't stop the server)
     await Promise.allSettled(initPromises);

@@ -226,6 +226,24 @@ router.get('/debug', (req, res) => {
   });
 });
 
+// Demo user check endpoint
+router.get('/check-demo', async (req, res) => {
+  try {
+    const demoUser = await Merchant.findOne({ email: 'demo@smartqueue.com' });
+    res.json({
+      demoUserExists: !!demoUser,
+      email: demoUser ? demoUser.email : null,
+      businessName: demoUser ? demoUser.businessName : null,
+      message: demoUser ? 'Demo user found' : 'Demo user not found - needs seeding'
+    });
+  } catch (error) {
+    res.json({
+      error: 'Failed to check demo user',
+      message: error.message
+    });
+  }
+});
+
 // Test login endpoint
 router.post('/test-login', async (req, res) => {
   try {
