@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 const router = express.Router();
 
 // Authentication middleware
-const { authMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth-bypass');
 
 // GET /api/whatsapp/status - Get WhatsApp connection status with performance metrics
 router.get('/status', authMiddleware, async (req, res) => {

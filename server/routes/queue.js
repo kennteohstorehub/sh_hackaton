@@ -3,7 +3,7 @@ const { body, validationResult } = require('express-validator');
 const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
 const { generateQueueQR, generateQueueQRSVG } = require('../utils/qrGenerator');
-const { requireAuth, loadUser } = require('../middleware/auth');
+const { requireAuth, loadUser } = require('../middleware/auth-bypass');
 
 const router = express.Router();
 

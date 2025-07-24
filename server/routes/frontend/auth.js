@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const Merchant = require('../../models/Merchant');
 const logger = require('../../utils/logger');
-const { requireGuest } = require('../../middleware/auth');
+const { requireGuest } = require('../../middleware/auth-bypass');
 const { validateLogin, validateRegister } = require('../../middleware/validators');
 const { handleValidationErrors, authLimiter } = require('../../middleware/security');
 

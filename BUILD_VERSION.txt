@@ -1,10 +1,10 @@
-Build Version: 2025-01-24-v5
-Purpose: Debug session persistence and demo data seeded
+Build Version: 2025-01-24-v6
+Purpose: Authentication bypassed for development focus
 Changes:
-- Neon database migration completed successfully
-- Demo merchant and queue data seeded in PostgreSQL
-- Added session debugging endpoints
-- Enhanced logging for session creation
+- AUTHENTICATION COMPLETELY BYPASSED - All requests use demo merchant
+- Auth routes redirect directly to dashboard
+- All middleware uses auth-bypass instead of real auth
+- Demo merchant ID hardcoded: 7a99f35e-0f73-4f8e-831c-fde8fc3a5532
 - CSRF: COMPLETELY DISABLED (temporary for testing)
 
-STATUS: Database ready with demo data, debugging session issues
+STATUS: Ready for core functionality development without auth issues
