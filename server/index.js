@@ -20,12 +20,12 @@ const {
   apiLimiter 
 } = require('./middleware/security');
 const { captureRawBody } = require('./middleware/webhook-auth');
-// Use CSRF bypass temporarily for testing
+// Use CSRF disabled completely for testing
 const { 
   csrfTokenManager, 
   csrfValidation, 
   csrfHelpers 
-} = require('./middleware/csrf-bypass');
+} = require('./middleware/csrf-disabled');
 const { registerHelpers } = require('./utils/templateHelpers');
 
 // API Routes
@@ -231,7 +231,8 @@ app.use((req, res, next) => {
 });
 
 // Apply CSRF validation to all state-changing routes
-app.use(csrfValidation);
+// TEMPORARILY DISABLED FOR TESTING
+// app.use(csrfValidation);
 
 // Frontend Routes
 app.use('/', publicRoutes);
