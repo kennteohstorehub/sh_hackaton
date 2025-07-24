@@ -68,6 +68,17 @@ router.post('/login',
       req.flash('error', 'Invalid email or password.');
       return res.redirect('/auth/login');
     }
+    
+    // DEBUG: Log merchant object structure
+    logger.info('Merchant object found:', {
+      hasId: !!merchant.id,
+      has_id: !!merchant._id,
+      idValue: merchant.id,
+      _idValue: merchant._id?.toString(),
+      email: merchant.email,
+      businessName: merchant.businessName,
+      merchantKeys: Object.keys(merchant).slice(0, 10) // First 10 keys
+    });
 
     // Check password
     const isValidPassword = await bcrypt.compare(password, merchant.password);

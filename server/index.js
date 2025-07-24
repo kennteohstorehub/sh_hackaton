@@ -1,6 +1,7 @@
-// BUILD VERSION: 2025-01-24-v1 - CSRF COMPLETELY DISABLED
-console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v1');
+// BUILD VERSION: 2025-01-24-v2 - SESSION DEBUG ADDED
+console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v2');
 console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
+console.log('🔍 Session debugging enabled');
 
 const express = require('express');
 const cors = require('cors');
@@ -252,6 +253,7 @@ app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/chatbot', require('./routes/chatbot'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/test-csrf', require('./routes/test-csrf'));
+app.use('/api/debug', require('./routes/debug-session'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
