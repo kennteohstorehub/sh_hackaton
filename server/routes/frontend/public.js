@@ -171,6 +171,60 @@ router.get('/terms', (req, res) => {
   });
 });
 
+// Public queue listing page (when no specific queue ID is provided)
+router.get('/queue/', async (req, res) => {
+  try {
+    // Since we're using auth bypass, get the demo merchant's queues
+    const demoMerchantId = '7a99f35e-0f73-4f8e-831c-fde8fc3a5532';
+    
+    // Find active queues for the demo merchant
+    const queues = await Queue.find({ 
+      merchantId: demoMerchantId,
+      isActive: true 
+    });
+    
+    if (queues.length === 0) {
+      return res.status(404).render('error', {
+        title: 'No Active Queues',
+        status: 404,
+        message: 'There are no active queues available at this time.'
+      });
+    }
+    
+    // If there's only one queue, redirect directly to it
+    if (queues.length === 1) {
+      return res.redirect(`/queue/${queues[0]._id || queues[0].id}`);
+    }
+    
+    // Otherwise, show a list of available queues
+    const merchant = await Merchant.findById(demoMerchantId);
+    
+    res.render('public/queue-list', {
+      title: 'Available Queues - StoreHub Queue Management System',
+      queues,
+      merchant
+    });
+    
+  } catch (error) {
+    logger.error('Queue listing error:', error);
+    // If error or no queues, try to find and redirect to first active queue
+    try {
+      const firstQueue = await Queue.findOne({ isActive: true });
+      if (firstQueue) {
+        return res.redirect(`/queue/${firstQueue._id || firstQueue.id}`);
+      }
+    } catch (innerError) {
+      logger.error('Fallback queue search error:', innerError);
+    }
+    
+    res.status(500).render('error', {
+      title: 'Server Error',
+      status: 500,
+      message: 'Unable to load queue information. Please try again later.'
+    });
+  }
+});
+
 // Queue information page for customers (accessed via QR code)
 router.get('/queue/:queueId', async (req, res) => {
   try {
