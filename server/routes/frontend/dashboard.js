@@ -27,7 +27,8 @@ router.get('/', async (req, res) => {
     }
     
     const merchantId = req.user.id || req.user._id;
-    const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
+    // Queue.find already returns sorted results from Prisma
+    const queues = await Queue.find({ merchantId });
     
     // Calculate basic stats
     const stats = {

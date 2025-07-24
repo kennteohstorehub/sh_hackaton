@@ -1,9 +1,10 @@
-// BUILD VERSION: 2025-01-24-v6 - AUTH BYPASS FOR DEVELOPMENT
-console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v6');
+// BUILD VERSION: 2025-01-24-v7 - ENHANCED AUTH BYPASS
+console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v7');
 console.log('✅ Neon database migration completed successfully');
 console.log('✅ Demo data seeded in PostgreSQL');
 console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
 console.log('🔓 AUTHENTICATION BYPASSED - All requests use demo merchant');
+console.log('🛡️  Enhanced auth-bypass to prevent redirect loops');
 console.log('📝 Focus on core functionality development');
 
 const express = require('express');
@@ -214,11 +215,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// AUTH BYPASS: Apply EARLY in middleware stack to ensure user is always set
+const { createDemoSession } = require('./middleware/auth-bypass');
+app.use(createDemoSession);
+logger.warn('🔓 AUTH BYPASS ENABLED - All requests use demo merchant');
+
 // Make io and user data accessible to all routes
 app.set('io', io); // Store io instance on app for route access
 app.use((req, res, next) => {
   req.io = io;
-  res.locals.user = req.session.user || null;
+  // User should already be set by auth-bypass, but double-check
+  res.locals.user = req.user || req.session?.user || null;
   
   // Ensure messages is always an object
   try {
@@ -241,11 +248,6 @@ app.use((req, res, next) => {
 // Apply CSRF validation to all state-changing routes
 // TEMPORARILY DISABLED FOR TESTING
 // app.use(csrfValidation);
-
-// AUTH BYPASS: Create demo session for all requests
-const { createDemoSession } = require('./middleware/auth-bypass');
-app.use(createDemoSession);
-logger.warn('🔓 AUTH BYPASS ENABLED - All requests use demo merchant');
 
 // Frontend Routes
 app.use('/', publicRoutes);
