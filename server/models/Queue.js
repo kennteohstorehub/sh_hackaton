@@ -22,6 +22,9 @@ class Queue {
     
     return queues.map(q => new Queue(q));
   }
+  
+  // Alias for Prisma-style usage
+  static findMany = Queue.find;
 
   static async findById(id) {
     const queue = await prisma.queue.findUnique({
@@ -167,6 +170,48 @@ class Queue {
         data: { position: i + 1 }
       });
     }
+  }
+
+  // Instance methods expected by dashboard
+  getWaitingCustomers() {
+    return this.entries?.filter(e => e.status === 'waiting') || [];
+  }
+
+  getCurrentLength() {
+    return this.getWaitingCustomers().length;
+  }
+
+  getAverageWaitTime() {
+    // If no average service time set, use default
+    const avgServiceTime = this.averageServiceTime || 15;
+    const waitingCount = this.getCurrentLength();
+    
+    // Simple calculation: average service time * number of customers ahead
+    return waitingCount * avgServiceTime;
+  }
+
+  // Additional helper methods that might be used
+  getServedCustomers() {
+    return this.entries?.filter(e => e.status === 'completed') || [];
+  }
+
+  getCalledCustomers() {
+    return this.entries?.filter(e => e.status === 'called') || [];
+  }
+
+  getActiveCustomers() {
+    return this.entries?.filter(e => ['waiting', 'called', 'serving'].includes(e.status)) || [];
+  }
+
+  isQueueFull() {
+    const activeCount = this.getActiveCustomers().length;
+    return activeCount >= this.maxCapacity;
+  }
+
+  getEstimatedWaitTime(position) {
+    // Calculate wait time based on position in queue
+    const avgServiceTime = this.averageServiceTime || 15;
+    return (position - 1) * avgServiceTime;
   }
 }
 

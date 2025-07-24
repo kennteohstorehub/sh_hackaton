@@ -25,7 +25,7 @@
                 <% if (typeof queues !== 'undefined' && queues.length > 0) { %>
                     <% const activeQueue = queues.find(queue => queue.isActive); %>
                     <% if (activeQueue) { %>
-                        <a href="/queue/<%= activeQueue._id %>" class="btn-view-public" target="_blank">
+                        <a href="/queue/<%= activeQueue.id || activeQueue._id %>" class="btn-view-public" target="_blank">
                             <i class="bi bi-eye"></i> View Public
                         </a>
                     <% } %>
@@ -84,7 +84,7 @@
                 <% if (typeof queues !== 'undefined' && queues.length > 0) { %>
                     <% const activeQueue = queues.find(queue => queue.isActive); %>
                     <% if (activeQueue) { %>
-                        <a href="/queue/<%= activeQueue._id %>" target="_blank">
+                        <a href="/queue/<%= activeQueue.id || activeQueue._id %>" target="_blank">
                             <i class="bi bi-eye"></i>
                             View Public Queue
                         </a>
@@ -445,7 +445,8 @@
         }
         
         // Join merchant room for real-time updates
-        socket.emit('join-merchant-room', '507f1f77bcf86cd799439011');
+        const merchantId = '<%= user.merchantId || user.id || user._id %>';
+        socket.emit('join-merchant-room', merchantId);
         
         // Update total waiting count on page load
         document.addEventListener('DOMContentLoaded', function() {
