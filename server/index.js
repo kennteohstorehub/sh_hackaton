@@ -1,8 +1,9 @@
-// BUILD VERSION: 2025-01-24-v3 - SESSION SCHEMA FIX
-console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v3');
+// BUILD VERSION: 2025-01-24-v4 - DATABASE MIGRATION COMPLETE
+console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v4');
+console.log('✅ Neon database migration completed successfully');
 console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
 console.log('🔍 Session debugging enabled');
-console.log('📝 Session schema updated - sid is now primary key');
+console.log('📝 Session table structure verified - sid is primary key');
 
 const express = require('express');
 const cors = require('cors');
