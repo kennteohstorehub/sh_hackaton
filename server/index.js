@@ -4,7 +4,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
+const pgSession = require('express-pg-session')(session);
 const flash = require('express-flash');
 const methodOverride = require('method-override');
 const path = require('path');
@@ -147,9 +147,10 @@ if (config.database.postgres.url || process.env.DATABASE_URL) {
       tableName: 'Session', // This matches our Prisma schema (capital S)
       ttl: 24 * 60 * 60, // 24 hours
       disableTouch: false,
-      createTableIfMissing: true,
+      createTableIfMissing: false, // Don't create table - Prisma manages it
+      pruneSessionInterval: 60, // Prune expired sessions every 60 seconds
       // Map column names to match Prisma schema
-      columnNames: {
+      columns: {
         session_id: 'sid',
         session_data: 'data',
         expire: 'expiresAt'
@@ -277,8 +278,10 @@ io.use((socket, next) => {
         conString: config.database.postgres.url || process.env.DATABASE_URL,
         tableName: 'Session', // Fixed to match Prisma schema (capital S)
         ttl: 24 * 60 * 60,
+        createTableIfMissing: false,
+        pruneSessionInterval: 60,
         // Map column names to match Prisma schema
-        columnNames: {
+        columns: {
           session_id: 'sid',
           session_data: 'data',
           expire: 'expiresAt'
