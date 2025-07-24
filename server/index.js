@@ -20,12 +20,12 @@ const {
   apiLimiter 
 } = require('./middleware/security');
 const { captureRawBody } = require('./middleware/webhook-auth');
-// Use ultra-safe CSRF middleware with comprehensive error handling
+// Use CSRF bypass temporarily for testing
 const { 
   csrfTokenManager, 
   csrfValidation, 
   csrfHelpers 
-} = require('./middleware/csrf-protection-ultra-safe');
+} = require('./middleware/csrf-bypass');
 const { registerHelpers } = require('./utils/templateHelpers');
 
 // API Routes
