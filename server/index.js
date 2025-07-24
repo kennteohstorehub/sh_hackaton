@@ -142,8 +142,17 @@ const sessionConfig = {
 // Only use PostgreSQL session store if database URL is available
 if (config.database.postgres.url || process.env.DATABASE_URL) {
   try {
+    // Create a PostgreSQL pool for express-pg-session
+    const pg = require('pg');
+    const pgPool = new pg.Pool({
+      connectionString: config.database.postgres.url || process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 10, // maximum number of clients in the pool
+      idleTimeoutMillis: 30000
+    });
+    
     sessionConfig.store = new pgSession({
-      conString: config.database.postgres.url || process.env.DATABASE_URL,
+      pool: pgPool, // Use pool instead of conString
       tableName: 'Session', // This matches our Prisma schema (capital S)
       ttl: 24 * 60 * 60, // 24 hours
       disableTouch: false,
@@ -156,7 +165,7 @@ if (config.database.postgres.url || process.env.DATABASE_URL) {
         expire: 'expiresAt'
       }
     });
-    logger.info('PostgreSQL session store initialized');
+    logger.info('PostgreSQL session store initialized with pool');
   } catch (error) {
     logger.error('Failed to initialize PostgreSQL session store:', error);
     logger.warn('Falling back to memory session store (not suitable for production)');
@@ -274,8 +283,16 @@ io.use((socket, next) => {
   // Try to create PostgreSQL session store
   if (config.database.postgres.url || process.env.DATABASE_URL) {
     try {
+      const pg = require('pg');
+      const pgPool = new pg.Pool({
+        connectionString: config.database.postgres.url || process.env.DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        max: 5, // smaller pool for Socket.IO
+        idleTimeoutMillis: 30000
+      });
+      
       sessionStore = new pgSession({
-        conString: config.database.postgres.url || process.env.DATABASE_URL,
+        pool: pgPool, // Use pool instead of conString
         tableName: 'Session', // Fixed to match Prisma schema (capital S)
         ttl: 24 * 60 * 60,
         createTableIfMissing: false,
