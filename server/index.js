@@ -1,3 +1,7 @@
+// BUILD VERSION: 2025-01-24-v1 - CSRF COMPLETELY DISABLED
+console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v1');
+console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
