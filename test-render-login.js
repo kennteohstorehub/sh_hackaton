@@ -8,7 +8,7 @@ const tough = require('tough-cookie');
 axiosCookieJarSupport(axios);
 const cookieJar = new tough.CookieJar();
 
-const baseURL = 'https://storehub-queue.onrender.com';
+const baseURL = 'https://queuemanagement-vtc2.onrender.com';
 
 async function testLogin() {
   console.log('🧪 Testing Login on Render Deployment');

@@ -95,14 +95,22 @@ router.post('/login',
     //     return res.redirect('/auth/login');
     //   }
       
-      // Create session with userId
-      req.session.userId = merchant.id || merchant._id?.toString();
+      // Create session with userId - use consistent ID
+      const merchantId = merchant.id || merchant._id?.toString();
+      req.session.userId = merchantId;
       req.session.user = {
-        id: merchant.id || merchant._id?.toString(),
+        id: merchantId,
         email: merchant.email,
         businessName: merchant.businessName,
-        merchantId: merchant.id || merchant._id?.toString()
+        merchantId: merchantId
       };
+      
+      logger.info('Setting session data:', {
+        merchantId,
+        sessionId: req.sessionID,
+        userId: req.session.userId,
+        userObj: req.session.user
+      });
 
       logger.info(`Merchant logged in: ${merchant.email}`);
       logger.debug('Session after login:', {

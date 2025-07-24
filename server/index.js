@@ -1,8 +1,9 @@
-// BUILD VERSION: 2025-01-24-v4 - DATABASE MIGRATION COMPLETE
-console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v4');
+// BUILD VERSION: 2025-01-24-v5 - SESSION DEBUGGING
+console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v5');
 console.log('✅ Neon database migration completed successfully');
+console.log('✅ Demo data seeded in PostgreSQL');
 console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
-console.log('🔍 Session debugging enabled');
+console.log('🔍 Enhanced session debugging enabled');
 console.log('📝 Session table structure verified - sid is primary key');
 
 const express = require('express');
@@ -256,6 +257,7 @@ app.use('/api/chatbot', require('./routes/chatbot'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/test-csrf', require('./routes/test-csrf'));
 app.use('/api/debug', require('./routes/debug-session'));
+app.use('/api/session-test', require('./routes/session-test'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

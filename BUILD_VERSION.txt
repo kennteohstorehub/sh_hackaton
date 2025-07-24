@@ -1,9 +1,10 @@
-Build Version: 2025-01-24-v4
-Purpose: Database migration completed - Session table fixed
+Build Version: 2025-01-24-v5
+Purpose: Debug session persistence and demo data seeded
 Changes:
-- Successfully ran migration on Neon database
-- Session table now uses sid as primary key (no id column)
-- Verified table structure matches connect-pg-simple requirements
+- Neon database migration completed successfully
+- Demo merchant and queue data seeded in PostgreSQL
+- Added session debugging endpoints
+- Enhanced logging for session creation
 - CSRF: COMPLETELY DISABLED (temporary for testing)
 
-STATUS: Migration complete, ready for testing
+STATUS: Database ready with demo data, debugging session issues
