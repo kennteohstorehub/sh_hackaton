@@ -4,7 +4,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
-const pgSession = require('express-pg-session')(session);
+const pgSession = require('connect-pg-simple')(session);
 const flash = require('express-flash');
 const methodOverride = require('method-override');
 const path = require('path');
@@ -142,28 +142,13 @@ const sessionConfig = {
 // Only use PostgreSQL session store if database URL is available
 if (config.database.postgres.url || process.env.DATABASE_URL) {
   try {
-    // Create a PostgreSQL pool for express-pg-session
-    const pg = require('pg');
-    const pgPool = new pg.Pool({
-      connectionString: config.database.postgres.url || process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: 10, // maximum number of clients in the pool
-      idleTimeoutMillis: 30000
-    });
-    
     sessionConfig.store = new pgSession({
-      pool: pgPool, // Use pool instead of conString
-      tableName: 'Session', // This matches our Prisma schema (capital S)
-      ttl: 24 * 60 * 60, // 24 hours
+      conString: config.database.postgres.url || process.env.DATABASE_URL,
+      tableName: 'Session',
+      ttl: 24 * 60 * 60,
       disableTouch: false,
-      createTableIfMissing: false, // Don't create table - Prisma manages it
-      pruneSessionInterval: 60, // Prune expired sessions every 60 seconds
-      // Map column names to match Prisma schema
-      columns: {
-        session_id: 'sid',
-        session_data: 'data',
-        expire: 'expiresAt'
-      }
+      createTableIfMissing: false,
+      pruneSessionInterval: 60
     });
     logger.info('PostgreSQL session store initialized with pool');
   } catch (error) {
@@ -283,26 +268,12 @@ io.use((socket, next) => {
   // Try to create PostgreSQL session store
   if (config.database.postgres.url || process.env.DATABASE_URL) {
     try {
-      const pg = require('pg');
-      const pgPool = new pg.Pool({
-        connectionString: config.database.postgres.url || process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-        max: 5, // smaller pool for Socket.IO
-        idleTimeoutMillis: 30000
-      });
-      
       sessionStore = new pgSession({
-        pool: pgPool, // Use pool instead of conString
-        tableName: 'Session', // Fixed to match Prisma schema (capital S)
+        conString: config.database.postgres.url || process.env.DATABASE_URL,
+        tableName: 'Session',
         ttl: 24 * 60 * 60,
         createTableIfMissing: false,
-        pruneSessionInterval: 60,
-        // Map column names to match Prisma schema
-        columns: {
-          session_id: 'sid',
-          session_data: 'data',
-          expire: 'expiresAt'
-        }
+        pruneSessionInterval: 60
       });
     } catch (error) {
       logger.warn('Socket.IO: Failed to create PostgreSQL session store, using memory store');
