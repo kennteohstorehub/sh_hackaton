@@ -175,9 +175,9 @@ app.use(session(sessionConfig));
 
 app.use(flash());
 
-// CSRF Protection
-app.use(csrfTokenManager);
-app.use(csrfHelpers);
+// CSRF Protection - COMPLETELY DISABLED
+// app.use(csrfTokenManager);
+// app.use(csrfHelpers);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -247,6 +247,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/chatbot', require('./routes/chatbot'));
 app.use('/api/webhooks', require('./routes/webhooks'));
+app.use('/api/test-csrf', require('./routes/test-csrf'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
