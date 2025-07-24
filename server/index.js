@@ -1,7 +1,8 @@
-// BUILD VERSION: 2025-01-24-v2 - SESSION DEBUG ADDED
-console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v2');
+// BUILD VERSION: 2025-01-24-v3 - SESSION SCHEMA FIX
+console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v3');
 console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
 console.log('🔍 Session debugging enabled');
+console.log('📝 Session schema updated - sid is now primary key');
 
 const express = require('express');
 const cors = require('cors');

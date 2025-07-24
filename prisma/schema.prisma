@@ -224,8 +224,7 @@ model QueueAnalytics {
 }
 
 model Session {
-  id        String   @id
-  sid       String   @unique
+  sid       String   @id
   sess      String
   expire    DateTime
 
