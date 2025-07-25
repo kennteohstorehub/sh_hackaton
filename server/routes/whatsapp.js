@@ -4,8 +4,13 @@ const logger = require('../utils/logger');
 
 const router = express.Router();
 
-// Authentication middleware
-const { authMiddleware } = require('../middleware/auth-bypass');
+// Use appropriate auth middleware based on environment
+let authMiddleware;
+if (process.env.NODE_ENV !== 'production') {
+  ({ authMiddleware } = require('../middleware/auth-bypass'));
+} else {
+  ({ authMiddleware } = require('../middleware/auth'));
+}
 
 // GET /api/whatsapp/status - Get WhatsApp connection status with performance metrics
 router.get('/status', authMiddleware, async (req, res) => {

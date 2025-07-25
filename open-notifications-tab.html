@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Open Notifications Tab</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>Click the button to open Settings with Notifications tab</h1>
+    
+    <button onclick="openNotifications()" style="padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer;">
+        Open Settings → Notifications Tab
+    </button>
+
+    <script>
+        function openNotifications() {
+            // Open settings page
+            window.open('http://localhost:3838/dashboard/settings-improved', '_blank');
+            
+            // Wait a bit then try to click the notifications tab
+            setTimeout(() => {
+                alert('Now manually click on the Notifications tab to see if the checkboxes appear correctly.');
+            }, 2000);
+        }
+    </script>
+
+    <hr style="margin: 2rem 0;">
+    
+    <h2>Manual Steps:</h2>
+    <ol>
+        <li>Login to the application at http://localhost:3838</li>
+        <li>Navigate to Settings (or use the button above)</li>
+        <li>Click on the "Notifications" tab</li>
+        <li>Look for "Smart Notification Features" section</li>
+        <li>Check if the checkboxes have the card-based design with orange gradients</li>
+    </ol>
+
+    <h2>Expected Result:</h2>
+    <p>You should see 3 checkboxes with:</p>
+    <ul>
+        <li>Card-based design with padding and borders</li>
+        <li>Orange gradient when checked</li>
+        <li>Title and description for each option</li>
+        <li>Hover effects</li>
+    </ul>
+</body>
+</html>

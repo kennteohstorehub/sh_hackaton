@@ -1,11 +1,17 @@
-// BUILD VERSION: 2025-01-24-v7 - ENHANCED AUTH BYPASS
-console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v7');
+// BUILD VERSION: 2025-01-24-v8 - CONDITIONAL AUTH BYPASS
+console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v8');
 console.log('✅ Neon database migration completed successfully');
 console.log('✅ Demo data seeded in PostgreSQL');
-console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
-console.log('🔓 AUTHENTICATION BYPASSED - All requests use demo merchant');
-console.log('🛡️  Enhanced auth-bypass to prevent redirect loops');
-console.log('📝 Focus on core functionality development');
+
+// Only show auth bypass messages in development
+if (process.env.NODE_ENV !== 'production') {
+  console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
+  console.log('🔓 AUTHENTICATION BYPASSED - All requests use demo merchant');
+  console.log('🛡️  Enhanced auth-bypass to prevent redirect loops');
+  console.log('📝 Focus on core functionality development');
+} else {
+  console.log('🔒 Running in production mode with authentication enabled');
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -216,10 +222,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// AUTH BYPASS: Apply EARLY in middleware stack to ensure user is always set
-const { createDemoSession } = require('./middleware/auth-bypass');
-app.use(createDemoSession);
-logger.warn('🔓 AUTH BYPASS ENABLED - All requests use demo merchant');
+// AUTH BYPASS: Only apply in development mode
+if (process.env.NODE_ENV !== 'production') {
+  const { createDemoSession } = require('./middleware/auth-bypass');
+  app.use(createDemoSession);
+  logger.warn('🔓 AUTH BYPASS ENABLED - All requests use demo merchant');
+}
 
 // Make io and user data accessible to all routes
 app.set('io', io); // Store io instance on app for route access
@@ -252,8 +260,12 @@ app.use((req, res, next) => {
 
 // Frontend Routes
 app.use('/', publicRoutes);
-// AUTH BYPASS: Use redirect instead of actual auth routes
-app.use('/auth', require('./routes/frontend/auth-redirect'));
+// Use proper auth routes based on environment
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/auth', require('./routes/frontend/auth-redirect'));
+} else {
+  app.use('/auth', require('./routes/frontend/auth'));
+}
 app.use('/dashboard', dashboardRoutes);
 
 // API Routes

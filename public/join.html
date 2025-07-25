@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Queue - StoreHub Queue Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .container {
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(255, 140, 0, 0.1);
+        }
+        
+        h1 {
+            color: #ff8c00;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ff8c00;
+            background: rgba(255, 140, 0, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: #ff8c00;
+            border: none;
+            border-radius: 8px;
+            color: #000000;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #ff9a1f;
+            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            background: rgba(255, 140, 0, 0.5);
+            cursor: not-allowed;
+        }
+        
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+        }
+        
+        .success {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            color: #25d366;
+        }
+        
+        .queue-info {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .queue-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff8c00;
+            margin: 1rem 0;
+        }
+        
+        .info-text {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="joinForm">
+            <h1>Join Queue</h1>
+            
+            <div class="message error" id="errorMsg"></div>
+            
+            <form id="queueForm">
+                <div class="form-group">
+                    <label for="customerName">Your Name *</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerPhone">Phone Number *</label>
+                    <input type="tel" id="customerPhone" placeholder="+60123456789" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="partySize">Party Size *</label>
+                    <select id="partySize" required>
+                        <option value="1">1 Person</option>
+                        <option value="2">2 People</option>
+                        <option value="3">3 People</option>
+                        <option value="4">4 People</option>
+                        <option value="5">5 People</option>
+                        <option value="6">6 People</option>
+                        <option value="7">7 People</option>
+                        <option value="8">8 People</option>
+                        <option value="9">9 People</option>
+                        <option value="10">10+ People</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="specialRequests">Special Requests (Optional)</label>
+                    <textarea id="specialRequests" rows="2" placeholder="e.g., High chair needed"></textarea>
+                </div>
+                
+                <button type="submit" id="submitBtn">Join Queue</button>
+            </form>
+        </div>
+        
+        <div class="queue-info" id="successInfo">
+            <h2>✅ You're in the queue!</h2>
+            <div class="queue-number" id="queueNumber">-</div>
+            <p class="info-text">Position: <strong id="position">-</strong></p>
+            <p class="info-text">Estimated wait: <strong id="waitTime">-</strong> minutes</p>
+            <div class="message success">
+                We'll notify you via WhatsApp when your table is ready!
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get merchant ID from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const merchantId = urlParams.get('merchantId') || '3ecceb82-fb33-42c8-9d84-19eb69417e16';
+        let pushSubscription = null;
+        
+        // Check if browser supports service workers and push notifications
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            // Register service worker and get push subscription
+            initializePushNotifications();
+        }
+        
+        async function initializePushNotifications() {
+            try {
+                // Register service worker
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('Service Worker registered:', registration);
+                
+                // Request notification permission upfront
+                if (Notification.permission === 'default') {
+                    const permission = await Notification.requestPermission();
+                    if (permission === 'granted') {
+                        // Get push subscription
+                        pushSubscription = await subscribeToPush(registration);
+                    }
+                }
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+            }
+        }
+        
+        async function subscribeToPush(registration) {
+            try {
+                // Get VAPID public key from server
+                const response = await fetch('/api/push/vapid-public-key');
+                const { publicKey } = await response.json();
+                
+                // Convert the base64 string to Uint8Array
+                const applicationServerKey = urlBase64ToUint8Array(publicKey);
+                
+                // Subscribe to push notifications
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: applicationServerKey
+                });
+                
+                console.log('Push subscription obtained:', subscription);
+                return subscription;
+            } catch (error) {
+                console.error('Error subscribing to push:', error);
+                return null;
+            }
+        }
+        
+        document.getElementById('queueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Joining...';
+            errorMsg.style.display = 'none';
+            
+            const formData = {
+                customerName: document.getElementById('customerName').value,
+                customerPhone: document.getElementById('customerPhone').value,
+                partySize: parseInt(document.getElementById('partySize').value),
+                specialRequests: document.getElementById('specialRequests').value,
+                merchantId: merchantId,
+                pushSubscription: pushSubscription
+            };
+            
+            try {
+                const response = await fetch('/api/queues/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || 'Failed to join queue');
+                }
+                
+                // Show success
+                document.getElementById('joinForm').style.display = 'none';
+                document.getElementById('successInfo').style.display = 'block';
+                document.getElementById('queueNumber').textContent = data.queueNumber;
+                document.getElementById('position').textContent = data.position;
+                document.getElementById('waitTime').textContent = data.estimatedWaitTime;
+                
+                // Update success message based on notification status
+                const successMsg = document.querySelector('.success');
+                if (pushSubscription) {
+                    successMsg.innerHTML = '🔔 Notifications enabled! We\'ll notify you when your table is ready via push notifications and WhatsApp.';
+                } else {
+                    successMsg.textContent = 'We\'ll notify you via WhatsApp when your table is ready!';
+                }
+                successMsg.style.display = 'block';
+                
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Join Queue';
+            }
+        });
+        
+        
+        // Helper function to convert base64 to Uint8Array
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/\-/g, '+')
+                .replace(/_/g, '/');
+            
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Checkbox Styles</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="http://localhost:3838/css/settings.css" rel="stylesheet">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 2rem;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 {
+            color: #ff8c00;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h2>Testing Checkbox Styles from Live Server</h2>
+        
+        <h3 class="feature-heading">Smart Notification Features</h3>
+        <div class="notification-features">
+            <label class="feature-checkbox">
+                <input type="checkbox" name="adjustForPeakHours" checked>
+                <span class="checkbox-custom"></span>
+                <div class="feature-content">
+                    <span class="feature-title">Adjust timing during peak hours</span>
+                    <span class="feature-description">Automatically increase notification lead time when busy</span>
+                </div>
+            </label>
+            <label class="feature-checkbox">
+                <input type="checkbox" name="sendNoShowWarning" checked>
+                <span class="checkbox-custom"></span>
+                <div class="feature-content">
+                    <span class="feature-title">Send warning before marking as no-show</span>
+                    <span class="feature-description">Give customers a final chance before removing from queue</span>
+                </div>
+            </label>
+            <label class="feature-checkbox">
+                <input type="checkbox" name="confirmTableAcceptance" checked>
+                <span class="checkbox-custom"></span>
+                <div class="feature-content">
+                    <span class="feature-title">Request confirmation when table is ready</span>
+                    <span class="feature-description">Ensure customer is present before preparing their table</span>
+                </div>
+            </label>
+        </div>
+
+        <p style="margin-top: 2rem; color: #666;">
+            This page loads CSS from: http://localhost:3838/css/settings.css
+        </p>
+    </div>
+</body>
+</html>

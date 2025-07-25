@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Checkbox Test</title>
+    <style>
+        /* Copy the exact styles from settings.css */
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 2rem;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        .notification-features {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .feature-checkbox {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .feature-checkbox:hover {
+            background: rgba(255, 140, 0, 0.1);
+            border-color: rgba(255, 140, 0, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.2);
+        }
+
+        /* Hide default checkbox */
+        .feature-checkbox input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        /* Custom checkbox design */
+        .checkbox-custom {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 140, 0, 0.4);
+            border-radius: 6px;
+            margin-right: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Checkmark */
+        .checkbox-custom::after {
+            content: '';
+            position: absolute;
+            display: none;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 11px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* When checked */
+        .feature-checkbox input[type="checkbox"]:checked ~ .checkbox-custom {
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            border-color: #ff8c00;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
+        }
+
+        .feature-checkbox input[type="checkbox"]:checked ~ .checkbox-custom::after {
+            display: block;
+        }
+
+        /* Feature content */
+        .feature-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .feature-title {
+            color: #ffffff;
+            font-weight: 500;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .feature-description {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .feature-heading {
+            color: #ff8c00;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: #ff8c00; text-align: center;">Checkbox Style Test - Direct</h1>
+    
+    <div style="max-width: 800px; margin: 2rem auto;">
+        <h3 class="feature-heading">Smart Notification Features</h3>
+        <div class="notification-features">
+            <label class="feature-checkbox">
+                <input type="checkbox" name="adjustForPeakHours" checked>
+                <span class="checkbox-custom"></span>
+                <div class="feature-content">
+                    <span class="feature-title">Adjust timing during peak hours</span>
+                    <span class="feature-description">Automatically increase notification lead time when busy</span>
+                </div>
+            </label>
+            <label class="feature-checkbox">
+                <input type="checkbox" name="sendNoShowWarning" checked>
+                <span class="checkbox-custom"></span>
+                <div class="feature-content">
+                    <span class="feature-title">Send warning before marking as no-show</span>
+                    <span class="feature-description">Give customers a final chance before removing from queue</span>
+                </div>
+            </label>
+            <label class="feature-checkbox">
+                <input type="checkbox" name="confirmTableAcceptance" checked>
+                <span class="checkbox-custom"></span>
+                <div class="feature-content">
+                    <span class="feature-title">Request confirmation when table is ready</span>
+                    <span class="feature-description">Ensure customer is present before preparing their table</span>
+                </div>
+            </label>
+        </div>
+
+        <p style="margin-top: 2rem; color: #666;">
+            This should show the exact style you want. If this works, then the issue is with CSS loading in the actual app.
+        </p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Session Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .warning { border-left: 4px solid #ffc107; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Session & Authentication Status</h1>
+    
+    <div id="status-container">
+        <div class="status-card">
+            <h3>Checking session...</h3>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <button onclick="checkSession()">Refresh Status</button>
+        <button onclick="testQueueAPI()">Test Queue API</button>
+        <button onclick="window.location.href='/dashboard'">Go to Dashboard</button>
+        <button onclick="window.location.href='/auth/login'">Go to Login</button>
+    </div>
+    
+    <script>
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        async function checkSession() {
+            const container = document.getElementById('status-container');
+            container.innerHTML = '';
+            
+            // Check cookies
+            const csrfToken = getCookie('csrf-token');
+            const sessionCookie = getCookie('qms_session');
+            
+            let html = '<div class="status-card ' + (sessionCookie ? 'success' : 'error') + '">';
+            html += '<h3>Cookie Status</h3>';
+            html += '<p><strong>Session Cookie:</strong> ' + (sessionCookie ? '✅ Present' : '❌ Missing') + '</p>';
+            html += '<p><strong>CSRF Token:</strong> ' + (csrfToken ? '✅ Present' : '❌ Missing') + '</p>';
+            if (csrfToken) {
+                html += '<p><small>CSRF: ' + csrfToken.substring(0, 20) + '...</small></p>';
+            }
+            html += '</div>';
+            
+            // Check debug session endpoint
+            try {
+                const response = await fetch('/debug/session', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-Token': csrfToken || ''
+                    }
+                });
+                
+                html += '<div class="status-card ' + (response.ok ? 'success' : 'error') + '">';
+                html += '<h3>Session Debug Info</h3>';
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    html += '<p>❌ Could not get session info (Status: ' + response.status + ')</p>';
+                }
+                html += '</div>';
+            } catch (error) {
+                html += '<div class="status-card error">';
+                html += '<h3>Session Debug Error</h3>';
+                html += '<p>' + error.message + '</p>';
+                html += '</div>';
+            }
+            
+            // Test API endpoint
+            try {
+                const apiResponse = await fetch('/api/merchant/profile', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-Token': csrfToken || ''
+                    }
+                });
+                
+                html += '<div class="status-card ' + (apiResponse.ok ? 'success' : 'warning') + '">';
+                html += '<h3>API Authentication Test</h3>';
+                html += '<p><strong>Status:</strong> ' + apiResponse.status + ' ' + apiResponse.statusText + '</p>';
+                
+                if (apiResponse.ok) {
+                    const data = await apiResponse.json();
+                    html += '<p>✅ Authenticated as: ' + (data.merchant?.email || 'Unknown') + '</p>';
+                } else if (apiResponse.status === 401) {
+                    html += '<p>❌ Not authenticated</p>';
+                } else if (apiResponse.status === 302) {
+                    html += '<p>⚠️ API is redirecting (should return 401 for unauthenticated API calls)</p>';
+                }
+                html += '</div>';
+            } catch (error) {
+                html += '<div class="status-card error">';
+                html += '<h3>API Test Error</h3>';
+                html += '<p>' + error.message + '</p>';
+                html += '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        async function testQueueAPI() {
+            const csrfToken = getCookie('csrf-token');
+            
+            try {
+                const response = await fetch('/api/queues', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-Token': csrfToken || '',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const container = document.getElementById('status-container');
+                let html = container.innerHTML;
+                
+                html += '<div class="status-card ' + (response.ok ? 'success' : 'error') + '">';
+                html += '<h3>Queue API Test</h3>';
+                html += '<p><strong>Status:</strong> ' + response.status + '</p>';
+                
+                // Check response headers
+                html += '<p><strong>Content-Type:</strong> ' + response.headers.get('content-type') + '</p>';
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    const text = await response.text();
+                    html += '<p>' + text.substring(0, 200) + '...</p>';
+                }
+                html += '</div>';
+                
+                container.innerHTML = html;
+            } catch (error) {
+                alert('Error testing queue API: ' + error.message);
+            }
+        }
+        
+        // Check on load
+        checkSession();
+    </script>
+</body>
+</html>

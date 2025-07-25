@@ -1,307 +1,574 @@
-# StoreHub Queue Management System - Product Requirements Document (PRD)
+# Queue Management System - Product Requirements Document (PRD)
 
 ## 1. Executive Summary
 
 ### 1.1 Product Overview
-**StoreHub Queue Management System** is an AI-powered digital queue management system designed to eliminate customer friction during peak hours at restaurants, particularly in shopping mall environments. The system enables customers to join virtual queues via WhatsApp, web interface, or other messaging platforms, providing real-time updates and intelligent notifications to enhance the dining experience.
+Queue Management System is a multi-tenant SaaS platform designed for Malaysian restaurants and food establishments. The system eliminates physical waiting by enabling customers to join virtual queues through a web interface and receive real-time browser notifications when their table is ready. Each merchant accesses their own branded queue system through a unified login portal.
 
 ### 1.2 Business Objectives
-- **Primary Goal**: Reduce customer wait time frustration and improve overall dining experience
-- **Secondary Goals**: 
-  - Streamline restaurant operations and staff efficiency
-  - Increase customer satisfaction and retention
-  - Provide actionable insights through analytics
-  - Enable scalable queue management across multiple locations
+**Primary Goal**: Provide a white-label queue management solution for multiple restaurants through a single platform  
+**Secondary Goals**:
+- Enable merchant-specific branding and configurations
+- Streamline restaurant operations during peak hours
+- Reduce infrastructure costs through multi-tenant architecture
+- Provide scalable SaaS solution with subscription model
 
 ### 1.3 Target Market
-- **Primary**: Shopping mall restaurants and food courts
-- **Secondary**: Standalone restaurants, cafes, and service businesses
-- **Geographic**: Initially focused on Malaysia, expandable to Southeast Asia
+- **Primary**: Malaysian restaurants in shopping malls and commercial areas
+- **Secondary**: Cafes, food courts, and quick-service restaurants
+- **Geographic Focus**: Malaysia (starting with Klang Valley)
 
 ## 2. Product Vision & Strategy
 
 ### 2.1 Vision Statement
-"To transform the dining experience by making waiting enjoyable and predictable through intelligent queue management technology."
+"To revolutionize the Malaysian dining experience by providing a unified queue management platform that serves multiple restaurants with personalized experiences."
 
-### 2.2 Success Metrics
-- **Customer Satisfaction**: 90%+ satisfaction rate with queue experience
-- **Wait Time Reduction**: 30% reduction in perceived wait time
-- **Operational Efficiency**: 25% improvement in table turnover
-- **Adoption Rate**: 80% of customers using digital queue vs. physical waiting
-
-### 2.3 Competitive Advantages
-- **No App Required**: Works through existing WhatsApp/Messenger platforms
-- **AI-Powered Intelligence**: Smart wait time predictions and sentiment analysis
-- **Real-Time Updates**: Live queue status and position tracking
-- **Multi-Platform Support**: Web, WhatsApp, and Messenger integration
-- **Comprehensive Analytics**: Detailed insights for business optimization
+### 2.2 Key Differentiators
+- **Multi-Tenant Architecture**: Single deployment serving unlimited merchants
+- **Email-Based Merchant Isolation**: Each business accessed via unique email login
+- **No App Download Required**: Pure web-based solution for customers
+- **Merchant Branding**: Customizable interface per merchant
+- **Cost-Effective**: Shared infrastructure on Render with PostgreSQL on Neon
 
 ## 3. User Personas & Use Cases
 
 ### 3.1 Primary Personas
 
-#### 3.1.1 The Busy Shopper (Customer)
-- **Demographics**: 25-45 years old, tech-savvy, values convenience
-- **Pain Points**: Long physical queues, uncertainty about wait times, inability to multitask while waiting
-- **Goals**: Quick service, predictable wait times, ability to shop/browse while waiting
-- **Use Case**: Joins queue via WhatsApp while shopping, receives updates, returns when notified
+#### 3.1.1 The Mall Visitor (Customer)
+- **Profile**: Malaysian families and individuals dining at malls
+- **Pain Points**: Long physical queues, wasting time standing, uncertainty about wait times
+- **Goals**: Continue shopping while waiting, receive timely notifications
+- **Use Case**: Scans merchant-specific QR code, joins queue with merchant branding, receives notifications
 
-#### 3.1.2 The Restaurant Manager (Merchant)
-- **Demographics**: 30-50 years old, responsible for operations and customer satisfaction
-- **Pain Points**: Managing crowded spaces, staff overwhelm during peak hours, customer complaints about waiting
-- **Goals**: Efficient operations, happy customers, better staff utilization, data-driven decisions
-- **Use Case**: Monitors real-time dashboard, manages multiple queues, analyzes performance metrics
+#### 3.1.2 The Restaurant Owner (Merchant)
+- **Profile**: Restaurant owners/managers subscribing to the queue service
+- **Pain Points**: Managing walk-ins, no technical expertise for custom solutions
+- **Goals**: Affordable queue management, maintain brand identity, easy staff training
+- **Use Case**: Logs in with business email, accesses personalized dashboard, manages daily operations
 
-#### 3.1.3 The Service Staff (Operator)
-- **Demographics**: 20-35 years old, frontline customer service
-- **Pain Points**: Handling frustrated customers, manual queue management, communication challenges
-- **Goals**: Smooth customer flow, clear communication, reduced stress during peak hours
-- **Use Case**: Uses dashboard to call customers, manages queue status, handles special requests
+#### 3.1.3 The Restaurant Staff (User)
+- **Profile**: Front-desk staff managing daily queue operations
+- **Pain Points**: Remembering multiple system logins, handling peak hour rushes
+- **Goals**: Simple queue management, quick customer service
+- **Use Case**: Uses shared merchant login or staff account to manage queues
 
-### 3.2 User Journey Maps
+#### 3.1.4 The Platform Administrator (Super Admin)
+- **Profile**: Technical administrator managing the entire SaaS platform
+- **Pain Points**: Manual merchant onboarding, account management, system monitoring
+- **Goals**: Efficient merchant management, system stability, subscription tracking
+- **Use Case**: Creates merchant accounts, assigns subscriptions, monitors all merchants
 
-#### 3.2.1 Customer Journey
-1. **Discovery**: Sees QR code or receives WhatsApp link
-2. **Joining**: Provides name, phone, party size via WhatsApp or web
-3. **Confirmation**: Receives queue position and estimated wait time
-4. **Waiting**: Gets periodic updates, can check status anytime
-5. **Notification**: Receives "your turn" message with instructions
-6. **Service**: Presents to staff, gets seated/served
-7. **Feedback**: Optional satisfaction survey
+### 3.2 User Journey
 
-#### 3.2.2 Merchant Journey
-1. **Setup**: Creates account, configures queues and services
-2. **Daily Operations**: Monitors dashboard, manages customer flow
-3. **Customer Management**: Calls customers, handles special cases
-4. **Analytics Review**: Analyzes performance, identifies improvements
-5. **Optimization**: Adjusts settings based on insights
+#### Customer Journey
+1. **Arrival**: Scans merchant-specific QR code at restaurant
+2. **Merchant Recognition**: Sees restaurant branding and name
+3. **Registration**: Enters name, phone number, and party size
+4. **Confirmation**: Receives queue number with restaurant details
+5. **Permission**: Allows browser notifications
+6. **Waiting**: Continues activities while monitoring queue
+7. **Notification**: Receives branded notification when ready
+8. **Seating**: Shows queue number to staff
+
+#### Merchant Journey
+1. **Account Creation**: Receives credentials from platform admin
+2. **First Login**: Accesses platform via login page with business email
+3. **Configuration**: Sets up restaurant details, branding, operating hours
+4. **Staff Training**: Creates staff accounts or shares main login
+5. **Daily Operations**: Staff logs in and manages queue
+6. **Analytics Review**: Owner reviews performance metrics
 
 ## 4. Functional Requirements
 
-### 4.1 Core Features
+### 4.1 Multi-Tenant Architecture
 
-#### 4.1.1 Queue Management System
-- **Multi-Queue Support**: Create and manage multiple service queues
-- **Real-Time Updates**: Live queue status with Socket.IO integration
-- **Party Size Management**: Support for 1-20 person parties with visual indicators
-- **Queue Controls**: Start/stop, pause, priority management
-- **Capacity Management**: Set maximum queue limits and service times
+#### 4.1.1 URL Structure
+- **Main Platform**: https://queueapp.com
+- **Merchant Login**: https://queueapp.com/merchant/login
+- **Customer Queue**: https://queueapp.com/queue/{merchant-slug}
+- **Merchant Dashboard**: https://queueapp.com/merchant/dashboard
+- **Admin Portal**: https://queueapp.com/admin
 
-#### 4.1.2 Customer Interface
-- **Web-Based Joining**: Responsive form for queue entry
-- **WhatsApp Integration**: Full chatbot functionality for queue operations
-- **Status Checking**: Real-time position and wait time updates
-- **Cancellation System**: Easy queue exit with confirmation prompts
-- **Multi-Language Support**: English and Bahasa Malaysia
+#### 4.1.2 Merchant Isolation
+**Data Segregation**:
+- All queries filtered by merchant_id
+- Row-level security in PostgreSQL
+- Separate queue numbering per merchant
 
-#### 4.1.3 Merchant Dashboard
-- **Real-Time Monitoring**: Live queue status with customer details
-- **Customer Management**: Call, seat, remove, and requeue customers
-- **Analytics Dashboard**: Performance metrics and insights
-- **Queue Configuration**: Service types, timing, and capacity settings
-- **Staff Management**: Multi-user access with role-based permissions
+**Configuration Storage**:
+- Business name and details
+- Operating hours
+- Logo and brand colors
+- Custom messages
+- Queue settings (max party size, estimated times)
 
-#### 4.1.4 Communication System
-- **WhatsApp Notifications**: Automated messages for queue updates
-- **Smart Timing**: AI-optimized notification delivery
-- **Message Templates**: Customizable notification content
-- **Multi-Platform Ready**: Messenger integration framework
-- **Delivery Tracking**: Message status and delivery confirmation
+### 4.2 Authentication System
 
-### 4.2 AI & Intelligence Features
+#### 4.2.1 Merchant Login Page
+- **URL**: /merchant/login
+- **Features**:
+  - Email and password authentication
+  - "Remember Me" functionality
+  - Password reset via email
+  - Session management
+  - Redirect to merchant-specific dashboard
 
-#### 4.2.1 Wait Time Prediction
-- **Dynamic Calculation**: Real-time wait time estimation
-- **Historical Analysis**: Learning from past queue patterns
-- **Peak Hour Detection**: Automatic adjustment for busy periods
-- **Service Time Optimization**: Intelligent service duration prediction
+#### 4.2.2 Authentication Flow
+1. Merchant enters email/password
+2. System validates credentials
+3. JWT token generated with merchant_id
+4. All subsequent requests include merchant_id
+5. Dashboard displays merchant-specific data only
 
-#### 4.2.2 Sentiment Analysis
-- **Customer Message Analysis**: Mood detection from WhatsApp messages
-- **Satisfaction Scoring**: Automated customer satisfaction tracking
-- **Alert System**: Notifications for negative sentiment detection
-- **Response Optimization**: AI-driven chatbot response selection
+#### 4.2.3 User Roles
+- **Merchant Owner**: Full access to settings and analytics
+- **Merchant Staff**: Queue management only
+- **Platform Admin**: Access to all merchants
+- **Super Admin**: System-wide configuration
 
-#### 4.2.3 Chatbot Intelligence
-- **Natural Language Processing**: Understanding customer intents
-- **Context Awareness**: Maintaining conversation state
-- **Dynamic Responses**: Personalized message generation
-- **Command Recognition**: Support for various customer requests
+### 4.3 Customer-Facing Interface
 
-### 4.3 Analytics & Reporting
+#### 4.3.1 Merchant-Specific Queue Page
+**Dynamic Elements**:
+- Restaurant name and logo
+- Custom welcome message
+- Brand colors
+- Operating hours
+- Current wait time
 
-#### 4.3.1 Operational Metrics
-- **Queue Performance**: Average wait times, service efficiency
-- **Customer Flow**: Peak hours, capacity utilization
-- **Staff Productivity**: Service times, customer handling rates
-- **System Usage**: Platform adoption, feature utilization
+**Queue Registration Form**:
+- Name (required)
+- Phone Number (Malaysian format)
+- Party Size (1-12, configurable per merchant)
+- Special requests (optional)
 
-#### 4.3.2 Customer Insights
-- **Satisfaction Tracking**: Feedback scores and sentiment analysis
-- **Behavior Patterns**: Queue joining preferences, cancellation rates
-- **Demographics**: Party size distribution, time preferences
-- **Loyalty Metrics**: Repeat customer identification
+#### 4.3.2 Queue Status Display
+**Branded Experience**:
+- Merchant logo on all pages
+- Custom color scheme
+- Restaurant contact information
+- Personalized messages
+
+### 4.4 Merchant Dashboard
+
+#### 4.4.1 Post-Login Dashboard
+**Merchant Context**:
+- Business name prominently displayed
+- Logo in header
+- Current date/time
+- Quick stats widget
+
+#### 4.4.2 Queue Management
+**Features**:
+- Real-time queue display
+- Customer details view
+- Queue actions (call, seat, remove)
+- Search and filter
+- Manual customer addition
+
+#### 4.4.3 Merchant Settings
+**Business Profile**:
+- Restaurant name
+- Address
+- Contact numbers
+- Operating hours
+- Table configurations
+
+**Branding Settings**:
+- Logo upload
+- Primary/secondary colors
+- Custom messages
+- Notification templates
+
+#### 4.4.4 Staff Management
+**Features**:
+- Create staff accounts
+- Set permissions
+- View login history
+- Reset staff passwords
+
+### 4.5 Admin Developer Dashboard
+
+#### 4.5.1 Merchant Management
+**Create New Merchant**:
+- Business Name (required)
+- Owner Email (unique, used for login)
+- Owner Password (temporary)
+- Phone Number
+- Address
+- Subscription Plan
+- Initial Configuration
+
+#### 4.5.2 Merchant List View
+**Display**:
+- All merchants in table format
+- Search by name/email
+- Filter by subscription status
+- Quick actions (enable/disable, reset password)
+- Login as merchant (for support)
+
+#### 4.5.3 System Overview
+**Metrics**:
+- Total active merchants
+- Total customers in queues
+- System resource usage
+- Error logs per merchant
 
 ## 5. Technical Requirements
 
-### 5.1 System Architecture
-- **Backend**: Node.js with Express.js framework
-- **Database**: MongoDB with Mongoose ODM
-- **Real-Time**: Socket.IO for live updates
-- **Frontend**: Server-side rendered EJS templates
-- **Security**: Helmet.js, CSP, rate limiting, session management
+### 5.1 Technology Stack
+- **Hosting**: Render.com
+- **Database**: PostgreSQL on Neon Tech
+- **Backend**: Node.js with Express.js
+- **Frontend**: React.js with Context API for state
+- **Authentication**: JWT with refresh tokens
+- **Real-time**: Socket.io with merchant namespaces
+- **Email Service**: SendGrid or AWS SES
+- **File Storage**: Cloudinary for logos
 
-### 5.2 Integration Requirements
-- **WhatsApp Web.js**: Real WhatsApp integration with QR authentication
-- **Messenger API**: Facebook Messenger webhook integration
-- **Payment Gateway**: Future integration for premium features
-- **POS Systems**: Integration capability for restaurant systems
+### 5.2 Database Schema
 
-### 5.3 Performance Requirements
-- **Response Time**: <2 seconds for all user interactions
-- **Concurrent Users**: Support for 1000+ simultaneous customers
-- **Uptime**: 99.9% availability during business hours
-- **Scalability**: Horizontal scaling capability for multiple locations
+```sql
+-- Merchants table (core tenant table)
+CREATE TABLE merchants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    business_name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    owner_email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    address TEXT,
+    logo_url VARCHAR(500),
+    primary_color VARCHAR(7) DEFAULT '#000000',
+    secondary_color VARCHAR(7) DEFAULT '#ffffff',
+    subscription_plan VARCHAR(50) DEFAULT 'basic',
+    subscription_status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-### 5.4 Security Requirements
-- **Data Protection**: GDPR-compliant customer data handling
-- **Authentication**: Secure merchant login and session management
-- **API Security**: Rate limiting and input validation
-- **Communication**: Encrypted message transmission
+-- Users table (merchant staff)
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    merchant_id UUID REFERENCES merchants(id) ON DELETE CASCADE,
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) DEFAULT 'staff',
+    is_active BOOLEAN DEFAULT true,
+    last_login TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(email, merchant_id)
+);
 
-## 6. User Experience Requirements
+-- Queues table (tenant-specific data)
+CREATE TABLE queues (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    merchant_id UUID REFERENCES merchants(id) ON DELETE CASCADE,
+    queue_number INTEGER NOT NULL,
+    customer_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    party_size INTEGER NOT NULL,
+    special_requests TEXT,
+    status VARCHAR(50) DEFAULT 'waiting',
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    called_at TIMESTAMP,
+    seated_at TIMESTAMP,
+    cancelled_at TIMESTAMP,
+    estimated_wait_minutes INTEGER,
+    notification_token TEXT,
+    UNIQUE(merchant_id, queue_number, DATE(joined_at))
+);
 
-### 6.1 Design Principles
-- **Mobile-First**: Optimized for smartphone usage
-- **Accessibility**: WCAG 2.1 AA compliance
-- **Simplicity**: Minimal steps for core actions
-- **Consistency**: Unified design language across platforms
+-- Merchant settings
+CREATE TABLE merchant_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    merchant_id UUID REFERENCES merchants(id) ON DELETE CASCADE,
+    setting_key VARCHAR(100) NOT NULL,
+    setting_value TEXT,
+    UNIQUE(merchant_id, setting_key)
+);
 
-### 6.2 Interface Requirements
-- **Responsive Design**: Works on all device sizes
-- **Fast Loading**: <3 seconds initial page load
-- **Offline Capability**: Basic functionality without internet
-- **Progressive Enhancement**: Graceful degradation for older browsers
+-- Queue sequences (per merchant)
+CREATE TABLE queue_sequences (
+    merchant_id UUID REFERENCES merchants(id) ON DELETE CASCADE,
+    current_date DATE NOT NULL,
+    last_number INTEGER DEFAULT 0,
+    PRIMARY KEY(merchant_id, current_date)
+);
 
-### 6.3 Usability Standards
-- **Intuitive Navigation**: Clear user flow and CTAs
-- **Error Handling**: Helpful error messages and recovery options
-- **Feedback Systems**: Visual confirmation for all actions
-- **Help & Support**: Contextual assistance and documentation
+-- Create indexes for performance
+CREATE INDEX idx_queues_merchant_status ON queues(merchant_id, status);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_merchants_slug ON merchants(slug);
+```
 
-## 7. Business Requirements
+### 5.3 API Architecture
 
-### 7.1 Revenue Model
-- **Freemium**: Basic features free, premium features paid
-- **Subscription**: Monthly/annual plans for merchants
-- **Transaction Fees**: Small fee per customer served
-- **White Label**: Custom solutions for enterprise clients
+#### Authentication Endpoints
+```javascript
+// Merchant Authentication
+POST   /api/auth/merchant/login      // Merchant login with email/password
+POST   /api/auth/merchant/logout     // Logout
+POST   /api/auth/merchant/refresh    // Refresh JWT token
+POST   /api/auth/merchant/forgot     // Password reset request
+POST   /api/auth/merchant/reset      // Password reset confirm
 
-### 7.2 Pricing Strategy
-- **Free Tier**: Up to 50 customers/month, basic features
-- **Professional**: $29/month, unlimited customers, analytics
-- **Enterprise**: $99/month, multi-location, advanced features
-- **Custom**: Tailored solutions for large restaurant chains
+// Middleware to inject merchant_id
+// All routes below auto-filter by merchant_id from JWT
+```
 
-### 7.3 Go-to-Market Strategy
-- **Phase 1**: Shopping mall food courts in Kuala Lumpur
-- **Phase 2**: Standalone restaurants and cafes
-- **Phase 3**: Expansion to other Malaysian cities
-- **Phase 4**: Regional expansion to Singapore, Thailand
+#### Merchant-Specific APIs
+```javascript
+// Dashboard APIs (requires auth)
+GET    /api/merchant/profile         // Get merchant details
+PUT    /api/merchant/profile         // Update merchant details
+POST   /api/merchant/logo            // Upload logo
 
-## 8. Compliance & Legal Requirements
+GET    /api/merchant/queues          // Get current queues
+POST   /api/merchant/queues/call     // Call customer
+PUT    /api/merchant/queues/:id      // Update queue status
+DELETE /api/merchant/queues/:id      // Remove from queue
 
-### 8.1 Data Privacy
-- **GDPR Compliance**: European data protection standards
-- **PDPA Malaysia**: Local data protection compliance
-- **Data Retention**: Clear policies for customer data storage
-- **Consent Management**: Explicit opt-in for communications
+GET    /api/merchant/analytics       // Get merchant analytics
+GET    /api/merchant/settings        // Get all settings
+PUT    /api/merchant/settings        // Update settings
 
-### 8.2 Communication Compliance
-- **WhatsApp Business Policy**: Adherence to platform guidelines
-- **Anti-Spam**: Opt-out mechanisms and frequency controls
-- **Message Content**: Compliance with local communication laws
-- **Business Verification**: Official business account requirements
+// Staff Management
+GET    /api/merchant/staff           // List staff
+POST   /api/merchant/staff           // Create staff account
+PUT    /api/merchant/staff/:id       // Update staff
+DELETE /api/merchant/staff/:id       // Remove staff
+```
 
-## 9. Success Criteria & KPIs
+#### Customer APIs
+```javascript
+// Public APIs (no auth required)
+GET    /api/public/merchant/:slug    // Get merchant details for queue page
+POST   /api/public/queue/join        // Join queue (includes merchant_id)
+GET    /api/public/queue/:id/status  // Check queue status
+DELETE /api/public/queue/:id         // Cancel queue
+POST   /api/public/notifications/subscribe // Subscribe to push notifications
+```
 
-### 9.1 Customer Metrics
-- **Net Promoter Score (NPS)**: Target 70+
-- **Customer Satisfaction**: 4.5/5 average rating
-- **Queue Completion Rate**: 85%+ customers complete queue
-- **Platform Adoption**: 80% choose digital over physical queue
+#### Admin APIs
+```javascript
+// Platform Admin APIs
+POST   /api/admin/auth/login         // Admin login
+GET    /api/admin/merchants          // List all merchants
+POST   /api/admin/merchants          // Create new merchant
+PUT    /api/admin/merchants/:id      // Update merchant
+DELETE /api/admin/merchants/:id      // Delete merchant
+POST   /api/admin/merchants/:id/login // Login as merchant (support)
 
-### 9.2 Business Metrics
-- **Revenue Growth**: 25% quarterly growth
-- **Customer Acquisition**: 100 new merchants/month
-- **Retention Rate**: 90% monthly merchant retention
-- **Market Share**: 15% of target market within 2 years
+GET    /api/admin/system/stats       // System statistics
+GET    /api/admin/system/logs        // System logs
+```
 
-### 9.3 Technical Metrics
-- **System Uptime**: 99.9% availability
-- **Response Time**: <2 seconds average
-- **Error Rate**: <0.1% system errors
-- **Scalability**: Support 10x current load
+### 5.4 Security Implementation
 
-## 10. Risk Assessment & Mitigation
+#### 5.4.1 Authentication Security
+**Password Requirements**:
+- Minimum 8 characters
+- Mix of letters and numbers
+- Bcrypt hashing with salt rounds: 10
 
-### 10.1 Technical Risks
-- **WhatsApp API Changes**: Maintain alternative communication channels
-- **Scalability Issues**: Implement robust cloud infrastructure
-- **Security Breaches**: Regular security audits and updates
-- **Integration Failures**: Comprehensive testing and fallback systems
+**JWT Implementation**:
+```javascript
+// JWT Payload Structure
+{
+  userId: "uuid",
+  merchantId: "uuid",
+  email: "user@email.com",
+  role: "owner|staff",
+  iat: timestamp,
+  exp: timestamp
+}
+```
 
-### 10.2 Business Risks
-- **Market Competition**: Continuous innovation and feature development
-- **Customer Adoption**: Extensive user education and support
-- **Regulatory Changes**: Legal compliance monitoring and adaptation
-- **Economic Downturns**: Flexible pricing and value proposition
+#### 5.4.2 Multi-Tenant Security
+**Request Isolation**:
+```javascript
+// Middleware to enforce tenant isolation
+app.use((req, res, next) => {
+  if (req.user && req.user.merchantId) {
+    req.merchantId = req.user.merchantId;
+    // All DB queries automatically filtered by merchantId
+  }
+  next();
+});
+```
 
-### 10.3 Operational Risks
-- **Staff Training**: Comprehensive onboarding and support programs
-- **System Downtime**: Redundant systems and quick recovery procedures
-- **Customer Support**: 24/7 support team and self-service options
-- **Data Loss**: Regular backups and disaster recovery plans
+**Data Access Control**:
+- Row-level security policies in PostgreSQL
+- Automatic merchant_id injection in queries
+- Prevent cross-tenant data access
 
-## 11. Implementation Roadmap
+### 5.5 Deployment Configuration
 
-### 11.1 Phase 1: Core System (Completed)
-- ✅ Basic queue management functionality
-- ✅ WhatsApp integration with chatbot
-- ✅ Real-time dashboard with Socket.IO
-- ✅ Customer notification system
-- ✅ Analytics and reporting foundation
+#### 5.5.1 Environment Variables
+```bash
+# Database
+DATABASE_URL=postgresql://user:pass@neon.tech/db
 
-### 11.2 Phase 2: Enhancement (Q2 2025)
-- 🔄 Advanced AI features and sentiment analysis
-- 🔄 Messenger integration completion
-- 🔄 Mobile app development
-- 🔄 Advanced analytics dashboard
-- 🔄 Multi-language support
+# Authentication
+JWT_SECRET=random-secret-key
+JWT_EXPIRES_IN=7d
+REFRESH_TOKEN_EXPIRES_IN=30d
 
-### 11.3 Phase 3: Scale (Q3 2025)
-- 📋 Multi-location management
-- 📋 Enterprise features and white-labeling
-- 📋 POS system integrations
-- 📋 Advanced reporting and insights
-- 📋 API marketplace for third-party integrations
+# Email Service
+SENDGRID_API_KEY=your-api-key
+EMAIL_FROM=noreply@queueapp.com
 
-### 11.4 Phase 4: Expansion (Q4 2025)
-- 📋 Regional market expansion
-- 📋 Industry-specific solutions
-- 📋 IoT integration capabilities
-- 📋 Blockchain-based customer verification
-- 📋 Voice assistant integration
+# File Storage
+CLOUDINARY_URL=cloudinary://api_key:api_secret@cloud_name
 
-## 12. Conclusion
+# Push Notifications
+VAPID_PUBLIC_KEY=your-public-key
+VAPID_PRIVATE_KEY=your-private-key
 
-The Smart Queue Manager represents a comprehensive solution to modern queue management challenges, combining cutting-edge technology with practical business needs. With its AI-powered intelligence, seamless WhatsApp integration, and robust analytics capabilities, the system is positioned to transform the customer experience while providing valuable operational insights to merchants.
+# Admin
+ADMIN_EMAIL=admin@queueapp.com
+ADMIN_PASSWORD=secure-password
+```
 
-The successful implementation of Phase 1 demonstrates the viability of the core concept, with strong foundations for future enhancements and market expansion. The focus on user experience, technical excellence, and business value ensures sustainable growth and competitive advantage in the evolving digital service landscape.
+#### 5.5.2 Render.com Configuration
+**Web Service**:
+- Build Command: npm install && npm run build
+- Start Command: npm start
+- Health Check Path: /api/health
+- Auto-Deploy: On Git push
+
+**Database**:
+- Neon PostgreSQL connection pooling
+- Max connections: 20
+- SSL required
+
+## 6. User Interface Requirements
+
+### 6.1 Merchant Login Page
+**Elements**:
+- Platform logo/branding
+- Email input field
+- Password input field
+- "Remember Me" checkbox
+- "Forgot Password" link
+- Login button
+- Error message display
+
+**Flow**:
+1. Enter email and password
+2. System identifies merchant by email
+3. Validates password
+4. Redirects to merchant-specific dashboard
+5. Shows merchant branding immediately
+
+### 6.2 Merchant Dashboard Layout
+**Header**:
+- Merchant logo (left)
+- Business name
+- Logged-in user email
+- Logout button
+
+**Navigation**:
+- Queue Management (default)
+- Analytics
+- Settings
+- Staff Management (owner only)
+
+**Responsive Design**:
+- Desktop: Full sidebar navigation
+- Tablet: Collapsible sidebar
+- Mobile: Bottom navigation
+
+### 6.3 Customer Queue Interface
+**Merchant Branding**:
+```css
+/* Dynamic CSS variables per merchant */
+:root {
+  --primary-color: ${merchant.primaryColor};
+  --secondary-color: ${merchant.secondaryColor};
+}
+```
+
+**Layout**:
+- Merchant logo header
+- Current wait time display
+- Queue join form
+- Terms acceptance
+- Notification permission request
+
+## 7. Implementation Roadmap
+
+### 7.1 Phase 1: Core Multi-Tenant System (Month 1-2)
+- ✅ Database schema with tenant isolation
+- ✅ Merchant authentication system
+- ✅ Email-based merchant identification
+- ✅ Basic merchant dashboard
+- ✅ Customer queue join page
+- ✅ Merchant-specific branding
+
+### 7.2 Phase 2: Full Feature Set (Month 3-4)
+- 📋 Browser push notifications
+- 📋 Real-time queue updates
+- 📋 Staff account management
+- 📋 Admin portal for merchant creation
+- 📋 Analytics dashboard
+- 📋 Email notifications
+
+### 7.3 Phase 3: Advanced Features (Month 5-6)
+- 📋 SMS fallback notifications
+- 📋 Advanced analytics and reports
+- 📋 API for third-party integrations
+- 📋 Mobile app for merchants
+- 📋 Subscription billing integration
+- 📋 Multi-location support per merchant
+
+## 8. Testing Strategy
+
+### 8.1 Multi-Tenant Testing
+**Isolation Tests**:
+- Verify data segregation between merchants
+- Test concurrent merchant access
+- Validate merchant-specific configurations
+
+### 8.2 Authentication Testing
+**Test Cases**:
+- Multiple merchants with same staff email
+- Session management across browsers
+- Password reset for specific merchant
+- JWT token expiry and refresh
+
+## 9. Success Metrics
+
+### 9.1 Platform Metrics
+- Number of active merchants
+- Daily active users per merchant
+- System uptime: 99.9%
+- Average response time: <200ms
+
+### 9.2 Merchant Success Metrics
+- Queue completion rate
+- Average wait time reduction
+- Customer no-show rate
+- Daily customer throughput
+
+## 10. Support & Documentation
+
+### 10.1 Merchant Onboarding
+- Welcome email with credentials
+- Video tutorial for first login
+- PDF guide for staff training
+- Demo merchant account for testing
+
+### 10.2 Technical Support
+- Email support for all merchants
+- FAQ section in dashboard
+- System status page
+- Merchant community forum
 
 ---
 
 **Document Version**: 2.0  
-**Last Updated**: June 11, 2025  
-**Prepared By**: Smart Queue Manager Development Team  
-**Status**: Phase 1 Complete, Phase 2 In Planning
+**Last Updated**: December 2024  
+**Status**: Ready for Development  
+**Target Launch**: Q2 2025  
+**Platform URL**: queueapp.com (example)

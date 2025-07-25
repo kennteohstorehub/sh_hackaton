@@ -2,8 +2,14 @@ const express = require('express');
 const Queue = require('../../models/Queue');
 const Merchant = require('../../models/Merchant');
 const logger = require('../../utils/logger');
-// Use auth bypass for development
-const { requireAuth, loadUser } = require('../../middleware/auth-bypass');
+
+// Use appropriate auth middleware based on environment
+let requireAuth, loadUser;
+if (process.env.NODE_ENV !== 'production') {
+  ({ requireAuth, loadUser } = require('../../middleware/auth-bypass'));
+} else {
+  ({ requireAuth, loadUser } = require('../../middleware/auth'));
+}
 
 const router = express.Router();
 

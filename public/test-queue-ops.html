@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Queue Operations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Queue Operations</h1>
+    
+    <div class="test-section">
+        <h2>1. Get CSRF Token</h2>
+        <button onclick="getCSRFToken()">Get CSRF Token</button>
+        <div id="csrf-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Toggle Queue</h2>
+        <button onclick="testToggleQueue()">Toggle Queue Accepting</button>
+        <div id="toggle-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test Notify Customer</h2>
+        <button onclick="testNotifyCustomer()">Notify Next Customer</button>
+        <div id="notify-result" class="result"></div>
+    </div>
+    
+    <script>
+        let csrfToken = '';
+        let queueId = '';
+        
+        // Get CSRF token from cookie
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        async function getCSRFToken() {
+            csrfToken = getCookie('csrf-token');
+            const resultDiv = document.getElementById('csrf-result');
+            
+            if (csrfToken) {
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `CSRF Token found: ${csrfToken}`;
+                
+                // Also get the first queue
+                try {
+                    const response = await fetch('/api/queues', {
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (data.queues && data.queues.length > 0) {
+                        queueId = data.queues[0]._id || data.queues[0].id;
+                        resultDiv.textContent += `\nQueue found: ${data.queues[0].name} (${queueId})`;
+                    }
+                } catch (error) {
+                    console.error('Error getting queues:', error);
+                }
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'No CSRF token found. Please make sure you are logged in.';
+            }
+        }
+        
+        async function testToggleQueue() {
+            const resultDiv = document.getElementById('toggle-result');
+            
+            if (!csrfToken || !queueId) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please get CSRF token first';
+                return;
+            }
+            
+            try {
+                console.log('Sending toggle request with:', {
+                    url: `/api/queue/${queueId}/toggle-accepting`,
+                    headers: {
+                        'X-CSRF-Token': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const response = await fetch(`/api/queue/${queueId}/toggle-accepting`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error ${response.status}: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function testNotifyCustomer() {
+            const resultDiv = document.getElementById('notify-result');
+            
+            if (!csrfToken || !queueId) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please get CSRF token first';
+                return;
+            }
+            
+            try {
+                console.log('Sending notify request with:', {
+                    url: `/api/queue/${queueId}/call-next`,
+                    headers: {
+                        'X-CSRF-Token': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const response = await fetch(`/api/queue/${queueId}/call-next`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error ${response.status}: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-get CSRF token on load
+        window.onload = () => {
+            getCSRFToken();
+        };
+    </script>
+</body>
+</html>

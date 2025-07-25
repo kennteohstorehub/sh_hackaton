@@ -6,8 +6,13 @@ const moment = require('moment');
 
 const router = express.Router();
 
-// Authentication middleware
-const { authMiddleware } = require('../middleware/auth-bypass');
+// Use appropriate auth middleware based on environment
+let authMiddleware;
+if (process.env.NODE_ENV !== 'production') {
+  ({ authMiddleware } = require('../middleware/auth-bypass'));
+} else {
+  ({ authMiddleware } = require('../middleware/auth'));
+}
 
 // GET /api/analytics/dashboard - Get dashboard analytics
 router.get('/dashboard', authMiddleware, async (req, res) => {

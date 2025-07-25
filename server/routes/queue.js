@@ -3,7 +3,15 @@ const { body, validationResult } = require('express-validator');
 const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
 const { generateQueueQR, generateQueueQRSVG } = require('../utils/qrGenerator');
-const { requireAuth, loadUser } = require('../middleware/auth-bypass');
+
+// Use appropriate auth middleware based on environment
+let requireAuth, loadUser;
+if (process.env.NODE_ENV !== 'production') {
+  ({ requireAuth, loadUser } = require('../middleware/auth-bypass'));
+} else {
+  ({ requireAuth, loadUser } = require('../middleware/auth'));
+}
+
 const Queue = require('../models/Queue');
 const Merchant = require('../models/Merchant');
 
@@ -35,7 +43,7 @@ router.get('/performance', [requireAuth, loadUser], async (req, res) => {
     const merchantId = req.user._id;
     
     // Get all queues for the merchant
-    const queues = await Queue.find({ merchantId }).lean();
+    const queues = await Queue.find({ merchantId });
     
     // Calculate performance metrics for each queue
     const queuePerformance = queues.map(queue => {

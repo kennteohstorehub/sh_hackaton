@@ -3,7 +3,15 @@ const { body, validationResult } = require('express-validator');
 const Merchant = require('../models/Merchant');
 const Queue = require('../models/Queue');
 const logger = require('../utils/logger');
-const { requireAuth, loadUser } = require('../middleware/auth-bypass');
+
+// Use appropriate auth middleware based on environment
+let requireAuth, loadUser;
+if (process.env.NODE_ENV !== 'production') {
+  ({ requireAuth, loadUser } = require('../middleware/auth-bypass'));
+} else {
+  ({ requireAuth, loadUser } = require('../middleware/auth'));
+}
+
 const { generateQRPosterPDF, generateSimpleQRPDF } = require('../utils/pdfGenerator');
 
 const router = express.Router();
