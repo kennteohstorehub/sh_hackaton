@@ -411,7 +411,7 @@
         /* Peak Hours Chart */
         .peak-hours-container {
             overflow-x: auto;
-            padding: 1rem 0;
+            padding: 1rem;
             border-radius: 12px;
             background: rgba(255, 140, 0, 0.05);
             border: 1px solid rgba(255, 140, 0, 0.2);
@@ -420,28 +420,29 @@
         .peak-hours-chart {
             display: flex;
             align-items: end;
-            gap: 2px;
+            gap: 0;
             height: 280px;
             margin: 1.5rem 0;
-            padding: 2rem 1rem;
+            padding: 2rem;
             background: rgba(255, 140, 0, 0.05);
             border: 1px solid rgba(255, 140, 0, 0.2);
             border-radius: 16px;
             backdrop-filter: blur(10px);
             min-width: auto;
             width: 100%;
-            justify-content: center;
+            justify-content: space-between;
         }
         
         .peak-bar {
-            flex: 0 0 auto;
+            flex: 1 1 0;
             background: linear-gradient(135deg, #ff8c00, #ff6b35);
             border-radius: 8px 8px 0 0;
             position: relative;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             min-height: 8px;
-            width: 30px;
+            margin: 0 2px;
+            max-width: 60px;
             box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
         }
         
@@ -942,15 +943,16 @@
             }
             
             .peak-hours-chart {
-                min-width: 1000px;
+                min-width: auto;
                 height: 250px;
                 padding: 1rem;
-                gap: 3px;
+                overflow-x: auto;
             }
             
             .peak-bar {
-                min-width: 35px;
-                max-width: 40px;
+                min-width: 30px;
+                max-width: 45px;
+                margin: 0 1px;
             }
             
             .peak-bar-label {
@@ -1379,7 +1381,7 @@
             }
             
             // Find max for scaling
-            const maxCount = Math.max(...operationalHours.map(h => h.count));
+            const maxCount = Math.max(...operationalHours.map(h => h.count), 1);
             
             // Generate chart HTML
             let html = '<div class="peak-hours-chart">';
@@ -1387,11 +1389,12 @@
             operationalHours.forEach(({hour, count}) => {
                 const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
                 const hourLabel = hour.toString().padStart(2, '0') + ':00';
+                const displayHour = hour > 12 ? (hour - 12) + 'PM' : (hour === 0 ? '12AM' : (hour === 12 ? '12PM' : hour + 'AM'));
                 
                 html += `
-                    <div class="peak-bar" style="height: ${height}%" title="${hourLabel} - ${count} customers">
+                    <div class="peak-bar" style="height: ${Math.max(height, 5)}%" title="${hourLabel} - ${count} customers">
                         <div class="peak-bar-value">${count}</div>
-                        <div class="peak-bar-label">${hourLabel}</div>
+                        <div class="peak-bar-label">${displayHour}</div>
                     </div>
                 `;
             });
