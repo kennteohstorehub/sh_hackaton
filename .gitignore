@@ -146,3 +146,6 @@ dist/
 test-results/
 coverage/ 
 /generated/prisma
+playwright-report/
+test-results/
+tests/e2e/.env

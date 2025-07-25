@@ -51,4 +51,38 @@ router.post('/set-session', (req, res) => {
   });
 });
 
+// Debug endpoint to check session status
+router.get('/session', (req, res) => {
+    res.json({
+        hasSession: !!req.session,
+        sessionId: req.sessionID,
+        userId: req.session?.userId || null,
+        csrfToken: req.session?.csrfToken || null,
+        csrfTokenExpiry: req.session?.csrfTokenExpiry || null,
+        isAuthenticated: !!(req.session && req.session.userId),
+        cookies: Object.keys(req.cookies || {}),
+        headers: {
+            'x-csrf-token': req.headers['x-csrf-token'] || null,
+            'cookie': req.headers.cookie ? 'present' : 'missing'
+        }
+    });
+});
+
+// Test endpoint that doesn't redirect
+router.get('/test-auth', (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ 
+            error: 'Not authenticated',
+            hasSession: !!req.session,
+            sessionId: req.sessionID
+        });
+    }
+    
+    res.json({ 
+        success: true, 
+        userId: req.session.userId,
+        message: 'Authenticated'
+    });
+});
+
 module.exports = router;

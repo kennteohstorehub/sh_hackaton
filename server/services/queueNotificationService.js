@@ -2,6 +2,7 @@ const logger = require('../utils/logger');
 const Queue = require('../models/Queue');
 const Merchant = require('../models/Merchant');
 const unifiedNotificationService = require('./unifiedNotificationService');
+const whatsappService = require('./whatsappService');
 
 class QueueNotificationService {
   constructor() {

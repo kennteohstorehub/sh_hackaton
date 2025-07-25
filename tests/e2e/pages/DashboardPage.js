@@ -5,19 +5,21 @@ class DashboardPage {
     this.queueCards = page.locator('.queue-card');
     this.createQueueButton = page.locator('a:has-text("Create New Queue")');
     this.statsCards = page.locator('.stat-card');
-    this.logoutButton = page.locator('a[href="/auth/logout"]');
+    this.logoutButton = page.locator('button[type="submit"]:has-text("Logout")');
     
     // Navigation
-    this.navDashboard = page.locator('a[href="/dashboard"]');
+    this.navDashboard = page.locator('nav a[href="/dashboard"]');
     this.navQueues = page.locator('a[href="/dashboard/queues"]');
     this.navCustomers = page.locator('a[href="/dashboard/customers"]');
-    this.navAnalytics = page.locator('a[href="/dashboard/analytics"]');
-    this.navSettings = page.locator('a[href="/dashboard/settings"]');
+    this.navAnalytics = page.locator('nav a[href="/dashboard/analytics"]');
+    this.navSettings = page.locator('nav a[href="/dashboard/settings"]');
+    this.navWhatsApp = page.locator('nav a[href="/dashboard/whatsapp-setup"]');
+    this.navHelp = page.locator('nav a[href="/dashboard/help"]');
     
     // Stats
-    this.activeQueuesCount = page.locator('[data-stat="active-queues"]');
-    this.totalCustomersCount = page.locator('[data-stat="total-customers"]');
-    this.avgWaitTime = page.locator('[data-stat="avg-wait-time"]');
+    this.activeQueuesCount = page.locator('#totalWaitingCount');
+    this.totalCustomersCount = page.locator('.stat-card:nth-child(3) .stat-number');
+    this.avgWaitTime = page.locator('#averageWaitTime');
   }
 
   async goto() {
@@ -62,6 +64,16 @@ class DashboardPage {
       totalCustomers: await this.totalCustomersCount.textContent(),
       avgWaitTime: await this.avgWaitTime.textContent()
     };
+  }
+
+  async navigateToWhatsApp() {
+    await this.navWhatsApp.click();
+    await this.page.waitForURL('**/dashboard/whatsapp-setup');
+  }
+
+  async navigateToHelp() {
+    await this.navHelp.click();
+    await this.page.waitForURL('**/dashboard/help');
   }
 }
 

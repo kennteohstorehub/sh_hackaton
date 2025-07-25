@@ -29,10 +29,10 @@ module.exports = {
     productionMode: false
   },
 
-  // Development database
+  // Development database - PostgreSQL only
   database: {
-    mongodb: {
-      uri: 'mongodb://localhost:27017/smart-queue-manager-dev'
+    postgres: {
+      // Uses DATABASE_URL from .env
     }
   }
 };

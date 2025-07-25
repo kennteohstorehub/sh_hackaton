@@ -157,11 +157,6 @@ async function migrateData() {
             confirmTableAcceptance: merchant.settings.notifications?.timing?.confirmTableAcceptance !== false,
             peakHours: merchant.settings.operations?.peakHours || null,
             peakMultiplier: merchant.settings.operations?.peakMultiplier || 1.5,
-            priorityEnabled: merchant.settings.operations?.priority?.enabled || false,
-            prioritySlots: merchant.settings.operations?.priority?.slots || 2,
-            prioritySkipRegular: merchant.settings.operations?.priority?.skipRegular || false,
-            priorityNotifyFirst: merchant.settings.operations?.priority?.notifyFirst || false,
-            priorityLongerGrace: merchant.settings.operations?.priority?.longerGrace || false,
           },
         });
 
@@ -255,7 +250,6 @@ async function migrateData() {
               position: entry.position,
               estimatedWaitTime: entry.estimatedWaitTime,
               status: entry.status || 'waiting',
-              priority: entry.priority || 'normal',
               serviceTypeId: serviceTypeMap.get(entry.serviceType) || null,
               partySize: entry.partySize || 1,
               notes: entry.notes,

@@ -33,6 +33,7 @@ const queueRoutes = require('./routes/queue');
 const merchantRoutes = require('./routes/merchant');
 const customerRoutes = require('./routes/customer');
 const analyticsRoutes = require('./routes/analytics');
+const pushRoutes = require('./routes/push');
 
 // Frontend Routes
 const dashboardRoutes = require('./routes/frontend/dashboard');
@@ -222,10 +223,13 @@ app.use('/auth', authRoutes); // Rate limiting now applied per route
 app.use('/dashboard', dashboardRoutes);
 
 // API Routes
-app.use('/api/queue', queueRoutes);
-app.use('/api/merchant', merchantRoutes);
+app.use('/api/queues', queueRoutes);
+app.use('/api/queue', queueRoutes); // Backward compatibility
+app.use('/api/merchants', merchantRoutes);
+app.use('/api/merchant', merchantRoutes); // Backward compatibility
 app.use('/api/customer', customerRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/push', pushRoutes);
 app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/chatbot', require('./routes/chatbot'));
 app.use('/api/webhooks', require('./routes/webhooks'));
@@ -408,7 +412,7 @@ process.on('SIGTERM', () => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   logger.info(`StoreHub Queue Management System server running on port ${PORT}`);
   logger.info(`Frontend available at: http://localhost:${PORT}`);
   logger.info(`API available at: http://localhost:${PORT}/api`);

@@ -32,8 +32,16 @@ test.describe('API Integration Tests', () => {
   test('should authenticate via API and get token', async ({ page }) => {
     // First login via UI to get session
     const loginPage = new LoginPage(page);
+    const testEmail = process.env.TEST_USER_EMAIL;
+    const testPassword = process.env.TEST_USER_PASSWORD;
+    
+    if (!testEmail || !testPassword) {
+      test.skip('Test credentials not configured');
+      return;
+    }
+    
     await loginPage.goto();
-    await loginPage.login('demo@smartqueue.com', 'demo123456');
+    await loginPage.login(testEmail, testPassword);
     await page.waitForURL('**/dashboard');
     
     // Get cookies
@@ -50,14 +58,22 @@ test.describe('API Integration Tests', () => {
     
     expect(response.ok()).toBeTruthy();
     const merchant = await response.json();
-    expect(merchant.email).toBe('demo@smartqueue.com');
+    expect(merchant.email).toBe(testEmail);
   });
 
   test('should test queue API endpoints', async ({ page }) => {
     // Login first
     const loginPage = new LoginPage(page);
+    const testEmail = process.env.TEST_USER_EMAIL;
+    const testPassword = process.env.TEST_USER_PASSWORD;
+    
+    if (!testEmail || !testPassword) {
+      test.skip('Test credentials not configured');
+      return;
+    }
+    
     await loginPage.goto();
-    await loginPage.login('demo@smartqueue.com', 'demo123456');
+    await loginPage.login(testEmail, testPassword);
     
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'connect.sid');
@@ -68,8 +84,8 @@ test.describe('API Integration Tests', () => {
         'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
       },
       data: {
-        name: 'API Test Queue',
-        description: 'Created via API',
+        name: `API Test Queue ${Date.now()}`,
+        description: 'Created via API test',
         maxCapacity: 25,
         averageServiceTime: 20
       }
@@ -77,7 +93,7 @@ test.describe('API Integration Tests', () => {
     
     expect(createResponse.ok()).toBeTruthy();
     const newQueue = await createResponse.json();
-    expect(newQueue.queue.name).toBe('API Test Queue');
+    expect(newQueue.queue.name).toContain('API Test Queue');
     
     // Get queue list
     const listResponse = await apiContext.get('/api/queue', {
@@ -96,8 +112,8 @@ test.describe('API Integration Tests', () => {
         'Cookie': `${sessionCookie.name}=${sessionCookie.value}`
       },
       data: {
-        customerName: 'API Test Customer',
-        customerPhone: '+60155555555',
+        customerName: `API Test Customer ${Date.now()}`,
+        customerPhone: `+601${Math.floor(Math.random() * 100000000).toString().padStart(8, '0')}`,
         partySize: 2
       }
     });
@@ -108,8 +124,16 @@ test.describe('API Integration Tests', () => {
   test('should test analytics API', async ({ page }) => {
     // Login
     const loginPage = new LoginPage(page);
+    const testEmail = process.env.TEST_USER_EMAIL;
+    const testPassword = process.env.TEST_USER_PASSWORD;
+    
+    if (!testEmail || !testPassword) {
+      test.skip('Test credentials not configured');
+      return;
+    }
+    
     await loginPage.goto();
-    await loginPage.login('demo@smartqueue.com', 'demo123456');
+    await loginPage.login(testEmail, testPassword);
     
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'connect.sid');
@@ -153,8 +177,16 @@ test.describe('API Integration Tests', () => {
   test('should validate CSRF protection on API', async ({ page }) => {
     // Login
     const loginPage = new LoginPage(page);
+    const testEmail = process.env.TEST_USER_EMAIL;
+    const testPassword = process.env.TEST_USER_PASSWORD;
+    
+    if (!testEmail || !testPassword) {
+      test.skip('Test credentials not configured');
+      return;
+    }
+    
     await loginPage.goto();
-    await loginPage.login('demo@smartqueue.com', 'demo123456');
+    await loginPage.login(testEmail, testPassword);
     
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name === 'connect.sid');
@@ -177,8 +209,16 @@ test.describe('API Integration Tests', () => {
   test('should test WebSocket connection', async ({ page }) => {
     // Login
     const loginPage = new LoginPage(page);
+    const testEmail = process.env.TEST_USER_EMAIL;
+    const testPassword = process.env.TEST_USER_PASSWORD;
+    
+    if (!testEmail || !testPassword) {
+      test.skip('Test credentials not configured');
+      return;
+    }
+    
     await loginPage.goto();
-    await loginPage.login('demo@smartqueue.com', 'demo123456');
+    await loginPage.login(testEmail, testPassword);
     await page.waitForURL('**/dashboard');
     
     // Listen for WebSocket
@@ -203,7 +243,7 @@ test.describe('Security Tests', () => {
     await loginPage.goto();
     
     // Try SQL injection in login
-    await loginPage.login("admin' OR '1'='1", "password");
+    await loginPage.login("admin' OR '1'='1", "password' OR '1'='1");
     
     // Should not bypass login
     await expect(loginPage.errorMessage).toBeVisible();
@@ -213,8 +253,16 @@ test.describe('Security Tests', () => {
   test('should sanitize XSS attempts in forms', async ({ page }) => {
     // Login first
     const loginPage = new LoginPage(page);
+    const testEmail = process.env.TEST_USER_EMAIL;
+    const testPassword = process.env.TEST_USER_PASSWORD;
+    
+    if (!testEmail || !testPassword) {
+      test.skip('Test credentials not configured');
+      return;
+    }
+    
     await loginPage.goto();
-    await loginPage.login('demo@smartqueue.com', 'demo123456');
+    await loginPage.login(testEmail, testPassword);
     
     // Navigate to queue creation
     await page.goto('/dashboard/queues');

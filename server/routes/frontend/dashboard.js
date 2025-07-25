@@ -17,7 +17,8 @@ router.get('/', async (req, res) => {
       hasUser: !!req.user,
       userId: req.user?.id || req.user?._id,
       sessionId: req.sessionID,
-      sessionUserId: req.session?.userId
+      sessionUserId: req.session?.userId,
+      csrfAvailable: !!res.locals.csrfToken
     });
     
     if (!req.user || (!req.user.id && !req.user._id)) {
@@ -26,7 +27,7 @@ router.get('/', async (req, res) => {
     }
     
     const merchantId = req.user.id || req.user._id;
-    const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
+    const queues = await Queue.find({ merchantId });
     
     // Calculate basic stats
     const stats = {
@@ -95,13 +96,26 @@ router.get('/', async (req, res) => {
       queues,
       stats,
       waitingCustomers: templateWaitingCustomers,
-      activeQueue
+      activeQueue,
+      csrfToken: res.locals.csrfToken || ''
     });
 
   } catch (error) {
     logger.error('Dashboard error:', error);
-    req.flash('error', 'Error loading dashboard.');
-    res.redirect('/');
+    logger.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      user: req.user,
+      merchantId: req.user?.id || req.user?._id
+    });
+    
+    // For now, render an error page instead of redirecting
+    res.status(500).render('error', {
+      title: 'Dashboard Error',
+      status: 500,
+      message: `Error loading dashboard: ${error.message}`,
+      error: process.env.NODE_ENV === 'development' ? error : {}
+    });
   }
 });
 
@@ -173,10 +187,14 @@ router.get('/queues/:id/edit', async (req, res) => {
 router.get('/settings', async (req, res) => {
   try {
     const merchant = await Merchant.findById(req.user.id || req.user._id);
+    const merchantId = req.user.merchantId || req.user.id || req.user._id;
+    const queues = await Queue.find({ merchantId });
 
     res.render('dashboard/settings-improved', {
       title: 'Settings - StoreHub Queue Management System',
-      merchant
+      merchant,
+      queues,
+      csrfToken: req.csrfToken ? req.csrfToken() : req.cookies['csrf-token'] || ''
     });
 
   } catch (error) {
@@ -244,8 +262,12 @@ router.get('/analytics', async (req, res) => {
 // Help/FAQ page
 router.get('/help', async (req, res) => {
   try {
+    const merchantId = req.user.merchantId || req.user.id || req.user._id;
+    const queues = await Queue.find({ merchantId });
+    
     res.render('dashboard/help', {
-      title: 'Help & FAQ - StoreHub Queue Management System'
+      title: 'Help & FAQ - StoreHub Queue Management System',
+      queues
     });
   } catch (error) {
     logger.error('Help page error:', error);

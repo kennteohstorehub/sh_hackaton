@@ -513,9 +513,9 @@
             </div>
 
             <!-- Queue Status -->
-            <div class="queue-status <%= queueActive ? 'queue-open' : 'queue-closed' %>">
-                <i class="bi <%= queueActive ? 'bi-check-circle-fill' : 'bi-x-circle-fill' %>"></i>
-                <%= queueActive ? 'Queue is Open' : 'Queue is Currently Closed' %>
+            <div class="queue-status <%= (queueActive && acceptingCustomers !== false) ? 'queue-open' : 'queue-closed' %>">
+                <i class="bi <%= (queueActive && acceptingCustomers !== false) ? 'bi-check-circle-fill' : 'bi-x-circle-fill' %>"></i>
+                <%= (queueActive && acceptingCustomers !== false) ? 'Queue is Open' : 'Queue is Currently Closed' %>
             </div>
 
             <!-- Queue Statistics -->
@@ -541,7 +541,7 @@
             </div>
 
             <!-- Join Queue Form -->
-            <% if (queueActive) { %>
+            <% if (queueActive && acceptingCustomers !== false) { %>
             <div class="join-form">
                 <h3>
                     <i class="bi bi-person-plus-fill"></i>
@@ -605,6 +605,19 @@
                         Join Queue
                     </button>
                 </form>
+            </div>
+            <% } else if (queueActive && acceptingCustomers === false) { %>
+            <div class="join-form">
+                <div style="text-align: center; padding: 3rem 2rem;">
+                    <i class="bi bi-x-circle" style="font-size: 3rem; color: #dc3545; display: block; margin-bottom: 1rem;"></i>
+                    <h3>Queue Temporarily Closed</h3>
+                    <p style="color: #666; margin-top: 1rem;">
+                        We are not accepting new customers at this time. This usually happens when we're close to closing time or when the kitchen is at capacity.
+                    </p>
+                    <p style="color: #666;">
+                        Please check back later or contact the restaurant directly for more information.
+                    </p>
+                </div>
             </div>
             <% } %>
 

@@ -80,6 +80,59 @@ body {
     font-weight: 700;
 }
 
+/* Navigation Container */
+.nav-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    justify-content: center;
+}
+
+/* View Public Button */
+.btn-view-public {
+    background: rgba(255, 140, 0, 0.1);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn-view-public:hover {
+    background: rgba(255, 140, 0, 0.2);
+    border-color: rgba(255, 140, 0, 0.5);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* Mobile Nav Toggle */
+.mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1001;
+}
+
+.mobile-nav-toggle span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.9);
+    margin: 5px 0;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
 /* Navigation */
 .nav {
     display: flex;
@@ -333,82 +386,73 @@ body {
     background: rgba(255, 140, 0, 0.15);
 }
 
-/* Toggle Switch */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 56px;
-    height: 28px;
+/* Compact Checkbox for Settings */
+.day-status-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.compact-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     cursor: pointer;
+    position: relative;
 }
 
-.toggle-switch input {
+.compact-checkbox input[type="checkbox"] {
+    position: absolute;
     opacity: 0;
-    width: 0;
+    cursor: pointer;
     height: 0;
+    width: 0;
 }
 
-.toggle-switch-slider {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 28px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.toggle-switch-slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
+.checkbox-custom-compact {
     width: 20px;
-    left: 4px;
-    bottom: 2px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 140, 0, 0.4);
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.3s ease;
 }
 
-/* Checked state */
-.toggle-switch input:checked + .toggle-switch-slider {
-    background: var(--primary-orange);
+.checkbox-custom-compact::after {
+    content: '';
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.compact-checkbox input[type="checkbox"]:checked ~ .checkbox-custom-compact {
+    background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
     border-color: var(--primary-orange);
-    box-shadow: 0 0 20px rgba(255, 140, 0, 0.4);
 }
 
-.toggle-switch input:checked + .toggle-switch-slider:before {
-    transform: translateX(28px);
-    background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+.compact-checkbox input[type="checkbox"]:checked ~ .checkbox-custom-compact::after {
+    display: block;
 }
 
-/* Hover effects */
-.toggle-switch:hover .toggle-switch-slider {
-    border-color: rgba(255, 140, 0, 0.5);
+.compact-checkbox:hover .checkbox-custom-compact {
+    border-color: var(--primary-orange);
+    background: rgba(255, 140, 0, 0.1);
 }
 
-.toggle-switch input:checked:hover + .toggle-switch-slider {
-    background: #ff6b35;
-    box-shadow: 0 0 25px rgba(255, 140, 0, 0.6);
-}
-
-/* Focus state for accessibility */
-.toggle-switch input:focus + .toggle-switch-slider {
+.compact-checkbox input[type="checkbox"]:focus ~ .checkbox-custom-compact {
     box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.3);
 }
 
-/* Disabled state */
-.toggle-switch input:disabled + .toggle-switch-slider {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.toggle-switch input:disabled + .toggle-switch-slider:before {
-    background: rgba(255, 255, 255, 0.3);
+.toggle-label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    min-width: 40px;
 }
 
 /* Capacity Input Groups */
@@ -570,22 +614,19 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
     .header-content {
-        flex-direction: column;
-        gap: var(--spacing-md);
-        padding: var(--spacing-md);
+        padding: 0 1rem;
     }
     
-    .nav {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
+    .mobile-nav-toggle {
+        display: block;
     }
     
-    .nav a {
-        min-width: auto;
-        flex: 1;
-        font-size: 0.8rem;
-        padding: 0.6rem var(--spacing-sm);
+    .nav-container {
+        display: none;
+    }
+    
+    .user-section {
+        display: none;
     }
     
     .container {
@@ -828,5 +869,142 @@ body {
     
     .download-option .btn {
         width: 100%;
+    }
+}
+
+/* Smart Notification Features Styling */
+.feature-heading {
+    color: var(--primary-orange);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notification-features {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.feature-checkbox {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 140, 0, 0.2);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.feature-checkbox:hover {
+    background: rgba(255, 140, 0, 0.1);
+    border-color: rgba(255, 140, 0, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.2);
+}
+
+/* Hide default checkbox */
+.feature-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Custom checkbox design */
+.checkbox-custom {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 140, 0, 0.4);
+    border-radius: 6px;
+    margin-right: 1rem;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Checkmark */
+.checkbox-custom::after {
+    content: '';
+    position: absolute;
+    display: none;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 11px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* When checked */
+.feature-checkbox input[type="checkbox"]:checked ~ .checkbox-custom {
+    background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+    border-color: var(--primary-orange);
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
+}
+
+.feature-checkbox input[type="checkbox"]:checked ~ .checkbox-custom::after {
+    display: block;
+}
+
+/* Feature content */
+.feature-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.feature-title {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.feature-description {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Focus state */
+.feature-checkbox input[type="checkbox"]:focus ~ .checkbox-custom {
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.3);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .feature-checkbox {
+        padding: 1rem;
+    }
+    
+    .checkbox-custom {
+        width: 20px;
+        height: 20px;
+        margin-right: 0.75rem;
+    }
+    
+    .checkbox-custom::after {
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+    }
+    
+    .feature-title {
+        font-size: 0.95rem;
+    }
+    
+    .feature-description {
+        font-size: 0.8rem;
     }
 }

@@ -72,7 +72,6 @@ The StoreHub Queue Management System is a full-stack web application built with 
 - **Queue Confirmation**: Sent upon joining
 - **Position Updates**: Periodic progress updates
 - **Turn Notification**: When customer's turn arrives
-- **Priority Alerts**: For expedited service
 - **Requeue Notifications**: When customer is re-added
 
 #### 2.3.2 Message Templates
@@ -81,15 +80,6 @@ The StoreHub Queue Management System is a full-stack web application built with 
 🔔 It's your turn!
 📍 Queue: {queueName}
 🎫 Your position: #{position}
-Please come to the service counter now. Thank you for waiting!
-```
-
-**Priority Notification**:
-```
-🔔 It's your turn!
-📍 Queue: {queueName}
-🎫 Your position: #{position}
-⚡ You've been called ahead of schedule!
 Please come to the service counter now. Thank you for waiting!
 ```
 
@@ -154,7 +144,7 @@ Please come to the service counter now. Thank you for waiting!
 - **Seat Customer**: Mark as served and remove from queue
 - **Remove Customer**: Remove without serving
 - **Requeue Customer**: Move to end of queue
-- **Priority Call**: Move to front of queue
+- **Call Specific**: Call a specific customer out of order
 
 #### 3.3.2 Bulk Operations
 **Functionality**:

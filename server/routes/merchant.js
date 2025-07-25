@@ -8,7 +8,22 @@ const { generateQRPosterPDF, generateSimpleQRPDF } = require('../utils/pdfGenera
 
 const router = express.Router();
 
-// Apply authentication to all merchant API routes
+// Public endpoints (no auth required)
+// GET /api/merchants - Get list of active merchants (public)
+router.get('/', async (req, res) => {
+  try {
+    const merchants = await Merchant.find({ isActive: true })
+      .select('businessName businessType id')
+      .limit(20);
+    
+    res.json(merchants);
+  } catch (error) {
+    logger.error('Error fetching merchants:', error);
+    res.status(500).json({ error: 'Failed to fetch merchants' });
+  }
+});
+
+// Apply authentication to protected merchant API routes
 router.use(requireAuth);
 router.use(loadUser);
 

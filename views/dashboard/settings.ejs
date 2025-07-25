@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -55,6 +56,59 @@
             font-size: 1.5rem;
             font-weight: 700;
             min-width: 200px;
+        }
+        
+        /* Navigation Container */
+        .nav-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        /* View Public Button */
+        .btn-view-public {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .btn-view-public:hover {
+            background: rgba(255, 140, 0, 0.2);
+            border-color: rgba(255, 140, 0, 0.5);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        
+        /* Mobile Nav Toggle */
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+        
+        .mobile-nav-toggle span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.9);
+            margin: 5px 0;
+            transition: all 0.3s ease;
+            border-radius: 2px;
         }
         
         /* Fixed Navigation */
@@ -265,55 +319,115 @@
             box-shadow: none;
         }
         
-        .toggle {
+        /* Feature Toggle (Switch Style) */
+        .feature-toggle {
             position: relative;
             display: inline-block;
             width: 70px;
             height: 40px;
         }
         
-        .toggle input {
+        .feature-toggle input {
+            position: absolute;
             opacity: 0;
             width: 0;
             height: 0;
         }
         
-        .slider {
+        .toggle-slider {
             position: absolute;
             cursor: pointer;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.2);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
             border-radius: 40px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 140, 0, 0.4);
         }
         
-        .slider:before {
+        .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 32px;
-            width: 32px;
-            left: 4px;
+            height: 30px;
+            width: 30px;
+            left: 5px;
             bottom: 3px;
-            background: white;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
             border-radius: 50%;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
-        input:checked + .slider {
+        .feature-toggle input:checked + .toggle-slider {
             background: linear-gradient(135deg, #ff8c00, #ff6b35);
-            border-color: transparent;
-            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+            border-color: #ff8c00;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
         }
         
-        input:checked + .slider:before {
-            transform: translateX(30px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        .feature-toggle input:checked + .toggle-slider:before {
+            transform: translateX(28px);
+            background: white;
+        }
+        
+        .feature-toggle:hover .toggle-slider {
+            border-color: #ff8c00;
+            background: rgba(255, 140, 0, 0.1);
+        }
+        
+        /* Compact Checkbox (matching new design) */
+        .compact-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .compact-checkbox input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        
+        .checkbox-custom-compact {
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 140, 0, 0.4);
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .checkbox-custom-compact::after {
+            content: '';
+            position: absolute;
+            display: none;
+            left: 5px;
+            top: 2px;
+            width: 5px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .compact-checkbox input[type="checkbox"]:checked ~ .checkbox-custom-compact {
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            border-color: #ff8c00;
+        }
+        
+        .compact-checkbox input[type="checkbox"]:checked ~ .checkbox-custom-compact::after {
+            display: block;
+        }
+        
+        .compact-checkbox:hover .checkbox-custom-compact {
+            border-color: #ff8c00;
+            background: rgba(255, 140, 0, 0.1);
         }
         
         .toggle-group {
@@ -402,7 +516,7 @@
         }
         
         /* WhatsApp toggle styling */
-        #whatsappNotifications:checked + .slider {
+        #whatsappNotifications:checked + .toggle-slider {
             background: linear-gradient(135deg, #25D366, #20B858) !important;
             box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3) !important;
         }
@@ -503,21 +617,20 @@
         }
         
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-                padding: 1rem;
+            .header-content {
+                padding: 0 1rem;
             }
             
-            .nav {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 0.5rem;
+            .mobile-nav-toggle {
+                display: block;
             }
             
-            .nav a {
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
+            .nav-container {
+                display: none;
+            }
+            
+            .user-section {
+                display: none;
             }
             
             .container {
@@ -534,21 +647,22 @@
                 gap: 1rem;
             }
             
-            .toggle {
+            .feature-toggle {
                 width: 60px;
                 height: 34px;
             }
             
-            .slider:before {
-                height: 26px;
-                width: 26px;
+            .toggle-slider:before {
+                height: 24px;
+                width: 24px;
                 left: 4px;
                 bottom: 3px;
             }
             
-            input:checked + .slider:before {
-                transform: translateX(26px);
+            .feature-toggle input:checked + .toggle-slider:before {
+                transform: translateX(24px);
             }
+            
         }
         
         /* Custom scrollbar */
@@ -792,28 +906,49 @@
 
         
         .compact-toggle input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        
+        .compact-toggle .compact-slider {
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 140, 0, 0.4);
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .compact-toggle .compact-slider::after {
+            content: '';
+            position: absolute;
             display: none;
+            left: 5px;
+            top: 2px;
+            width: 5px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
         }
         
         .compact-toggle input[type="checkbox"]:checked + .compact-slider {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.7));
-            border-color: rgba(239, 68, 68, 0.6);
-            box-shadow: 
-                0 4px 12px rgba(239, 68, 68, 0.3),
-                inset 0 2px 4px rgba(255, 255, 255, 0.2),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+            border-color: #ff8c00;
         }
         
-        .compact-toggle input[type="checkbox"]:checked + .compact-slider:hover {
-            box-shadow: 
-                0 6px 18px rgba(239, 68, 68, 0.4),
-                inset 0 2px 4px rgba(255, 255, 255, 0.3),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-            border-color: rgba(239, 68, 68, 0.8);
+        .compact-toggle input[type="checkbox"]:checked + .compact-slider::after {
+            display: block;
         }
         
-        .compact-toggle input[type="checkbox"]:checked + .compact-slider:before {
-            transform: translateX(26px);
+        .compact-toggle:hover .compact-slider {
+            border-color: #ff8c00;
+            background: rgba(255, 140, 0, 0.1);
         }
         
 
@@ -880,19 +1015,39 @@
     <header class="header">
         <div class="header-content">
             <h1>StoreHub Queue Management System</h1>
-            <nav class="nav">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/dashboard/analytics">Analytics</a>
-                <a href="/dashboard/whatsapp-setup">WhatsApp</a>
-                <a href="/dashboard/settings" class="active">Settings</a>
-                <a href="/dashboard/help">Help</a>
-            </nav>
+            
+            <!-- Mobile Hamburger Menu -->
+            <button class="mobile-nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <div class="nav-container">
+                <% if (typeof queues !== 'undefined' && queues.length > 0) { %>
+                    <% const activeQueue = queues.find(queue => queue.isActive); %>
+                    <% if (activeQueue) { %>
+                        <a href="/queue/<%= activeQueue.id || activeQueue._id %>" class="btn-view-public" target="_blank">
+                            <i class="bi bi-eye"></i> View Public
+                        </a>
+                    <% } %>
+                <% } %>
+                <nav class="nav">
+                    <a href="/dashboard">Dashboard</a>
+                    <a href="/dashboard/analytics">Analytics</a>
+                    <a href="/dashboard/whatsapp-setup">WhatsApp</a>
+                    <a href="/dashboard/settings" class="active">Settings</a>
+                    <a href="/dashboard/help">Help</a>
+                </nav>
+            </div>
             <div class="user-section">
                 <div class="user-menu">
-                    <a href="/auth/logout" class="user-button">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-                    </a>
+                    <form action="/auth/logout" method="POST" style="display: inline;">
+                        <button type="submit" class="user-button">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Logout
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1099,9 +1254,9 @@
                         <h4>WhatsApp Notifications</h4>
                         <p>Send queue updates via WhatsApp messages</p>
                     </div>
-                    <label class="toggle">
+                    <label class="feature-toggle">
                         <input type="checkbox" id="whatsappNotifications" checked>
-                        <span class="slider"></span>
+                        <span class="toggle-slider"></span>
                     </label>
                 </div>
                 
@@ -1112,9 +1267,9 @@
                         <h4>Auto-Notifications</h4>
                         <p>Automatically notify customers when their turn approaches</p>
                     </div>
-                    <label class="toggle">
+                    <label class="feature-toggle">
                         <input type="checkbox" id="autoNotifications" checked>
-                        <span class="slider"></span>
+                        <span class="toggle-slider"></span>
                     </label>
                 </div>
             </div>
@@ -1174,17 +1329,15 @@
                     <h3>Analytics</h3>
                     <p>Configure analytics and reporting preferences</p>
                     <div class="toggle-group">
-                        <label class="toggle">
+                        <label class="compact-checkbox">
                             <input type="checkbox" id="enableAnalytics" checked>
-                            <span class="slider"></span>
-                        </label>
+                            <span class="checkbox-custom-compact"></span>
                         <span class="toggle-label">Enable detailed analytics</span>
                     </div>
                     <div class="toggle-group">
-                        <label class="toggle">
+                        <label class="compact-checkbox">
                             <input type="checkbox" id="shareAnonymousData">
-                            <span class="slider"></span>
-                        </label>
+                            <span class="checkbox-custom-compact"></span>
                         <span class="toggle-label">Share anonymous usage data</span>
                     </div>
                 </div>

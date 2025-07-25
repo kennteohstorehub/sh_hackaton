@@ -33,16 +33,28 @@ test.describe('Login Page Tests', () => {
   });
 
   test('should show error for invalid credentials', async ({ page }) => {
-    await loginPage.login('invalid@email.com', 'wrongpassword');
+    // Use environment variables or generate random invalid credentials
+    const invalidEmail = process.env.TEST_INVALID_EMAIL || `invalid_${Date.now()}@test.com`;
+    const invalidPassword = process.env.TEST_INVALID_PASSWORD || 'wrongpassword123';
+    
+    await loginPage.login(invalidEmail, invalidPassword);
     
     // Wait for error message
     await expect(loginPage.errorMessage).toBeVisible();
     await expect(loginPage.errorMessage).toContainText('Invalid email or password');
   });
 
-  test('should login successfully with demo credentials', async ({ page }) => {
-    // Login with demo credentials
-    await loginPage.login('demo@smartqueue.com', 'demo123456');
+  test('should login successfully with valid credentials', async ({ page }) => {
+    // Use credentials from environment or config
+    const testEmail = process.env.TEST_USER_EMAIL;
+    const testPassword = process.env.TEST_USER_PASSWORD;
+    
+    if (!testEmail || !testPassword) {
+      test.skip('Test credentials not configured');
+      return;
+    }
+    
+    await loginPage.login(testEmail, testPassword);
     
     // Should redirect to dashboard
     await page.waitForURL('**/dashboard');
@@ -74,8 +86,17 @@ test.describe('Login Page Tests', () => {
   });
 
   test('should persist session after login', async ({ page, context }) => {
+    // Use credentials from environment
+    const testEmail = process.env.TEST_USER_EMAIL;
+    const testPassword = process.env.TEST_USER_PASSWORD;
+    
+    if (!testEmail || !testPassword) {
+      test.skip('Test credentials not configured');
+      return;
+    }
+    
     // Login
-    await loginPage.login('demo@smartqueue.com', 'demo123456');
+    await loginPage.login(testEmail, testPassword);
     await page.waitForURL('**/dashboard');
     
     // Open new page in same context

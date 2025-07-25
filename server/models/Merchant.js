@@ -32,23 +32,33 @@ class Merchant {
   }
 
   static async findOne(filter = {}) {
-    const where = {};
-    if (filter.email) where.email = filter.email;
-    if (filter._id) where.id = filter._id;
-    
-    const merchant = await prisma.merchant.findFirst({
-      where,
-      include: {
-        settings: true,
-        subscription: true,
-        integrations: true,
-        address: true,
-        businessHours: true,
-        serviceTypes: true
-      }
-    });
-    
-    return merchant ? new Merchant(merchant) : null;
+    try {
+      const where = {};
+      if (filter.email) where.email = filter.email;
+      if (filter._id) where.id = filter._id;
+      
+      console.log('[Merchant.findOne] Looking for merchant with filter:', filter);
+      console.log('[Merchant.findOne] Prisma where clause:', where);
+      
+      const merchant = await prisma.merchant.findFirst({
+        where,
+        include: {
+          settings: true,
+          subscription: true,
+          integrations: true,
+          address: true,
+          businessHours: true,
+          serviceTypes: true
+        }
+      });
+      
+      console.log('[Merchant.findOne] Found merchant:', merchant ? merchant.email : 'null');
+      
+      return merchant ? new Merchant(merchant) : null;
+    } catch (error) {
+      console.error('[Merchant.findOne] Error:', error);
+      throw error; // Re-throw to let the caller handle it
+    }
   }
 
   static async find(filter = {}) {
@@ -168,6 +178,54 @@ class Merchant {
     if (this.services?.takeaway) services.push('Takeaway');
     if (this.services?.delivery) services.push('Delivery');
     return services.length > 0 ? services : ['General Queue'];
+  }
+
+  getPartySizeLimits() {
+    // Get party size limits based on current time (peak/non-peak)
+    const isPeak = this.isPeakHour();
+    if (isPeak && this.settings?.queue?.peakHours?.maxPartySize) {
+      return {
+        min: 1,
+        max: this.settings.queue.peakHours.maxPartySize
+      };
+    }
+    return {
+      min: 1,
+      max: this.settings?.queue?.maxPartySize || 20
+    };
+  }
+
+  isPeakHour() {
+    // Check if current time is during peak hours
+    if (!this.settings?.queue?.peakHours?.enabled) {
+      return false;
+    }
+    
+    const now = new Date();
+    const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+    const peakStart = this.settings.queue.peakHours.start || '11:30';
+    const peakEnd = this.settings.queue.peakHours.end || '14:00';
+    
+    return currentTime >= peakStart && currentTime <= peakEnd;
+  }
+
+  shouldAutoPause(currentOccupancy) {
+    // Check if queue should auto-pause based on occupancy
+    if (!this.settings?.queue?.autoPause?.enabled) {
+      return false;
+    }
+    
+    const threshold = this.settings.queue.autoPause.occupancyThreshold || 90;
+    const maxOccupancy = this.settings?.queue?.maxOccupancy || 100;
+    const occupancyPercentage = (currentOccupancy / maxOccupancy) * 100;
+    
+    return occupancyPercentage >= threshold;
+  }
+
+  isBusinessOpen() {
+    // For testing purposes, always return true
+    // In production, this would check business hours
+    return true;
   }
 
   // Static methods

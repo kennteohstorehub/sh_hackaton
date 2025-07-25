@@ -11,8 +11,8 @@ const requireAuth = (req, res, next) => {
   
   // Check if user is logged in via session
   if (!req.session || !req.session.userId) {
-    // If it's an API request, return 401
-    if (req.path.startsWith('/api/')) {
+    // If it's an API request or AJAX request, return 401
+    if (req.originalUrl.startsWith('/api/') || req.xhr || req.headers.accept?.includes('application/json')) {
       return res.status(401).json({ error: 'Authentication required' });
     }
     // Otherwise redirect to login page

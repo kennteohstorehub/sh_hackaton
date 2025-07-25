@@ -56,6 +56,51 @@ router.get('/pricing', (req, res) => {
   });
 });
 
+// GET /queue/join/:merchantId - Simple customer queue page
+router.get('/queue/join/:merchantId', async (req, res) => {
+  try {
+    const merchant = await Merchant.findById(req.params.merchantId);
+    
+    if (!merchant || !merchant.isActive) {
+      return res.status(404).render('error', {
+        title: 'Business Not Found',
+        status: 404,
+        message: 'The business you are looking for does not exist or is not active.'
+      });
+    }
+    
+    // Get current wait time estimate
+    const queue = await Queue.findOne({ 
+      merchantId: merchant.id || merchant._id, 
+      isActive: true 
+    });
+    
+    const currentWaitTime = queue ? queue.getAverageWaitTime() : 15;
+    
+    res.render('customer-queue', {
+      merchant: {
+        id: merchant.id || merchant._id,
+        businessName: merchant.businessName,
+        primaryColor: merchant.primaryColor || '#ff8c00',
+        secondaryColor: merchant.secondaryColor || '#ff6b35',
+        logoUrl: merchant.logoUrl,
+        currentWaitTime
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Customer queue page error:', error);
+    console.error('Full error details:', error);
+    console.error('Error stack:', error.stack);
+    
+    res.status(500).render('error', {
+      title: 'Server Error',
+      status: 500,
+      message: 'An error occurred while loading the queue page. Please try again later.'
+    });
+  }
+});
+
 // GET /join/:merchantId - Customer queue joining page
 router.get('/join/:merchantId', async (req, res) => {
   try {
@@ -262,6 +307,7 @@ router.get('/queue/:queueId', async (req, res) => {
       businessPhone: merchant.phone || 'Not available',
       businessEmail: merchant.email || 'Not available',
       queueActive: queue.isActive,
+      acceptingCustomers: queue.acceptingCustomers,
       totalAhead,
       averageWaitTime,
       whatsappLink,
@@ -277,6 +323,44 @@ router.get('/queue/:queueId', async (req, res) => {
       title: 'Server Error',
       status: 500,
       message: 'Unable to load queue information. Please try again later.'
+    });
+  }
+});
+
+// GET /join-queue/:merchantId - Simplified customer queue joining page
+router.get('/join-queue/:merchantId', async (req, res) => {
+  try {
+    const merchant = await Merchant.findById(req.params.merchantId);
+    
+    if (!merchant || !merchant.isActive) {
+      return res.status(404).render('error', {
+        title: 'Business Not Found',
+        status: 404,
+        message: 'The business you are looking for does not exist or is not active.'
+      });
+    }
+    
+    // Get current wait time estimate
+    const queue = await Queue.findOne({ 
+      merchantId: merchant.id || merchant._id, 
+      isActive: true 
+    });
+    
+    const waitingCount = queue?.entries?.filter(e => e.status === 'waiting').length || 0;
+    const currentWaitTime = waitingCount * (queue?.averageServiceTime || 15);
+    
+    res.render('simple-join', {
+      merchantId: merchant.id || merchant._id,
+      businessName: merchant.businessName,
+      currentWaitTime
+    });
+    
+  } catch (error) {
+    logger.error('Simple join page error:', error);
+    res.status(500).render('error', {
+      title: 'Server Error',
+      status: 500,
+      message: 'An error occurred while loading the page. Please try again later.'
     });
   }
 });

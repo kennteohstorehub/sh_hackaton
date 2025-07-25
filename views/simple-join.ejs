@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Queue - <%= businessName %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+            margin: 1rem;
+        }
+        
+        h1 {
+            color: #ff8c00;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .business-name {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ff8c00;
+            background: rgba(255, 140, 0, 0.15);
+        }
+        
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: #ff8c00;
+            border: none;
+            border-radius: 8px;
+            color: #000000;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #ff9a1f;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: rgba(255, 140, 0, 0.5);
+            cursor: not-allowed;
+        }
+        
+        .info {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .success {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            color: #25d366;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .queue-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff8c00;
+            margin: 1rem 0;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="joinForm">
+            <h1>Join Queue</h1>
+            <p class="business-name"><%= businessName %></p>
+            
+            <% if (currentWaitTime > 0) { %>
+            <div class="info">
+                ⏱️ Current wait time: ~<%= currentWaitTime %> minutes
+            </div>
+            <% } %>
+            
+            <div class="error" id="errorMsg"></div>
+            
+            <form id="queueForm" onsubmit="joinQueue(event)">
+                <div class="form-group">
+                    <label for="customerName">Your Name *</label>
+                    <input type="text" id="customerName" name="customerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerPhone">Phone Number *</label>
+                    <input type="tel" id="customerPhone" name="customerPhone" 
+                           placeholder="+60123456789" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="partySize">Party Size *</label>
+                    <select id="partySize" name="partySize" required>
+                        <% for(let i = 1; i <= 10; i++) { %>
+                            <option value="<%= i %>"><%= i %> <%= i === 1 ? 'Person' : 'People' %></option>
+                        <% } %>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="specialRequests">Special Requests (Optional)</label>
+                    <textarea id="specialRequests" name="specialRequests" rows="2"
+                              placeholder="e.g., High chair needed, wheelchair accessible"></textarea>
+                </div>
+                
+                <button type="submit" id="submitBtn">Join Queue</button>
+            </form>
+        </div>
+        
+        <div class="success" id="successMsg">
+            <h2>✅ You're in the queue!</h2>
+            <div class="queue-number" id="queueNumber">-</div>
+            <p>Position: <strong id="position">-</strong></p>
+            <p>Estimated wait: <strong id="waitTime">-</strong> minutes</p>
+            <p>We'll notify you via WhatsApp when your table is ready!</p>
+        </div>
+    </div>
+    
+    <script>
+        async function joinQueue(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Joining...';
+            errorMsg.style.display = 'none';
+            
+            const formData = {
+                customerName: document.getElementById('customerName').value,
+                customerPhone: document.getElementById('customerPhone').value,
+                partySize: parseInt(document.getElementById('partySize').value),
+                specialRequests: document.getElementById('specialRequests').value,
+                merchantId: '<%= merchantId %>'
+            };
+            
+            try {
+                const response = await fetch('/api/queues/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || 'Failed to join queue');
+                }
+                
+                // Show success
+                document.getElementById('joinForm').style.display = 'none';
+                document.getElementById('successMsg').style.display = 'block';
+                document.getElementById('queueNumber').textContent = data.queueNumber;
+                document.getElementById('position').textContent = data.position;
+                document.getElementById('waitTime').textContent = data.estimatedWaitTime;
+                
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Join Queue';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -108,11 +108,6 @@ model MerchantSettings {
   confirmTableAcceptance Boolean                @default(true)
   peakHours              Json?
   peakMultiplier         Float                  @default(1.5)
-  priorityEnabled        Boolean                @default(false)
-  prioritySlots          Int                    @default(2)
-  prioritySkipRegular    Boolean                @default(false)
-  priorityNotifyFirst    Boolean                @default(true)
-  priorityLongerGrace    Boolean                @default(true)
   merchant               Merchant               @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   notificationTemplates  NotificationTemplate[]
 }
@@ -148,6 +143,7 @@ model Queue {
   name                  String
   description           String?
   isActive              Boolean         @default(true)
+  acceptingCustomers    Boolean         @default(true)
   maxCapacity           Int             @default(100)
   averageServiceTime    Int             @default(15)
   currentServing        Int             @default(0)
@@ -178,11 +174,11 @@ model QueueEntry {
   position          Int
   estimatedWaitTime Int?
   status            QueueEntryStatus    @default(waiting)
-  priority          Priority            @default(normal)
   serviceTypeId     String?
   partySize         Int                 @default(1) @db.SmallInt
   notes             String?
   specialRequests   String?
+  verificationCode  String?
   joinedAt          DateTime            @default(now())
   calledAt          DateTime?
   servedAt          DateTime?
@@ -194,6 +190,7 @@ model QueueEntry {
   queue             Queue               @relation(fields: [queueId], references: [id], onDelete: Cascade)
   serviceType       ServiceType?        @relation(fields: [serviceTypeId], references: [id])
   feedback          QueueEntryFeedback?
+  pushSubscriptions PushSubscription[]
 
   @@index([queueId, status, joinedAt])
   @@index([customerId, status])
@@ -253,14 +250,22 @@ enum QueueEntryStatus {
   no_show
 }
 
-enum Priority {
-  low
-  normal
-  high
-  urgent
-}
 
 enum Platform {
   whatsapp
   web
+}
+
+model PushSubscription {
+  id             String      @id @default(uuid())
+  queueEntryId   String
+  endpoint       String      @unique
+  p256dh         String
+  auth           String
+  expirationTime DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  queueEntry     QueueEntry  @relation(fields: [queueEntryId], references: [id], onDelete: Cascade)
+
+  @@index([queueEntryId])
 }

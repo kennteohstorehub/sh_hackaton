@@ -1,6 +1,5 @@
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
 const { xssProtection } = require('./xss-protection');
 const { validationResult } = require('express-validator');
 
@@ -11,22 +10,15 @@ const configureSecurityMiddleware = (app) => {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdn.socket.io"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://cdn.socket.io"],
+        scriptSrcAttr: ["'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "https:"],
         connectSrc: ["'self'", "wss:", "ws:"],
-        fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
+        fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"],
       },
     },
     crossOriginEmbedderPolicy: false,
-  }));
-
-  // Prevent NoSQL injection attacks
-  app.use(mongoSanitize({
-    replaceWith: '_',
-    onSanitize: ({ req, key }) => {
-      console.warn(`Potential NoSQL injection attempt: ${key} in ${req.url}`);
-    }
   }));
 
   // XSS protection - provides sanitized getters instead of modifying data
@@ -51,9 +43,9 @@ const createRateLimiter = (windowMs = 15 * 60 * 1000, max = 100, message = 'Too 
 };
 
 // Specific rate limiters
-const authLimiter = createRateLimiter(15 * 60 * 1000, 30, 'Too many authentication attempts'); // Increased from 5 to 30
-const apiLimiter = createRateLimiter(15 * 60 * 1000, 100, 'API rate limit exceeded');
-const strictLimiter = createRateLimiter(60 * 1000, 10, 'Too many requests to this endpoint');
+const authLimiter = createRateLimiter(15 * 60 * 1000, 100, 'Too many authentication attempts'); // Increased to 100
+const apiLimiter = createRateLimiter(15 * 60 * 1000, 500, 'API rate limit exceeded'); // Increased to 500
+const strictLimiter = createRateLimiter(60 * 1000, 50, 'Too many requests to this endpoint'); // Increased to 50
 
 // Input validation error handler
 const handleValidationErrors = (req, res, next) => {
@@ -104,9 +96,9 @@ const sanitizeInput = (input) => {
   return xss(input.trim());
 };
 
-// Validate ObjectId format
-const isValidObjectId = (id) => {
-  return /^[0-9a-fA-F]{24}$/.test(id);
+// Validate UUID format (PostgreSQL)
+const isValidUUID = (id) => {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 };
 
 module.exports = {
@@ -119,5 +111,5 @@ module.exports = {
   csrfProtection,
   generateCSRFToken,
   sanitizeInput,
-  isValidObjectId
+  isValidUUID
 };

@@ -28,10 +28,18 @@ router.post('/join/:queueId', [
       return res.status(404).json({ error: 'Queue not found or inactive' });
     }
 
+    // Check if queue is accepting new customers
+    if (!queue.acceptingCustomers) {
+      return res.status(400).json({ 
+        error: 'Queue is not accepting new customers',
+        message: 'The queue has been temporarily closed for new entries. Please try again later or contact the restaurant.'
+      });
+    }
+
     const merchant = queue.merchantId;
     
-    // Check if business is open
-    if (!merchant.isBusinessOpen()) {
+    // Check if business is open (skip if method doesn't exist)
+    if (merchant.isBusinessOpen && !merchant.isBusinessOpen()) {
       const joinCutoff = merchant.settings?.queue?.joinCutoffTime || 30;
       return res.status(400).json({ 
         error: 'Restaurant is closed or not accepting new customers',
@@ -39,21 +47,22 @@ router.post('/join/:queueId', [
       });
     }
     
-    // Check party size limits
-    const partySizeLimits = merchant.getPartySizeLimits();
+    // Check party size limits (with default values if method doesn't exist)
+    const partySizeLimits = merchant.getPartySizeLimits ? merchant.getPartySizeLimits() : { min: 1, max: 20 };
     const requestedPartySize = partySize || 1;
     
     if (requestedPartySize < partySizeLimits.min || requestedPartySize > partySizeLimits.max) {
+      const isPeak = merchant.isPeakHour ? merchant.isPeakHour() : false;
       return res.status(400).json({
         error: 'Party size not allowed',
-        message: `Party size must be between ${partySizeLimits.min} and ${partySizeLimits.max} during ${merchant.isPeakHour() ? 'peak hours' : 'regular hours'}`,
+        message: `Party size must be between ${partySizeLimits.min} and ${partySizeLimits.max} during ${isPeak ? 'peak hours' : 'regular hours'}`,
         limits: partySizeLimits
       });
     }
     
-    // Check if queue should auto-pause
+    // Check if queue should auto-pause (skip if method doesn't exist)
     const currentOccupancy = queue.entries.filter(e => e.status === 'serving').length;
-    if (merchant.shouldAutoPause(currentOccupancy)) {
+    if (merchant.shouldAutoPause && merchant.shouldAutoPause(currentOccupancy)) {
       return res.status(400).json({
         error: 'Queue temporarily paused',
         message: 'Restaurant is at capacity. Please try again in a few minutes.'
@@ -61,7 +70,7 @@ router.post('/join/:queueId', [
     }
     
     // Check queue capacity
-    const maxQueueSize = merchant.settings?.queue?.maxQueueSize || queue.maxCapacity;
+    const maxQueueSize = merchant?.settings?.queue?.maxQueueSize || queue.maxCapacity || 50;
     if (queue.currentLength >= maxQueueSize) {
       return res.status(400).json({ 
         error: 'Queue is full',
@@ -92,7 +101,7 @@ router.post('/join/:queueId', [
       customerName: name,
       customerPhone: phone,
       platform: 'web',
-      serviceType: queue.serviceType || 'General Service',
+      serviceTypeId: null, // Would be set if service types were implemented
       partySize: parseInt(partySize) || 1,
       specialRequests: specialRequests || ''
     });
@@ -152,15 +161,19 @@ router.post('/join/:queueId', [
 
   } catch (error) {
     logger.error('Error joining queue:', error);
-    res.status(500).json({ error: 'Failed to join queue' });
+    console.error('[CUSTOMER JOIN ERROR]', error.message, error.stack);
+    res.status(500).json({ 
+      error: 'Failed to join queue',
+      message: error.message
+    });
   }
 });
 
 // POST /api/customer/join - Join a queue
 router.post('/join', [
-  body('queueId').isMongoId().withMessage('Valid queue ID required'),
+  body('queueId').isMongoId().withMessage('Please select a queue first'),
   body('customerName').trim().isLength({ min: 1, max: 100 }).withMessage('Customer name required'),
-  body('customerPhone').isMobilePhone().withMessage('Valid phone number required'),
+  body('customerPhone').matches(/^\+?[0-9]{7,15}$/).withMessage('Valid phone number required (e.g., +60123456789)'),
   body('serviceType').trim().isLength({ min: 1 }).withMessage('Service type required'),
   body('platform').isIn(['whatsapp', 'messenger', 'web']).withMessage('Valid platform required'),
   body('partySize').optional().isInt({ min: 1, max: 20 }).withMessage('Party size must be between 1 and 20')
@@ -168,7 +181,15 @@ router.post('/join', [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ error: 'Validation failed', details: errors.array() });
+      logger.error('Customer join validation failed:', {
+        body: req.body,
+        errors: errors.array()
+      });
+      return res.status(400).json({ 
+        error: 'Validation failed', 
+        message: errors.array()[0].msg,
+        details: errors.array() 
+      });
     }
 
     const { queueId, customerName, customerPhone, serviceType, platform, partySize } = req.body;
@@ -177,6 +198,14 @@ router.post('/join', [
     
     if (!queue || !queue.isActive) {
       return res.status(404).json({ error: 'Queue not found or inactive' });
+    }
+
+    // Check if queue is accepting new customers
+    if (!queue.acceptingCustomers) {
+      return res.status(400).json({ 
+        error: 'Queue is not accepting new customers',
+        message: 'The queue has been temporarily closed for new entries. Please try again later or contact the restaurant.'
+      });
     }
 
     // Check if business is open
@@ -272,7 +301,11 @@ router.post('/join', [
 
   } catch (error) {
     logger.error('Error joining queue:', error);
-    res.status(500).json({ error: 'Failed to join queue' });
+    console.error('[CUSTOMER JOIN ERROR]', error.message, error.stack);
+    res.status(500).json({ 
+      error: 'Failed to join queue',
+      message: error.message
+    });
   }
 });
 

@@ -63,7 +63,17 @@ router.post('/login',
     const { email, password } = req.body;
 
     // Find merchant
-    const merchant = await Merchant.findOne({ email });
+    console.log('[AUTH] About to call Merchant.findOne with email:', email);
+    let merchant;
+    try {
+      merchant = await Merchant.findOne({ email });
+      console.log('[AUTH] Merchant.findOne returned:', merchant ? 'found' : 'not found');
+    } catch (findError) {
+      console.error('[AUTH] Error during Merchant.findOne:', findError);
+      console.error('[AUTH] Error stack:', findError.stack);
+      throw findError; // Let the outer catch handle it
+    }
+    
     if (!merchant) {
       req.flash('error', 'Invalid email or password.');
       return res.redirect('/auth/login');

@@ -7,6 +7,377 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/css/dashboard.css?v=<%= Date.now() %>" rel="stylesheet">
+    <style>
+        /* Notification Modal Styles */
+        .notification-modal, .verification-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .notification-content, .verification-content {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            overflow: hidden;
+        }
+        
+        .notification-header, .verification-header {
+            background: #ff8c00;
+            color: #ffffff;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-header h2, .verification-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        .close-btn:hover {
+            opacity: 1;
+        }
+        
+        .notification-body, .verification-body {
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .customer-info {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        
+        .verification-code-display {
+            margin: 2rem 0;
+        }
+        
+        .verification-code-display label {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .code-box {
+            background: #f8f9fa;
+            border: 3px solid #ff8c00;
+            border-radius: 8px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 0.3rem;
+            padding: 1rem;
+            color: #ff8c00;
+            font-family: monospace;
+        }
+        
+        .instruction {
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+        
+        .notification-footer, .verification-footer {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .btn-primary, .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #ff8c00;
+            color: #ffffff;
+        }
+        
+        .btn-primary:hover {
+            background: #e67e00;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+        
+        /* Code Input Styles */
+        .code-input {
+            width: 100%;
+            max-width: 300px;
+            font-size: 2rem;
+            text-align: center;
+            padding: 1rem;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            letter-spacing: 0.5rem;
+            font-family: monospace;
+            margin: 1rem 0;
+        }
+        
+        .code-input:focus {
+            outline: none;
+            border-color: #ff8c00;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Pending Button Style */
+        .btn-pending {
+            background: #ffc107;
+            color: #000;
+            border-color: #ffc107;
+        }
+        
+        .btn-pending:hover {
+            background: #e0a800;
+            border-color: #d39e00;
+        }
+        
+        /* Shake Animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        /* Queue Performance Card Animations */
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        @keyframes rotateGlow {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        
+        /* Queue Actions Styles */
+        .queue-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 8px;
+        }
+        
+        .queue-actions-left {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .queue-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .queue-status-badge.accepting {
+            background: rgba(37, 211, 102, 0.2);
+            color: #25D366;
+            border: 1px solid rgba(37, 211, 102, 0.3);
+        }
+        
+        .queue-status-badge.not-accepting {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        /* Stop Queue Modal Styles */
+        .stop-queue-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .stop-queue-content {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            overflow: hidden;
+        }
+        
+        .stop-queue-header {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stop-queue-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .stop-queue-body {
+            padding: 2rem;
+        }
+        
+        .warning-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            color: #856404;
+        }
+        
+        .warning-message i {
+            font-size: 1.5rem;
+            color: #f39c12;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .warning-message p {
+            margin: 0.5rem 0;
+        }
+        
+        .confirmation-input {
+            margin-top: 1.5rem;
+        }
+        
+        .confirmation-input p {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .confirm-input {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .confirm-input:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+        
+        .stop-queue-footer {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -130,6 +501,16 @@
             </div>
         </div>
 
+        <!-- Queue Performance Section (Temporarily Hidden) -->
+        <div class="queue-performance-section" style="display: none; margin-top: 2rem; margin-bottom: 2rem;">
+            <h2 style="color: #ffffff; margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 600; display: flex; align-items: center;">
+                <span style="margin-right: 0.5rem;">🏪</span>Queue Performance
+            </h2>
+            <div id="queuePerformanceCards">
+                <!-- Performance cards will be rendered here -->
+            </div>
+        </div>
+
         <!-- Queue Management Tabs -->
         <div class="tabs-container">
             <div class="tabs-header">
@@ -168,6 +549,21 @@
                                     <button class="btn btn-outline" onclick="refreshQueue()">
                                         <i class="bi bi-arrow-clockwise"></i> Refresh
                                     </button>
+                                    <% if (activeQueue.acceptingCustomers !== false) { %>
+                                        <button class="btn btn-danger" onclick="toggleQueueAccepting('<%= activeQueue._id || activeQueue.id %>')">
+                                            <i class="bi bi-stop-circle"></i> Stop Queue
+                                        </button>
+                                    <% } else { %>
+                                        <button class="btn btn-success" onclick="toggleQueueAccepting('<%= activeQueue._id || activeQueue.id %>')">
+                                            <i class="bi bi-play-circle"></i> Start Queue
+                                        </button>
+                                    <% } %>
+                                </div>
+                                <div class="queue-actions-right">
+                                    <span class="queue-status-badge <%= activeQueue.acceptingCustomers !== false ? 'accepting' : 'not-accepting' %>">
+                                        <i class="bi <%= activeQueue.acceptingCustomers !== false ? 'bi-check-circle-fill' : 'bi-x-circle-fill' %>"></i>
+                                        <%= activeQueue.acceptingCustomers !== false ? 'Accepting Customers' : 'Not Accepting New Customers' %>
+                                    </span>
                                 </div>
                             </div>
                             
@@ -208,7 +604,7 @@
                                             </div>
                                             <div class="actions">
                                                 <% if (customer.status === 'called') { %>
-                                                    <button class="btn-action btn-seated" onclick="markAsSeated('<%= activeQueue._id %>', '<%= customer.customerId %>')">Seated</button>
+                                                    <button class="btn-action btn-pending" onclick="showCodeVerificationModal('<%= activeQueue._id %>', '<%= customer.customerId %>')">Pending Arrival</button>
                                                 <% } else if (index === 0) { %>
                                                     <button class="btn-action btn-notify" onclick="notifyNext('<%= activeQueue._id %>')">Notify</button>
                                                 <% } else { %>
@@ -444,6 +840,9 @@
             }
         }
         
+        // CSRF Token for API calls
+        const csrfToken = '<%- csrfToken %>';
+        
         // Join merchant room for real-time updates
         const merchantId = '<%= user.merchantId || user.id || user._id %>';
         socket.emit('join-merchant-room', merchantId);
@@ -452,10 +851,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateTotalWaitingCount();
             checkWhatsAppStatus();
+            // renderQueuePerformance(); // Temporarily disabled
             
             // Update stats every 30 seconds
             setInterval(updateTotalWaitingCount, 30000);
             setInterval(checkWhatsAppStatus, 60000);
+            // setInterval(renderQueuePerformance, 30000); // Temporarily disabled
             
             // Periodic full refresh every 2 minutes
             setInterval(refreshDashboardData, 120000);
@@ -582,7 +983,12 @@
         }
         
         function checkWhatsAppStatus() {
-            fetch('/api/whatsapp/status')
+            fetch('/api/whatsapp/status', {
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                }
+            })
                 .then(response => response.json())
                 .then(data => {
                     const banner = document.getElementById('whatsapp-status');
@@ -601,6 +1007,249 @@
                 });
         }
         
+        function renderQueuePerformance() {
+            // Temporarily show loading state while we implement the proper API fetch
+            const container = document.getElementById('queuePerformanceCards');
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <p style="color: rgba(255, 255, 255, 0.5); font-size: 1rem;">Loading queue performance...</p>
+                    </div>`;
+            }
+            return;
+            
+            /* Full implementation will be added after fixing the current issues
+            let html = '<div style="display: grid; gap: 1.5rem;">';
+            
+            queues.forEach((queue, index) => {
+                // Calculate performance metrics
+                const totalCustomers = queue.entries ? queue.entries.length : 0;
+                const completedCustomers = queue.entries ? queue.entries.filter(e => e.status === 'completed').length : 0;
+                const waitingCustomers = queue.entries ? queue.entries.filter(e => e.status === 'waiting').length : 0;
+                const efficiency = totalCustomers > 0 ? Math.round((completedCustomers / totalCustomers) * 100) : 0;
+                
+                // Calculate average wait time
+                let averageWaitTime = 0;
+                if (queue.entries && queue.entries.length > 0) {
+                    const waitingEntries = queue.entries.filter(e => e.status === 'waiting');
+                    if (waitingEntries.length > 0) {
+                        const now = new Date();
+                        const totalWaitTime = waitingEntries.reduce((total, entry) => {
+                            const waitMinutes = Math.floor((now - new Date(entry.joinedAt)) / (1000 * 60));
+                            return total + waitMinutes;
+                        }, 0);
+                        averageWaitTime = Math.round(totalWaitTime / waitingEntries.length);
+                    }
+                }
+                
+                // Determine gradient and glow based on efficiency
+                let gradientColors, glowColor, efficiencyIcon;
+                if (efficiency > 80) {
+                    gradientColors = 'linear-gradient(135deg, #4ade80, #22c55e)';
+                    glowColor = 'rgba(34, 197, 94, 0.3)';
+                    efficiencyIcon = '🚀';
+                } else if (efficiency > 60) {
+                    gradientColors = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+                    glowColor = 'rgba(245, 158, 11, 0.3)';
+                    efficiencyIcon = '⚡';
+                } else {
+                    gradientColors = 'linear-gradient(135deg, #f87171, #ef4444)';
+                    glowColor = 'rgba(239, 68, 68, 0.3)';
+                    efficiencyIcon = '⚠️';
+                }
+                
+                html += `
+                    <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+                                backdrop-filter: blur(20px);
+                                border: 1px solid rgba(255, 255, 255, 0.1);
+                                border-radius: 20px;
+                                padding: 2rem;
+                                position: relative;
+                                overflow: hidden;
+                                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                                animation: fadeInScale 0.6s ease-out ${index * 0.1}s both;">
+                        
+                        <!-- Animated background gradient -->
+                        <div style="position: absolute; top: -50%; right: -50%; width: 200%; height: 200%;
+                                    background: radial-gradient(circle, ${glowColor} 0%, transparent 50%);
+                                    opacity: 0.3; pointer-events: none;
+                                    animation: rotateGlow 20s linear infinite;"></div>
+                        
+                        <!-- Header with queue name and efficiency -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; position: relative;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 50px; height: 50px; 
+                                            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 107, 53, 0.2));
+                                            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+                                            border: 1px solid rgba(255, 140, 0, 0.3);
+                                            box-shadow: 0 4px 20px rgba(255, 140, 0, 0.2);">
+                                    <span style="font-size: 1.5rem;">🏪</span>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; color: #ffffff; font-size: 1.3rem; font-weight: 600;">${queue.name}</h4>
+                                    <p style="margin: 0; color: rgba(255, 255, 255, 0.5); font-size: 0.85rem;">Queue Performance</p>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="background: ${gradientColors}; 
+                                            color: white; 
+                                            padding: 0.5rem 1rem; 
+                                            border-radius: 16px; 
+                                            font-size: 1.1rem;
+                                            font-weight: 700;
+                                            box-shadow: 0 4px 20px ${glowColor};
+                                            display: inline-flex;
+                                            align-items: center;
+                                            gap: 0.5rem;">
+                                    <span>${efficiencyIcon}</span>
+                                    <span>${efficiency}%</span>
+                                </div>
+                                <p style="margin: 0.25rem 0 0 0; color: rgba(255, 255, 255, 0.6); font-size: 0.75rem;">Efficiency Rate</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Metrics Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                            <!-- Total Customers -->
+                            <div style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 140, 0, 0.05));
+                                        border: 1px solid rgba(255, 140, 0, 0.2);
+                                        border-radius: 16px;
+                                        padding: 1.25rem;
+                                        text-align: center;
+                                        transition: all 0.3s ease;
+                                        position: relative;
+                                        overflow: hidden;">
+                                <div style="position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+                                            background: radial-gradient(circle, rgba(255, 140, 0, 0.2), transparent);
+                                            border-radius: 50%;
+                                            transform: translate(20px, -20px);"></div>
+                                <div style="font-weight: 700; 
+                                            font-size: 2rem; 
+                                            background: linear-gradient(135deg, #ff8c00, #ff6b35);
+                                            -webkit-background-clip: text;
+                                            -webkit-text-fill-color: transparent;
+                                            background-clip: text;
+                                            position: relative;">
+                                    ${totalCustomers}
+                                </div>
+                                <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); margin-top: 0.25rem;">Total Customers</div>
+                            </div>
+                            
+                            <!-- Completed -->
+                            <div style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+                                        border: 1px solid rgba(34, 197, 94, 0.2);
+                                        border-radius: 16px;
+                                        padding: 1.25rem;
+                                        text-align: center;
+                                        transition: all 0.3s ease;
+                                        position: relative;
+                                        overflow: hidden;">
+                                <div style="position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+                                            background: radial-gradient(circle, rgba(34, 197, 94, 0.2), transparent);
+                                            border-radius: 50%;
+                                            transform: translate(20px, -20px);"></div>
+                                <div style="font-weight: 700; 
+                                            font-size: 2rem; 
+                                            background: linear-gradient(135deg, #4ade80, #22c55e);
+                                            -webkit-background-clip: text;
+                                            -webkit-text-fill-color: transparent;
+                                            background-clip: text;
+                                            position: relative;">
+                                    ${completedCustomers}
+                                </div>
+                                <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); margin-top: 0.25rem;">Completed</div>
+                            </div>
+                            
+                            <!-- Average Wait Time -->
+                            <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+                                        border: 1px solid rgba(59, 130, 246, 0.2);
+                                        border-radius: 16px;
+                                        padding: 1.25rem;
+                                        text-align: center;
+                                        transition: all 0.3s ease;
+                                        position: relative;
+                                        overflow: hidden;">
+                                <div style="position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+                                            background: radial-gradient(circle, rgba(59, 130, 246, 0.2), transparent);
+                                            border-radius: 50%;
+                                            transform: translate(20px, -20px);"></div>
+                                <div style="font-weight: 700; 
+                                            font-size: 2rem; 
+                                            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+                                            -webkit-background-clip: text;
+                                            -webkit-text-fill-color: transparent;
+                                            background-clip: text;
+                                            position: relative;">
+                                    ${averageWaitTime}
+                                </div>
+                                <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); margin-top: 0.25rem;">Avg Wait (min)</div>
+                            </div>
+                            
+                            <!-- Current Length -->
+                            <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.05));
+                                        border: 1px solid rgba(168, 85, 247, 0.2);
+                                        border-radius: 16px;
+                                        padding: 1.25rem;
+                                        text-align: center;
+                                        transition: all 0.3s ease;
+                                        position: relative;
+                                        overflow: hidden;">
+                                <div style="position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+                                            background: radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent);
+                                            border-radius: 50%;
+                                            transform: translate(20px, -20px);"></div>
+                                <div style="font-weight: 700; 
+                                            font-size: 2rem; 
+                                            background: linear-gradient(135deg, #c084fc, #a855f7);
+                                            -webkit-background-clip: text;
+                                            -webkit-text-fill-color: transparent;
+                                            background-clip: text;
+                                            position: relative;">
+                                    ${waitingCustomers}
+                                </div>
+                                <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); margin-top: 0.25rem;">In Queue Now</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div style="margin-top: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6);">Service Progress</span>
+                                <span style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.8); font-weight: 600;">
+                                    ${completedCustomers} / ${totalCustomers}
+                                </span>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.1); 
+                                        height: 8px; 
+                                        border-radius: 4px; 
+                                        overflow: hidden;
+                                        position: relative;">
+                                <div style="width: ${efficiency}%; 
+                                            height: 100%; 
+                                            background: ${gradientColors};
+                                            border-radius: 4px;
+                                            transition: width 1s ease-out;
+                                            position: relative;
+                                            overflow: hidden;">
+                                    <div style="position: absolute; 
+                                                top: 0; 
+                                                left: 0; 
+                                                right: 0; 
+                                                bottom: 0;
+                                                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                                                animation: shimmer 2s infinite;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            */
+        }
+        
         // Action functions
         async function notifyNext(queueId) {
             if (!confirm('Are you sure you want to notify the next customer?')) {
@@ -611,17 +1260,38 @@
             button.disabled = true;
             button.textContent = 'Sending...';
             
+            console.log('Notifying next customer, CSRF token:', csrfToken);
+            
             try {
                 const response = await fetch(`/api/queue/${queueId}/call-next`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    credentials: 'same-origin',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    }
                 });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response not OK:', response.status, errorText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert(`Notified: ${result.customer.customerName}`);
-                    setTimeout(() => window.location.reload(), 1000);
+                    // Show popup with verification code
+                    showVerificationCodePopup(result.customer);
+                    
+                    // Update button state
+                    button.textContent = 'Pending Arrival';
+                    button.className = 'btn-action btn-pending';
+                    button.onclick = function() { 
+                        showCodeVerificationModal(queueId, result.customer.customerId || result.customer.id);
+                    };
+                    
+                    // Don't reload immediately to let user see the code
                 } else {
                     alert(result.error || 'Failed to notify customer');
                     button.disabled = false;
@@ -629,9 +1299,312 @@
                 }
             } catch (error) {
                 console.error('Error notifying customer:', error);
-                alert('Error notifying customer');
+                alert('Error notifying customer: ' + error.message);
                 button.disabled = false;
                 button.textContent = 'Notify';
+            }
+        }
+        
+        function showVerificationCodePopup(customer) {
+            // Create popup modal
+            const modal = document.createElement('div');
+            modal.className = 'notification-modal';
+            modal.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <h2>✅ Customer Notified!</h2>
+                        <button onclick="closeNotificationModal()" class="close-btn">&times;</button>
+                    </div>
+                    <div class="notification-body">
+                        <p class="customer-info">
+                            <strong>${customer.customerName}</strong> has been notified.
+                        </p>
+                        <div class="verification-code-display">
+                            <label>Verification Code:</label>
+                            <div class="code-box">${customer.verificationCode}</div>
+                        </div>
+                        <p class="instruction">
+                            The customer will show this code when they arrive.
+                            Click "Pending Arrival" button to verify and seat them.
+                        </p>
+                    </div>
+                    <div class="notification-footer">
+                        <button onclick="closeNotificationModal()" class="btn-primary">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Auto-refresh after 3 seconds
+            setTimeout(() => {
+                if (document.querySelector('.notification-modal')) {
+                    window.location.reload();
+                }
+            }, 3000);
+        }
+        
+        function closeNotificationModal() {
+            const modal = document.querySelector('.notification-modal');
+            if (modal) {
+                modal.remove();
+                window.location.reload();
+            }
+        }
+        
+        function showCodeVerificationModal(queueId, customerId) {
+            const modal = document.createElement('div');
+            modal.className = 'verification-modal';
+            modal.innerHTML = `
+                <div class="verification-content">
+                    <div class="verification-header">
+                        <h2>🔐 Verify Customer Code</h2>
+                        <button onclick="closeVerificationModal()" class="close-btn">&times;</button>
+                    </div>
+                    <div class="verification-body">
+                        <p>Please enter the 4-character code shown by the customer:</p>
+                        <input type="text" 
+                               id="verificationCodeInput" 
+                               class="code-input" 
+                               maxlength="4" 
+                               pattern="[A-Za-z0-9]{4}"
+                               placeholder="Enter code"
+                               autofocus>
+                        <div id="verificationError" class="error-message" style="display: none;"></div>
+                    </div>
+                    <div class="verification-footer">
+                        <button onclick="closeVerificationModal()" class="btn-secondary">Cancel</button>
+                        <button onclick="verifyAndSeatCustomer('${queueId}', '${customerId}')" class="btn-primary">Verify & Seat</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('verificationCodeInput').focus();
+            }, 100);
+            
+            // Handle Enter key
+            document.getElementById('verificationCodeInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyAndSeatCustomer(queueId, customerId);
+                }
+            });
+        }
+        
+        function closeVerificationModal() {
+            const modal = document.querySelector('.verification-modal');
+            if (modal) modal.remove();
+        }
+        
+        async function verifyAndSeatCustomer(queueId, customerId) {
+            const codeInput = document.getElementById('verificationCodeInput');
+            const code = codeInput.value.trim();
+            
+            if (code.length !== 4) {
+                showVerificationError('Please enter a 4-character code');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/queue/${queueId}/verify-and-seat/${customerId}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ verificationCode: code })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    closeVerificationModal();
+                    alert(`✅ ${result.customer.customerName} has been seated!`);
+                    window.location.reload();
+                } else {
+                    showVerificationError(result.error || 'Invalid verification code');
+                }
+            } catch (error) {
+                console.error('Error verifying customer:', error);
+                showVerificationError('Error verifying code. Please try again.');
+            }
+        }
+        
+        function showVerificationError(message) {
+            const errorDiv = document.getElementById('verificationError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Shake the input
+            const input = document.getElementById('verificationCodeInput');
+            input.classList.add('shake');
+            setTimeout(() => input.classList.remove('shake'), 500);
+        }
+        
+        async function toggleQueueAccepting(queueId) {
+            const button = event.target;
+            const isCurrentlyAccepting = button.classList.contains('btn-danger');
+            const action = isCurrentlyAccepting ? 'stop' : 'start';
+            
+            // For stopping, show confirmation dialog with text input
+            if (isCurrentlyAccepting) {
+                showStopQueueConfirmation(queueId);
+                return;
+            }
+            
+            // For starting, just use simple confirm
+            if (!confirm('Are you sure you want to start accepting new customers?')) {
+                return;
+            }
+            
+            button.disabled = true;
+            button.textContent = 'Starting...';
+            
+            console.log('Toggling queue accepting, CSRF token:', csrfToken);
+            
+            try {
+                const response = await fetch(`/api/queue/${queueId}/toggle-accepting`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response not OK:', response.status, errorText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    window.location.reload();
+                } else {
+                    alert(result.error || 'Failed to update queue status');
+                    button.disabled = false;
+                    button.textContent = button.classList.contains('btn-danger') ? 'Stop Queue' : 'Start Queue';
+                }
+            } catch (error) {
+                console.error('Error toggling queue status:', error);
+                alert('Error updating queue status: ' + error.message);
+                button.disabled = false;
+                button.textContent = button.classList.contains('btn-danger') ? 'Stop Queue' : 'Start Queue';
+            }
+        }
+        
+        function showStopQueueConfirmation(queueId) {
+            const modal = document.createElement('div');
+            modal.className = 'stop-queue-modal';
+            modal.innerHTML = `
+                <div class="stop-queue-content">
+                    <div class="stop-queue-header">
+                        <h2>⚠️ Stop Queue Confirmation</h2>
+                        <button onclick="closeStopQueueModal()" class="close-btn">&times;</button>
+                    </div>
+                    <div class="stop-queue-body">
+                        <div class="warning-message">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <p><strong>Warning:</strong> Stopping the queue will prevent new customers from joining.</p>
+                            <p>Existing customers in the queue will still be served.</p>
+                        </div>
+                        <div class="confirmation-input">
+                            <p>To confirm, please type: <strong>Yes I want to stop queue</strong></p>
+                            <input type="text" 
+                                   id="stopQueueConfirmInput" 
+                                   class="confirm-input" 
+                                   placeholder="Type confirmation text here"
+                                   autocomplete="off">
+                            <div id="stopQueueError" class="error-message" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="stop-queue-footer">
+                        <button onclick="closeStopQueueModal()" class="btn-secondary">Cancel</button>
+                        <button onclick="confirmStopQueue('${queueId}')" class="btn-danger">Stop Queue</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('stopQueueConfirmInput').focus();
+            }, 100);
+            
+            // Handle Enter key
+            document.getElementById('stopQueueConfirmInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    confirmStopQueue(queueId);
+                }
+            });
+        }
+        
+        function closeStopQueueModal() {
+            const modal = document.querySelector('.stop-queue-modal');
+            if (modal) modal.remove();
+        }
+        
+        async function confirmStopQueue(queueId) {
+            const input = document.getElementById('stopQueueConfirmInput');
+            const confirmText = input.value.trim();
+            const expectedText = "Yes I want to stop queue";
+            
+            // Case-insensitive comparison
+            if (confirmText.toLowerCase() !== expectedText.toLowerCase()) {
+                const errorDiv = document.getElementById('stopQueueError');
+                errorDiv.textContent = `Please type exactly: "${expectedText}"`;
+                errorDiv.style.display = 'block';
+                
+                // Shake the input
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+                return;
+            }
+            
+            // Disable button to prevent double-click
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Stopping...';
+            
+            console.log('Stopping queue, CSRF token:', csrfToken);
+            
+            try {
+                const response = await fetch(`/api/queue/${queueId}/toggle-accepting`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response not OK:', response.status, errorText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    closeStopQueueModal();
+                    alert('✅ ' + result.message);
+                    window.location.reload();
+                } else {
+                    alert('❌ ' + (result.error || 'Failed to stop queue'));
+                    button.disabled = false;
+                    button.textContent = 'Stop Queue';
+                }
+            } catch (error) {
+                console.error('Error stopping queue:', error);
+                alert('❌ Error stopping queue: ' + error.message);
+                button.disabled = false;
+                button.textContent = 'Stop Queue';
             }
         }
         
@@ -652,7 +1625,11 @@
             try {
                 const response = await fetch(`/api/queue/${queueId}/complete/${customerId}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    }
                 });
                 
                 const result = await response.json();
@@ -681,7 +1658,11 @@
             try {
                 const response = await fetch(`/api/queue/${queueId}/call-specific`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
                     body: JSON.stringify({ customerId })
                 });
                 
@@ -730,7 +1711,11 @@
             try {
                 const response = await fetch(`/api/queue/${queueId}/requeue/${customerId}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    credentials: 'same-origin',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    }
                 });
                 
                 const result = await response.json();
@@ -798,5 +1783,8 @@
             }
         }
     </script>
+    
+    <!-- Queue Performance Module -->
+    <script src="/js/queue-performance.js"></script>
 </body>
 </html> 
