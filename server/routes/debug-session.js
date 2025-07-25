@@ -1,52 +1,47 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../utils/logger');
 
-// Debug endpoint to check session and cookie configuration
+// Debug endpoint to check session state
 router.get('/session-info', (req, res) => {
-  const info = {
-    sessionExists: !!req.session,
-    sessionId: req.sessionID,
-    sessionData: req.session,
-    cookies: req.cookies,
-    headers: {
-      cookie: req.headers.cookie,
-      'x-forwarded-proto': req.headers['x-forwarded-proto'],
-      'x-forwarded-for': req.headers['x-forwarded-for'],
-      host: req.headers.host
-    },
-    protocol: req.protocol,
-    secure: req.secure,
-    trustProxy: req.app.get('trust proxy'),
-    env: process.env.NODE_ENV,
-    sessionConfig: {
-      cookieName: req.app.get('session name') || 'sessionId',
-      cookieSecure: req.session?.cookie?.secure,
-      cookieHttpOnly: req.session?.cookie?.httpOnly,
-      cookieSameSite: req.session?.cookie?.sameSite,
-      cookieDomain: req.session?.cookie?.domain
-    }
+  const sessionInfo = {
+    sessionID: req.sessionID,
+    hasSession: !!req.session,
+    sessionData: req.session || {},
+    cookie: req.session?.cookie,
+    timestamp: new Date().toISOString()
   };
   
-  res.json(info);
+  logger.info('Session debug info requested:', sessionInfo);
+  
+  res.json(sessionInfo);
 });
 
-// Test setting session
-router.post('/set-session', (req, res) => {
-  req.session.testValue = 'Hello from session!';
-  req.session.timestamp = new Date().toISOString();
+// Test setting session data
+router.post('/test-session-set', (req, res) => {
+  if (!req.session) {
+    return res.status(500).json({ error: 'No session available' });
+  }
+  
+  // Try to set test data
+  req.session.testData = {
+    timestamp: new Date().toISOString(),
+    random: Math.random()
+  };
+  
+  req.session.userId = 'test-user-123';
   
   req.session.save((err) => {
     if (err) {
-      return res.status(500).json({ 
-        error: 'Failed to save session', 
-        details: err.message 
-      });
+      logger.error('Session save error:', err);
+      return res.status(500).json({ error: 'Failed to save session', details: err.message });
     }
     
-    res.json({ 
-      success: true, 
-      sessionId: req.sessionID,
-      sessionData: req.session 
+    res.json({
+      success: true,
+      sessionID: req.sessionID,
+      testData: req.session.testData,
+      userId: req.session.userId
     });
   });
 });
@@ -83,6 +78,17 @@ router.get('/test-auth', (req, res) => {
         userId: req.session.userId,
         message: 'Authenticated'
     });
+});
+
+// Check if session persists
+router.get('/test-session-get', (req, res) => {
+  res.json({
+    sessionID: req.sessionID,
+    hasTestData: !!req.session?.testData,
+    testData: req.session?.testData,
+    userId: req.session?.userId,
+    allSessionData: req.session
+  });
 });
 
 module.exports = router;

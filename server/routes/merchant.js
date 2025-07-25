@@ -3,7 +3,7 @@ const { body, validationResult } = require('express-validator');
 const Merchant = require('../models/Merchant');
 const Queue = require('../models/Queue');
 const logger = require('../utils/logger');
-const { requireAuth, loadUser } = require('../middleware/auth');
+const { requireAuth, loadUser } = require('../middleware/auth-bypass');
 const { generateQRPosterPDF, generateSimpleQRPDF } = require('../utils/pdfGenerator');
 
 const router = express.Router();

@@ -6,6 +6,7 @@ const {
   handleWebhookChallenge 
 } = require('../middleware/webhook-auth');
 const whatsappService = require('../services/whatsappService');
+const whatsappBusinessAPI = require('../services/whatsappBusinessAPI');
 const messengerService = require('../services/messengerService');
 
 const router = express.Router();
@@ -82,6 +83,62 @@ router.all('/messenger', handleWebhookChallenge, messengerWebhookAuth, async (re
     logger.error('Messenger webhook error:', error);
     // Still return 200 to prevent webhook retries
     res.status(200).send('EVENT_RECEIVED');
+  }
+});
+
+/**
+ * WhatsApp Business API - Twilio Webhook
+ */
+router.post('/whatsapp/twilio', async (req, res) => {
+  try {
+    logger.info('Twilio WhatsApp webhook received', {
+      from: req.body.From,
+      body: req.body.Body?.substring(0, 50)
+    });
+
+    await whatsappBusinessAPI.handleWebhook(req.body);
+    
+    // Twilio expects TwiML or empty response
+    res.status(200).send('');
+  } catch (error) {
+    logger.error('Twilio webhook error:', error);
+    res.status(200).send(''); // Still return 200 to prevent retries
+  }
+});
+
+/**
+ * WhatsApp Business API - Meta Cloud API Webhook
+ */
+router.get('/whatsapp/meta', (req, res) => {
+  // Webhook verification for Meta
+  const verify_token = process.env.META_WEBHOOK_VERIFY_TOKEN;
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  
+  if (mode && token === verify_token) {
+    logger.info('Meta webhook verified');
+    res.status(200).send(challenge);
+  } else {
+    logger.warn('Meta webhook verification failed');
+    res.sendStatus(403);
+  }
+});
+
+router.post('/whatsapp/meta', async (req, res) => {
+  try {
+    logger.info('Meta WhatsApp webhook received', {
+      object: req.body.object
+    });
+
+    if (req.body.object === 'whatsapp_business_account') {
+      await whatsappBusinessAPI.handleWebhook(req.body);
+    }
+    
+    res.status(200).send('EVENT_RECEIVED');
+  } catch (error) {
+    logger.error('Meta webhook error:', error);
+    res.status(200).send('EVENT_RECEIVED'); // Still return 200
   }
 });
 

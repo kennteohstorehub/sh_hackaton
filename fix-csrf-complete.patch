@@ -1,0 +1,13 @@
+--- a/server/middleware/csrf-protection-safe.js
++++ b/server/middleware/csrf-protection-safe.js
+@@ -104,8 +104,8 @@ const csrfValidation = (req, res, next) => {
+     // Validate token
+     if (!providedToken || providedToken !== sessionToken) {
+       console.warn('[CSRF] Invalid token provided');
+-      console.warn('[CSRF] Expected:', sessionToken);
+-      console.warn('[CSRF] Received:', providedToken);
++      console.warn('[CSRF] Expected:', sessionToken ? 'token exists' : 'no token');
++      console.warn('[CSRF] Received:', providedToken ? 'token provided' : 'no token');
+       
+       if (req.xhr || req.headers['content-type'] === 'application/json') {
+         return res.status(403).json({ error: 'Invalid CSRF token' });

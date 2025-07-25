@@ -221,12 +221,11 @@ model QueueAnalytics {
 }
 
 model Session {
-  id        String   @id
-  sid       String   @unique
-  data      String
-  expiresAt DateTime
+  sid       String   @id
+  sess      String
+  expire    DateTime
 
-  @@index([expiresAt])
+  @@index([expire])
 }
 
 enum BusinessType {
