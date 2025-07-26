@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Assistant - StoreHub</title>
+    <link rel="stylesheet" href="/css/chatbot.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff8c00">
+</head>
+<body>
+    <!-- Chat Widget Button -->
+    <button id="chatButton" class="chat-button" aria-label="Open chat">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 13.54 2.36 15.01 3 16.32V21L7.56 19.22C8.96 19.72 10.46 20 12 20C17.52 20 22 15.52 22 10C22 6.48 17.52 2 12 2ZM13 14H11V12H13V14ZM13 10H11V6H13V10Z" fill="white"/>
+        </svg>
+        <span class="notification-badge" id="notificationBadge" style="display: none;">1</span>
+    </button>
+
+    <!-- Chat Widget Container -->
+    <div id="chatWidget" class="chat-widget">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <h3>Queue Assistant</h3>
+                <span class="chat-status" id="chatStatus">Online</span>
+            </div>
+            <button id="closeChat" class="close-chat" aria-label="Close chat">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M15 5L5 15M5 5L15 15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be dynamically inserted here -->
+        </div>
+
+        <!-- Queue Info Display (hidden by default) -->
+        <div class="queue-info-card" id="queueInfoCard" style="display: none;">
+            <div class="queue-info-header">
+                <span class="queue-label">Your Queue Number</span>
+                <span class="queue-number" id="queueNumber">-</span>
+            </div>
+            <div class="queue-details">
+                <div class="queue-detail">
+                    <span class="detail-label">Position</span>
+                    <span class="detail-value" id="queuePosition">-</span>
+                </div>
+                <div class="queue-detail">
+                    <span class="detail-label">Est. Wait</span>
+                    <span class="detail-value" id="queueWaitTime">-</span>
+                </div>
+                <div class="queue-detail">
+                    <span class="detail-label">Verification Code</span>
+                    <span class="detail-value verification-code" id="verificationCode">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions" id="quickActions">
+            <button class="quick-action" data-action="join">Join Queue</button>
+            <button class="quick-action" data-action="status">Check Status</button>
+            <button class="quick-action" data-action="cancel">Cancel Queue</button>
+            <button class="quick-action" data-action="help">Help</button>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-container">
+            <form id="chatForm" class="chat-form">
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    class="chat-input" 
+                    placeholder="Type a message..."
+                    autocomplete="off"
+                    disabled
+                >
+                <button type="submit" class="send-button" disabled>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M2 10L18 2L14 18L10 10L2 10Z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Join Queue Modal -->
+    <div id="joinQueueModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Join Queue</h3>
+                <button class="modal-close" onclick="closeJoinModal()">×</button>
+            </div>
+            <form id="joinQueueForm">
+                <div class="form-group">
+                    <label for="customerName">Your Name *</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerPhone">Phone Number *</label>
+                    <input type="tel" id="customerPhone" placeholder="+60123456789" required>
+                </div>
+                <div class="form-group">
+                    <label for="partySize">Party Size *</label>
+                    <select id="partySize" required>
+                        <option value="1">1 Person</option>
+                        <option value="2">2 People</option>
+                        <option value="3">3 People</option>
+                        <option value="4">4 People</option>
+                        <option value="5">5 People</option>
+                        <option value="6">6 People</option>
+                        <option value="7">7 People</option>
+                        <option value="8">8 People</option>
+                        <option value="9">9 People</option>
+                        <option value="10">10+ People</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="specialRequests">Special Requests</label>
+                    <textarea id="specialRequests" rows="2" placeholder="e.g., High chair needed"></textarea>
+                </div>
+                <button type="submit" class="submit-button">Join Queue</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Audio elements for notifications -->
+    <audio id="notificationSound" preload="auto">
+        <source src="/sounds/notification.mp3" type="audio/mpeg">
+        <source src="/sounds/notification.ogg" type="audio/ogg">
+    </audio>
+
+    <audio id="tableReadySound" preload="auto">
+        <source src="/sounds/table-ready.mp3" type="audio/mpeg">
+        <source src="/sounds/table-ready.ogg" type="audio/ogg">
+    </audio>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/chatbot.js"></script>
+</body>
+</html>

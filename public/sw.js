@@ -22,7 +22,8 @@ self.addEventListener('push', event => {
     badge: '/images/notification-badge.png',
     tag: 'queue-notification',
     requireInteraction: true,
-    vibrate: [200, 100, 200]
+    vibrate: [200, 100, 200],
+    silent: false
   };
 
   // Parse the push data if available
@@ -38,8 +39,19 @@ self.addEventListener('push', event => {
         requireInteraction: true,
         vibrate: [200, 100, 200],
         data: data.data || {},
-        actions: data.actions || []
+        actions: data.actions || [],
+        silent: false
       };
+      
+      // Play sound based on notification type
+      if (data.data && data.data.type === 'table-ready') {
+        // For table ready, we'll use a more prominent notification
+        notificationData.requireInteraction = true;
+        notificationData.vibrate = [500, 200, 500, 200, 500];
+        playNotificationSound('table-ready');
+      } else {
+        playNotificationSound('notification');
+      }
     } catch (e) {
       console.error('Error parsing push data:', e);
     }
@@ -96,5 +108,23 @@ async function syncQueueStatus() {
     console.log('Syncing queue status...');
   } catch (error) {
     console.error('Sync failed:', error);
+  }
+}
+
+// Function to play notification sound
+async function playNotificationSound(soundType = 'notification') {
+  try {
+    // Get all clients
+    const clients = await self.clients.matchAll({ type: 'window' });
+    
+    // Send message to all clients to play sound
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'play-sound',
+        soundType: soundType
+      });
+    });
+  } catch (error) {
+    console.error('Error playing notification sound:', error);
   }
 }

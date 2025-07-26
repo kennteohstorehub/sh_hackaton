@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Demo - StoreHub Queue</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(255, 140, 0, 0.1);
+        }
+        
+        h1 {
+            color: #ff8c00;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .demo-info {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-info h2 {
+            color: #ff8c00;
+            margin-top: 0;
+            font-size: 20px;
+        }
+        
+        .demo-info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .demo-info li {
+            margin: 8px 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .demo-info code {
+            background: rgba(255, 140, 0, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .demo-controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            background: #ff8c00;
+            color: #000000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .btn:hover {
+            background: #ff9a1f;
+            transform: translateY(-1px);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature {
+            background: rgba(255, 140, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .feature h3 {
+            color: #ff8c00;
+            margin-top: 0;
+        }
+        
+        .notification-info {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Queue Chatbot Demo</h1>
+        
+        <div class="demo-info">
+            <h2>Welcome to the Web-Based Queue Chatbot!</h2>
+            <p>This chatbot replaces WhatsApp with a free web-based solution that includes:</p>
+            <ul>
+                <li>💬 Real-time chat interface</li>
+                <li>🔔 Push notifications with sound alerts</li>
+                <li>🔐 4-character verification codes for queue confirmation</li>
+                <li>📱 Mobile-responsive design</li>
+                <li>💾 Session persistence (remembers your queue)</li>
+            </ul>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🚀 How to Use</h3>
+                <p>1. Click the chat button in the bottom-right corner</p>
+                <p>2. Type "join" to join the queue</p>
+                <p>3. Fill in your details</p>
+                <p>4. Get your queue number & verification code</p>
+            </div>
+            
+            <div class="feature">
+                <h3>💡 Chat Commands</h3>
+                <p><code>join</code> - Join the queue</p>
+                <p><code>status</code> - Check your position</p>
+                <p><code>cancel</code> - Leave the queue</p>
+                <p><code>help</code> - Show commands</p>
+            </div>
+            
+            <div class="feature">
+                <h3>🔔 Notifications</h3>
+                <p>• Position updates when someone ahead is seated</p>
+                <p>• Table ready alert with sound</p>
+                <p>• Verification code reminders</p>
+            </div>
+        </div>
+        
+        <div class="notification-info" id="notificationStatus">
+            Checking notification permissions...
+        </div>
+        
+        <div class="demo-controls">
+            <button class="btn" onclick="requestNotificationPermission()">Enable Notifications</button>
+            <a href="/?merchantId=3ecceb82-fb33-42c8-9d84-19eb69417e16" class="btn">Go to Demo</a>
+        </div>
+    </div>
+    
+    <!-- Include the chatbot widget -->
+    <script>
+        // Check notification permission status
+        function checkNotificationStatus() {
+            const statusEl = document.getElementById('notificationStatus');
+            
+            if (!('Notification' in window)) {
+                statusEl.innerHTML = '❌ Your browser does not support notifications';
+                statusEl.style.background = 'rgba(220, 53, 69, 0.1)';
+                statusEl.style.borderColor = 'rgba(220, 53, 69, 0.3)';
+            } else if (Notification.permission === 'granted') {
+                statusEl.innerHTML = '✅ Notifications are enabled! You will receive sound alerts.';
+                statusEl.style.background = 'rgba(37, 211, 102, 0.1)';
+                statusEl.style.borderColor = 'rgba(37, 211, 102, 0.3)';
+            } else if (Notification.permission === 'denied') {
+                statusEl.innerHTML = '❌ Notifications are blocked. Please enable them in your browser settings.';
+                statusEl.style.background = 'rgba(220, 53, 69, 0.1)';
+                statusEl.style.borderColor = 'rgba(220, 53, 69, 0.3)';
+            } else {
+                statusEl.innerHTML = '⚠️ Notifications are not enabled. Click "Enable Notifications" to receive alerts.';
+                statusEl.style.background = 'rgba(255, 193, 7, 0.1)';
+                statusEl.style.borderColor = 'rgba(255, 193, 7, 0.3)';
+            }
+        }
+        
+        async function requestNotificationPermission() {
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                checkNotificationStatus();
+                
+                if (permission === 'granted') {
+                    // Show test notification
+                    new Notification('StoreHub Queue', {
+                        body: 'Notifications enabled! You will receive alerts when your table is ready.',
+                        icon: '/images/notification-icon.png'
+                    });
+                }
+            }
+        }
+        
+        // Check status on load
+        checkNotificationStatus();
+        
+        // Add chatbot script dynamically to avoid errors on demo page
+        const script = document.createElement('script');
+        script.innerHTML = `
+            // Store merchant ID for chatbot
+            localStorage.setItem('merchantId', '3ecceb82-fb33-42c8-9d84-19eb69417e16');
+        `;
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>

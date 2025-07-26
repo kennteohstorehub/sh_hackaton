@@ -179,6 +179,7 @@ model QueueEntry {
   notes             String?
   specialRequests   String?
   verificationCode  String?
+  sessionId         String?
   joinedAt          DateTime            @default(now())
   calledAt          DateTime?
   servedAt          DateTime?
@@ -197,6 +198,7 @@ model QueueEntry {
   @@index([status, position])
   @@index([joinedAt(sort: Desc)])
   @@index([platform, joinedAt])
+  @@index([sessionId])
 }
 
 model QueueEntryFeedback {
@@ -253,6 +255,8 @@ enum QueueEntryStatus {
 enum Platform {
   whatsapp
   web
+  webchat
+  messenger
 }
 
 model PushSubscription {

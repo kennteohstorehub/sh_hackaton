@@ -103,10 +103,21 @@ app.set('views', path.join(__dirname, '../views'));
 // Register template security helpers
 registerHelpers(app);
 
-// Static files with caching
+// Static files with optimized caching for performance
 app.use(express.static(path.join(__dirname, '../public'), {
-  maxAge: '1d',
-  etag: true
+  maxAge: process.env.NODE_ENV === 'production' ? '7d' : '0',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    // Optimize CSS/JS caching
+    if (filePath.endsWith('.css') || filePath.endsWith('.js')) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+    }
+    // Images can be cached longer
+    if (filePath.match(/\.(jpg|jpeg|png|gif|ico|svg)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+    }
+  }
 }));
 
 // Response compression - compress all responses
@@ -278,6 +289,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/chatbot', require('./routes/chatbot'));
+app.use('/api/webchat', require('./routes/webchat'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/test-csrf', require('./routes/test-csrf'));
 app.use('/api/debug', require('./routes/debug-session'));
@@ -365,6 +377,10 @@ const initializeServices = async () => {
   try {
     // Initialize services with individual error handling
     const initPromises = [];
+    
+    // Start queue cleanup schedule
+    const { startQueueCleanupSchedule } = require('./utils/queueCleanup');
+    startQueueCleanupSchedule();
     
     // Only initialize WhatsApp if enabled
     if (process.env.ENABLE_WHATSAPP_WEB !== 'false') {

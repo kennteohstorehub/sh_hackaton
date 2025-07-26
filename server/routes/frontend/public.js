@@ -35,6 +35,15 @@ router.get('/chatbot-demo', (req, res) => {
   });
 });
 
+// Chatbot page
+router.get('/chatbot', (req, res) => {
+  const merchantId = req.query.merchantId || '3ecceb82-fb33-42c8-9d84-19eb69417e16';
+  res.render('chatbot', { 
+    title: 'Queue Assistant - StoreHub',
+    merchantId: merchantId
+  });
+});
+
 // GET /about - About page
 router.get('/about', (req, res) => {
   res.render('public/about', {
@@ -169,12 +178,14 @@ router.get('/queue-status/:queueId/:customerId', async (req, res) => {
     // Calculate position in queue for waiting customers
     let currentPosition = customer.position;
     if (customer.status === 'waiting') {
-      const waitingCustomers = queue.entries
-        .filter(entry => entry.status === 'waiting')
-        .sort((a, b) => a.position - b.position);
+      // Count how many customers with 'waiting' status have a lower position
+      const customersAhead = queue.entries
+        .filter(entry => 
+          entry.status === 'waiting' && 
+          entry.position < customer.position
+        ).length;
       
-      const customerIndex = waitingCustomers.findIndex(entry => entry.customerId === customerId);
-      currentPosition = customerIndex + 1;
+      currentPosition = customersAhead + 1;
     }
     
     res.render('public/queue-status', {
@@ -281,6 +292,16 @@ router.get('/queue/:queueId', async (req, res) => {
         message: 'The queue you are looking for does not exist.'
       });
     }
+    
+    // Filter out stale entries (older than 24 hours) to match dashboard behavior
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    if (queue.entries) {
+      queue.entries = queue.entries.filter(entry => 
+        new Date(entry.joinedAt) >= oneDayAgo ||
+        entry.status === 'completed' || 
+        entry.status === 'cancelled'
+      );
+    }
 
     const merchant = await Merchant.findById(queue.merchantId);
     if (!merchant) {
@@ -292,20 +313,40 @@ router.get('/queue/:queueId', async (req, res) => {
     }
 
     // Calculate queue statistics
-    const totalAhead = queue.currentLength;
+    // Filter out stale entries (older than 24 hours) for accurate counts
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    const activeWaitingEntries = queue.entries.filter(entry => 
+      entry.status === 'waiting' && 
+      new Date(entry.joinedAt) >= oneDayAgo
+    );
+    
+    const totalAhead = activeWaitingEntries.length;
     
     // Calculate actual average wait time of currently waiting customers (same as dashboard)
-    const now = new Date();
-    const waitingEntries = queue.entries.filter(entry => entry.status === 'waiting');
     let averageWaitTime = 0;
     
-    if (waitingEntries.length > 0) {
-      const totalActualWaitTime = waitingEntries.reduce((total, entry) => {
+    if (activeWaitingEntries.length > 0) {
+      const totalActualWaitTime = activeWaitingEntries.reduce((total, entry) => {
         const waitTimeMinutes = Math.floor((now - new Date(entry.joinedAt)) / (1000 * 60));
         return total + waitTimeMinutes;
       }, 0);
-      averageWaitTime = Math.round(totalActualWaitTime / waitingEntries.length);
+      averageWaitTime = Math.round(totalActualWaitTime / activeWaitingEntries.length);
     }
+    
+    // Log for debugging
+    logger.info('Queue info calculation:', {
+      queueId: queue._id,
+      totalEntries: queue.entries.length,
+      waitingEntries: queue.entries.filter(e => e.status === 'waiting').length,
+      activeWaitingEntries: activeWaitingEntries.length,
+      averageWaitTime,
+      oldestWaitingEntry: queue.entries
+        .filter(e => e.status === 'waiting')
+        .map(e => ({ joinedAt: e.joinedAt, minutesWaiting: Math.floor((now - new Date(e.joinedAt)) / (1000 * 60)) }))
+        .sort((a, b) => b.minutesWaiting - a.minutesWaiting)[0]
+    });
 
     // Generate WhatsApp and Messenger links
     const baseMessage = `Hi! I'm interested in joining the queue for ${queue.name} at ${merchant.businessName}. Can you help me with the current wait time and queue status?`;
