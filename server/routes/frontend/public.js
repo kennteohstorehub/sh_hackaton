@@ -315,7 +315,6 @@ router.get('/queue/:queueId', async (req, res) => {
     // Calculate queue statistics
     // Filter out stale entries (older than 24 hours) for accurate counts
     const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     
     const activeWaitingEntries = queue.entries.filter(entry => 
       entry.status === 'waiting' && 
