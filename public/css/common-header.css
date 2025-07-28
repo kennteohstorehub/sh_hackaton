@@ -1,0 +1,229 @@
+/* StoreHub Queue Management System - Common Header Styles */
+/* Ensures consistent header UI across all pages */
+
+:root {
+    /* Brand Colors */
+    --primary-orange: #ff8c00;
+    --secondary-orange: #ff6b35;
+    --success-green: #25D366;
+    --error-red: #f44336;
+    
+    /* Background Colors */
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-card: rgba(255, 140, 0, 0.1);
+    --bg-hover: rgba(255, 140, 0, 0.2);
+    
+    /* Border Colors */
+    --border-primary: rgba(255, 140, 0, 0.3);
+    --border-hover: rgba(255, 140, 0, 0.5);
+    
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.7);
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* Transitions */
+    --transition-fast: 0.3s ease;
+    
+    /* Z-index layers */
+    --z-header: 100;
+}
+
+/* Header Base */
+.header {
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-primary);
+    padding: var(--spacing-md) 0;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-xl);
+}
+
+.header h1 {
+    background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Navigation Container */
+.nav-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: 1;
+    justify-content: center;
+    min-width: 0; /* Prevent flex items from overflowing */
+}
+
+/* Navigation */
+.nav {
+    display: flex;
+    gap: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: var(--spacing-xs);
+    border: 1px solid rgba(255, 140, 0, 0.2);
+}
+
+.nav a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0.75rem var(--spacing-md);
+    border-radius: 8px;
+    transition: all var(--transition-fast);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    text-align: center;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav a:hover {
+    background: var(--bg-hover);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.nav a.active {
+    background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+}
+
+/* View Public Button */
+.btn-view-public {
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.6rem var(--spacing-md);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn-view-public:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* User Section */
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    min-width: 120px;
+}
+
+.user-menu {
+    position: relative;
+}
+
+/* User Button - Consistent Style */
+.user-button {
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.6rem var(--spacing-md);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    text-decoration: none;
+    font-weight: 500;
+    font-family: inherit;
+}
+
+/* Reset button styles */
+button.user-button {
+    font-family: inherit;
+    line-height: normal;
+}
+
+.user-button:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Mobile Nav Toggle */
+.mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--spacing-sm);
+    z-index: 1001;
+}
+
+.mobile-nav-toggle span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.9);
+    margin: 5px 0;
+    transition: all var(--transition-fast);
+    border-radius: 2px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+    .nav-container {
+        display: none;
+    }
+    
+    .mobile-nav-toggle {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        padding: 0 var(--spacing-md);
+    }
+    
+    .header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .user-section {
+        min-width: auto;
+    }
+}

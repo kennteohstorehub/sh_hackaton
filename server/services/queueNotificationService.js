@@ -1,8 +1,8 @@
 const logger = require('../utils/logger');
-const Queue = require('../models/Queue');
-const Merchant = require('../models/Merchant');
+const queueService = require('./queueService');
+const merchantService = require('./merchantService');
 const unifiedNotificationService = require('./unifiedNotificationService');
-const whatsappService = require('./whatsappService');
+const pushNotificationService = require('./pushNotificationService');
 
 class QueueNotificationService {
   constructor() {
@@ -72,7 +72,31 @@ class QueueNotificationService {
         PartySize: customer.partySize
       };
       
-      await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
+      // Send via WebSocket if available
+      const io = require('../index').io;
+      if (io && customer.sessionId) {
+        io.to(`session-${customer.sessionId}`).emit('notification', {
+          type: 'notification',
+          message: this.formatMessage(template, replacements),
+          timestamp: new Date()
+        });
+      }
+      
+      // Also try push notification
+      await pushNotificationService.sendNotification(
+        customer.id,
+        this.formatMessage(template, replacements)
+      );
+      
+      // Legacy WhatsApp support (if enabled)
+      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customer.customerPhone) {
+        try {
+          const whatsappService = require('./whatsappService');
+          await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
+        } catch (error) {
+          logger.warn('WhatsApp notification failed (non-critical):', error.message);
+        }
+      }
       
       // Update notification count
       customer.notificationCount = (customer.notificationCount || 0) + 1;
@@ -100,7 +124,31 @@ class QueueNotificationService {
         PartySize: customer.partySize
       };
       
-      await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
+      // Send via WebSocket if available
+      const io = require('../index').io;
+      if (io && customer.sessionId) {
+        io.to(`session-${customer.sessionId}`).emit('notification', {
+          type: 'notification',
+          message: this.formatMessage(template, replacements),
+          timestamp: new Date()
+        });
+      }
+      
+      // Also try push notification
+      await pushNotificationService.sendNotification(
+        customer.id,
+        this.formatMessage(template, replacements)
+      );
+      
+      // Legacy WhatsApp support (if enabled)
+      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customer.customerPhone) {
+        try {
+          const whatsappService = require('./whatsappService');
+          await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
+        } catch (error) {
+          logger.warn('WhatsApp notification failed (non-critical):', error.message);
+        }
+      }
       
       // Update notification count
       customer.notificationCount = (customer.notificationCount || 0) + 1;
@@ -159,7 +207,31 @@ class QueueNotificationService {
         Remaining: minutesRemaining
       };
       
-      await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
+      // Send via WebSocket if available
+      const io = require('../index').io;
+      if (io && customer.sessionId) {
+        io.to(`session-${customer.sessionId}`).emit('notification', {
+          type: 'notification',
+          message: this.formatMessage(template, replacements),
+          timestamp: new Date()
+        });
+      }
+      
+      // Also try push notification
+      await pushNotificationService.sendNotification(
+        customer.id,
+        this.formatMessage(template, replacements)
+      );
+      
+      // Legacy WhatsApp support (if enabled)
+      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customer.customerPhone) {
+        try {
+          const whatsappService = require('./whatsappService');
+          await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
+        } catch (error) {
+          logger.warn('WhatsApp notification failed (non-critical):', error.message);
+        }
+      }
       
       logger.info(`Sent no-show warning to ${customer.customerPhone}`);
     } catch (error) {
@@ -181,11 +253,27 @@ class QueueNotificationService {
       // Clear timers
       this.clearCustomerTimers(customer.customerId);
       
-      // Send final message
-      await whatsappService.sendMessage(
-        customer.customerPhone,
-        `Unfortunately, your table at ${merchant.businessName} has been released to the next guest due to no-show. We hope to serve you another time! 🙏`
-      );
+      // Send final message via WebSocket
+      const io = require('../index').io;
+      const finalMessage = `Unfortunately, your table at ${merchant.businessName} has been released to the next guest due to no-show. We hope to serve you another time! 🙏`;
+      
+      if (io && customer.sessionId) {
+        io.to(`session-${customer.sessionId}`).emit('notification', {
+          type: 'no-show-final',
+          message: finalMessage,
+          timestamp: new Date()
+        });
+      }
+      
+      // Legacy WhatsApp support (if enabled)
+      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customer.customerPhone) {
+        try {
+          const whatsappService = require('./whatsappService');
+          await whatsappService.sendMessage(customer.customerPhone, finalMessage);
+        } catch (error) {
+          logger.warn('WhatsApp notification failed (non-critical):', error.message);
+        }
+      }
       
       logger.info(`Marked customer ${customer.customerId} as no-show`);
       
@@ -231,6 +319,16 @@ class QueueNotificationService {
     this.noShowTimers.clear();
     
     logger.info('Cleared all notification timers');
+  }
+
+  // Format message with replacements
+  formatMessage(template, replacements) {
+    let message = template;
+    for (const [key, value] of Object.entries(replacements)) {
+      const placeholder = `{${key}}`;
+      message = message.replace(new RegExp(placeholder, 'g'), value);
+    }
+    return message;
   }
 }
 

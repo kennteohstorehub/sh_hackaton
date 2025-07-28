@@ -3,7 +3,7 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
 const whatsappSecurity = require('../config/whatsapp-security');
-const Queue = require('../models/Queue');
+const queueService = require('./queueService');
 
 class WhatsAppService {
   constructor() {

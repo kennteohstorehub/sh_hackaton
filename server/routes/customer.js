@@ -1,7 +1,8 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const Queue = require('../models/Queue');
-const Merchant = require('../models/Merchant');
+const queueService = require('../services/queueService');
+const merchantService = require('../services/merchantService');
+const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
 
 const router = express.Router();
@@ -22,7 +23,7 @@ router.post('/join/:queueId', [
     const { queueId } = req.params;
     const { name, phone, partySize, specialRequests } = req.body;
 
-    const queue = await Queue.findById(queueId).populate('merchantId');
+    const queue = await queueService.findById(queueId, { entries: true, merchant: true });
     
     if (!queue || !queue.isActive) {
       return res.status(404).json({ error: 'Queue not found or inactive' });
@@ -36,7 +37,7 @@ router.post('/join/:queueId', [
       });
     }
 
-    const merchant = queue.merchantId;
+    const merchant = queue.merchant || await merchantService.findById(queue.merchantId);
     
     // Check if business is open (skip if method doesn't exist)
     if (merchant.isBusinessOpen && !merchant.isBusinessOpen()) {
@@ -95,18 +96,29 @@ router.post('/join/:queueId', [
       });
     }
 
+    // Generate verification code
+    const generateVerificationCode = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 4; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    };
+    
+    const verificationCode = generateVerificationCode();
+    
     // Add customer to queue
-    const newEntry = await queue.addCustomer({
+    const newEntry = await queueService.addCustomer(queue.id, {
       customerId,
       customerName: name,
       customerPhone: phone,
       platform: 'web',
       serviceTypeId: null, // Would be set if service types were implemented
       partySize: parseInt(partySize) || 1,
-      specialRequests: specialRequests || ''
+      specialRequests: specialRequests || '',
+      verificationCode: verificationCode
     });
-
-    await queue.save();
 
     // Calculate estimated wait time
     const position = newEntry.position;
@@ -135,28 +147,32 @@ router.post('/join/:queueId', [
     }
 
     // Emit real-time update
-    req.io.to(`merchant-${queue.merchantId._id}`).emit('queue-updated', {
-      queueId: queue._id,
+    req.io.to(`merchant-${queue.merchantId}`).emit('queue-updated', {
+      queueId: queue.id,
       action: 'customer-joined',
       customer: newEntry,
       queue: {
-        ...queue.toObject(),
+        ...queue,
         currentLength: queue.currentLength,
         nextPosition: queue.nextPosition
       }
     });
 
+    // Include verification code in response
+    const responseEntry = newEntry.toObject ? newEntry.toObject() : newEntry;
+    responseEntry.verificationCode = verificationCode;
+    
     res.status(201).json({
       success: true,
       position,
       estimatedWait,
-      customer: newEntry,
+      customer: responseEntry,
       queue: {
-        id: queue._id,
+        id: queue.id,
         name: queue.name,
         currentLength: queue.currentLength
       },
-      statusUrl: `/queue-status/${queue._id}/${customerId}`
+      statusUrl: `/queue-status/${queue.id}/${customerId}`
     });
 
   } catch (error) {
@@ -194,7 +210,7 @@ router.post('/join', [
 
     const { queueId, customerName, customerPhone, serviceType, platform, partySize } = req.body;
 
-    const queue = await Queue.findById(queueId).populate('merchantId');
+    const queue = await queueService.findById(queueId, { entries: true, merchant: true });
     
     if (!queue || !queue.isActive) {
       return res.status(404).json({ error: 'Queue not found or inactive' });
@@ -242,7 +258,7 @@ router.post('/join', [
     }
 
     // Add customer to queue
-    const newEntry = queue.addCustomer({
+    const newEntry = await queueService.addCustomer(queue.id, {
       customerId,
       customerName,
       customerPhone,
@@ -251,12 +267,10 @@ router.post('/join', [
       partySize: partySize || 1
     });
 
-    await queue.save();
-
     // Send confirmation WhatsApp message to customer
     try {
       const whatsappService = require('../services/whatsappService');
-      const merchant = queue.merchantId;
+      const merchant = queue.merchant || await merchantService.findById(queue.merchantId);
       
       // Use merchant's custom join template or fallback to default
       const template = merchant.settings?.notifications?.templates?.join || 
@@ -277,12 +291,12 @@ router.post('/join', [
     }
 
     // Emit real-time update
-    req.io.to(`merchant-${queue.merchantId._id}`).emit('queue-updated', {
-      queueId: queue._id,
+    req.io.to(`merchant-${queue.merchantId}`).emit('queue-updated', {
+      queueId: queue.id,
       action: 'customer-joined',
       customer: newEntry,
       queue: {
-        ...queue.toObject(),
+        ...queue,
         currentLength: queue.currentLength,
         nextPosition: queue.nextPosition
       }
@@ -292,11 +306,11 @@ router.post('/join', [
       success: true,
       customer: newEntry,
       queue: {
-        id: queue._id,
+        id: queue.id,
         name: queue.name,
         currentLength: queue.currentLength
       },
-      statusUrl: `/queue-status/${queue._id}/${customerId}`
+      statusUrl: `/queue-status/${queue.id}/${customerId}`
     });
 
   } catch (error) {
@@ -314,13 +328,13 @@ router.get('/status/:queueId/:customerId', async (req, res) => {
   try {
     const { queueId, customerId } = req.params;
 
-    const queue = await Queue.findById(queueId).populate('merchantId');
+    const queue = await queueService.findById(queueId, { entries: true, merchant: true });
     
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    const customer = queue.getCustomer(customerId);
+    const customer = queue.entries?.find(e => e.customerId === customerId);
     
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found in queue' });
@@ -344,7 +358,7 @@ router.get('/status/:queueId/:customerId', async (req, res) => {
         currentPosition
       },
       queue: {
-        id: queue._id,
+        id: queue.id,
         name: queue.name,
         currentLength: queue.currentLength
       },
@@ -373,13 +387,16 @@ router.post('/cancel', [
 
     const { queueId, customerId } = req.body;
 
-    const queue = await Queue.findById(queueId);
+    const queue = await queueService.findById(queueId, {
+      entries: true,
+      merchant: true
+    });
     
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    const customer = queue.getCustomer(customerId);
+    const customer = queue.entries?.find(e => e.customerId === customerId);
     
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found in queue' });
@@ -393,12 +410,11 @@ router.post('/cancel', [
     }
 
     // Remove customer from queue
-    const removedCustomer = await queue.removeCustomer(customerId, 'cancelled');
-    await queue.save();
+    const removedCustomer = await queueService.removeCustomer(queue.id, customerId, 'cancelled');
 
     // Emit real-time update
     req.io.to(`merchant-${queue.merchantId}`).emit('queue-updated', {
-      queueId: queue._id,
+      queueId: queue.id,
       action: 'customer-cancelled',
       customerId
     });

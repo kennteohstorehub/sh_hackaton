@@ -6,6 +6,7 @@
     <title><%= title %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/common-header.css?v=<%= Date.now() %>" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -1034,6 +1035,7 @@
                 <% } %>
                 <nav class="nav">
                     <a href="/dashboard">Dashboard</a>
+                    <a href="/dashboard/queues">Queues</a>
                     <a href="/dashboard/analytics">Analytics</a>
                     <a href="/dashboard/whatsapp-setup">WhatsApp</a>
                     <a href="/dashboard/settings" class="active">Settings</a>

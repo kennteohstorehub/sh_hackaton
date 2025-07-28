@@ -568,13 +568,12 @@
                                class="form-control" 
                                id="customerPhone" 
                                name="phone" 
-                               placeholder="+60123456789" 
-                               pattern="^\+?[1-9]\d{1,14}$"
-                               title="Please enter a valid phone number with country code"
+                               placeholder="0123456789 or +60123456789" 
+                               title="Enter your phone number (we'll format it for you)"
                                required>
                         <div class="form-text">
                             <i class="bi bi-info-circle"></i>
-                            Include country code (e.g., +60 for Malaysia, +1 for US)
+                            We'll add the country code if needed (Malaysia +60 by default)
                         </div>
                     </div>
 
@@ -587,7 +586,9 @@
                             <option value="3">3 People</option>
                             <option value="4">4 People</option>
                             <option value="5">5 People</option>
-                            <option value="6+">6+ People</option>
+                            <option value="6">6 People</option>
+                            <option value="7">7 People</option>
+                            <option value="8">8+ People</option>
                         </select>
                     </div>
 
@@ -719,6 +720,9 @@
             }
         });
 
+        // Debug queue ID
+        console.log('Queue ID from template:', '<%= queueId %>');
+        
         // Handle form submission
         document.getElementById('joinQueueForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -738,7 +742,36 @@
                 const formData = new FormData(this);
                 const data = Object.fromEntries(formData.entries());
                 
-                const response = await fetch(`/api/customer/join/<%= queueId %>`, {
+                // Format phone number before sending
+                let phone = data.phone.trim();
+                // Remove all non-numeric characters except + at the beginning
+                phone = phone.replace(/[^\d+]/g, '');
+                
+                // If phone doesn't start with + and looks like a local number, add Malaysia country code
+                if (!phone.startsWith('+')) {
+                    if (phone.startsWith('0')) {
+                        // Malaysian local format
+                        phone = '+60' + phone.substring(1);
+                    } else if (phone.startsWith('60')) {
+                        // Already has country code
+                        phone = '+' + phone;
+                    } else if (phone.length <= 10) {
+                        // Assume Malaysian number without 0
+                        phone = '+60' + phone;
+                    } else {
+                        // Other country codes
+                        phone = '+' + phone;
+                    }
+                }
+                
+                data.phone = phone;
+                
+                // Get queue ID from the page
+                const queueId = '<%= queueId %>';
+                console.log('Submitting to queue:', queueId);
+                console.log('Form data being sent:', JSON.stringify(data, null, 2));
+                
+                const response = await fetch(`/api/customer/join/${queueId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -749,25 +782,38 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Show success message
+                    console.log('Queue join successful:', result);
+                    
+                    // Store queue info in session storage for the chatbot
+                    const queueInfo = {
+                        queueId: result.customer.queueId,
+                        position: result.position,
+                        queueNumber: result.customer.position,
+                        customerName: result.customer.customerName,
+                        verificationCode: result.customer.verificationCode,
+                        estimatedWait: result.estimatedWait,
+                        joinedAt: new Date().toISOString()
+                    };
+                    
+                    console.log('Storing queue info:', queueInfo);
+                    sessionStorage.setItem('queueInfo', JSON.stringify(queueInfo));
+                    sessionStorage.setItem('queueJoined', 'true');
+                    
+                    // Show success message briefly
                     document.getElementById('successText').textContent = 
-                        `Successfully joined the queue! You are position ${result.position}. Estimated wait time: ${result.estimatedWait} minutes.`;
+                        `Successfully joined! Redirecting to your queue status...`;
                     document.getElementById('successMessage').style.display = 'flex';
                     
-                    // Reset form
-                    this.reset();
-                    
-                    // Remove validation classes
-                    document.querySelectorAll('.form-control').forEach(input => {
-                        input.classList.remove('is-valid', 'is-invalid');
-                    });
-                    
-                    // Refresh queue stats after 2 seconds
+                    // Redirect to full-screen queue chat after 1.5 seconds
                     setTimeout(() => {
-                        refreshData();
-                    }, 2000);
+                        window.location.href = '/queue-chat.html';
+                    }, 1500);
                 } else {
                     // Show error message
+                    console.error('Join queue failed:', result);
+                    if (result.details) {
+                        console.error('Validation details:', result.details);
+                    }
                     document.getElementById('errorText').textContent = result.error || 'Failed to join queue. Please try again.';
                     document.getElementById('errorMessage').style.display = 'flex';
                 }

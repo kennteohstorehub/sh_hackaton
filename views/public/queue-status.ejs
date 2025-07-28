@@ -281,7 +281,7 @@
                         </div>
                         <div class="info-item">
                             <div class="info-label">People Ahead</div>
-                            <div class="info-value"><%= currentPosition - 1 %></div>
+                            <div class="info-value"><%= Math.max(0, currentPosition - 1) %></div>
                         </div>
                     <% } %>
                     <div class="info-item">

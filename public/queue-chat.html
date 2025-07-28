@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>Queue Status - StoreHub</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/images/icon-144x144.svg">
+    
+    <style>
+        :root {
+            --primary: #ff8c00;
+            --primary-dark: #ff6b00;
+            --bg-dark: #0a0a0a;
+            --bg-medium: #1a1a1a;
+            --bg-light: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border: rgba(255, 140, 0, 0.3);
+            --success: #25d366;
+            --error: #dc3545;
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header */
+        .app-header {
+            background: var(--bg-medium);
+            padding: calc(var(--safe-area-inset-top) + 1rem) 1rem 1rem;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .verification-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .verify-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-right: 0.5rem;
+        }
+        
+        .verify-value {
+            font-family: monospace;
+            font-size: 1.25rem;
+            font-weight: bold;
+            letter-spacing: 0.25rem;
+            color: var(--primary);
+        }
+
+        .header-info h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .queue-status {
+            font-size: 0.875rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Queue Info Banner */
+        .queue-banner {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(255, 140, 0, 0.3);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .queue-banner-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .queue-stat {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .verification-code {
+            font-family: monospace;
+            letter-spacing: 0.25rem;
+        }
+
+        /* Messages Container */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            padding-bottom: calc(var(--safe-area-inset-bottom) + 1rem);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-bubble {
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .message.bot .message-bubble {
+            background: var(--bg-light);
+            border-bottom-left-radius: 4px;
+            margin-right: auto;
+        }
+
+        .message.user .message-bubble {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-bottom-right-radius: 4px;
+            margin-left: auto;
+        }
+
+        .message.system {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .message.system .message-bubble {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin: 0 auto;
+            max-width: fit-content;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            margin-top: 0.25rem;
+            padding: 0 1rem;
+        }
+
+        /* Input Area */
+        .input-area {
+            background: var(--bg-medium);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            padding-bottom: calc(var(--safe-area-inset-bottom) + 1rem);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            line-height: 1.4;
+            transition: all 0.2s ease;
+        }
+
+        .message-input:focus {
+            border-color: var(--primary);
+            background: rgba(255, 140, 0, 0.1);
+        }
+
+        .send-button {
+            background: var(--primary);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+        }
+
+        .send-button svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--bg-dark);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .quick-actions::-webkit-scrollbar {
+            display: none;
+        }
+
+        .quick-action {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-action:active {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-color: var(--primary);
+        }
+
+        /* Notification Badge */
+        .notification-toast {
+            position: fixed;
+            top: calc(var(--safe-area-inset-top) + 5rem);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-medium);
+            border: 1px solid var(--primary);
+            border-radius: 24px;
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 4px 20px rgba(255, 140, 0, 0.5);
+            animation: slideInBounce 0.5s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideInBounce {
+            0% {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            60% {
+                transform: translateX(-50%) translateY(10px);
+            }
+            100% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading States */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 0.75rem 1rem;
+            background: var(--bg-light);
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+            margin-bottom: 1rem;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 480px;
+                margin: 0 auto;
+                height: 100vh;
+                box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-info">
+                    <h1>Queue Status</h1>
+                    <div class="queue-status">
+                        <span class="status-dot"></span>
+                        <span id="connectionStatus">Connected</span>
+                    </div>
+                </div>
+                <div class="verification-display" id="verificationDisplay" style="display: none;">
+                    <span class="verify-label">Code:</span>
+                    <span class="verify-value" id="headerVerifyCode">----</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Queue Banner Removed - Status shown only when requested -->
+
+        <!-- Messages -->
+        <div class="messages-container" id="messagesContainer">
+            <!-- Messages will be inserted here -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <div class="quick-actions" id="quickActions">
+                <button class="quick-action" onclick="window.queueChat && window.queueChat.sendQuickAction('status')">Check Status</button>
+                <button class="quick-action" onclick="window.queueChat && window.queueChat.sendQuickAction('cancel')">Cancel Queue</button>
+                <button class="quick-action" onclick="window.queueChat && window.queueChat.sendQuickAction('contact')">Contact Business</button>
+            </div>
+            <form class="input-container" id="messageForm">
+                <textarea 
+                    class="message-input" 
+                    id="messageInput" 
+                    placeholder="Type a message..." 
+                    rows="1"
+                    maxlength="500"
+                ></textarea>
+                <button type="submit" class="send-button" id="sendButton">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Add timestamp to force reload of updated script
+        const script = document.createElement('script');
+        script.src = '/js/queue-chat.js?v=' + Date.now();
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>

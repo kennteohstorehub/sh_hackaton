@@ -15,6 +15,8 @@ The `render.yaml` has been updated with:
    - Pooled connection (for DATABASE_URL)
    - Direct connection (for DATABASE_URL_DIRECT)
 
+**Note**: MongoDB is no longer required as the system has been fully migrated to PostgreSQL with Prisma ORM.
+
 ### Step 3: Deploy to Render
 
 ```bash
@@ -45,7 +47,13 @@ DATABASE_URL_DIRECT=your_neon_direct_connection
 Render will automatically:
 1. Install dependencies
 2. Generate Prisma client
-3. Start the server
+3. Run database migrations (if configured in build command)
+4. Start the server
+
+**Important**: Make sure to run migrations:
+```bash
+npx prisma migrate deploy
+```
 
 ## ✅ Success Indicators
 
@@ -67,7 +75,12 @@ Once deployed:
 1. Check Render logs for the exact error
 2. Verify `NODE_ENV` is set in Environment tab
 3. Make sure PostgreSQL database URLs are correct
-4. Ensure Prisma migrations have been run
+4. Ensure Prisma migrations have been run:
+   ```bash
+   npx prisma generate
+   npx prisma migrate deploy
+   ```
+5. Verify all MongoDB references have been removed (system now uses PostgreSQL exclusively)
 
 ### WhatsApp Options for Later:
 

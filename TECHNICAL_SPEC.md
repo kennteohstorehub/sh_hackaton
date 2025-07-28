@@ -4,19 +4,19 @@
 
 ### 1.1 Technology Stack
 - **Backend**: Node.js + Express.js
-- **Database**: MongoDB with Mongoose ODM
+- **Database**: PostgreSQL with Prisma ORM (migrated from MongoDB)
 - **Frontend**: EJS templates + vanilla JavaScript
 - **Real-time**: Socket.IO
 - **Security**: Helmet.js, CSP, rate limiting
-- **Session**: express-session with MongoStore
+- **Session**: express-session with connect-pg-simple
 
 ### 1.2 Project Structure
 ```
 ├── server/
 │   ├── index.js                 # Main server file
-│   ├── models/
-│   │   ├── Queue.js            # Queue schema with embedded entries
-│   │   └── Merchant.js         # Merchant account schema
+│   ├── services/
+│   │   ├── queueService.js     # Queue operations service
+│   │   └── merchantService.js  # Merchant operations service
 │   ├── routes/
 │   │   ├── queue.js            # Queue management API
 │   │   ├── customer.js         # Customer operations
@@ -37,55 +37,96 @@
 └── public/                     # Static assets
 ```
 
-## 2. Database Schema
+## 2. Database Schema (Prisma/PostgreSQL)
 
 ### 2.1 Queue Model
-```javascript
-{
-  merchantId: ObjectId,           // Business owner reference
-  name: "Restaurant Queue",       // Queue display name
-  description: String,            // Queue description
-  isActive: Boolean,              // Operational status
-  maxCapacity: 50,                // Maximum customers
-  averageServiceTime: 25,         // Minutes per customer
-  currentServing: Number,         // Current position being served
-  entries: [                      // Customer array
-    {
-      customerId: String,         // Unique identifier
-      customerName: String,       // Display name
-      customerPhone: String,      // For notifications
-      partySize: Number,          // 1-20 people
-      platform: "web",           // Entry method
-      position: Number,           // Queue position
-      estimatedWaitTime: Number,  // Minutes
-      status: "waiting|called|completed",
-      priority: "normal",         // Priority level
-      serviceType: String,        // Service category
-      joinedAt: Date,             // Entry timestamp
-      calledAt: Date,             // Notification time
-      completedAt: Date,          // Service completion
-      notificationCount: Number,  // Messages sent
-      sentimentScore: Number      // AI analysis (-1 to 1)
-    }
-  ],
-  settings: {
-    autoNotifications: true,
-    notificationInterval: 5,      // Minutes
-    allowCancellation: true,
-    requireConfirmation: true,
-    businessHours: {
-      start: "09:00",
-      end: "17:00",
-      timezone: "UTC"
-    }
-  },
-  analytics: {
-    totalServed: Number,
-    averageWaitTime: Number,
-    averageServiceTime: Number,
-    customerSatisfaction: Number,
-    noShowRate: Number
-  }
+```prisma
+model Queue {
+  id                    String       @id @default(uuid())
+  merchantId            String
+  name                  String
+  description           String?
+  isActive              Boolean      @default(true)
+  acceptingCustomers    Boolean      @default(true)
+  maxCapacity           Int          @default(50)
+  averageServiceTime    Int          @default(30)
+  currentServing        Int          @default(0)
+  autoNotifications     Boolean      @default(true)
+  notificationInterval  Int          @default(5)
+  allowCancellation     Boolean      @default(true)
+  requireConfirmation   Boolean      @default(true)
+  businessHoursStart    String       @default("09:00")
+  businessHoursEnd      String       @default("17:00")
+  businessHoursTimezone String       @default("UTC")
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  
+  merchant              Merchant     @relation(fields: [merchantId], references: [id])
+  entries               QueueEntry[]
+  analytics             QueueAnalytics?
+}
+```
+
+### 2.2 QueueEntry Model
+```prisma
+model QueueEntry {
+  id                String         @id @default(uuid())
+  queueId           String
+  customerId        String
+  customerName      String
+  customerPhone     String
+  platform          Platform
+  position          Int
+  estimatedWaitTime Int
+  status            QueueEntryStatus @default(waiting)
+  serviceTypeId     String?
+  partySize         Int            @default(1)
+  notes             String?
+  specialRequests   String?
+  verificationCode  String?
+  sessionId         String?
+  joinedAt          DateTime       @default(now())
+  calledAt          DateTime?
+  servedAt          DateTime?
+  completedAt       DateTime?
+  requeuedAt        DateTime?
+  lastNotified      DateTime?
+  notificationCount Int            @default(0)
+  sentimentScore    Float?
+  
+  queue             Queue          @relation(fields: [queueId], references: [id])
+  serviceType       ServiceType?   @relation(fields: [serviceTypeId], references: [id])
+}
+```
+
+### 2.3 Merchant Model  
+```prisma
+model Merchant {
+  id                     String                @id @default(uuid())
+  businessName           String
+  email                  String                @unique
+  password               String
+  phone                  String
+  businessType           BusinessType
+  timezone               String                @default("UTC")
+  isActive               Boolean               @default(true)
+  lastLogin              DateTime?
+  
+  settings               MerchantSettings?
+  queues                 Queue[]
+  businessHours          BusinessHours[]
+}
+
+model MerchantSettings {
+  id                     String     @id @default(uuid())
+  merchantId             String     @unique
+  maxQueueSize           Int        @default(50)
+  avgMealDuration        Int        @default(45)
+  noShowTimeout          Int        @default(15)
+  gracePeriod            Int        @default(5)
+  joinCutoffTime         Int        @default(30)
+  
+  merchant               Merchant   @relation(fields: [merchantId], references: [id])
 }
 ```
 

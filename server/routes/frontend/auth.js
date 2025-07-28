@@ -1,7 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
-const Merchant = require('../../models/Merchant');
+const merchantService = require('../../services/merchantService');
+const prisma = require('../../utils/prisma');
 const logger = require('../../utils/logger');
 const { requireGuest } = require('../../middleware/auth-bypass');
 const { validateLogin, validateRegister } = require('../../middleware/validators');
@@ -63,13 +64,13 @@ router.post('/login',
     const { email, password } = req.body;
 
     // Find merchant
-    console.log('[AUTH] About to call Merchant.findOne with email:', email);
+    console.log('[AUTH] About to call merchantService.findByEmail with email:', email);
     let merchant;
     try {
-      merchant = await Merchant.findOne({ email });
-      console.log('[AUTH] Merchant.findOne returned:', merchant ? 'found' : 'not found');
+      merchant = await merchantService.findByEmail(email);
+      console.log('[AUTH] merchantService.findByEmail returned:', merchant ? 'found' : 'not found');
     } catch (findError) {
-      console.error('[AUTH] Error during Merchant.findOne:', findError);
+      console.error('[AUTH] Error during merchantService.findByEmail:', findError);
       console.error('[AUTH] Error stack:', findError.stack);
       throw findError; // Let the outer catch handle it
     }
@@ -90,9 +91,9 @@ router.post('/login',
       merchantKeys: Object.keys(merchant).slice(0, 10) // First 10 keys
     });
 
-    // Check password
-    const isValidPassword = await bcrypt.compare(password, merchant.password);
-    if (!isValidPassword) {
+    // Check password - use authenticate method
+    const authenticatedMerchant = await merchantService.authenticate(email, password);
+    if (!authenticatedMerchant) {
       req.flash('error', 'Invalid email or password.');
       return res.redirect('/auth/login');
     }
@@ -106,7 +107,7 @@ router.post('/login',
     //   }
       
       // Create session with userId - use consistent ID
-      const merchantId = merchant.id || merchant._id?.toString();
+      const merchantId = merchant.id;
       req.session.userId = merchantId;
       req.session.user = {
         id: merchantId,
@@ -162,25 +163,23 @@ router.post('/register',
     const { businessName, email, password, phone, businessType } = req.body;
 
     // Check if merchant already exists
-    const existingMerchant = await Merchant.findOne({ email });
+    const existingMerchant = await merchantService.findByEmail(email);
     if (existingMerchant) {
       req.flash('error', 'An account with this email already exists.');
       return res.redirect('/auth/register');
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
     // Create merchant
-    const merchant = new Merchant({
+    const merchant = await merchantService.create({
       businessName,
       email,
-      password: hashedPassword,
+      password,
       phone,
       businessType
     });
-
-    await merchant.save();
+    
+    // Initialize merchant defaults
+    await merchantService.initializeDefaults(merchant.id);
 
     // Regenerate session to prevent fixation attacks
     req.session.regenerate((err) => {
@@ -191,12 +190,12 @@ router.post('/register',
       }
       
       // Create session with userId
-      req.session.userId = merchant.id || merchant._id?.toString();
+      req.session.userId = merchant.id;
       req.session.user = {
-        id: merchant.id || merchant._id?.toString(),
+        id: merchant.id,
         email: merchant.email,
         businessName: merchant.businessName,
-        merchantId: merchant.id || merchant._id?.toString()
+        merchantId: merchant.id
       };
 
       logger.info(`New merchant registered: ${merchant.email}`);

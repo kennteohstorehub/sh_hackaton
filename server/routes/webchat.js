@@ -2,8 +2,8 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
-const Queue = require('../models/Queue');
-const Merchant = require('../models/Merchant');
+const queueService = require('../services/queueService');
+const merchantService = require('../services/merchantService');
 const pushNotificationService = require('../services/pushNotificationService');
 const webChatService = require('../services/webChatService');
 
@@ -40,16 +40,14 @@ router.post('/join', [
         } = req.body;
 
         // Find merchant and active queue
-        const merchant = await Merchant.findById(merchantId);
+        const merchant = await merchantService.findById(merchantId);
         if (!merchant || !merchant.isActive) {
             return res.status(404).json({ error: 'Business not found or inactive' });
         }
 
         // Find active queue for merchant
-        const queue = await Queue.findOne({ 
-            merchantId: merchant.id || merchant._id, 
-            isActive: true 
-        });
+        const queues = await queueService.findByMerchant(merchantId);
+        const queue = queues.find(q => q.isActive);
 
         if (!queue) {
             return res.status(404).json({ error: 'No active queue available' });
@@ -60,8 +58,8 @@ router.post('/join', [
         }
 
         // Check if queue is at capacity
-        const currentCount = queue.entries?.filter(e => e.status === 'waiting').length || 0;
-        if (queue.maxCapacity && currentCount >= queue.maxCapacity) {
+        const stats = await queueService.getQueueStats(queue.id);
+        if (queue.maxCapacity && stats.waitingCount >= queue.maxCapacity) {
             return res.status(400).json({ error: 'Queue is at full capacity' });
         }
 
@@ -84,20 +82,15 @@ router.post('/join', [
         const verificationCode = webChatService.generateVerificationCode();
 
         // Create queue entry
-        const entry = await prisma.queueEntry.create({
-            data: {
-                queueId: queue.id,
-                customerId: `webchat_${sessionId}`,
-                customerName,
-                customerPhone,
-                platform: 'webchat',
-                sessionId,
-                partySize: parseInt(partySize),
-                specialRequests,
-                position: currentCount + 1,
-                estimatedWaitTime: (currentCount + 1) * (queue.averageServiceTime || 15),
-                verificationCode
-            }
+        const entry = await queueService.addCustomer(queue.id, {
+            customerId: `webchat_${sessionId}`,
+            customerName,
+            customerPhone,
+            platform: 'webchat',
+            sessionId,
+            partySize: parseInt(partySize),
+            specialRequests,
+            verificationCode
         });
 
         // Generate queue number
@@ -124,17 +117,14 @@ router.post('/join', [
         }
 
         // Emit socket event for real-time update
-        const io = req.app.get('io');
-        if (io) {
-            io.to(merchantId).emit('new-customer', {
-                queueId: queue.id,
-                entry: {
-                    ...entry,
-                    queueNumber,
-                    verificationCode
-                }
-            });
-        }
+        req.io.to(`merchant-${merchantId}`).emit('new-customer', {
+            queueId: queue.id,
+            entry: {
+                ...entry,
+                queueNumber,
+                verificationCode
+            }
+        });
 
         // Store session data
         webChatService.createSession(sessionId, {
@@ -153,7 +143,8 @@ router.post('/join', [
             queueEntry: {
                 ...entry,
                 queueNumber,
-                merchantName: merchant.businessName
+                merchantName: merchant.businessName,
+                businessPhone: merchant.phone || '+60123456789'
             }
         });
 
@@ -170,31 +161,77 @@ router.post('/join', [
 router.get('/status/:sessionId', async (req, res) => {
     try {
         const { sessionId } = req.params;
+        logger.info(`Status check for sessionId: ${sessionId}`);
+        
+        let queueEntry = null;
 
-        // Get session data
+        // First try to get session data from memory
         const session = webChatService.getSession(sessionId);
-        if (!session || !session.queueEntryId) {
-            return res.status(404).json({ 
-                error: 'No active queue found for this session' 
-            });
-        }
-
-        // Get queue entry with queue data
-        const queueEntry = await prisma.queueEntry.findUnique({
-            where: { id: session.queueEntryId },
-            include: {
-                queue: {
-                    include: {
-                        merchant: true
+        logger.info(`Session from memory:`, { 
+            found: !!session, 
+            hasQueueEntryId: !!(session && session.queueEntryId) 
+        });
+        
+        if (session && session.queueEntryId) {
+            // Get queue entry from session
+            queueEntry = await prisma.queueEntry.findUnique({
+                where: { id: session.queueEntryId },
+                include: {
+                    queue: {
+                        include: {
+                            merchant: true
+                        }
                     }
                 }
+            });
+            logger.info(`Queue entry from session lookup:`, { 
+                found: !!queueEntry,
+                status: queueEntry?.status 
+            });
+        }
+        
+        // Always try database lookup as fallback
+        if (!queueEntry) {
+            logger.info(`Attempting database lookup for sessionId: ${sessionId}`);
+            
+            // Try to find by sessionId in database
+            queueEntry = await prisma.queueEntry.findFirst({
+                where: {
+                    sessionId: sessionId,
+                    status: 'waiting'
+                },
+                include: {
+                    queue: {
+                        include: {
+                            merchant: true
+                        }
+                    }
+                },
+                orderBy: {
+                    joinedAt: 'desc'
+                }
+            });
+            
+            logger.info(`Database lookup result:`, { 
+                found: !!queueEntry,
+                id: queueEntry?.id,
+                status: queueEntry?.status 
+            });
+            
+            // If found, recreate session for future requests
+            if (queueEntry) {
+                webChatService.createSession(sessionId, {
+                    queueEntryId: queueEntry.id,
+                    merchantId: queueEntry.queue.merchantId,
+                    queueId: queueEntry.queueId,
+                    status: 'in_queue'
+                });
             }
-        });
+        }
 
         if (!queueEntry) {
-            webChatService.clearSession(sessionId);
             return res.status(404).json({ 
-                error: 'Queue entry not found' 
+                error: 'No active queue found for this session' 
             });
         }
 
@@ -226,7 +263,8 @@ router.get('/status/:sessionId', async (req, res) => {
                 ...queueEntry,
                 queueNumber: webChatService.generateQueueNumber(queueEntry.position),
                 currentPosition,
-                merchantName: queueEntry.queue.merchant?.businessName
+                merchantName: queueEntry.queue.merchant?.businessName,
+                businessPhone: queueEntry.queue.merchant?.phone || '+60123456789'
             }
         });
 
@@ -243,24 +281,49 @@ router.get('/status/:sessionId', async (req, res) => {
 router.post('/cancel/:sessionId', async (req, res) => {
     try {
         const { sessionId } = req.params;
+        logger.info(`Cancel request for sessionId: ${sessionId}`);
 
-        // Get session data
+        // Get session data from memory
         const session = webChatService.getSession(sessionId);
-        if (!session || !session.queueEntryId) {
-            return res.status(404).json({ 
-                error: 'No active queue found for this session' 
+        logger.info(`Session from memory:`, { 
+            found: !!session, 
+            hasQueueEntryId: !!(session && session.queueEntryId) 
+        });
+        
+        let queueEntry = null;
+        
+        if (session && session.queueEntryId) {
+            // Find queue entry using session
+            queueEntry = await prisma.queueEntry.findUnique({
+                where: { id: session.queueEntryId },
+                include: { queue: true }
+            });
+        }
+        
+        // Fallback: Try to find by sessionId in database
+        if (!queueEntry) {
+            logger.info(`Attempting database lookup for cancel`);
+            queueEntry = await prisma.queueEntry.findFirst({
+                where: {
+                    sessionId: sessionId,
+                    status: 'waiting'
+                },
+                include: { queue: true },
+                orderBy: {
+                    joinedAt: 'desc'
+                }
+            });
+            
+            logger.info(`Database lookup result:`, { 
+                found: !!queueEntry,
+                id: queueEntry?.id,
+                status: queueEntry?.status 
             });
         }
 
-        // Find and update queue entry
-        const queueEntry = await prisma.queueEntry.findUnique({
-            where: { id: session.queueEntryId },
-            include: { queue: true }
-        });
-
         if (!queueEntry || queueEntry.status !== 'waiting') {
             return res.status(400).json({ 
-                error: 'Cannot cancel - entry not found or not in waiting status' 
+                error: 'Cannot cancel - no active queue entry found' 
             });
         }
 
@@ -277,14 +340,11 @@ router.post('/cancel/:sessionId', async (req, res) => {
         webChatService.clearSession(sessionId);
 
         // Emit real-time update
-        const io = req.app.get('io');
-        if (io) {
-            io.to(queueEntry.queue.merchantId).emit('queue-updated', {
-                queueId: queueEntry.queueId,
-                action: 'customer-cancelled',
-                customerId: queueEntry.customerId
-            });
-        }
+        req.io.to(`merchant-${queueEntry.queue.merchantId}`).emit('queue-updated', {
+            queueId: queueEntry.queueId,
+            action: 'customer-cancelled',
+            customerId: queueEntry.customerId
+        });
 
         logger.info(`Webchat customer ${queueEntry.customerName} cancelled their queue position`);
 
@@ -368,6 +428,54 @@ router.get('/session/:sessionId', async (req, res) => {
             error: 'Failed to get session',
             message: error.message 
         });
+    }
+});
+
+// POST /api/webchat/notify - Backend notification endpoint
+router.post('/notify', async (req, res) => {
+    try {
+        const { sessionId, event, data } = req.body;
+        
+        // Log the notification
+        logger.info('Webchat notification:', {
+            sessionId,
+            event,
+            data
+        });
+        
+        // Handle different event types
+        switch (event) {
+            case 'customer_joined':
+                // Could send notifications to staff dashboard
+                if (req.io && data.merchantId) {
+                    req.io.to(`merchant-${data.merchantId}`).emit('customer-joined-webchat', {
+                        customerName: data.customerName,
+                        position: data.position,
+                        queueId: data.queueId
+                    });
+                }
+                break;
+                
+            case 'staff_requested':
+                // Alert staff that customer needs help
+                if (req.io && data.merchantId) {
+                    req.io.to(`merchant-${data.merchantId}`).emit('staff-assistance-requested', {
+                        queueId: data.queueId,
+                        position: data.position,
+                        customerName: data.customerName,
+                        timestamp: new Date()
+                    });
+                }
+                break;
+                
+            default:
+                logger.info('Unknown webchat event:', event);
+        }
+        
+        res.json({ success: true });
+    } catch (error) {
+        logger.error('Webchat notify error:', error);
+        res.status(500).json({ error: 'Failed to process notification' });
     }
 });
 

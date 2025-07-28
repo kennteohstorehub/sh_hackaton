@@ -1,5 +1,6 @@
 const logger = require('../utils/logger');
-const Queue = require('../models/Queue');
+const queueService = require('./queueService');
+const prisma = require('../utils/prisma');
 
 /**
  * WhatsApp Business API Service

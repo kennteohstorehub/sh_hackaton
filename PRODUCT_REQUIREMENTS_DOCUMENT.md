@@ -218,33 +218,38 @@ Queue Management System is a multi-tenant SaaS platform designed for Malaysian r
 
 ### 5.1 Technology Stack
 - **Hosting**: Render.com
-- **Database**: PostgreSQL on Neon Tech
+- **Database**: PostgreSQL on Neon Tech with Prisma ORM
 - **Backend**: Node.js with Express.js
-- **Frontend**: React.js with Context API for state
-- **Authentication**: JWT with refresh tokens
+- **Frontend**: Server-side rendered EJS templates with vanilla JavaScript
+- **Authentication**: Session-based with express-session and connect-pg-simple
 - **Real-time**: Socket.io with merchant namespaces
 - **Email Service**: SendGrid or AWS SES
 - **File Storage**: Cloudinary for logos
+- **ORM**: Prisma (migrated from Mongoose/MongoDB)
 
-### 5.2 Database Schema
+### 5.2 Database Schema (Prisma Models)
 
-```sql
--- Merchants table (core tenant table)
-CREATE TABLE merchants (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    business_name VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) UNIQUE NOT NULL,
-    owner_email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(20),
-    address TEXT,
-    logo_url VARCHAR(500),
-    primary_color VARCHAR(7) DEFAULT '#000000',
-    secondary_color VARCHAR(7) DEFAULT '#ffffff',
-    subscription_plan VARCHAR(50) DEFAULT 'basic',
-    subscription_status VARCHAR(20) DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+```prisma
+// Merchants table (core tenant table)
+model Merchant {
+  id                     String                @id @default(uuid())
+  businessName           String
+  email                  String                @unique
+  password               String
+  phone                  String
+  businessType           BusinessType
+  timezone               String                @default("UTC")
+  isActive               Boolean               @default(true)
+  lastLogin              DateTime?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  
+  settings               MerchantSettings?
+  queues                 Queue[]
+  businessHours          BusinessHours[]
+  address                MerchantAddress?
+  integrations           MerchantIntegrations?
+}
 
 -- Users table (merchant staff)
 CREATE TABLE users (
@@ -259,33 +264,57 @@ CREATE TABLE users (
     UNIQUE(email, merchant_id)
 );
 
--- Queues table (tenant-specific data)
-CREATE TABLE queues (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    merchant_id UUID REFERENCES merchants(id) ON DELETE CASCADE,
-    queue_number INTEGER NOT NULL,
-    customer_name VARCHAR(255) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    party_size INTEGER NOT NULL,
-    special_requests TEXT,
-    status VARCHAR(50) DEFAULT 'waiting',
-    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    called_at TIMESTAMP,
-    seated_at TIMESTAMP,
-    cancelled_at TIMESTAMP,
-    estimated_wait_minutes INTEGER,
-    notification_token TEXT,
-    UNIQUE(merchant_id, queue_number, DATE(joined_at))
-);
+// Queues table (tenant-specific data)
+model Queue {
+  id                    String       @id @default(uuid())
+  merchantId            String
+  name                  String
+  description           String?
+  isActive              Boolean      @default(true)
+  acceptingCustomers    Boolean      @default(true)
+  maxCapacity           Int          @default(50)
+  averageServiceTime    Int          @default(30)
+  currentServing        Int          @default(0)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  
+  merchant              Merchant     @relation(fields: [merchantId], references: [id])
+  entries               QueueEntry[]
+  analytics             QueueAnalytics?
+}
 
--- Merchant settings
-CREATE TABLE merchant_settings (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    merchant_id UUID REFERENCES merchants(id) ON DELETE CASCADE,
-    setting_key VARCHAR(100) NOT NULL,
-    setting_value TEXT,
-    UNIQUE(merchant_id, setting_key)
-);
+model QueueEntry {
+  id                String         @id @default(uuid())
+  queueId           String
+  customerId        String
+  customerName      String
+  customerPhone     String
+  platform          Platform
+  position          Int
+  estimatedWaitTime Int
+  status            QueueEntryStatus @default(waiting)
+  partySize         Int            @default(1)
+  joinedAt          DateTime       @default(now())
+  calledAt          DateTime?
+  completedAt       DateTime?
+  
+  queue             Queue          @relation(fields: [queueId], references: [id])
+}
+
+// Merchant settings
+model MerchantSettings {
+  id                     String     @id @default(uuid())
+  merchantId             String     @unique
+  maxQueueSize           Int        @default(50)
+  avgMealDuration        Int        @default(45)
+  noShowTimeout          Int        @default(15)
+  gracePeriod            Int        @default(5)
+  joinCutoffTime         Int        @default(30)
+  seatingCapacity        Int        @default(50)
+  autoPauseThreshold     Float      @default(0.9)
+  
+  merchant               Merchant   @relation(fields: [merchantId], references: [id])
+}
 
 -- Queue sequences (per merchant)
 CREATE TABLE queue_sequences (

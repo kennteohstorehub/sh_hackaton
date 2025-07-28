@@ -1,0 +1,207 @@
+<!-- Shared Header Component -->
+<style>
+    /* Header Styles */
+    .header {
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 140, 0, 0.3);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    
+    .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+    }
+    
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+    
+    .header h1 {
+        background: linear-gradient(135deg, #ff8c00, #ff6b35);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    /* Navigation */
+    .nav-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .nav {
+        display: flex;
+        gap: 0;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 12px;
+        padding: 0.25rem;
+        border: 1px solid rgba(255, 140, 0, 0.2);
+    }
+    
+    .nav a {
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        text-align: center;
+        min-width: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .nav a:hover {
+        background: rgba(255, 140, 0, 0.2);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .nav a.active {
+        background: linear-gradient(135deg, #ff8c00, #ff6b35);
+        color: white;
+        box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+    }
+    
+    /* User Section */
+    .user-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        min-width: 120px;
+    }
+    
+    .user-menu {
+        position: relative;
+    }
+    
+    .user-button {
+        background: rgba(255, 140, 0, 0.1);
+        border: 1px solid rgba(255, 140, 0, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    button.user-button {
+        font-family: inherit;
+    }
+    
+    .user-button:hover {
+        background: rgba(255, 140, 0, 0.2);
+        border-color: rgba(255, 140, 0, 0.5);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    /* View Public Button */
+    .btn-view-public {
+        background: rgba(255, 140, 0, 0.1);
+        border: 1px solid rgba(255, 140, 0, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .btn-view-public:hover {
+        background: rgba(255, 140, 0, 0.2);
+        border-color: rgba(255, 140, 0, 0.5);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+        .nav-container {
+            display: none;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        
+        .header-left {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .user-section {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<header class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <h1>StoreHub Queue</h1>
+        </div>
+        <div class="nav-container">
+            <nav class="nav">
+                <a href="/dashboard" class="<%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">Dashboard</a>
+                <a href="/dashboard/analytics" class="<%= typeof activePage !== 'undefined' && activePage === 'analytics' ? 'active' : '' %>">Analytics</a>
+                <a href="/dashboard/queues" class="<%= typeof activePage !== 'undefined' && activePage === 'queues' ? 'active' : '' %>">Queues</a>
+                <a href="/dashboard/settings" class="<%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'active' : '' %>">Settings</a>
+                <a href="/dashboard/help" class="<%= typeof activePage !== 'undefined' && activePage === 'help' ? 'active' : '' %>">Help</a>
+            </nav>
+            
+            <% if (typeof showViewPublic !== 'undefined' && showViewPublic) { %>
+            <a href="/queue/<%= typeof currentQueueId !== 'undefined' ? currentQueueId : '' %>" class="btn-view-public" target="_blank">
+                <i class="bi bi-eye"></i>
+                View Public
+            </a>
+            <% } %>
+        </div>
+        <div class="user-section">
+            <div class="user-menu">
+                <form action="/auth/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="user-button">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>

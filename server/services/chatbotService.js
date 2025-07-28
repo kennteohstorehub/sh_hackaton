@@ -1,6 +1,7 @@
 const logger = require('../utils/logger');
-const Queue = require('../models/Queue');
-const Merchant = require('../models/Merchant');
+const queueService = require('./queueService');
+const merchantService = require('./merchantService');
+const prisma = require('../utils/prisma');
 
 class ChatbotService {
   constructor() {
@@ -133,7 +134,7 @@ class ChatbotService {
    */
   async showMainMenu(merchantId) {
     try {
-      const merchant = await Merchant.findById(merchantId);
+      const merchant = await merchantService.findById(merchantId);
       const businessName = merchant ? merchant.businessName : 'Our Business';
       
       return {
@@ -161,7 +162,8 @@ class ChatbotService {
    */
   async showAvailableQueues(merchantId) {
     try {
-      const queues = await Queue.find({ merchantId, isActive: true });
+      const queues = await queueService.findByMerchant(merchantId);
+      const activeQueues = queues.filter(q => q.isActive);
       
       if (queues.length === 0) {
         return {
@@ -173,11 +175,12 @@ class ChatbotService {
       let message = "🍽️ Available Queues:\n\n";
       const queueOptions = [];
       
-      queues.forEach((queue, index) => {
-        const waitTime = queue.calculateEstimatedWaitTime();
+      activeQueues.forEach((queue, index) => {
+        const waitTime = queue.averageServiceTime || 15;
+        const waitingCount = queue.entries?.filter(e => e.status === 'waiting').length || 0;
         message += `${index + 1}️⃣ ${queue.name}\n`;
         message += `   ⏱️ Wait: ~${waitTime} min\n`;
-        message += `   👥 Waiting: ${queue.currentLength}/${queue.maxCapacity}\n`;
+        message += `   👥 Waiting: ${waitingCount}/${queue.maxCapacity}\n`;
         if (queue.description) {
           message += `   📝 ${queue.description}\n`;
         }
@@ -196,10 +199,10 @@ class ChatbotService {
         sessionUpdate: { 
           state: 'waiting_for_queue_selection',
           availableQueues: queues.map(q => ({
-            id: q._id,
+            id: q.id,
             name: q.name,
-            waitTime: q.calculateEstimatedWaitTime(),
-            currentLength: q.currentLength,
+            waitTime: q.averageServiceTime || 15,
+            currentLength: q.entries?.filter(e => e.status === 'waiting').length || 0,
             maxCapacity: q.maxCapacity
           })),
           merchantId 
@@ -305,7 +308,7 @@ class ChatbotService {
 
     try {
       // Add customer to queue
-      const queue = await Queue.findById(userSession.selectedQueueId);
+      const queue = await queueService.findById(userSession.selectedQueueId);
       if (!queue || !queue.isActive) {
         return {
           message: "❌ Sorry, this queue is no longer available. Please start over.",
@@ -333,20 +336,19 @@ class ChatbotService {
       }
 
       // Add to queue
-      const newEntry = queue.addCustomer({
+      const newEntry = await queueService.addCustomer(queue.id, {
         customerId,
         customerName: userSession.customerName,
         customerPhone: phone,
         platform: 'chatbot',
-        serviceType: userSession.selectedQueueName || queue.name
+        serviceType: userSession.selectedQueueName || queue.name,
+        partySize: 1
       });
-
-      await queue.save();
 
       // Emit real-time update
       if (this.io) {
         this.io.to(`merchant-${userSession.merchantId}`).emit('queue-updated', {
-          queueId: queue._id,
+          queueId: queue.id,
           action: 'customer-joined',
           customer: newEntry
         });
@@ -386,7 +388,7 @@ class ChatbotService {
     }
 
     try {
-      const queues = await Queue.find({ merchantId: userSession.merchantId });
+      const queues = await queueService.findByMerchant(userSession.merchantId);
       
       for (const queue of queues) {
         const customer = queue.entries.find(entry => 
@@ -453,7 +455,7 @@ class ChatbotService {
    */
   async getQueueStatus(userSession) {
     try {
-      const queue = await Queue.findById(userSession.queueId);
+      const queue = await queueService.findById(userSession.queueId);
       if (!queue) {
         return {
           message: "❌ Queue not found. Please start over.",
@@ -497,10 +499,9 @@ class ChatbotService {
   async handleCancelRequest(userSession, merchantId = null) {
     try {
       if (userSession.state === 'in_queue' && userSession.queueId) {
-        const queue = await Queue.findById(userSession.queueId);
+        const queue = await queueService.findById(userSession.queueId);
         if (queue) {
-          queue.removeCustomer(userSession.customerId, 'cancelled');
-          await queue.save();
+          await queueService.removeCustomer(userSession.queueId, userSession.customerId, 'cancelled');
 
           // Emit real-time update
           if (this.io) {

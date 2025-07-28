@@ -1,7 +1,8 @@
 const express = require('express');
-const Queue = require('../../models/Queue');
-const Merchant = require('../../models/Merchant');
+const queueService = require('../../services/queueService');
+const merchantService = require('../../services/merchantService');
 const logger = require('../../utils/logger');
+const prisma = require('../../utils/prisma');
 
 const router = express.Router();
 
@@ -68,7 +69,7 @@ router.get('/pricing', (req, res) => {
 // GET /queue/join/:merchantId - Simple customer queue page
 router.get('/queue/join/:merchantId', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.params.merchantId);
+    const merchant = await merchantService.findById(req.params.merchantId);
     
     if (!merchant || !merchant.isActive) {
       return res.status(404).render('error', {
@@ -79,21 +80,21 @@ router.get('/queue/join/:merchantId', async (req, res) => {
     }
     
     // Get current wait time estimate
-    const queue = await Queue.findOne({ 
-      merchantId: merchant.id || merchant._id, 
-      isActive: true 
-    });
+    const queues = await queueService.findByMerchant(merchant.id);
+    const queue = queues.find(q => q.isActive);
     
-    const currentWaitTime = queue ? queue.getAverageWaitTime() : 15;
+    const stats = queue ? await queueService.getQueueStats(queue.id) : null;
+    const currentWaitTime = stats ? stats.averageWaitTime : 15;
     
     res.render('customer-queue', {
       merchant: {
-        id: merchant.id || merchant._id,
+        id: merchant.id,
         businessName: merchant.businessName,
         primaryColor: merchant.primaryColor || '#ff8c00',
         secondaryColor: merchant.secondaryColor || '#ff6b35',
         logoUrl: merchant.logoUrl,
-        currentWaitTime
+        currentWaitTime,
+        phone: merchant.phone || '+60123456789'
       }
     });
     
@@ -113,7 +114,7 @@ router.get('/queue/join/:merchantId', async (req, res) => {
 // GET /join/:merchantId - Customer queue joining page
 router.get('/join/:merchantId', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.params.merchantId);
+    const merchant = await merchantService.getFullDetails(req.params.merchantId);
     
     if (!merchant || !merchant.isActive) {
       return res.render('public/error', {
@@ -124,20 +125,21 @@ router.get('/join/:merchantId', async (req, res) => {
     }
     
     // Check if business is open
-    const isOpen = merchant.isBusinessOpen();
+    const now = new Date();
+    const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+    const todayHours = merchant.businessHours?.find(h => h.dayOfWeek === dayOfWeek);
+    const isOpen = todayHours && !todayHours.closed;
     
     // Get active queues
-    const queues = await Queue.find({ 
-      merchantId: merchant._id, 
-      isActive: true 
-    }).sort({ createdAt: -1 });
+    const queues = await queueService.findByMerchant(merchant.id);
+    const activeQueues = queues.filter(q => q.isActive);
     
     res.render('public/join-queue', {
       title: `Join Queue - ${merchant.businessName}`,
       merchant,
-      queues,
+      queues: activeQueues,
       isOpen,
-      serviceTypes: merchant.getActiveServices()
+      serviceTypes: merchant.serviceTypes?.filter(s => s.isActive) || []
     });
     
   } catch (error) {
@@ -155,7 +157,7 @@ router.get('/queue-status/:queueId/:customerId', async (req, res) => {
   try {
     const { queueId, customerId } = req.params;
     
-    const queue = await Queue.findById(queueId).populate('merchantId');
+    const queue = await queueService.getQueueWithEntries(queueId);
     
     if (!queue) {
       return res.render('public/error', {
@@ -165,7 +167,15 @@ router.get('/queue-status/:queueId/:customerId', async (req, res) => {
       });
     }
     
-    const customer = queue.getCustomer(customerId);
+    const customer = await prisma.queueEntry.findFirst({
+      where: {
+        queueId: queueId,
+        OR: [
+          { id: customerId },
+          { customerId: customerId }
+        ]
+      }
+    });
     
     if (!customer) {
       return res.render('public/error', {
@@ -189,11 +199,11 @@ router.get('/queue-status/:queueId/:customerId', async (req, res) => {
     }
     
     res.render('public/queue-status', {
-      title: `Queue Status - ${queue.merchantId.businessName}`,
+      title: `Queue Status - ${queue.merchant.businessName}`,
       queue,
       customer,
       currentPosition,
-      merchant: queue.merchantId
+      merchant: queue.merchant
     });
     
   } catch (error) {
@@ -234,12 +244,10 @@ router.get('/queue/', async (req, res) => {
     const demoMerchantId = '7a99f35e-0f73-4f8e-831c-fde8fc3a5532';
     
     // Find active queues for the demo merchant
-    const queues = await Queue.find({ 
-      merchantId: demoMerchantId,
-      isActive: true 
-    });
+    const queues = await queueService.findByMerchant(demoMerchantId);
+    const activeQueues = queues.filter(q => q.isActive);
     
-    if (queues.length === 0) {
+    if (activeQueues.length === 0) {
       return res.status(404).render('error', {
         title: 'No Active Queues',
         status: 404,
@@ -248,16 +256,16 @@ router.get('/queue/', async (req, res) => {
     }
     
     // If there's only one queue, redirect directly to it
-    if (queues.length === 1) {
-      return res.redirect(`/queue/${queues[0]._id || queues[0].id}`);
+    if (activeQueues.length === 1) {
+      return res.redirect(`/queue/${activeQueues[0].id}`);
     }
     
     // Otherwise, show a list of available queues
-    const merchant = await Merchant.findById(demoMerchantId);
+    const merchant = await merchantService.findById(demoMerchantId);
     
     res.render('public/queue-list', {
       title: 'Available Queues - StoreHub Queue Management System',
-      queues,
+      queues: activeQueues,
       merchant
     });
     
@@ -265,9 +273,11 @@ router.get('/queue/', async (req, res) => {
     logger.error('Queue listing error:', error);
     // If error or no queues, try to find and redirect to first active queue
     try {
-      const firstQueue = await Queue.findOne({ isActive: true });
+      const firstQueue = await prisma.queue.findFirst({ 
+        where: { isActive: true } 
+      });
       if (firstQueue) {
-        return res.redirect(`/queue/${firstQueue._id || firstQueue.id}`);
+        return res.redirect(`/queue/${firstQueue.id}`);
       }
     } catch (innerError) {
       logger.error('Fallback queue search error:', innerError);
@@ -284,7 +294,58 @@ router.get('/queue/', async (req, res) => {
 // Queue information page for customers (accessed via QR code)
 router.get('/queue/:queueId', async (req, res) => {
   try {
-    const queue = await Queue.findById(req.params.queueId);
+    let queue;
+    const queueId = req.params.queueId;
+    
+    // Try to find queue using Prisma first (for UUID format)
+    if (queueId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      const prismaQueue = await prisma.queue.findUnique({
+        where: { id: queueId },
+        include: {
+          merchant: true,
+          entries: {
+            where: {
+              status: 'waiting'
+            },
+            orderBy: {
+              joinedAt: 'asc'
+            }
+          }
+        }
+      });
+      
+      if (prismaQueue) {
+        // Convert Prisma format to MongoDB-like format for compatibility
+        queue = {
+          _id: prismaQueue.id,
+          id: prismaQueue.id,
+          name: prismaQueue.name,
+          merchantId: prismaQueue.merchantId,
+          isActive: prismaQueue.isActive,
+          acceptingCustomers: prismaQueue.acceptingCustomers,
+          entries: prismaQueue.entries,
+          merchant: prismaQueue.merchant
+        };
+      }
+    }
+    
+    // If not found with Prisma, use queue service
+    if (!queue) {
+      const queueData = await queueService.getQueueWithEntries(queueId);
+      if (queueData) {
+        queue = {
+          _id: queueData.id,
+          id: queueData.id,
+          name: queueData.name,
+          merchantId: queueData.merchantId,
+          isActive: queueData.isActive,
+          acceptingCustomers: queueData.acceptingCustomers,
+          entries: queueData.entries,
+          merchant: queueData.merchant
+        };
+      }
+    }
+    
     if (!queue) {
       return res.status(404).render('error', {
         title: 'Queue Not Found',
@@ -303,7 +364,12 @@ router.get('/queue/:queueId', async (req, res) => {
       );
     }
 
-    const merchant = await Merchant.findById(queue.merchantId);
+    // Get merchant - either from queue include or service lookup
+    let merchant = queue.merchant;
+    if (!merchant) {
+      merchant = await merchantService.findById(queue.merchantId);
+    }
+    
     if (!merchant) {
       return res.status(404).render('error', {
         title: 'Business Not Found',
@@ -394,7 +460,7 @@ router.get('/queue/:queueId', async (req, res) => {
     }
 
     res.render('queue-info', {
-      queueId: queue._id,
+      queueId: queue.id || queue._id,
       queueName: queue.name,
       businessName: merchant.businessName,
       businessType: businessTypeDisplay,
@@ -424,7 +490,7 @@ router.get('/queue/:queueId', async (req, res) => {
 // GET /join-queue/:merchantId - Simplified customer queue joining page
 router.get('/join-queue/:merchantId', async (req, res) => {
   try {
-    const merchant = await Merchant.findById(req.params.merchantId);
+    const merchant = await merchantService.findById(req.params.merchantId);
     
     if (!merchant || !merchant.isActive) {
       return res.status(404).render('error', {
@@ -435,16 +501,14 @@ router.get('/join-queue/:merchantId', async (req, res) => {
     }
     
     // Get current wait time estimate
-    const queue = await Queue.findOne({ 
-      merchantId: merchant.id || merchant._id, 
-      isActive: true 
-    });
+    const queues = await queueService.findByMerchant(merchant.id);
+    const queue = queues.find(q => q.isActive);
     
-    const waitingCount = queue?.entries?.filter(e => e.status === 'waiting').length || 0;
-    const currentWaitTime = waitingCount * (queue?.averageServiceTime || 15);
+    const stats = queue ? await queueService.getQueueStats(queue.id) : null;
+    const currentWaitTime = stats ? stats.averageWaitTime : 15;
     
     res.render('simple-join', {
-      merchantId: merchant.id || merchant._id,
+      merchantId: merchant.id,
       businessName: merchant.businessName,
       currentWaitTime
     });

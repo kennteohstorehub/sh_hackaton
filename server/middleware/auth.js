@@ -41,9 +41,9 @@ const loadUser = async (req, res, next) => {
   
   if (req.session && req.session.userId) {
     try {
-      const Merchant = require('../models/Merchant');
+      const merchantService = require('../services/merchantService');
       logger.info(`Loading user data for userId: ${req.session.userId}`);
-      const user = await Merchant.findById(req.session.userId);
+      const user = await merchantService.findById(req.session.userId);
       
       if (!user) {
         // User not found, clear session

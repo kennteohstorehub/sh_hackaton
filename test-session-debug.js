@@ -1,126 +1,81 @@
-const https = require('https');
+const fetch = require('node-fetch');
 
-async function debugSession() {
-  console.log('🔍 Session Debugging');
-  console.log('=' .repeat(50));
-  
-  // First, login and capture the exact response
-  const loginData = 'email=demo@smartqueue.com&password=demo123456';
-  
-  console.log('\n1️⃣ Performing login...');
-  
-  const loginPromise = new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'queuemanagement-vtc2.onrender.com',
-      path: '/auth/login',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': loginData.length
-      }
-    }, (res) => {
-      const sessionCookie = res.headers['set-cookie']?.[0]?.split(';')[0] || '';
-      
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        resolve({
-          status: res.statusCode,
-          location: res.headers.location,
-          cookie: sessionCookie,
-          body
+const BASE_URL = 'http://localhost:3838';
+
+async function testSessionDebug() {
+    console.log('=== Session Debug Test ===\n');
+    
+    // Generate test session ID
+    const sessionId = 'qc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    console.log('Test sessionId:', sessionId);
+    
+    // Test data
+    const testData = {
+        customerName: 'Session Debug Test',
+        customerPhone: '+60123456789',
+        partySize: 2,
+        merchantId: '3ecceb82-fb33-42c8-9d84-19eb69417e16',
+        sessionId: sessionId,
+        specialRequests: 'Testing session management'
+    };
+    
+    try {
+        // Step 1: Join queue
+        console.log('\n1. Joining queue...');
+        const joinResponse = await fetch(`${BASE_URL}/api/webchat/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(testData)
         });
-      });
-    });
-    
-    req.on('error', reject);
-    req.write(loginData);
-    req.end();
-  });
-  
-  const loginResult = await loginPromise;
-  
-  console.log('   Status:', loginResult.status);
-  console.log('   Location:', loginResult.location);
-  console.log('   Cookie:', loginResult.cookie);
-  
-  if (loginResult.status !== 302) {
-    console.log('   Response body:', loginResult.body);
-    return;
-  }
-  
-  // Now check the debug endpoint with the cookie
-  console.log('\n2️⃣ Checking session debug endpoint...');
-  
-  const debugPromise = new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'queuemanagement-vtc2.onrender.com',
-      path: '/auth/debug',
-      method: 'GET',
-      headers: {
-        'Cookie': loginResult.cookie
-      }
-    }, (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        try {
-          const data = JSON.parse(body);
-          resolve(data);
-        } catch (e) {
-          resolve({ error: 'Failed to parse response', body });
+        
+        const joinData = await joinResponse.json();
+        console.log('Join response:', JSON.stringify(joinData, null, 2));
+        
+        if (!joinResponse.ok) {
+            throw new Error(`Join failed: ${joinData.error}`);
         }
-      });
-    });
-    
-    req.on('error', reject);
-    req.end();
-  });
-  
-  const debugData = await debugPromise;
-  console.log('   Session debug data:', JSON.stringify(debugData, null, 2));
-  
-  // Check if we can access a protected route
-  console.log('\n3️⃣ Testing protected route access...');
-  
-  const protectedPromise = new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'queuemanagement-vtc2.onrender.com',
-      path: '/dashboard',
-      method: 'GET',
-      headers: {
-        'Cookie': loginResult.cookie
-      }
-    }, (res) => {
-      console.log('   Dashboard status:', res.statusCode);
-      console.log('   Location:', res.headers.location || 'N/A');
-      
-      resolve({
-        status: res.statusCode,
-        location: res.headers.location
-      });
-    });
-    
-    req.on('error', reject);
-    req.end();
-  });
-  
-  await protectedPromise;
-  
-  // Try to check the actual session in the database
-  console.log('\n4️⃣ Session Analysis:');
-  
-  if (loginResult.cookie) {
-    const sessionId = loginResult.cookie.match(/s%3A([^.]+)/)?.[1];
-    console.log('   Session ID fragment:', sessionId?.substring(0, 20) + '...');
-    
-    // The session should be stored in PostgreSQL
-    console.log('   Session should be in PostgreSQL "Session" table');
-    console.log('   With columns: id, sid, sess, expire');
-  }
-  
-  console.log('\n⚠️  Issue: Session is created but userId is not being set');
-  console.log('This suggests the login route is not properly saving the userId to the session.');
+        
+        // Wait a moment
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Step 2: Check status
+        console.log('\n2. Checking status...');
+        const statusResponse = await fetch(`${BASE_URL}/api/webchat/status/${sessionId}`);
+        const statusData = await statusResponse.json();
+        
+        console.log('Status response:', {
+            status: statusResponse.status,
+            ok: statusResponse.ok,
+            data: JSON.stringify(statusData, null, 2)
+        });
+        
+        // Step 3: Try cancellation
+        console.log('\n3. Testing cancellation...');
+        const cancelResponse = await fetch(`${BASE_URL}/api/webchat/cancel/${sessionId}`, {
+            method: 'POST'
+        });
+        
+        const cancelData = await cancelResponse.json();
+        console.log('Cancel response:', {
+            status: cancelResponse.status,
+            ok: cancelResponse.ok,
+            data: JSON.stringify(cancelData, null, 2)
+        });
+        
+        // Step 4: Check status after cancel
+        console.log('\n4. Checking status after cancel...');
+        const statusAfterResponse = await fetch(`${BASE_URL}/api/webchat/status/${sessionId}`);
+        const statusAfterData = await statusAfterResponse.json();
+        
+        console.log('Status after cancel:', {
+            status: statusAfterResponse.status,
+            ok: statusAfterResponse.ok,
+            data: JSON.stringify(statusAfterData, null, 2)
+        });
+        
+    } catch (error) {
+        console.error('\n❌ Error:', error.message);
+    }
 }
 
-debugSession().catch(console.error);
+testSessionDebug();

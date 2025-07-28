@@ -1,6 +1,7 @@
 const express = require('express');
-const Queue = require('../models/Queue');
-const Merchant = require('../models/Merchant');
+const queueService = require('../services/queueService');
+const merchantService = require('../services/merchantService');
+const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
 const moment = require('moment');
 
@@ -40,7 +41,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
     }
 
     // Get all queues for the merchant
-    const queues = await Queue.find({ merchantId });
+    const queues = await queueService.findByMerchant(merchantId, true);
 
     // Calculate analytics
     const analytics = {
@@ -272,7 +273,7 @@ router.get('/export', authMiddleware, async (req, res) => {
         startDate = moment().subtract(30, 'days').startOf('day');
     }
 
-    const queues = await Queue.find({ merchantId });
+    const queues = await queueService.findByMerchant(merchantId, true);
     
     const exportData = {
       merchant: req.session.user.businessName,

@@ -12,23 +12,23 @@ if (process.env.NODE_ENV !== 'production') {
   ({ requireAuth, loadUser } = require('../middleware/auth'));
 }
 
-const Queue = require('../models/Queue');
-const Merchant = require('../models/Merchant');
+const queueService = require('../services/queueService');
+const merchantService = require('../services/merchantService');
 
 const router = express.Router();
 
 // GET /api/queue - Get all queues for merchant
 router.get('/', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queues = await Queue.find({ merchantId }).sort({ createdAt: -1 });
+    const merchantId = req.user.id || req.user._id;
+    const queues = await queueService.findByMerchant(merchantId, true);
     
     res.json({
       success: true,
       queues: queues.map(queue => ({
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: queue.entries?.filter(e => e.status === 'waiting').length || 0,
+        nextPosition: (queue.entries?.filter(e => e.status === 'waiting').length || 0) + 1
       }))
     });
   } catch (error) {
@@ -42,40 +42,25 @@ router.get('/performance', [requireAuth, loadUser], async (req, res) => {
   try {
     const merchantId = req.user._id;
     
-    // Get all queues for the merchant
-    const queues = await Queue.find({ merchantId });
+    // Get all queues for the merchant with performance stats
+    const queues = await queueService.findByMerchant(merchantId, true);
     
     // Calculate performance metrics for each queue
-    const queuePerformance = queues.map(queue => {
-      const totalCustomers = queue.entries ? queue.entries.length : 0;
-      const completedCustomers = queue.entries ? queue.entries.filter(e => e.status === 'completed').length : 0;
-      const waitingCustomers = queue.entries ? queue.entries.filter(e => e.status === 'waiting').length : 0;
-      const efficiency = totalCustomers > 0 ? Math.round((completedCustomers / totalCustomers) * 100) : 0;
-      
-      // Calculate average wait time
-      let averageWaitTime = 0;
-      if (queue.entries && queue.entries.length > 0) {
-        const waitingEntries = queue.entries.filter(e => e.status === 'waiting');
-        if (waitingEntries.length > 0) {
-          const now = new Date();
-          const totalWaitTime = waitingEntries.reduce((total, entry) => {
-            const waitMinutes = Math.floor((now - new Date(entry.joinedAt)) / (1000 * 60));
-            return total + waitMinutes;
-          }, 0);
-          averageWaitTime = Math.round(totalWaitTime / waitingEntries.length);
-        }
-      }
+    const queuePerformance = await Promise.all(queues.map(async queue => {
+      const stats = await queueService.getQueueStats(queue.id);
+      const totalCustomers = queue.entries?.length || 0;
+      const efficiency = totalCustomers > 0 ? Math.round((stats.servedToday / totalCustomers) * 100) : 0;
       
       return {
-        id: queue._id,
+        id: queue.id,
         name: queue.name,
         totalCustomers,
-        completedCustomers,
-        currentLength: waitingCustomers,
-        averageWaitTime,
+        completedCustomers: stats.servedToday,
+        currentLength: stats.waitingCount,
+        averageWaitTime: Math.round(stats.averageWaitTime),
         efficiency
       };
-    });
+    }));
     
     res.json({
       success: true,
@@ -103,26 +88,32 @@ router.post('/', [requireAuth, loadUser], [
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
     }
 
-    const merchantId = req.user._id;
+    const merchantId = req.user.id || req.user._id;
     const { name, description, maxCapacity, averageServiceTime } = req.body;
 
     // Check if merchant can create more queues
-    const merchant = await Merchant.findById(merchantId);
-    const existingQueues = await Queue.countDocuments({ merchantId });
+    const merchant = await prisma.merchant.findUnique({
+      where: { id: merchantId },
+      include: { queues: true, subscription: true }
+    });
     
-    if (!merchant.canCreateQueue(existingQueues)) {
+    if (!merchant) {
+      return res.status(404).json({ error: 'Merchant not found' });
+    }
+    
+    const existingQueues = merchant.queues.length;
+    const maxQueues = merchant.subscription?.maxQueues || 1;
+    
+    if (existingQueues >= maxQueues) {
       return res.status(403).json({ error: 'Queue limit reached for your subscription plan' });
     }
 
-    const queue = new Queue({
-      merchantId,
+    const queue = await queueService.create(merchantId, {
       name,
       description,
       maxCapacity,
       averageServiceTime
     });
-
-    await queue.save();
 
     // Emit real-time update
     req.io.to(`merchant-${merchantId}`).emit('queue-created', queue);
@@ -130,9 +121,9 @@ router.post('/', [requireAuth, loadUser], [
     res.status(201).json({
       success: true,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: 0,
+        nextPosition: 1
       }
     });
 
@@ -145,19 +136,23 @@ router.post('/', [requireAuth, loadUser], [
 // GET /api/queue/:id - Get specific queue
 router.get('/:id', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
+    const waitingCount = await prisma.queueEntry.count({
+      where: { queueId: queue.id, status: 'waiting' }
+    });
+
     res.json({
       success: true,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: waitingCount,
+        nextPosition: waitingCount + 1
       }
     });
 
@@ -180,35 +175,33 @@ router.put('/:id', [requireAuth, loadUser], [
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
     }
 
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    // Update fields
-    Object.keys(req.body).forEach(key => {
-      if (req.body[key] !== undefined) {
-        queue[key] = req.body[key];
-      }
-    });
-
-    await queue.save();
+    // Update queue
+    const updatedQueue = await queueService.update(req.params.id, req.body);
 
     // Emit real-time update
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
-      queueId: queue._id,
+      queueId: updatedQueue.id,
       action: 'queue-modified',
-      queue
+      queue: updatedQueue
+    });
+
+    const waitingCount = await prisma.queueEntry.count({
+      where: { queueId: updatedQueue.id, status: 'waiting' }
     });
 
     res.json({
       success: true,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...updatedQueue,
+        currentLength: waitingCount,
+        nextPosition: waitingCount + 1
       }
     });
 
@@ -221,72 +214,141 @@ router.put('/:id', [requireAuth, loadUser], [
 // POST /api/queue/:id/call-next - Call next customer
 router.post('/:id/call-next', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await prisma.queue.findFirst({
+      where: {
+        id: req.params.id,
+        merchantId: merchantId
+      },
+      include: {
+        merchant: true
+      }
+    });
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    const nextCustomer = await queue.callNext();
+    // Get the next waiting customer
+    const nextCustomer = await prisma.queueEntry.findFirst({
+      where: {
+        queueId: queue.id,
+        status: 'waiting'
+      },
+      orderBy: {
+        position: 'asc'
+      }
+    });
     
     if (!nextCustomer) {
       return res.status(400).json({ error: 'No customers waiting in queue' });
     }
 
-    await queue.save();
+    // Update the customer status to 'called'
+    await prisma.queueEntry.update({
+      where: { id: nextCustomer.id },
+      data: {
+        status: 'called',
+        calledAt: new Date()
+      }
+    });
+    
+    // Refetch to ensure we have the latest data
+    const updatedCustomer = await prisma.queueEntry.findUnique({
+      where: { id: nextCustomer.id }
+    });
+    
+    logger.info('Customer status updated:', {
+      id: updatedCustomer.id,
+      oldStatus: nextCustomer.status,
+      newStatus: updatedCustomer.status,
+      calledAt: updatedCustomer.calledAt
+    });
+    
+    console.log('DEBUG - updatedCustomer:', JSON.stringify(updatedCustomer, null, 2));
 
-    // Send notifications to customer (Push & WhatsApp)
+    // Send notifications to customer
     try {
-      // Try push notification first
+      const notificationData = {
+        customerId: updatedCustomer.customerId,
+        queueName: queue.name,
+        position: updatedCustomer.position,
+        verificationCode: updatedCustomer.verificationCode,
+        message: `🎉 IT'S YOUR TURN!\n\nPlease proceed to the counter.\nVerification code: ${updatedCustomer.verificationCode}`
+      };
+      
+      // Primary: Emit to customer room (works for all platforms)
+      req.io.to(`customer-${updatedCustomer.customerId}`).emit('customer-called', notificationData);
+      
+      // Secondary: Emit to session room if available
+      if (updatedCustomer.sessionId) {
+        req.io.to(`session-${updatedCustomer.sessionId}`).emit('customer-called', notificationData);
+      }
+      
+      // Tertiary: Try push notification
       const pushNotificationService = require('../services/pushNotificationService');
       const pushSent = await pushNotificationService.notifyTableReady(
-        nextCustomer.id || nextCustomer._id,
-        `#${nextCustomer.position}`,
+        updatedCustomer.id,
+        `#${updatedCustomer.position}`,
         queue.merchant?.businessName || 'Restaurant'
       );
       
       if (pushSent) {
-        logger.info(`Push notification sent to ${nextCustomer.customerName}`);
+        logger.info(`Push notification sent to ${updatedCustomer.customerName}`);
       }
       
-      // Also try WhatsApp if available
-      const whatsappService = require('../services/whatsappService');
-      const notificationMessage = `🔔 It's your turn ${nextCustomer.customerName}!\n\n📍 Queue: ${queue.name}\n🎫 Your position: #${nextCustomer.position}\n👥 Party size: ${nextCustomer.partySize} pax\n\n🔐 YOUR VERIFICATION CODE: ${nextCustomer.verificationCode}\n\nPlease show this code to our staff to be seated.\n\n⏰ Please present yourself within 10 minutes or your spot may be given away.`;
+      logger.info(`Notifications sent to ${updatedCustomer.customerName} via websocket and push`);
       
-      await whatsappService.sendMessage(nextCustomer.customerPhone, notificationMessage);
-      logger.info(`WhatsApp notification sent to ${nextCustomer.customerPhone} for queue ${queue.name}`);
+      // Legacy WhatsApp support (only if enabled)
+      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && updatedCustomer.customerPhone) {
+        try {
+          const whatsappService = require('../services/whatsappService');
+          const notificationMessage = `🔔 It's your turn ${updatedCustomer.customerName}!\n\n📍 Queue: ${queue.name}\n🎫 Your position: #${updatedCustomer.position}\n🎫 Verification code: ${updatedCustomer.verificationCode}\n👥 Party size: ${updatedCustomer.partySize} pax\n\n🔐 Please show this code to our staff to be seated.`;
+          
+          await whatsappService.sendMessage(updatedCustomer.customerPhone, notificationMessage);
+          logger.info(`WhatsApp notification sent to ${updatedCustomer.customerPhone} (legacy support)`);
+        } catch (whatsappError) {
+          logger.warn('WhatsApp notification failed (non-critical):', whatsappError.message);
+        }
+      }
     } catch (error) {
       logger.error('Error sending customer notification:', error);
     }
 
+    // Calculate queue metrics
+    const waitingEntries = await prisma.queueEntry.count({
+      where: { queueId: queue.id, status: 'waiting' }
+    });
+    
+    const nextPositionEntry = await prisma.queueEntry.findFirst({
+      where: { queueId: queue.id },
+      orderBy: { position: 'desc' },
+      select: { position: true }
+    });
+    
+    const nextPosition = (nextPositionEntry?.position || 0) + 1;
+
     // Emit real-time updates
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
-      queueId: queue._id,
+      queueId: queue.id,
       action: 'customer-called',
-      customer: nextCustomer,
+      customer: updatedCustomer,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: waitingEntries,
+        nextPosition: nextPosition
       }
     });
 
-    req.io.to(`customer-${nextCustomer.customerId}`).emit('customer-called', {
-      queueName: queue.name,
-      position: nextCustomer.position
-    });
+    // No need for duplicate notifications here since we already sent them above
 
     res.json({
       success: true,
-      customer: {
-        ...nextCustomer,
-        verificationCode: nextCustomer.verificationCode
-      },
+      customer: updatedCustomer,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: waitingEntries,
+        nextPosition: nextPosition
       }
     });
 
@@ -306,35 +368,78 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
     }
 
-    const merchantId = req.user._id;
+    const merchantId = req.user.id || req.user._id;
     const { customerId } = req.body;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    
+    // Use Prisma to find the queue
+    const queue = await prisma.queue.findFirst({
+      where: {
+        id: req.params.id,
+        merchantId: merchantId
+      },
+      include: {
+        merchant: true
+      }
+    });
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    // Find the specific customer
-    const customerEntry = queue.entries.find(entry => 
-      entry._id.toString() === customerId && entry.status === 'waiting'
-    );
+    // Find the specific customer in Prisma
+    let customerEntry = await prisma.queueEntry.findFirst({
+      where: {
+        id: customerId,
+        queueId: queue.id,
+        status: 'waiting'
+      }
+    });
 
     if (!customerEntry) {
       return res.status(404).json({ error: 'Customer not found or not waiting' });
     }
 
-    // Call the specific customer
-    customerEntry.status = 'called';
-    customerEntry.calledAt = new Date();
+    // Update the customer status to 'called'
+    customerEntry = await prisma.queueEntry.update({
+      where: { id: customerEntry.id },
+      data: {
+        status: 'called',
+        calledAt: new Date()
+      }
+    });
 
-    await queue.save();
-
-    // Send notifications to customer (Push & WhatsApp)
+    // Send notifications to customer
     try {
-      // Try push notification first
+      // Generate verification code if not present
+      if (!customerEntry.verificationCode) {
+        const webChatService = require('../services/webChatService');
+        const verificationCode = webChatService.generateVerificationCode();
+        customerEntry = await prisma.queueEntry.update({
+          where: { id: customerEntry.id },
+          data: { verificationCode }
+        });
+      }
+      
+      const notificationData = {
+        customerId: customerEntry.customerId,
+        queueName: queue.name,
+        position: customerEntry.position,
+        verificationCode: customerEntry.verificationCode,
+        message: `🎉 IT'S YOUR TURN!\n\nPlease proceed to the counter.\nVerification code: ${customerEntry.verificationCode}`
+      };
+      
+      // Primary: Emit to customer room (works for all platforms)
+      req.io.to(`customer-${customerEntry.customerId}`).emit('customer-called', notificationData);
+      
+      // Secondary: Emit to session room if available
+      if (customerEntry.sessionId) {
+        req.io.to(`session-${customerEntry.sessionId}`).emit('customer-called', notificationData);
+      }
+      
+      // Tertiary: Try push notification
       const pushNotificationService = require('../services/pushNotificationService');
       const pushSent = await pushNotificationService.notifyTableReady(
-        customerEntry.id || customerEntry._id,
+        customerEntry.id,
         `#${customerEntry.position}`,
         queue.merchant?.businessName || 'Restaurant'
       );
@@ -343,25 +448,46 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
         logger.info(`Push notification sent to ${customerEntry.customerName} (specific call)`);
       }
       
-      // Also send WhatsApp notification
-      const whatsappService = require('../services/whatsappService');
-      const notificationMessage = `🔔 It's your turn ${customerEntry.customerName}!\n\n📍 Queue: ${queue.name}\n🎫 Your position: #${customerEntry.position}\n👥 Party size: ${customerEntry.partySize} pax\n\n⚡ You've been called ahead of schedule!\nPlease come to the service counter now. Thank you for waiting!\n\n⏰ Please present yourself within 10 minutes or your table will self destruct. Kindly inform your name and number to our crew.`;
+      logger.info(`Notifications sent to ${customerEntry.customerName} via websocket and push`);
       
-      await whatsappService.sendMessage(customerEntry.customerPhone, notificationMessage);
-      logger.info(`WhatsApp notification sent to ${customerEntry.customerPhone} for queue ${queue.name} (specific call)`);
+      // Legacy WhatsApp support (only if enabled)
+      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customerEntry.customerPhone) {
+        try {
+          const whatsappService = require('../services/whatsappService');
+          const notificationMessage = `🔔 It's your turn ${customerEntry.customerName}!\n\n📍 Queue: ${queue.name}\n🎫 Your position: #${customerEntry.position}\n🎫 Verification code: ${customerEntry.verificationCode}\n👥 Party size: ${customerEntry.partySize} pax\n\n⚡ You've been called ahead of schedule!\nPlease come to the service counter now.`;
+          
+          await whatsappService.sendMessage(customerEntry.customerPhone, notificationMessage);
+          logger.info(`WhatsApp notification sent to ${customerEntry.customerPhone} (legacy support)`);
+        } catch (whatsappError) {
+          logger.warn('WhatsApp notification failed (non-critical):', whatsappError.message);
+        }
+      }
     } catch (error) {
       logger.error('Error sending customer notification:', error);
     }
 
+    // Calculate queue metrics
+    const waitingEntries = await prisma.queueEntry.count({
+      where: { queueId: queue.id, status: 'waiting' }
+    });
+    
+    const nextPositionEntry = await prisma.queueEntry.findFirst({
+      where: { queueId: queue.id },
+      orderBy: { position: 'desc' },
+      select: { position: true }
+    });
+    
+    const nextPosition = (nextPositionEntry?.position || 0) + 1;
+
     // Emit real-time updates
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
-      queueId: queue._id,
+      queueId: queue.id,
       action: 'customer-called-specific',
       customer: customerEntry,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: waitingEntries,
+        nextPosition: nextPosition
       }
     });
 
@@ -375,9 +501,9 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
       success: true,
       customer: customerEntry,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: waitingEntries,
+        nextPosition: nextPosition
       }
     });
 
@@ -388,11 +514,14 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
 });
 
 // Function to send position update notifications to all waiting customers
-async function sendPositionUpdateNotifications(queue, io, merchantId) {
+async function sendPositionUpdateNotifications(queueId, queueName, io, merchantId) {
   try {
     const whatsappService = require('../services/whatsappService');
     const pushNotificationService = require('../services/pushNotificationService');
-    const waitingCustomers = queue.entries.filter(entry => entry.status === 'waiting');
+    const waitingCustomers = await prisma.queueEntry.findMany({
+      where: { queueId, status: 'waiting' },
+      orderBy: { position: 'asc' }
+    });
     
     for (const customer of waitingCustomers) {
       try {
@@ -409,7 +538,7 @@ async function sendPositionUpdateNotifications(queue, io, merchantId) {
         }
         
         // Also send WhatsApp notification
-        const notificationMessage = `📍 Queue Update ${customer.customerName}!\n\n🏪 ${queue.name}\n🎫 Your position: #${customer.position}\n👥 Party size: ${customer.partySize} pax\n⏱️ Estimated wait: ${customer.estimatedWaitTime} minutes\n\n✅ Someone has been seated - you're moving up in the queue!`;
+        const notificationMessage = `📍 Queue Update ${customer.customerName}!\n\n🏪 ${queueName}\n🎫 Your position: #${customer.position}\n👥 Party size: ${customer.partySize} pax\n⏱️ Estimated wait: ${customer.estimatedWaitTime} minutes\n\n✅ Someone has been seated - you're moving up in the queue!`;
         
         await whatsappService.sendMessage(customer.customerPhone, notificationMessage);
         logger.info(`WhatsApp position update sent to ${customer.customerPhone} - Position: #${customer.position}`);
@@ -432,19 +561,22 @@ router.post('/:id/verify-and-seat/:customerId', [requireAuth, loadUser], [
       return res.status(400).json({ error: 'Invalid verification code format' });
     }
 
-    const merchantId = req.user._id;
+    const merchantId = req.user.id || req.user._id;
     const { verificationCode } = req.body;
     
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
     // Find the customer
-    const customer = queue.entries?.find(e => 
-      (e.customerId === req.params.customerId || e.id === req.params.customerId) && 
-      e.status === 'called'
-    );
+    const customer = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: 'called'
+      }
+    });
     
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found or not in called status' });
@@ -456,13 +588,12 @@ router.post('/:id/verify-and-seat/:customerId', [requireAuth, loadUser], [
     }
 
     // Mark as completed (seated)
-    const seatedCustomer = await queue.removeCustomer(customer.customerId || customer.id, 'completed');
-    await queue.save();
+    const seatedCustomer = await queueService.removeCustomer(customer.id, 'completed');
 
     // Send welcome message with menu link
     try {
       const whatsappService = require('../services/whatsappService');
-      const merchant = await Merchant.findById(merchantId);
+      const merchant = await merchantService.getFullDetails(merchantId);
       const menuUrl = merchant?.settings?.menuUrl || 'https://beepdeliveryops.beepit.com/dine?s=5e806691322bdd231653d70c&from=home';
       
       const welcomeMessage = `🎉 Welcome ${seatedCustomer.customerName}!\n\n✅ You've been seated successfully!\n👥 Party size: ${seatedCustomer.partySize} pax\n\n🍽️ Ready to order? Check out our menu:\n\n📱 Online Menu: ${menuUrl}\n\n🛎️ Need assistance? Our staff will be right with you!\n\nEnjoy your dining experience!`;
@@ -473,11 +604,11 @@ router.post('/:id/verify-and-seat/:customerId', [requireAuth, loadUser], [
     }
 
     // Send position updates
-    await sendPositionUpdateNotifications(queue, req.io, merchantId);
+    await sendPositionUpdateNotifications(queue.id, queue.name, req.io, merchantId);
 
     // Emit real-time updates
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
-      queueId: queue._id,
+      queueId: queue.id,
       action: 'customer-seated-verified',
       customer: seatedCustomer
     });
@@ -497,25 +628,23 @@ router.post('/:id/verify-and-seat/:customerId', [requireAuth, loadUser], [
 // POST /api/queue/:id/complete/:customerId - Mark customer service as completed
 router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    const customer = await queue.removeCustomer(req.params.customerId, 'completed');
+    const customer = await queueService.removeCustomer(req.params.customerId, 'completed');
     
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found in queue' });
     }
 
-    await queue.save();
-
     // Send welcome message with menu link to the seated customer
     try {
       const whatsappService = require('../services/whatsappService');
-      const merchant = await Merchant.findById(merchantId);
+      const merchant = await merchantService.getFullDetails(merchantId);
       // Get merchant menu URL if available
       const menuUrl = merchant?.settings?.menuUrl || 'https://beepdeliveryops.beepit.com/dine?s=5e806691322bdd231653d70c&from=home';
       
@@ -528,11 +657,11 @@ router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, re
     }
 
     // Send position update notifications to all waiting customers
-    await sendPositionUpdateNotifications(queue, req.io, merchantId);
+    await sendPositionUpdateNotifications(queue.id, queue.name, req.io, merchantId);
 
     // Emit real-time updates
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
-      queueId: queue._id,
+      queueId: queue.id,
       action: 'customer-completed',
       customer
     });
@@ -543,14 +672,15 @@ router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, re
     });
 
     // Also emit updated queue state for comprehensive refresh
+    const stats = await queueService.getQueueStats(queue.id);
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
-      queueId: queue._id,
+      queueId: queue.id,
       action: 'customer-completed',
       customer,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: stats.waitingCount,
+        nextPosition: stats.waitingCount + 1
       }
     });
 
@@ -558,9 +688,9 @@ router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, re
       success: true,
       customer,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: stats.waitingCount,
+        nextPosition: stats.waitingCount + 1
       }
     });
 
@@ -573,40 +703,44 @@ router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, re
 // POST /api/queue/:id/requeue/:customerId - Requeue completed customer back to waiting list
 router.post('/:id/requeue/:customerId', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
     // Find the completed customer
-    const customerEntry = queue.entries.find(entry => 
-      entry.customerId === req.params.customerId && 
-      (entry.status === 'completed' || entry.status === 'seated')
-    );
+    const customerEntry = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: { in: ['completed', 'seated'] }
+      }
+    });
 
     if (!customerEntry) {
       return res.status(404).json({ error: 'Completed customer not found' });
     }
 
     // Check if queue is at capacity
-    const currentWaitingCount = queue.entries.filter(entry => entry.status === 'waiting').length;
-    if (currentWaitingCount >= queue.maxCapacity) {
+    const stats = await queueService.getQueueStats(queue.id);
+    if (stats.waitingCount >= queue.maxCapacity) {
       return res.status(400).json({ error: 'Queue is at maximum capacity' });
     }
 
     // Requeue the customer
-    customerEntry.status = 'waiting';
-    customerEntry.position = queue.nextPosition;
-    customerEntry.completedAt = null;
-    customerEntry.calledAt = null;
-    customerEntry.requeuedAt = new Date();
-
-    // Update positions for all waiting customers
-    await queue.updatePositions();
-
-    await queue.save();
+    const nextPosition = stats.waitingCount + 1;
+    const updatedCustomer = await prisma.queueEntry.update({
+      where: { id: req.params.customerId },
+      data: {
+        status: 'waiting',
+        position: nextPosition,
+        completedAt: null,
+        calledAt: null,
+        requeuedAt: new Date()
+      }
+    });
 
     // Send WhatsApp notification to customer
     try {
@@ -620,30 +754,31 @@ router.post('/:id/requeue/:customerId', [requireAuth, loadUser], async (req, res
     }
 
     // Emit real-time updates
+    const finalStats = await queueService.getQueueStats(queue.id);
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
-      queueId: queue._id,
+      queueId: queue.id,
       action: 'customer-requeued',
-      customer: customerEntry,
+      customer: updatedCustomer,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: finalStats.waitingCount,
+        nextPosition: finalStats.waitingCount + 1
       }
     });
 
-    req.io.to(`customer-${customerEntry.customerId}`).emit('customer-requeued', {
+    req.io.to(`customer-${updatedCustomer.customerId}`).emit('customer-requeued', {
       queueName: queue.name,
-      position: customerEntry.position,
-      requeuedAt: customerEntry.requeuedAt
+      position: updatedCustomer.position,
+      requeuedAt: updatedCustomer.requeuedAt
     });
 
     res.json({
       success: true,
-      customer: customerEntry,
+      customer: updatedCustomer,
       queue: {
-        ...queue.toObject(),
-        currentLength: queue.currentLength,
-        nextPosition: queue.nextPosition
+        ...queue,
+        currentLength: finalStats.waitingCount,
+        nextPosition: finalStats.waitingCount + 1
       }
     });
 
@@ -656,31 +791,32 @@ router.post('/:id/requeue/:customerId', [requireAuth, loadUser], async (req, res
 // POST /api/queue/:id/toggle-accepting - Start/Stop accepting new customers
 router.post('/:id/toggle-accepting', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
     // Toggle accepting customers state
-    queue.acceptingCustomers = !queue.acceptingCustomers;
-    await queue.save();
+    const updatedQueue = await queueService.update(req.params.id, {
+      acceptingCustomers: !queue.acceptingCustomers
+    });
 
     // Log the action
-    logger.info(`Queue ${queue.name} ${queue.acceptingCustomers ? 'started' : 'stopped'} accepting customers by ${req.user.businessName}`);
+    logger.info(`Queue ${queue.name} ${updatedQueue.acceptingCustomers ? 'started' : 'stopped'} accepting customers by ${req.user.businessName}`);
 
     // Emit real-time update
     req.io.to(`merchant-${merchantId}`).emit('queue-status-changed', {
-      queueId: queue._id,
-      acceptingCustomers: queue.acceptingCustomers,
-      message: queue.acceptingCustomers ? 'Queue is now accepting customers' : 'Queue has stopped accepting new customers'
+      queueId: queue.id,
+      acceptingCustomers: updatedQueue.acceptingCustomers,
+      message: updatedQueue.acceptingCustomers ? 'Queue is now accepting customers' : 'Queue has stopped accepting new customers'
     });
 
     res.json({
       success: true,
-      acceptingCustomers: queue.acceptingCustomers,
-      message: queue.acceptingCustomers ? 
+      acceptingCustomers: updatedQueue.acceptingCustomers,
+      message: updatedQueue.acceptingCustomers ? 
         'Queue is now accepting new customers' : 
         'Queue has stopped accepting new customers'
     });
@@ -694,19 +830,20 @@ router.post('/:id/toggle-accepting', [requireAuth, loadUser], async (req, res) =
 // POST /api/queue/:id/stop-accepting - Stop accepting new customers (explicit endpoint)
 router.post('/:id/stop-accepting', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    queue.acceptingCustomers = false;
-    await queue.save();
+    await queueService.update(req.params.id, {
+      acceptingCustomers: false
+    });
 
     // Emit real-time update
     req.io.to(`merchant-${merchantId}`).emit('queue-status-changed', {
-      queueId: queue._id,
+      queueId: queue.id,
       acceptingCustomers: false,
       message: 'Queue has stopped accepting new customers'
     });
@@ -725,23 +862,23 @@ router.post('/:id/stop-accepting', [requireAuth, loadUser], async (req, res) => 
 // DELETE /api/queue/:id - Delete queue
 router.delete('/:id', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
     // Check if queue has waiting customers
-    const waitingCustomers = queue.entries.filter(entry => entry.status === 'waiting');
-    if (waitingCustomers.length > 0) {
+    const stats = await queueService.getQueueStats(queue.id);
+    if (stats.waitingCount > 0) {
       return res.status(400).json({ 
         error: 'Cannot delete queue with waiting customers',
-        waitingCount: waitingCustomers.length
+        waitingCount: stats.waitingCount
       });
     }
 
-    await Queue.findByIdAndDelete(req.params.id);
+    await queueService.delete(req.params.id);
 
     // Emit real-time update
     req.io.to(`merchant-${merchantId}`).emit('queue-deleted', { queueId: req.params.id });
@@ -757,8 +894,8 @@ router.delete('/:id', [requireAuth, loadUser], async (req, res) => {
 // GET /api/queue/:id/qr - Generate QR code for queue
 router.get('/:id/qr', [requireAuth, loadUser], async (req, res) => {
   try {
-    const merchantId = req.user._id;
-    const queue = await Queue.findOne({ _id: req.params.id, merchantId });
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
@@ -768,15 +905,15 @@ router.get('/:id/qr', [requireAuth, loadUser], async (req, res) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
 
     if (format === 'svg') {
-      const qrCodeSVG = await generateQueueQRSVG(queue._id, baseUrl);
+      const qrCodeSVG = await generateQueueQRSVG(queue.id, baseUrl);
       res.setHeader('Content-Type', 'image/svg+xml');
       res.send(qrCodeSVG);
     } else {
-      const qrCodeDataURL = await generateQueueQR(queue._id, baseUrl);
+      const qrCodeDataURL = await generateQueueQR(queue.id, baseUrl);
       res.json({
         success: true,
         qrCode: qrCodeDataURL,
-        queueUrl: `${baseUrl}/queue/${queue._id}`
+        queueUrl: `${baseUrl}/queue/${queue.id}`
       });
     }
 
@@ -808,40 +945,42 @@ router.post('/join', [
     const { customerName, customerPhone, partySize, merchantId, specialRequests, pushSubscription } = req.body;
 
     // Find merchant and active queue
-    const merchant = await Merchant.findById(merchantId);
+    const merchant = await merchantService.findById(merchantId);
     if (!merchant || !merchant.isActive) {
       return res.status(404).json({ error: 'Business not found or inactive' });
     }
 
     // Find active queue for merchant
-    const queue = await Queue.findOne({ 
-      merchantId: merchant.id || merchant._id, 
-      isActive: true 
-    });
+    const queues = await queueService.findByMerchant(merchantId);
+    const queue = queues.find(q => q.isActive);
 
     if (!queue) {
       return res.status(404).json({ error: 'No active queue available' });
     }
 
+    if (!queue.acceptingCustomers) {
+      return res.status(400).json({ error: 'Queue is not accepting new customers at the moment' });
+    }
+
     // Check if queue is at capacity
-    const currentCount = queue.entries?.filter(e => e.status === 'waiting').length || 0;
-    if (queue.maxCapacity && currentCount >= queue.maxCapacity) {
+    const stats = await queueService.getQueueStats(queue.id);
+    if (queue.maxCapacity && stats.waitingCount >= queue.maxCapacity) {
       return res.status(400).json({ error: 'Queue is at full capacity' });
     }
 
+    // Generate verification code
+    const webChatService = require('../services/webChatService');
+    const verificationCode = webChatService.generateVerificationCode();
+
     // Create queue entry
-    const entry = await prisma.queueEntry.create({
-      data: {
-        queueId: queue.id,
-        customerId: `web_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        customerName,
-        customerPhone,
-        platform: 'web',
-        partySize: parseInt(partySize),
-        specialRequests,
-        position: currentCount + 1,
-        estimatedWaitTime: (currentCount + 1) * (queue.averageServiceTime || 15)
-      }
+    const entry = await queueService.addCustomer(queue.id, {
+      customerId: `web_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      customerName,
+      customerPhone,
+      platform: 'web',
+      partySize: parseInt(partySize),
+      specialRequests,
+      verificationCode
     });
 
     // Generate queue number
@@ -860,16 +999,13 @@ router.post('/join', [
     }
 
     // Emit socket event for real-time update
-    const io = req.app.get('io');
-    if (io) {
-      io.to(merchantId).emit('new-customer', {
-        queueId: queue.id,
-        entry: {
-          ...entry,
-          queueNumber
-        }
-      });
-    }
+    req.io.to(`merchant-${merchantId}`).emit('new-customer', {
+      queueId: queue.id,
+      entry: {
+        ...entry,
+        queueNumber
+      }
+    });
 
     // Send WhatsApp notification if enabled
     try {
@@ -887,7 +1023,12 @@ router.post('/join', [
       queueNumber,
       position: entry.position,
       estimatedWaitTime: entry.estimatedWaitTime,
-      queueEntry: entry
+      verificationCode,
+      queueEntry: {
+        ...entry,
+        queueNumber,
+        merchantName: merchant.businessName
+      }
     });
 
   } catch (error) {

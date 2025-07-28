@@ -39,13 +39,67 @@ class QueueChatbot {
         // Load conversation history
         this.loadConversationHistory();
         
-        // Check if user has active queue
-        this.checkActiveQueue();
+        // Check if redirected from queue form
+        const queueJoined = sessionStorage.getItem('queueJoined');
+        const queueInfo = sessionStorage.getItem('queueInfo');
         
-        // Show welcome message
-        setTimeout(() => {
-            this.showWelcomeMessage();
-        }, 1000);
+        console.log('Chatbot init - queueJoined:', queueJoined);
+        console.log('Chatbot init - queueInfo:', queueInfo);
+        
+        if (queueJoined === 'true' && queueInfo) {
+            // Clear the flag
+            sessionStorage.removeItem('queueJoined');
+            
+            // Parse queue info
+            const info = JSON.parse(queueInfo);
+            console.log('Parsed queue info:', info);
+            
+            // Auto-open chat widget
+            if (!this.elements.chatWidget.classList.contains('active')) {
+                this.elements.chatWidget.classList.add('active');
+                this.elements.chatButton.classList.add('active');
+            }
+            
+            // Display queue status
+            setTimeout(() => {
+                this.addMessage(`Welcome ${info.customerName}! 🎉`, 'bot');
+                setTimeout(() => {
+                    const queueMessage = `You've successfully joined the queue!\n\n` +
+                        `📍 Queue Number: #${info.queueNumber}\n` +
+                        `🎫 Verification Code: ${info.verificationCode || 'N/A'}\n` +
+                        `👥 Position: ${info.position} in line\n` +
+                        `⏱️ Estimated Wait: ${info.estimatedWait} minutes`;
+                    
+                    this.addMessage(queueMessage, 'bot');
+                    
+                    // Store queue data
+                    this.queueData = info;
+                    localStorage.setItem('queueData', JSON.stringify(info));
+                    
+                    // Update queue info display
+                    this.updateQueueInfo(info);
+                    this.showQueueInfo();
+                    
+                    setTimeout(() => {
+                        this.addMessage(`I'll notify you when it's your turn. You can ask me:\n• "What's my status?"\n• "How long is the wait?"\n• "Cancel my queue"`, 'bot');
+                        
+                        // Enable notifications
+                        if ('Notification' in window && Notification.permission === 'default') {
+                            this.addMessage(`📢 Enable notifications to get alerts when it's your turn!`, 'bot');
+                            Notification.requestPermission();
+                        }
+                    }, 1500);
+                }, 1000);
+            }, 500);
+        } else {
+            // Check if user has active queue
+            this.checkActiveQueue();
+            
+            // Show welcome message
+            setTimeout(() => {
+                this.showWelcomeMessage();
+            }, 1000);
+        }
     }
     
     setupEventListeners() {
@@ -335,10 +389,24 @@ Just type or click the buttons below!`;
         
         document.getElementById('queueNumber').textContent = this.queueData.queueNumber || '-';
         document.getElementById('queuePosition').textContent = `#${this.queueData.position}`;
-        document.getElementById('queueWaitTime').textContent = `${this.queueData.estimatedWaitTime} min`;
+        document.getElementById('queueWaitTime').textContent = `${this.queueData.estimatedWaitTime || this.queueData.estimatedWait} min`;
         document.getElementById('verificationCode').textContent = this.queueData.verificationCode || '-';
         
         this.elements.queueInfoCard.style.display = 'block';
+    }
+    
+    updateQueueInfo(info) {
+        // Update the queue info display
+        this.showQueueInfo();
+        
+        // Join socket room for real-time updates
+        if (this.socket && info.queueId) {
+            this.socket.emit('join-queue', { 
+                queueId: info.queueId,
+                sessionId: this.sessionId,
+                platform: 'webchat'
+            });
+        }
     }
     
     hideQueueInfo() {
@@ -350,7 +418,16 @@ Just type or click the buttons below!`;
         messageDiv.classList.add('message', sender);
         
         const messageText = document.createElement('div');
-        messageText.textContent = text;
+        // Handle line breaks in text
+        if (text.includes('\n')) {
+            const lines = text.split('\n');
+            messageText.innerHTML = lines.map(line => {
+                if (line.trim() === '') return '<br>';
+                return `<div style="margin: 2px 0;">${this.escapeHtml(line)}</div>`;
+            }).join('');
+        } else {
+            messageText.textContent = text;
+        }
         messageDiv.appendChild(messageText);
         
         const timeDiv = document.createElement('div');
@@ -364,6 +441,12 @@ Just type or click the buttons below!`;
         // Save to history
         this.conversationHistory.push({ text, sender, time: new Date() });
         this.saveConversationHistory();
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
     
     showTypingIndicator() {
@@ -477,16 +560,37 @@ Just type or click the buttons below!`;
     }
     
     playNotificationSound() {
-        const audio = document.getElementById('notificationSound');
-        if (audio) {
-            audio.play().catch(e => console.log('Could not play notification sound:', e));
+        // Use browser notification API instead of audio files
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Queue Update', {
+                body: 'Your queue position has been updated',
+                icon: '/images/icon-144x144.svg' // Use SVG which works
+            });
         }
     }
     
     playTableReadySound() {
-        const audio = document.getElementById('tableReadySound');
-        if (audio) {
-            audio.play().catch(e => console.log('Could not play table ready sound:', e));
+        // Use browser notification API with urgency
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('🎉 Your Table is Ready!', {
+                body: 'Please proceed to the counter with your verification code',
+                icon: '/images/icon-144x144.svg',
+                requireInteraction: true // Keep notification visible
+            });
+        }
+        
+        // Also use visual alert
+        this.flashNotification();
+    }
+    
+    flashNotification() {
+        // Visual notification by flashing the chat button
+        const button = this.elements.chatButton;
+        if (button) {
+            button.style.animation = 'pulse 1s ease-in-out 3';
+            setTimeout(() => {
+                button.style.animation = '';
+            }, 3000);
         }
     }
     

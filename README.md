@@ -4,6 +4,7 @@ An AI-powered queue management system that reduces customer friction and manages
 
 ## 🔥 Recent Updates (Latest Version)
 
+- **Database Migration**: Completely migrated from MongoDB to PostgreSQL with Prisma ORM for better scalability and maintainability
 - **Complete Rebranding**: Updated from "Smart Queue Manager" to "StoreHub Queue Management System"
 - **Streamlined Interface**: Removed redundant queue detail pages, consolidated all management into main dashboard  
 - **Enhanced Analytics**: Added comprehensive demo data and improved analytics visualization
@@ -41,10 +42,11 @@ An AI-powered queue management system that reduces customer friction and manages
 
 ### Backend (Node.js)
 - **Express.js** server with EJS templating
-- **PostgreSQL** with Prisma ORM for data persistence
+- **PostgreSQL** with Prisma ORM for data persistence (migrated from MongoDB)
 - **Socket.IO** for real-time updates
 - **WhatsApp Web.js** for WhatsApp integration
 - **Natural.js** for AI/ML features
+- **Service-oriented architecture** with dedicated services for queue and merchant operations
 
 ### Frontend (Server-Side Rendered)
 - **EJS** templating engine
@@ -60,8 +62,9 @@ An AI-powered queue management system that reduces customer friction and manages
 
 ### Prerequisites
 - Node.js (v16 or higher)
-- PostgreSQL (v12 or higher)
+- PostgreSQL (v12 or higher) - Primary database
 - WhatsApp account for business integration (optional)
+- Note: MongoDB is no longer required (migrated to PostgreSQL)
 
 ### Installation
 
@@ -85,7 +88,11 @@ An AI-powered queue management system that reduces customer friction and manages
 4. **Set up PostgreSQL Database**
    ```bash
    # Create database and run migrations
+   npx prisma generate
    npx prisma migrate dev
+   
+   # Seed demo data (optional)
+   npm run seed
    ```
 
 5. **Run the application**

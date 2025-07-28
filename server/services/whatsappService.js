@@ -432,7 +432,7 @@ class WhatsAppService {
     
     try {
       // Import models here to avoid circular dependencies
-      const Queue = require('../models/Queue');
+      const queueService = require('./queueService');
       
       // First, check if this is a confirmation response (yes/no) for pending cancellation
       console.log(`[DEBUG] Checking for yes/no confirmation...`);
@@ -537,7 +537,7 @@ class WhatsAppService {
 
   async processCancellation(phoneNumber) {
     try {
-      const Queue = require('../models/Queue');
+      const queueService = require('./queueService');
       
       // Get pending cancellation from conversation state
       const conversationState = this.conversationStates.get(phoneNumber);
@@ -592,7 +592,7 @@ class WhatsAppService {
 
   async isCustomerInQueue(phoneNumber) {
     try {
-      const Queue = require('../models/Queue');
+      const queueService = require('./queueService');
       
       // Check if phoneNumber is valid
       if (!phoneNumber) {

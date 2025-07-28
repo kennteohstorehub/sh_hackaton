@@ -342,33 +342,70 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   const session = socket.request.session;
   
-  if (!session || !session.user) {
-    logger.warn(`Unauthorized socket connection attempt: ${socket.id}`);
-    socket.disconnect();
-    return;
+  // Allow both authenticated users and public customer connections
+  if (!session) {
+    logger.info(`Public socket connection: ${socket.id}`);
+  } else if (session.user) {
+    logger.info(`Authenticated socket connection: ${socket.id}, User: ${session.user.email}`);
+  } else {
+    logger.info(`Customer socket connection: ${socket.id}`);
   }
-  
-  logger.info(`Client connected: ${socket.id}, User: ${session.user.email}`);
   
   socket.on('join-merchant-room', (merchantId) => {
     // Verify the user has access to this merchant
-    if (session.user.id === merchantId || session.user.merchantId === merchantId) {
+    if (session && session.user && (session.user.id === merchantId || session.user.merchantId === merchantId)) {
       socket.join(`merchant-${merchantId}`);
       logger.info(`Merchant ${merchantId} joined room`);
     } else {
-      logger.warn(`Unauthorized room join attempt by ${session.user.email} for merchant ${merchantId}`);
+      logger.warn(`Unauthorized room join attempt for merchant ${merchantId}`);
     }
   });
   
   socket.on('join-customer-room', (customerId) => {
-    // For now, allow customers to join their own rooms
-    // In production, validate the customer ID against session
+    // Allow customers to join their own rooms (public access)
     socket.join(`customer-${customerId}`);
     logger.info(`Customer ${customerId} joined room`);
   });
   
+  socket.on('join-queue', (data) => {
+    // Handle webchat customers joining queue
+    if (data.platform === 'webchat' && data.sessionId) {
+      const customerId = `webchat_${data.sessionId}`;
+      socket.join(`customer-${customerId}`);
+      logger.info(`WebChat customer ${customerId} joined room via join-queue`);
+      
+      // Also join by sessionId for flexibility
+      socket.join(`session-${data.sessionId}`);
+      logger.info(`WebChat session ${data.sessionId} joined room`);
+      
+      // Notify merchant dashboard of connection
+      if (data.merchantId) {
+        io.to(`merchant-${data.merchantId}`).emit('webchat-connected', {
+          sessionId: data.sessionId,
+          customerId: customerId
+        });
+      }
+    }
+  });
+  
   socket.on('disconnect', () => {
     logger.info(`Client disconnected: ${socket.id}`);
+    
+    // Check if this was a webchat customer and notify merchant
+    const rooms = Array.from(socket.rooms);
+    const sessionRoom = rooms.find(room => room.startsWith('session-'));
+    if (sessionRoom) {
+      const sessionId = sessionRoom.replace('session-', '');
+      // Find merchant ID from other rooms or socket data
+      const merchantRoom = rooms.find(room => room.startsWith('merchant-'));
+      if (merchantRoom) {
+        const merchantId = merchantRoom.replace('merchant-', '');
+        io.to(`merchant-${merchantId}`).emit('webchat-disconnected', {
+          sessionId: sessionId,
+          customerId: `webchat_${sessionId}`
+        });
+      }
+    }
   });
 });
 
@@ -460,14 +497,31 @@ app.use((error, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
+  // Log 404 for debugging
+  logger.warn(`404 Not Found: ${req.method} ${req.originalUrl}`);
+  
+  // Check if this is a static file request
+  const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.mp3', '.ogg', '.wav', '.woff', '.woff2', '.ttf'];
+  const isStaticFile = staticExtensions.some(ext => req.path.toLowerCase().endsWith(ext));
+  
   if (req.path.startsWith('/api/')) {
     res.status(404).json({ error: 'API route not found' });
+  } else if (isStaticFile) {
+    // For static files, just return 404 without rendering a template
+    res.status(404).send('Not Found');
   } else {
-    res.status(404).render('error', {
-      title: 'Page Not Found',
-      status: 404,
-      message: 'The page you are looking for does not exist.'
-    });
+    // For pages, render the error template
+    try {
+      res.status(404).render('error', {
+        title: 'Page Not Found',
+        status: 404,
+        message: 'The page you are looking for does not exist.',
+        error: null // Ensure error variable exists
+      });
+    } catch (renderError) {
+      logger.error('Failed to render 404 page:', renderError);
+      res.status(404).send('Page Not Found');
+    }
   }
 });
 
