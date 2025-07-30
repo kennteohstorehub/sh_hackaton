@@ -180,6 +180,7 @@ model QueueEntry {
   specialRequests   String?
   verificationCode  String?
   sessionId         String?
+  tableNumber       String?
   joinedAt          DateTime            @default(now())
   calledAt          DateTime?
   servedAt          DateTime?
@@ -188,6 +189,10 @@ model QueueEntry {
   lastNotified      DateTime?
   notificationCount Int                 @default(0)
   sentimentScore    Float?
+  acknowledged      Boolean             @default(false)
+  acknowledgedAt    DateTime?
+  acknowledgmentType String?
+  estimatedArrival  DateTime?
   queue             Queue               @relation(fields: [queueId], references: [id], onDelete: Cascade)
   serviceType       ServiceType?        @relation(fields: [serviceTypeId], references: [id])
   feedback          QueueEntryFeedback?

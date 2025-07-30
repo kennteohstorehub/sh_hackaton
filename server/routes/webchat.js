@@ -142,6 +142,8 @@ router.post('/join', [
             verificationCode,
             queueEntry: {
                 ...entry,
+                id: entry.id,  // Explicitly include the entry ID
+                entryId: entry.id,  // Also as entryId for clarity
                 queueNumber,
                 merchantName: merchant.businessName,
                 businessPhone: merchant.phone || '+60123456789'
@@ -261,6 +263,8 @@ router.get('/status/:sessionId', async (req, res) => {
             verificationCode: queueEntry.verificationCode,
             queueEntry: {
                 ...queueEntry,
+                id: queueEntry.id,  // Explicitly include the entry ID
+                entryId: queueEntry.id,  // Also as entryId for clarity
                 queueNumber: webChatService.generateQueueNumber(queueEntry.position),
                 currentPosition,
                 merchantName: queueEntry.queue.merchant?.businessName,

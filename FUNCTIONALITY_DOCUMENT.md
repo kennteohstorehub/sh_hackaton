@@ -83,9 +83,114 @@ The StoreHub Queue Management System is a full-stack web application built with 
 Please come to the service counter now. Thank you for waiting!
 ```
 
-### 2.4 Queue Cancellation System
+### 2.4 New Queue Acknowledgment Flow (WebChat)
 
-#### 2.4.1 Cancellation Flow
+#### 2.4.1 Card-Based Acknowledgment System
+**Overview**: Replaces overlay popups with inline interactive card messages for better mobile UX and clearer user actions.
+
+#### 2.4.2 When Customer is Called
+**Initial Notification Card**:
+- **Card Header**: "🎉 Your table is ready!"
+- **Card Body**: 
+  - Verification code displayed prominently (large, bold text)
+  - Queue name and position information
+  - Clear instructions: "Please show this code to the staff"
+- **Action Cards** (displayed below notification):
+  - **Primary Action Card** (green/success styling):
+    - Text: "I'm headed to the restaurant"
+    - Icon: Forward/walking icon
+    - Full-width button design
+  - **Secondary Action Card** (red/danger styling):
+    - Text: "Cancel my spot"
+    - Icon: X or cancel icon
+    - Full-width button design
+
+#### 2.4.3 User Interaction Flows
+
+**Flow A: Customer Acknowledges**
+1. Customer clicks "I'm headed to restaurant" card
+2. System behavior:
+   - Replace all cards with confirmation message
+   - Message: "✅ Great! We're expecting you. Your verification code is: [CODE]"
+   - Update dashboard to show customer acknowledged
+   - Start grace period timer (configurable, default 10 minutes)
+   - Log acknowledgment timestamp
+
+**Flow B: Customer Cancels**
+1. Customer clicks "Cancel my spot" card
+2. System shows confirmation card:
+   - Header: "Are you sure you want to cancel?"
+   - Body: "You'll lose your spot in the queue"
+   - Action cards:
+     - "Yes, cancel my spot" (red/danger)
+     - "No, keep my spot" (green/success)
+3. If confirmed:
+   - Replace cards with cancellation message
+   - Message: "Your spot has been cancelled. Thank you!"
+   - Remove from queue
+   - Update dashboard immediately
+4. If declined:
+   - Return to original notification cards
+   - Reset any timers
+
+#### 2.4.4 Timeout Progressive Flow
+**Automated progression to prevent no-shows**:
+
+**Stage 1: Warning (4 minutes after call)**
+- New warning card appears below existing cards
+- Card styling: Yellow/warning theme
+- Header: "⚠️ Are you on your way?"
+- Body: "Your table will be given away in 1 minute if not confirmed"
+- Existing action cards remain active
+
+**Stage 2: Final Warning (5 minutes after call)**
+- Replace all cards with urgent notification
+- Card styling: Orange/urgent theme
+- Header: "🚨 Last chance!"
+- Body: "Your table will be given away in 2 minutes"
+- Action cards:
+  - "I'm coming!" (green, prominent)
+  - "Cancel" (red, smaller)
+
+**Stage 3: Auto-cancellation (7 minutes after call)**
+- Replace all cards with cancellation notice
+- Card styling: Gray/muted theme
+- Header: "❌ Spot given away"
+- Body: "Sorry, we had to give your table to the next customer"
+- Single action card: "Join queue again" (if applicable)
+
+#### 2.4.5 Chat Interface Modifications
+
+**During Queue Interactions**:
+- **Hide text input box**: Prevent free-form messages during critical flows
+- **Show only cards**: All interactions through card buttons
+- **Visual indicators**: Loading states while processing actions
+- **Auto-scroll**: Ensure new cards are visible immediately
+
+**Technical Requirements**:
+- **Touch targets**: Minimum 48px height for mobile optimization
+- **Card spacing**: 16px between cards for clear separation
+- **Responsive design**: Cards stack vertically on mobile
+- **Animation**: Smooth transitions when cards appear/disappear
+- **Accessibility**: ARIA labels for screen readers
+
+#### 2.4.6 State Management
+**Customer States During Acknowledgment**:
+- `called`: Initial state when notified
+- `acknowledged`: Customer confirmed they're coming
+- `cancelled`: Customer cancelled their spot
+- `no_show`: Auto-cancelled due to timeout
+- `seated`: Successfully checked in at location
+
+**Dashboard Updates**:
+- Real-time status changes via WebSocket
+- Visual indicators for each state
+- Timestamp logging for all state transitions
+- Grace period countdown display
+
+### 2.5 Queue Cancellation System
+
+#### 2.5.1 Cancellation Flow
 **WhatsApp Commands**: `cancel`, `leave`, `exit`
 **Functionality**:
 - Confirmation prompt before cancellation
@@ -414,7 +519,7 @@ POST /api/queue/:queueId/requeue/:customerId
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: June 11, 2025  
+**Document Version**: 1.1  
+**Last Updated**: July 29, 2025  
 **Prepared By**: Smart Queue Manager Development Team  
-**Status**: Comprehensive Feature Documentation Complete 
+**Status**: Updated with Card-Based Acknowledgment System 

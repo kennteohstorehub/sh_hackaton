@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
 const { generateQueueQR, generateQueueQRSVG } = require('../utils/qrGenerator');
+const RoomHelpers = require('../utils/roomHelpers');
 
 // Use appropriate auth middleware based on environment
 let requireAuth, loadUser;
@@ -277,12 +278,64 @@ router.post('/:id/call-next', [requireAuth, loadUser], async (req, res) => {
         message: `🎉 IT'S YOUR TURN!\n\nPlease proceed to the counter.\nVerification code: ${updatedCustomer.verificationCode}`
       };
       
-      // Primary: Emit to customer room (works for all platforms)
-      req.io.to(`customer-${updatedCustomer.customerId}`).emit('customer-called', notificationData);
+      logger.info('[NOTIFICATION] Sending notification to customer:', {
+        customerId: updatedCustomer.customerId,
+        sessionId: updatedCustomer.sessionId,
+        customerPhone: updatedCustomer.customerPhone,
+        rooms: [`customer-${updatedCustomer.customerId}`, `session-${updatedCustomer.sessionId}`]
+      });
       
-      // Secondary: Emit to session room if available
-      if (updatedCustomer.sessionId) {
-        req.io.to(`session-${updatedCustomer.sessionId}`).emit('customer-called', notificationData);
+      // Get all rooms the customer should be in
+      const customerRooms = RoomHelpers.getCustomerRooms(updatedCustomer);
+      
+      // Debug: Check room memberships
+      const roomMemberships = {};
+      for (const room of customerRooms) {
+        const members = req.io.sockets.adapter.rooms.get(room);
+        roomMemberships[room] = members ? Array.from(members) : [];
+      }
+      
+      logger.info('[NOTIFICATION] Room memberships:', {
+        rooms: customerRooms,
+        memberships: roomMemberships,
+        entryId: updatedCustomer.id,
+        sessionId: updatedCustomer.sessionId,
+        phone: updatedCustomer.customerPhone
+      });
+      
+      // Import deduplication service
+      const deduplicationService = require('../services/notificationDeduplicationService');
+      
+      // Send notification to primary room only (entry room)
+      // This prevents duplicate notifications when customer is in multiple rooms
+      const primaryRoom = RoomHelpers.getEntryRoom(updatedCustomer.id);
+      
+      if (deduplicationService.shouldSend(
+        updatedCustomer.id,
+        primaryRoom,
+        'customer-called',
+        notificationData
+      )) {
+        // Emit to the primary room
+        req.io.to(primaryRoom).emit('customer-called', {
+          ...notificationData,
+          entryId: updatedCustomer.id  // Include entry ID for frontend
+        });
+        logger.info(`[NOTIFICATION] Sent to primary room: ${primaryRoom}`);
+        
+        // Also emit to session room if it's different (for webchat compatibility)
+        if (updatedCustomer.sessionId) {
+          const sessionRoom = RoomHelpers.getSessionRoom(updatedCustomer.sessionId);
+          if (sessionRoom !== primaryRoom) {
+            req.io.to(sessionRoom).emit('customer-called', {
+              ...notificationData,
+              entryId: updatedCustomer.id
+            });
+            logger.info(`[NOTIFICATION] Also sent to session room: ${sessionRoom}`);
+          }
+        }
+      } else {
+        logger.warn(`[NOTIFICATION] Duplicate notification blocked for entry ${updatedCustomer.id}`);
       }
       
       // Tertiary: Try push notification
@@ -391,12 +444,27 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
       where: {
         id: customerId,
         queueId: queue.id,
-        status: 'waiting'
+        status: {
+          in: ['waiting', 'called']  // Allow notifying customers who are already called
+        }
       }
     });
 
     if (!customerEntry) {
-      return res.status(404).json({ error: 'Customer not found or not waiting' });
+      // Try to find any entry with this ID for debugging
+      const anyEntry = await prisma.queueEntry.findUnique({
+        where: { id: customerId }
+      });
+      
+      logger.error('Customer not found:', {
+        customerId,
+        queueId: queue.id,
+        foundEntry: !!anyEntry,
+        entryStatus: anyEntry?.status,
+        entryQueueId: anyEntry?.queueId
+      });
+      
+      return res.status(404).json({ error: 'Customer not found or not in valid status' });
     }
 
     // Update the customer status to 'called'
@@ -420,6 +488,15 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
         });
       }
       
+      // Debug log the customer entry
+      logger.info(`[NOTIFICATION] Customer entry:`, {
+        id: customerEntry.id,
+        customerId: customerEntry.customerId,
+        customerPhone: customerEntry.customerPhone,
+        sessionId: customerEntry.sessionId,
+        platform: customerEntry.platform
+      });
+      
       const notificationData = {
         customerId: customerEntry.customerId,
         queueName: queue.name,
@@ -428,12 +505,41 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
         message: `🎉 IT'S YOUR TURN!\n\nPlease proceed to the counter.\nVerification code: ${customerEntry.verificationCode}`
       };
       
-      // Primary: Emit to customer room (works for all platforms)
-      req.io.to(`customer-${customerEntry.customerId}`).emit('customer-called', notificationData);
+      // Get all rooms the customer should be in
+      const customerRooms = RoomHelpers.getCustomerRooms(customerEntry);
       
-      // Secondary: Emit to session room if available
-      if (customerEntry.sessionId) {
-        req.io.to(`session-${customerEntry.sessionId}`).emit('customer-called', notificationData);
+      // Import deduplication service
+      const deduplicationService = require('../services/notificationDeduplicationService');
+      
+      // Send notification to primary room only (entry room)
+      const primaryRoom = RoomHelpers.getEntryRoom(customerEntry.id);
+      
+      if (deduplicationService.shouldSend(
+        customerEntry.id,
+        primaryRoom,
+        'customer-called',
+        notificationData
+      )) {
+        // Emit to the primary room
+        req.io.to(primaryRoom).emit('customer-called', {
+          ...notificationData,
+          entryId: customerEntry.id  // Include entry ID for frontend
+        });
+        logger.info(`[NOTIFICATION] Sent to primary room: ${primaryRoom}`);
+        
+        // Also emit to session room if it's different (for webchat compatibility)
+        if (customerEntry.sessionId) {
+          const sessionRoom = RoomHelpers.getSessionRoom(customerEntry.sessionId);
+          if (sessionRoom !== primaryRoom) {
+            req.io.to(sessionRoom).emit('customer-called', {
+              ...notificationData,
+              entryId: customerEntry.id
+            });
+            logger.info(`[NOTIFICATION] Also sent to session room: ${sessionRoom}`);
+          }
+        }
+      } else {
+        logger.warn(`[NOTIFICATION] Duplicate notification blocked for entry ${customerEntry.id}`);
       }
       
       // Tertiary: Try push notification
@@ -491,11 +597,7 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
       }
     });
 
-    req.io.to(`customer-${customerEntry.customerId}`).emit('customer-called', {
-      queueName: queue.name,
-      position: customerEntry.position,
-      isSpecificCall: true
-    });
+    // This is already sent above in the try block, no need to duplicate
 
     res.json({
       success: true,
@@ -551,7 +653,74 @@ async function sendPositionUpdateNotifications(queueId, queueName, io, merchantI
   }
 }
 
-// POST /api/queue/:id/verify-and-seat/:customerId - Verify code and seat customer
+// POST /api/queue/:id/assign-table/:customerId - Assign table and seat customer
+router.post('/:id/assign-table/:customerId', [requireAuth, loadUser], [
+  body('tableNumber').notEmpty().withMessage('Table number is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Table number is required' });
+    }
+
+    const merchantId = req.user.id || req.user._id;
+    const { tableNumber } = req.body;
+    
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+
+    // Find the customer (must be in 'called' status)
+    const customer = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: 'called'
+      }
+    });
+    
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found or not in called status' });
+    }
+
+    // Update customer with table number and mark as completed
+    const seatedCustomer = await prisma.queueEntry.update({
+      where: { id: customer.id },
+      data: {
+        status: 'completed',
+        tableNumber: tableNumber.toString(),
+        completedAt: new Date()
+      }
+    });
+
+    // Log the table assignment
+    logger.info('Customer seated with table assignment:', {
+      customerId: seatedCustomer.id,
+      customerName: seatedCustomer.customerName,
+      tableNumber: tableNumber,
+      merchantId: merchantId
+    });
+
+    // Emit real-time updates
+    req.io.to(`merchant-${merchantId}`).emit('customer-seated', {
+      queueId: queue.id,
+      customer: seatedCustomer,
+      tableNumber: tableNumber
+    });
+
+    res.json({
+      success: true,
+      customer: seatedCustomer
+    });
+
+  } catch (error) {
+    logger.error('Error assigning table:', error);
+    res.status(500).json({ error: 'Failed to assign table' });
+  }
+});
+
+// POST /api/queue/:id/verify-and-seat/:customerId - Verify code and seat customer (legacy)
 router.post('/:id/verify-and-seat/:customerId', [requireAuth, loadUser], [
   body('verificationCode').notEmpty().isLength({ min: 4, max: 4 }).withMessage('Verification code must be 4 characters')
 ], async (req, res) => {
@@ -785,6 +954,111 @@ router.post('/:id/requeue/:customerId', [requireAuth, loadUser], async (req, res
   } catch (error) {
     logger.error('Error requeuing customer:', error);
     res.status(500).json({ error: 'Failed to requeue customer' });
+  }
+});
+
+// POST /api/queue/:id/revoke/:customerId - Revoke notification for a called customer
+router.post('/:id/revoke/:customerId', [requireAuth, loadUser], async (req, res) => {
+  try {
+    const merchantId = req.user.id || req.user._id;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
+
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+
+    // Find the called customer - try by ID first, then by customerId
+    let customerEntry = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: 'called'
+      }
+    });
+
+    // If not found by ID, try finding by customerId field
+    if (!customerEntry) {
+      customerEntry = await prisma.queueEntry.findFirst({
+        where: {
+          customerId: req.params.customerId,
+          queueId: req.params.id,
+          status: 'called'
+        }
+      });
+    }
+
+    if (!customerEntry) {
+      // Log for debugging
+      logger.error('Called customer not found for revoke:', {
+        providedId: req.params.customerId,
+        queueId: req.params.id,
+        searchedBy: 'both id and customerId'
+      });
+      return res.status(404).json({ error: 'Called customer not found' });
+    }
+
+    // Revoke the notification - change status back to waiting
+    const updatedCustomer = await prisma.queueEntry.update({
+      where: { id: customerEntry.id },
+      data: {
+        status: 'waiting',
+        calledAt: null,  // Clear the called timestamp
+        notificationCount: 0  // Reset notification count
+      }
+    });
+
+    logger.info('Customer notification revoked:', {
+      customerId: updatedCustomer.id,
+      customerName: updatedCustomer.customerName,
+      previousStatus: 'called',
+      newStatus: 'waiting',
+      merchantId
+    });
+
+    // Get updated queue statistics
+    const stats = await queueService.getQueueStats(queue.id);
+
+    // Emit real-time updates
+    req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
+      queueId: queue.id,
+      action: 'notification-revoked',
+      customer: updatedCustomer,
+      queue: {
+        ...queue,
+        currentLength: stats.waitingCount,
+        nextPosition: stats.waitingCount + 1
+      }
+    });
+
+    // Notify the customer that their call was revoked
+    const revokeData = {
+      queueName: queue.name,
+      message: 'Your notification has been revoked. You will be notified again when it\'s your turn.',
+      entryId: updatedCustomer.id
+    };
+    
+    // Get all rooms the customer should be in
+    const customerRooms = RoomHelpers.getCustomerRooms(updatedCustomer);
+    
+    // Emit to all customer rooms
+    for (const room of customerRooms) {
+      req.io.to(room).emit('notification-revoked', revokeData);
+      logger.info(`[REVOKE] Emitted revoke to room: ${room}`);
+    }
+
+    res.json({
+      success: true,
+      customer: updatedCustomer,
+      queue: {
+        ...queue,
+        currentLength: stats.waitingCount,
+        nextPosition: stats.waitingCount + 1
+      }
+    });
+
+  } catch (error) {
+    logger.error('Error revoking notification:', error);
+    res.status(500).json({ error: 'Failed to revoke notification' });
   }
 });
 
@@ -1037,6 +1311,122 @@ router.post('/join', [
       error: 'Failed to join queue',
       message: error.message 
     });
+  }
+});
+
+// Debug endpoint to check Socket.IO rooms
+router.get('/debug/rooms/:customerId', async (req, res) => {
+  try {
+    const { customerId } = req.params;
+    
+    // Get all rooms that might contain this customer
+    const allRooms = req.io.sockets.adapter.rooms;
+    const relevantRooms = [];
+    
+    // Check specific room patterns
+    const roomsToCheck = [
+      `customer-${customerId}`,
+      `session-${customerId}`,
+      `webchat_${customerId}`
+    ];
+    
+    // If customerId is in web format, extract phone
+    if (customerId.startsWith('web_')) {
+      const parts = customerId.split('_');
+      if (parts.length >= 3) {
+        const phone = parts[1];
+        roomsToCheck.push(`phone-${phone}`);
+      }
+    }
+    
+    // Check each room
+    for (const roomName of roomsToCheck) {
+      const room = allRooms.get(roomName);
+      if (room) {
+        relevantRooms.push({
+          room: roomName,
+          sockets: Array.from(room)
+        });
+      }
+    }
+    
+    // Get all sockets and their data
+    const connectedSockets = [];
+    for (const [socketId, socket] of req.io.sockets.sockets) {
+      if (socket.data.phone || socket.rooms.has(`customer-${customerId}`)) {
+        connectedSockets.push({
+          id: socketId,
+          rooms: Array.from(socket.rooms),
+          data: socket.data
+        });
+      }
+    }
+    
+    res.json({
+      customerId,
+      relevantRooms,
+      connectedSockets,
+      roomsChecked: roomsToCheck
+    });
+  } catch (error) {
+    logger.error('Error checking rooms:', error);
+    res.status(500).json({ error: 'Failed to check rooms' });
+  }
+});
+
+// POST /api/queue/acknowledge - Customer acknowledges notification
+router.post('/acknowledge', async (req, res) => {
+  try {
+    const { entryId, type, acknowledged } = req.body;
+    
+    if (!entryId) {
+      return res.status(400).json({ error: 'Entry ID is required' });
+    }
+    
+    // Find the queue entry
+    const entry = await prisma.queueEntry.findUnique({
+      where: { id: entryId },
+      include: {
+        queue: true
+      }
+    });
+    
+    if (!entry || entry.status !== 'called') {
+      return res.status(404).json({ error: 'Queue entry not found or not in called status' });
+    }
+    
+    // Update entry with acknowledgment
+    const updatedEntry = await prisma.queueEntry.update({
+      where: { id: entryId },
+      data: {
+        acknowledgedAt: new Date(),
+        acknowledgmentType: type || 'on_way'
+      }
+    });
+    
+    // Emit real-time update to merchant dashboard
+    const merchantId = entry.queue.merchantId;
+    req.io.to(`merchant-${merchantId}`).emit('customer-acknowledged', {
+      queueId: entry.queueId,
+      entryId: entry.id,
+      customerName: entry.customerName,
+      type: type || 'on_way',
+      acknowledgedAt: updatedEntry.acknowledgedAt,
+      message: `${entry.customerName} is on their way!`
+    });
+    
+    // Log the acknowledgment
+    logger.info(`Customer ${entry.customerName} acknowledged notification for queue ${entry.queue.name}`);
+    
+    res.json({
+      success: true,
+      message: 'Acknowledgment received',
+      entry: updatedEntry
+    });
+    
+  } catch (error) {
+    logger.error('Error processing acknowledgment:', error);
+    res.status(500).json({ error: 'Failed to process acknowledgment' });
   }
 });
 

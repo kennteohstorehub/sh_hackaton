@@ -172,32 +172,36 @@ class QueueService {
    * Add customer to queue
    */
   async addCustomer(queueId, customerData) {
-    // Get current queue stats
-    const queueStats = await prisma.queueEntry.aggregate({
-      where: {
-        queueId,
-        status: 'waiting'
-      },
-      _max: {
-        position: true
-      },
-      _count: {
-        id: true
-      }
-    });
+    // Use a transaction to prevent race conditions
+    return prisma.$transaction(async (tx) => {
+      // Get current queue stats with transaction
+      const queueStats = await tx.queueEntry.aggregate({
+        where: {
+          queueId,
+          status: 'waiting'
+        },
+        _max: {
+          position: true
+        },
+        _count: {
+          id: true
+        }
+      });
 
-    const position = (queueStats._max.position || 0) + 1;
-    const queue = await this.findById(queueId);
-    const estimatedWaitTime = position * (queue?.averageServiceTime || 15);
+      const position = (queueStats._max.position || 0) + 1;
+      const queue = await this.findById(queueId);
+      const estimatedWaitTime = position * (queue?.averageServiceTime || 15);
 
-    return prisma.queueEntry.create({
-      data: {
-        queueId,
-        position,
-        estimatedWaitTime,
-        status: 'waiting',
-        ...customerData
-      }
+      // Create entry within the same transaction
+      return tx.queueEntry.create({
+        data: {
+          queueId,
+          position,
+          estimatedWaitTime,
+          status: 'waiting',
+          ...customerData
+        }
+      });
     });
   }
 

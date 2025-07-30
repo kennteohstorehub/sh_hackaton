@@ -10,7 +10,7 @@ const router = express.Router();
 // POST /api/customer/join/:queueId - Join a specific queue (for direct booking)
 router.post('/join/:queueId', [
   body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required'),
-  body('phone').isMobilePhone().withMessage('Valid phone number is required'),
+  body('phone').matches(/^\+?[1-9]\d{1,14}$/).withMessage('Valid phone number is required'),
   body('partySize').optional().isInt({ min: 1, max: 20 }).withMessage('Party size must be between 1 and 20'),
   body('specialRequests').optional().isLength({ max: 500 }).withMessage('Special requests too long')
 ], async (req, res) => {
@@ -80,8 +80,10 @@ router.post('/join/:queueId', [
       });
     }
 
-    // Generate unique customer ID
-    const customerId = `web_${phone}_${Date.now()}`;
+    // Generate unique customer ID and session ID
+    const timestamp = Date.now();
+    const customerId = `web_${phone}_${timestamp}`;
+    const sessionId = `qc_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Check if customer is already in queue
     const existingCustomer = queue.entries.find(entry => 
@@ -108,7 +110,7 @@ router.post('/join/:queueId', [
     
     const verificationCode = generateVerificationCode();
     
-    // Add customer to queue
+    // Add customer to queue with sessionId
     const newEntry = await queueService.addCustomer(queue.id, {
       customerId,
       customerName: name,
@@ -117,7 +119,8 @@ router.post('/join/:queueId', [
       serviceTypeId: null, // Would be set if service types were implemented
       partySize: parseInt(partySize) || 1,
       specialRequests: specialRequests || '',
-      verificationCode: verificationCode
+      verificationCode: verificationCode,
+      sessionId: sessionId // Add sessionId for webchat
     });
 
     // Calculate estimated wait time
@@ -158,12 +161,14 @@ router.post('/join/:queueId', [
       }
     });
 
-    // Include verification code in response
+    // Include verification code and sessionId in response
     const responseEntry = newEntry.toObject ? newEntry.toObject() : newEntry;
     responseEntry.verificationCode = verificationCode;
+    responseEntry.sessionId = sessionId;
     
     res.status(201).json({
       success: true,
+      entryId: newEntry.id || newEntry._id,  // Include the entry ID
       position,
       estimatedWait,
       customer: responseEntry,
@@ -172,7 +177,8 @@ router.post('/join/:queueId', [
         name: queue.name,
         currentLength: queue.currentLength
       },
-      statusUrl: `/queue-status/${queue.id}/${customerId}`
+      statusUrl: `/queue-status/${queue.id}/${customerId}`,
+      chatUrl: `/queue-chat/${sessionId}`
     });
 
   } catch (error) {

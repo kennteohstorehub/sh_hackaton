@@ -13,6 +13,116 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <script src="/js/navigation-preload.js" defer></script>
     <style>
+        /* New Customer Animation */
+        @keyframes slideInRight {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes highlightPulse {
+            0%, 100% {
+                background-color: rgba(255, 140, 0, 0.1);
+            }
+            50% {
+                background-color: rgba(255, 140, 0, 0.3);
+            }
+        }
+        
+        .new-customer-row {
+            animation: slideInRight 0.5s ease-out, highlightPulse 2s ease-in-out;
+        }
+        
+        /* Mobile-specific animations */
+        @media (max-width: 768px) {
+            .new-customer-row {
+                animation: slideInRight 0.3s ease-out, highlightPulse 1.5s ease-in-out;
+            }
+            
+            .new-customer-notification {
+                right: 10px;
+                left: 10px;
+                max-width: calc(100% - 20px);
+            }
+        }
+        
+        .new-customer-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 350px;
+        }
+        
+        .new-customer-notification i {
+            font-size: 1.5rem;
+        }
+        
+        .new-customer-notification .notification-text {
+            flex: 1;
+        }
+        
+        .new-customer-notification .notification-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .new-customer-notification .notification-details {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* Audio Control Button */
+        .audio-control {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: #ff8c00;
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+            z-index: 1000;
+        }
+        
+        .audio-control:hover {
+            transform: scale(1.1);
+        }
+        
+        .audio-control.muted {
+            background: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .audio-control {
+                bottom: 80px;
+                right: 15px;
+                width: 44px;
+                height: 44px;
+            }
+        }
+        
         /* Notification Modal Styles */
         .notification-modal, .verification-modal {
             position: fixed;
@@ -25,6 +135,31 @@
             align-items: center;
             justify-content: center;
             z-index: 10000;
+        }
+        
+        /* Customer Card Status Styles */
+        .customer-card.notified-customer {
+            /* No visual changes - status is shown by button change */
+        }
+        
+        .customer-row.notified-customer {
+            /* No visual changes - status is shown by button change */
+        }
+        
+        .status-badge.notified {
+            background-color: #666666;  /* Dark gray */
+            color: #ffffff;  /* White text */
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
         
         .notification-content, .verification-content {
@@ -194,14 +329,70 @@
         
         /* Pending Button Style */
         .btn-pending {
-            background: #ffc107;
-            color: #000;
-            border-color: #ffc107;
+            background: #666666;
+            color: #fff;
+            border-color: #666666;
         }
         
         .btn-pending:hover {
-            background: #e0a800;
-            border-color: #d39e00;
+            background: #555555;
+            border-color: #555555;
+        }
+        
+        /* Revoke Button Style */
+        .btn-revoke {
+            background: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+        }
+        
+        .btn-revoke:hover {
+            background: #c82333;
+            border-color: #bd2130;
+        }
+        
+        /* Update grid for extra column */
+        .customer-list-header,
+        .customer-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 120px 80px 80px 80px 70px 1fr 160px;
+            gap: 10px;
+            padding: 10px;
+            align-items: center;
+        }
+        
+        /* Seated customers table has different columns */
+        #seated-customers .customer-list-header,
+        #seated-customers .customer-row {
+            grid-template-columns: 80px 1fr 120px 70px 80px 100px 1fr 120px;
+        }
+        
+        .notified-time {
+            text-align: center;
+        }
+        
+        .notified-time .timer {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        
+        /* Verification Code Styling */
+        .verification-code {
+            text-align: center;
+        }
+        
+        .code-badge {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
         
         /* Shake Animation */
@@ -213,6 +404,34 @@
         
         .shake {
             animation: shake 0.5s ease-in-out;
+        }
+        
+        /* Acknowledgment Status */
+        .ack-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .ack-status.on-way {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+        
+        .ack-status.need-time {
+            background: rgba(255, 193, 7, 0.2);
+            color: #e0a800;
+        }
+        
+        .customer-row.acknowledged {
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        .customer-card.acknowledged {
+            border-left: 4px solid #28a745;
         }
         
         /* Queue Performance Card Animations */
@@ -407,6 +626,81 @@
             justify-content: flex-end;
             gap: 1rem;
         }
+        
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .toast-icon {
+            font-size: 1.25rem;
+        }
+        
+        .toast-success {
+            border-left: 4px solid #22c55e;
+        }
+        
+        .toast-error {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .toast-info {
+            border-left: 4px solid #3b82f6;
+        }
+        
+        /* Acknowledgment Status */
+        .ack-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .ack-status.on-way {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .customer-card.acknowledged,
+        tr.acknowledged {
+            background-color: #f0fdf4;
+        }
+        
+        .status-acknowledged {
+            color: #22c55e;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .toast {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -597,13 +891,16 @@
                                         <span>Contact</span>
                                         <span>Party</span>
                                         <span>Wait</span>
+                                        <span>Notified</span>
+                                        <span>Code</span>
                                         <span>Special Requests</span>
                                         <span>Actions</span>
                                     </div>
                                     
                                     <% waitingCustomers.forEach((customer, index) => { %>
                                         <% const waitMinutes = Math.floor((new Date() - new Date(customer.joinedAt)) / (1000 * 60)); %>
-                                        <div class="customer-row <%= customer.status === 'called' ? 'notified-customer' : (index === 0 && customer.status === 'waiting' ? 'next-customer' : '') %>">
+                                        <% const notifiedMinutes = customer.calledAt ? Math.floor((new Date() - new Date(customer.calledAt)) / (1000 * 60)) : null; %>
+                                        <div class="customer-row <%= customer.status === 'called' ? 'notified-customer' : (index === 0 && customer.status === 'waiting' ? 'next-customer' : '') %>" data-customer-id="<%= customer._id || customer.id %>" data-called-at="<%= customer.calledAt || '' %>">
                                             <div class="position">
                                                 <%= customer.position %>
                                                 <% if (index === 0 && customer.status === 'waiting') { %>
@@ -629,6 +926,20 @@
                                             </div>
                                             <div class="party-size"><%= customer.partySize %></div>
                                             <div class="wait-time"><%= waitMinutes %> min</div>
+                                            <div class="notified-time">
+                                                <% if (customer.status === 'called' && customer.calledAt) { %>
+                                                    <span class="timer" data-minutes="<%= notifiedMinutes %>"><%= notifiedMinutes %> min</span>
+                                                <% } else { %>
+                                                    <span>-</span>
+                                                <% } %>
+                                            </div>
+                                            <div class="verification-code">
+                                                <% if (customer.verificationCode) { %>
+                                                    <span class="code-badge"><%= customer.verificationCode %></span>
+                                                <% } else { %>
+                                                    <span>-</span>
+                                                <% } %>
+                                            </div>
                                             <div class="special-requests">
                                                 <% if (customer.specialRequests && customer.specialRequests.trim()) { %>
                                                     <span class="special-requests-text" title="<%= customer.specialRequests %>">
@@ -640,11 +951,12 @@
                                             </div>
                                             <div class="actions">
                                                 <% if (customer.status === 'called') { %>
-                                                    <button class="btn-action btn-pending" onclick="showCodeVerificationModal('<%= activeQueue.id || activeQueue._id %>', '<%= customer.customerId %>')">Pending Arrival</button>
+                                                    <button class="btn-action btn-pending" onclick="showCodeVerificationModal('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">Pending Arrival</button>
+                                                    <button class="btn-action btn-revoke" onclick="revokeNotification('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">Revoke</button>
                                                 <% } else if (index === 0) { %>
                                                     <button class="btn-action btn-notify" onclick="notifyNext('<%= activeQueue.id || activeQueue._id %>')">Notify</button>
                                                 <% } else { %>
-                                                    <button class="btn-action btn-select" onclick="selectCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer.customerId %>')">Select</button>
+                                                    <button class="btn-action btn-select" onclick="selectCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">Select</button>
                                                 <% } %>
                                             </div>
                                         </div>
@@ -658,7 +970,7 @@
                                         <div class="customer-card <%= customer.status === 'called' ? 'notified-customer' : (index === 0 && customer.status === 'waiting' ? 'next-customer' : '') %>">
                                             <div class="customer-card-header">
                                                 <span class="position-badge"><%= customer.position %></span>
-                                                <h3><%= customer.name %></h3>
+                                                <h3><%= customer.customerName %></h3>
                                                 <% if (customer.status === 'called') { %>
                                                     <span class="status-badge notified">CALLED</span>
                                                 <% } else if (index === 0 && customer.status === 'waiting') { %>
@@ -666,9 +978,15 @@
                                                 <% } %>
                                             </div>
                                             <div class="customer-card-body">
+                                                <% if (customer.verificationCode) { %>
+                                                    <div class="customer-info-row" style="margin-bottom: 10px;">
+                                                        <i class="bi bi-key-fill"></i>
+                                                        <span class="code-badge" style="font-size: 1.2rem;"><%= customer.verificationCode %></span>
+                                                    </div>
+                                                <% } %>
                                                 <div class="customer-info-row">
                                                     <i class="bi bi-phone"></i>
-                                                    <span><%= customer.phone %></span>
+                                                    <span><%= customer.phoneNumber || customer.customerPhone || '-' %></span>
                                                 </div>
                                                 <div class="customer-info-row">
                                                     <i class="bi bi-people"></i>
@@ -686,17 +1004,18 @@
                                                 <% } %>
                                             </div>
                                             <div class="customer-card-actions">
-                                                <% if (customer.status === 'waiting') { %>
-                                                    <button onclick="callCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer.id || customer._id %>')" class="action-button call-button">
+                                                <% if (customer.status === 'called') { %>
+                                                    <button onclick="showCodeVerificationModal('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')" class="action-button btn-pending">
+                                                        <i class="bi bi-person-check"></i> Pending Arrival
+                                                    </button>
+                                                    <button onclick="revokeNotification('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')" class="action-button btn-revoke">
+                                                        <i class="bi bi-x-circle"></i> Revoke
+                                                    </button>
+                                                <% } else if (customer.status === 'waiting') { %>
+                                                    <button onclick="callCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')" class="action-button call-button">
                                                         <i class="bi bi-megaphone"></i> Call
                                                     </button>
                                                 <% } %>
-                                                <button onclick="completeService('<%= activeQueue.id || activeQueue._id %>', '<%= customer.id || customer._id %>')" class="action-button complete-button">
-                                                    <i class="bi bi-check-circle"></i> Complete
-                                                </button>
-                                                <button onclick="requeueCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer.id || customer._id %>')" class="action-button requeue-button">
-                                                    <i class="bi bi-arrow-repeat"></i> Requeue
-                                                </button>
                                             </div>
                                         </div>
                                     <% }); %>
@@ -726,6 +1045,7 @@
                                     <span>Table</span>
                                     <span>Customer</span>
                                     <span>Phone</span>
+                                    <span>Code</span>
                                     <span>Party</span>
                                     <span>Seated Time</span>
                                     <span>Special Requests</span>
@@ -735,9 +1055,16 @@
                                 <% seatedCustomers.forEach((customer) => { %>
                                     <% const seatedMinutes = Math.floor((new Date() - new Date(customer.completedAt)) / (1000 * 60)); %>
                                     <div class="customer-row seated-customer-row">
-                                        <div class="position">T<%= customer.tableNumber || '-' %></div>
+                                        <div class="position" style="font-weight: bold;">Table <%= customer.tableNumber || '-' %></div>
                                         <div class="customer-name"><%= customer.customerName %></div>
                                         <div class="phone"><%= customer.customerPhone %></div>
+                                        <div class="verification-code">
+                                            <% if (customer.verificationCode) { %>
+                                                <span class="code-badge"><%= customer.verificationCode %></span>
+                                            <% } else { %>
+                                                <span>-</span>
+                                            <% } %>
+                                        </div>
                                         <div class="party-size"><%= customer.partySize %></div>
                                         <div class="wait-time"><%= seatedMinutes %> min</div>
                                         <div class="special-requests">
@@ -750,7 +1077,7 @@
                                             <% } %>
                                         </div>
                                         <div class="actions">
-                                            <button class="btn-action btn-select" onclick="requeueCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer.customerId %>')">Requeue</button>
+                                            <button class="btn-action btn-select" onclick="requeueCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">Requeue</button>
                                         </div>
                                     </div>
                                 <% }); %>
@@ -839,6 +1166,30 @@
 
         const socket = io();
         
+        // Queue for managing rapid customer additions
+        const customerAdditionQueue = [];
+        let isProcessingQueue = false;
+        
+        async function processCustomerQueue() {
+            if (isProcessingQueue || customerAdditionQueue.length === 0) {
+                return;
+            }
+            
+            isProcessingQueue = true;
+            
+            while (customerAdditionQueue.length > 0) {
+                const customerData = customerAdditionQueue.shift();
+                addNewCustomerToQueue(customerData.customer, customerData.queueId);
+                showNewCustomerNotification(customerData.customer);
+                
+                // Small delay between additions for smooth animation
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            updateQueueStats();
+            isProcessingQueue = false;
+        }
+        
         // Connection status monitoring
         socket.on('connect', () => {
             console.log('Socket.IO connected');
@@ -892,8 +1243,19 @@
             setInterval(updateTotalWaitingCount, 30000);
             setInterval(checkWhatsAppStatus, 60000);
             
-            // Periodic full refresh every 2 minutes
-            setInterval(refreshDashboardData, 120000);
+            // Update wait times every 30 seconds
+            setInterval(updateWaitTimes, 30000);
+            
+            // Initialize audio button state
+            updateAudioButton();
+            
+            // Store joined times for wait time calculations
+            document.querySelectorAll('.customer-row').forEach(row => {
+                const waitTimeText = row.querySelector('.wait-time')?.textContent || '0 min';
+                const waitMinutes = parseInt(waitTimeText.match(/\d+/)?.[0] || 0);
+                const joinedAt = new Date(Date.now() - (waitMinutes * 60 * 1000));
+                row.setAttribute('data-joined-at', joinedAt.toISOString());
+            });
         });
         
         // Socket.IO event listeners
@@ -907,9 +1269,23 @@
             handleQueueUpdate(data);
         });
         
+        socket.on('new-customer', (data) => {
+            console.log('New customer event received:', data);
+            // Add to queue for processing
+            if (data && data.customer && data.queueId) {
+                customerAdditionQueue.push(data);
+                processCustomerQueue();
+            }
+        });
+        
         socket.on('customer-removed', (data) => {
             console.log('Customer removed event received:', data);
-            handleQueueUpdate(data);
+            if (data && data.customerId) {
+                removeCustomerFromQueue(data.customerId);
+                updateQueueStats();
+            } else {
+                handleQueueUpdate(data);
+            }
         });
         
         // Track webchat customer connections
@@ -929,6 +1305,12 @@
             }
         });
         
+        // Listen for customer acknowledgments
+        socket.on('customer-acknowledged', (data) => {
+            console.log('Customer acknowledged:', data);
+            updateCustomerAcknowledgment(data);
+        });
+        
         function updateSessionStatus(sessionId, isOnline) {
             const statusElements = document.querySelectorAll(`[data-session-id="${sessionId}"]`);
             statusElements.forEach(element => {
@@ -942,6 +1324,49 @@
                     element.title = 'Customer Offline';
                 }
             });
+        }
+        
+        function updateCustomerAcknowledgment(data) {
+            // Find customer by entry ID or customer ID
+            const customerRow = document.querySelector(`[data-customer-id="${data.entryId}"]`) || 
+                               document.querySelector(`[data-customer-id="${data.customerId}"]`);
+            
+            if (customerRow) {
+                // Update the notified time column to show acknowledgment status
+                const notifiedTimeElement = customerRow.querySelector('.notified-time');
+                if (notifiedTimeElement) {
+                    const time = new Date(data.acknowledgedAt).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    notifiedTimeElement.innerHTML = `<span class="ack-status on-way" title="${data.customerName} is on their way!">✅ On way (${time})</span>`;
+                }
+                
+                // Add acknowledgment indicator to the row
+                customerRow.classList.add('acknowledged');
+                
+                // Update status text if present
+                const statusElement = customerRow.querySelector('.customer-status');
+                if (statusElement) {
+                    statusElement.textContent = 'On the way';
+                    statusElement.classList.add('status-acknowledged');
+                }
+                
+                // Show acknowledgment in mobile view too
+                const customerCard = document.querySelector(`.customer-card[data-customer-id="${data.entryId}"]`) || 
+                                   document.querySelector(`.customer-card[data-customer-id="${data.customerId}"]`);
+                if (customerCard) {
+                    customerCard.classList.add('acknowledged');
+                    const mobileStatus = customerCard.querySelector('.customer-status');
+                    if (mobileStatus) {
+                        mobileStatus.textContent = 'On the way';
+                        mobileStatus.classList.add('status-acknowledged');
+                    }
+                }
+                
+                // Show toast notification
+                showToast(`${data.customerName} is on their way!`, 'success');
+            }
         }
         
         function handleQueueUpdate(data) {
@@ -964,6 +1389,30 @@
             if (indicator) {
                 indicator.classList.remove('show');
             }
+        }
+        
+        function showToast(message, type = 'info') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                    <span class="toast-message">${message}</span>
+                </div>
+            `;
+            
+            // Add to body
+            document.body.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
         
         function updateQueueDisplay(queueData) {
@@ -1011,11 +1460,138 @@
         }
         
         function updateActiveQueueCustomerList(queueData) {
-            // This would update the customer list dynamically
-            // For now, we'll just refresh the page for simplicity
+            // Update the customer list dynamically without page reload
+            const activeQueueTab = document.getElementById('active-queue');
+            if (!activeQueueTab || !activeQueueTab.classList.contains('active')) {
+                return;
+            }
+            
+            // For now, still reload for complete queue updates
+            // In future, this can be enhanced to do full dynamic updates
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
+        }
+        
+        function removeCustomerFromQueue(customerId) {
+            // Remove from desktop view
+            const desktopRow = document.querySelector(`.customer-row[data-customer-id="${customerId}"]`);
+            if (desktopRow) {
+                desktopRow.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => {
+                    desktopRow.remove();
+                    // Re-number remaining customers
+                    renumberCustomers();
+                }, 300);
+            }
+            
+            // Remove from mobile view
+            const mobileCard = document.querySelector(`.customer-card[data-customer-id="${customerId}"]`);
+            if (mobileCard) {
+                mobileCard.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => {
+                    mobileCard.remove();
+                }, 300);
+            }
+        }
+        
+        function renumberCustomers() {
+            const rows = document.querySelectorAll('#active-queue .customer-row');
+            rows.forEach((row, index) => {
+                const position = index + 1;
+                const positionDiv = row.querySelector('.position');
+                
+                // Update position number
+                const currentBadge = positionDiv.querySelector('.next-badge');
+                positionDiv.innerHTML = position.toString();
+                
+                // Handle NEXT badge and button updates
+                if (position === 1 && rows.length > 0) {
+                    row.classList.add('next-customer');
+                    positionDiv.innerHTML += '<div class="next-badge">NEXT</div>';
+                    
+                    // Update action button
+                    const actionDiv = row.querySelector('.actions');
+                    const customerId = row.getAttribute('data-customer-id');
+                    const queueId = getActiveQueueId();
+                    
+                    if (actionDiv && queueId) {
+                        actionDiv.innerHTML = `<button class="btn-action btn-notify" onclick="notifyNext('${queueId}')">Notify</button>`;
+                    }
+                } else {
+                    row.classList.remove('next-customer');
+                    
+                    // Update select button if needed
+                    const notifyBtn = row.querySelector('.btn-notify');
+                    if (notifyBtn) {
+                        const customerId = row.getAttribute('data-customer-id');
+                        const queueId = getActiveQueueId();
+                        const actionDiv = row.querySelector('.actions');
+                        
+                        if (actionDiv && queueId) {
+                            actionDiv.innerHTML = `<button class="btn-action btn-select" onclick="selectCustomer('${queueId}', '${customerId}')">Select</button>`;
+                        }
+                    }
+                }
+            });
+            
+            // Update mobile cards
+            const cards = document.querySelectorAll('#active-queue .customer-card');
+            cards.forEach((card, index) => {
+                const position = index + 1;
+                const badge = card.querySelector('.position-badge');
+                if (badge) {
+                    badge.textContent = position;
+                }
+                
+                // Update NEXT status
+                if (position === 1 && cards.length > 0) {
+                    card.classList.add('next-customer');
+                    if (!card.querySelector('.status-badge.next')) {
+                        const header = card.querySelector('.customer-card-header');
+                        const nextBadge = document.createElement('span');
+                        nextBadge.className = 'status-badge next';
+                        nextBadge.textContent = 'NEXT';
+                        header.appendChild(nextBadge);
+                    }
+                } else {
+                    card.classList.remove('next-customer');
+                    const nextBadge = card.querySelector('.status-badge.next');
+                    if (nextBadge) {
+                        nextBadge.remove();
+                    }
+                }
+            });
+            
+            // Check if queue is now empty
+            if (rows.length === 0) {
+                showEmptyQueueState();
+            }
+        }
+        
+        function showEmptyQueueState() {
+            const activeQueueTab = document.getElementById('active-queue');
+            const queueSection = activeQueueTab.querySelector('.queue-section');
+            
+            if (queueSection) {
+                // Remove customer lists
+                const desktopList = queueSection.querySelector('.customer-list-desktop');
+                const mobileList = queueSection.querySelector('.customer-list-mobile');
+                
+                if (desktopList) desktopList.remove();
+                if (mobileList) mobileList.remove();
+                
+                // Add empty state
+                const emptyState = document.createElement('div');
+                emptyState.className = 'no-customers';
+                emptyState.innerHTML = `
+                    <div class="empty-queue-icon">🍽️</div>
+                    <h4>No customers in queue</h4>
+                    <p>Your restaurant is ready to welcome the next customer!</p>
+                `;
+                
+                queueSection.appendChild(emptyState);
+            }
         }
         
         function updateTotalWaitingCount() {
@@ -1176,28 +1752,36 @@
         }
         
         function showCodeVerificationModal(queueId, customerId) {
+            // Get customer info from the row
+            const customerRow = document.querySelector(`[data-customer-id="${customerId}"]`);
+            const customerName = customerRow ? customerRow.querySelector('.customer-name').textContent.trim() : 'Customer';
+            const verificationCode = customerRow ? customerRow.querySelector('.code-badge')?.textContent : '';
+            
             const modal = document.createElement('div');
             modal.className = 'verification-modal';
             modal.innerHTML = `
                 <div class="verification-content">
                     <div class="verification-header">
-                        <h2>🔐 Verify Customer Code</h2>
+                        <h2>🪑 Assign Table</h2>
                         <button onclick="closeVerificationModal()" class="close-btn">&times;</button>
                     </div>
                     <div class="verification-body">
-                        <p>Please enter the 4-character code shown by the customer:</p>
+                        <div style="margin-bottom: 15px; color: #333;">
+                            <strong style="color: #333;">Customer:</strong> <span style="color: #333;">${customerName}</span><br>
+                            <strong style="color: #333;">Verification Code:</strong> <span class="code-badge" style="margin-left: 10px;">${verificationCode}</span>
+                        </div>
+                        <p style="color: #333;">Please enter the table number to assign:</p>
                         <input type="text" 
-                               id="verificationCodeInput" 
+                               id="tableNumberInput" 
                                class="code-input" 
-                               maxlength="4" 
-                               pattern="[A-Za-z0-9]{4}"
-                               placeholder="Enter code"
+                               maxlength="10" 
+                               placeholder="Table number (e.g., 1, 2A, VIP1)"
                                autofocus>
                         <div id="verificationError" class="error-message" style="display: none;"></div>
                     </div>
                     <div class="verification-footer">
                         <button onclick="closeVerificationModal()" class="btn-secondary">Cancel</button>
-                        <button onclick="verifyAndSeatCustomer('${queueId}', '${customerId}')" class="btn-primary">Verify & Seat</button>
+                        <button onclick="assignTableAndSeatCustomer('${queueId}', '${customerId}')" class="btn-primary">Assign & Seat</button>
                     </div>
                 </div>
             `;
@@ -1205,13 +1789,13 @@
             
             // Focus on input
             setTimeout(() => {
-                document.getElementById('verificationCodeInput').focus();
+                document.getElementById('tableNumberInput').focus();
             }, 100);
             
             // Handle Enter key
-            document.getElementById('verificationCodeInput').addEventListener('keypress', function(e) {
+            document.getElementById('tableNumberInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    verifyAndSeatCustomer(queueId, customerId);
+                    assignTableAndSeatCustomer(queueId, customerId);
                 }
             });
         }
@@ -1221,24 +1805,24 @@
             if (modal) modal.remove();
         }
         
-        async function verifyAndSeatCustomer(queueId, customerId) {
-            const codeInput = document.getElementById('verificationCodeInput');
-            const code = codeInput.value.trim();
+        async function assignTableAndSeatCustomer(queueId, customerId) {
+            const tableInput = document.getElementById('tableNumberInput');
+            const tableNumber = tableInput.value.trim();
             
-            if (code.length !== 4) {
-                showVerificationError('Please enter a 4-character code');
+            if (!tableNumber) {
+                showVerificationError('Please enter a table number');
                 return;
             }
             
             try {
-                const response = await fetch(`/api/queue/${queueId}/verify-and-seat/${customerId}`, {
+                const response = await fetch(`/api/queue/${queueId}/assign-table/${customerId}`, {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-Token': csrfToken
                     },
-                    body: JSON.stringify({ verificationCode: code })
+                    body: JSON.stringify({ tableNumber })
                 });
                 
                 const result = await response.json();
@@ -1248,11 +1832,11 @@
                     alert(`✅ ${result.customer.customerName} has been seated!`);
                     window.location.reload();
                 } else {
-                    showVerificationError(result.error || 'Invalid verification code');
+                    showVerificationError(result.error || 'Failed to assign table');
                 }
             } catch (error) {
-                console.error('Error verifying customer:', error);
-                showVerificationError('Error verifying code. Please try again.');
+                console.error('Error assigning table:', error);
+                showVerificationError('Error assigning table. Please try again.');
             }
         }
         
@@ -1261,10 +1845,12 @@
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
             
-            // Shake the input
-            const input = document.getElementById('verificationCodeInput');
-            input.classList.add('shake');
-            setTimeout(() => input.classList.remove('shake'), 500);
+            // Shake the input (works for both table and code inputs)
+            const input = document.getElementById('tableNumberInput') || document.getElementById('verificationCodeInput');
+            if (input) {
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+            }
         }
         
         async function toggleQueueAccepting(queueId) {
@@ -1527,6 +2113,68 @@
             });
         }
 
+        async function callCustomer(queueId, customerId) {
+            if (!confirm('Are you sure you want to notify this customer?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/queue/${queueId}/call-specific`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ customerId })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`✅ Notified: ${result.customer.customerName}`);
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    alert(result.error || 'Failed to notify customer');
+                }
+            } catch (error) {
+                console.error('Error notifying customer:', error);
+                alert('Error notifying customer');
+            }
+        }
+
+        async function completeService(queueId, customerId) {
+            const customerCard = event.target.closest('.customer-card');
+            const customerName = customerCard.querySelector('.customer-name').textContent;
+            
+            if (!confirm(`Are you sure you want to complete service for ${customerName}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/queue/${queueId}/complete/${customerId}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`✅ Service completed for ${customerName}`);
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    alert(result.error || 'Failed to complete service');
+                }
+            } catch (error) {
+                console.error('Error completing service:', error);
+                alert('Error completing service');
+            }
+        }
+
         async function requeueCustomer(queueId, customerId) {
             if (!confirm('Are you sure you want to requeue this customer?')) {
                 return;
@@ -1555,7 +2203,444 @@
                 alert('Error requeuing customer');
             }
         }
+        
+        async function revokeNotification(queueId, customerId) {
+            if (!confirm('Are you sure you want to revoke this notification? The customer will need to be notified again.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/queue/${queueId}/revoke/${customerId}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Notification revoked successfully');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    alert(result.error || 'Failed to revoke notification');
+                }
+            } catch (error) {
+                console.error('Error revoking notification:', error);
+                alert('Error revoking notification');
+            }
+        }
+        
+        // Add new customer to the queue display dynamically
+        function addNewCustomerToQueue(customer, queueId) {
+            const activeQueueTab = document.getElementById('active-queue');
+            if (!activeQueueTab || !activeQueueTab.classList.contains('active')) {
+                return; // Only update if viewing active queue
+            }
+            
+            // Save scroll position
+            const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+            
+            const noCustomersDiv = activeQueueTab.querySelector('.no-customers');
+            if (noCustomersDiv) {
+                // Replace empty state with customer list structure
+                createCustomerListStructure(activeQueueTab);
+            }
+            
+            const customerListDesktop = activeQueueTab.querySelector('.customer-list-desktop');
+            const customerListMobile = activeQueueTab.querySelector('.customer-list-mobile');
+            
+            if (customerListDesktop) {
+                // Update existing customer positions
+                updateCustomerPositions();
+                
+                // Create new customer row
+                const newRow = createCustomerRow(customer, getNextPosition());
+                customerListDesktop.appendChild(newRow);
+                
+                // Store joined time for wait time calculations
+                newRow.setAttribute('data-joined-at', new Date().toISOString());
+                
+                // Animate the new row
+                setTimeout(() => {
+                    newRow.classList.add('new-customer-row');
+                    
+                    // Restore scroll position
+                    window.scrollTo(0, scrollPosition);
+                    
+                    // If list is near bottom, auto-scroll to show new customer
+                    const listBottom = customerListDesktop.getBoundingClientRect().bottom;
+                    const windowHeight = window.innerHeight;
+                    if (listBottom < windowHeight + 200) {
+                        newRow.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }
+                }, 10);
+            }
+            
+            if (customerListMobile) {
+                const newCard = createCustomerCard(customer, getNextPosition());
+                customerListMobile.appendChild(newCard);
+                
+                // Animate mobile card
+                setTimeout(() => {
+                    newCard.classList.add('new-customer-row');
+                }, 10);
+            }
+        }
+        
+        function createCustomerListStructure(container) {
+            const queueSection = container.querySelector('.queue-section');
+            if (!queueSection) return;
+            
+            // Remove no-customers div
+            const noCustomersDiv = container.querySelector('.no-customers');
+            if (noCustomersDiv) {
+                noCustomersDiv.remove();
+            }
+            
+            // Create desktop list
+            const desktopList = document.createElement('div');
+            desktopList.className = 'customer-list customer-list-desktop';
+            desktopList.innerHTML = `
+                <div class="customer-list-header">
+                    <span>#</span>
+                    <span>Customer</span>
+                    <span>Contact</span>
+                    <span>Party</span>
+                    <span>Wait</span>
+                    <span>Notified</span>
+                    <span>Code</span>
+                    <span>Special Requests</span>
+                    <span>Actions</span>
+                </div>
+            `;
+            
+            // Create mobile list
+            const mobileList = document.createElement('div');
+            mobileList.className = 'customer-list-mobile';
+            
+            queueSection.appendChild(desktopList);
+            queueSection.appendChild(mobileList);
+        }
+        
+        function createCustomerRow(customer, position) {
+            const row = document.createElement('div');
+            row.className = 'customer-row';
+            row.setAttribute('data-customer-id', customer._id || customer.id);
+            
+            const isNext = position === 1;
+            if (isNext) {
+                row.classList.add('next-customer');
+            }
+            
+            row.innerHTML = `
+                <div class="position">
+                    ${position}
+                    ${isNext ? '<div class="next-badge">NEXT</div>' : ''}
+                </div>
+                <div class="customer-name">
+                    ${customer.customerName}
+                    ${customer.platform === 'webchat' ? `
+                        <span class="connection-status" data-session-id="${customer.sessionId}" title="WebChat Customer">
+                            <i class="bi bi-circle-fill" style="font-size: 8px; color: #ccc;"></i>
+                        </span>
+                    ` : ''}
+                </div>
+                <div class="phone">
+                    ${customer.platform === 'webchat' ? 
+                        `<span class="webchat-badge" title="Session: ${customer.sessionId || 'Unknown'}">
+                            <i class="bi bi-chat-dots"></i> WebChat
+                        </span>` : 
+                        (customer.phoneNumber || customer.customerPhone || '-')
+                    }
+                </div>
+                <div class="party-size">${customer.partySize}</div>
+                <div class="wait-time">0 min</div>
+                <div class="notified-time">
+                    <span>-</span>
+                </div>
+                <div class="verification-code">
+                    <span>-</span>
+                </div>
+                <div class="special-requests">
+                    ${customer.specialRequests && customer.specialRequests.trim() ? 
+                        `<span class="special-requests-text" title="${customer.specialRequests}">
+                            ${customer.specialRequests.length > 30 ? customer.specialRequests.substring(0, 30) + '...' : customer.specialRequests}
+                        </span>` : 
+                        '<span class="no-requests">-</span>'
+                    }
+                </div>
+                <div class="actions">
+                    ${isNext ? 
+                        `<button class="btn-action btn-notify" onclick="notifyNext('${customer.queueId || customer.queue || getActiveQueueId()}')">Notify</button>` :
+                        `<button class="btn-action btn-select" onclick="selectCustomer('${customer.queueId || customer.queue}', '${customer._id || customer.id}')">Select</button>`
+                    }
+                </div>
+            `;
+            
+            return row;
+        }
+        
+        function createCustomerCard(customer, position) {
+            const card = document.createElement('div');
+            card.className = 'customer-card';
+            if (position === 1) {
+                card.classList.add('next-customer');
+            }
+            
+            card.innerHTML = `
+                <div class="customer-card-header">
+                    <span class="position-badge">${position}</span>
+                    <h3>${customer.customerName}</h3>
+                    ${position === 1 ? '<span class="status-badge next">NEXT</span>' : ''}
+                </div>
+                <div class="customer-card-body">
+                    <div class="customer-info-row">
+                        <i class="bi bi-phone"></i>
+                        <span>${customer.phoneNumber || customer.customerPhone || '-'}</span>
+                    </div>
+                    <div class="customer-info-row">
+                        <i class="bi bi-people"></i>
+                        <span>${customer.partySize} people</span>
+                    </div>
+                    <div class="customer-info-row">
+                        <i class="bi bi-clock"></i>
+                        <span>0 min</span>
+                    </div>
+                    ${customer.specialRequests ? `
+                        <div class="customer-info-row">
+                            <i class="bi bi-chat-text"></i>
+                            <span>${customer.specialRequests}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="customer-card-actions">
+                    <button onclick="callCustomer('${customer.queueId || customer.queue}', '${customer._id || customer.id}')" class="action-button call-button">
+                        <i class="bi bi-megaphone"></i> Call
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function getNextPosition() {
+            const rows = document.querySelectorAll('#active-queue .customer-row');
+            return rows.length + 1;
+        }
+        
+        function updateCustomerPositions() {
+            const rows = document.querySelectorAll('#active-queue .customer-row');
+            rows.forEach((row, index) => {
+                const positionDiv = row.querySelector('.position');
+                const oldPosition = parseInt(positionDiv.textContent);
+                const newPosition = index + 2; // New customer will be at the end
+                
+                if (oldPosition !== newPosition) {
+                    positionDiv.innerHTML = newPosition.toString();
+                    
+                    // Remove NEXT badge from previous first customer
+                    if (oldPosition === 1) {
+                        row.classList.remove('next-customer');
+                        const nextBadge = positionDiv.querySelector('.next-badge');
+                        if (nextBadge) nextBadge.remove();
+                        
+                        // Update button
+                        const actionBtn = row.querySelector('.btn-notify');
+                        if (actionBtn) {
+                            actionBtn.className = 'btn-action btn-select';
+                            actionBtn.textContent = 'Select';
+                            const customerId = row.getAttribute('data-customer-id');
+                            const queueId = getActiveQueueId();
+                            actionBtn.onclick = () => selectCustomer(queueId, customerId);
+                        }
+                    }
+                }
+            });
+            
+            // Update mobile cards too
+            const cards = document.querySelectorAll('#active-queue .customer-card');
+            cards.forEach((card, index) => {
+                const badge = card.querySelector('.position-badge');
+                if (badge) {
+                    badge.textContent = index + 2;
+                }
+            });
+        }
+        
+        function getActiveQueueId() {
+            // Extract queue ID from existing elements or store it globally
+            const notifyBtn = document.querySelector('.btn-notify');
+            if (notifyBtn && notifyBtn.onclick) {
+                const onclickStr = notifyBtn.onclick.toString();
+                const match = onclickStr.match(/notifyNext\('([^']+)'\)/);
+                if (match) return match[1];
+            }
+            return null;
+        }
+        
+        function showNewCustomerNotification(customer) {
+            const notification = document.createElement('div');
+            notification.className = 'new-customer-notification';
+            notification.innerHTML = `
+                <i class="bi bi-person-plus-fill"></i>
+                <div class="notification-text">
+                    <div class="notification-title">New Customer Joined!</div>
+                    <div class="notification-details">${customer.customerName} • Party of ${customer.partySize}</div>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Play notification sound if enabled
+            playNotificationSound();
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 5000);
+        }
+        
+        function updateQueueStats() {
+            // Update the stats in the header
+            const waitingCount = document.querySelectorAll('#active-queue .customer-row').length;
+            
+            // Update queue summary stats
+            const queueStats = document.querySelectorAll('.queue-stats .number');
+            if (queueStats[0]) {
+                queueStats[0].textContent = waitingCount;
+            }
+            
+            // Update main stats cards
+            const totalWaitingElement = document.getElementById('totalWaitingCount');
+            if (totalWaitingElement) {
+                totalWaitingElement.textContent = waitingCount;
+            }
+            
+            // Recalculate average wait time
+            updateAverageWaitTime();
+        }
+        
+        function updateAverageWaitTime() {
+            const rows = document.querySelectorAll('#active-queue .customer-row');
+            let totalWait = 0;
+            let count = 0;
+            
+            rows.forEach(row => {
+                const waitTimeElement = row.querySelector('.wait-time');
+                if (waitTimeElement) {
+                    const waitText = waitTimeElement.textContent;
+                    const minutes = parseInt(waitText.match(/\d+/)?.[0] || 0);
+                    totalWait += minutes;
+                    count++;
+                }
+            });
+            
+            const avgWait = count > 0 ? Math.round(totalWait / count) : 0;
+            
+            // Update average wait time displays
+            const queueStats = document.querySelectorAll('.queue-stats .number');
+            if (queueStats[1]) {
+                queueStats[1].textContent = avgWait;
+            }
+            
+            const averageWaitTimeElement = document.getElementById('averageWaitTime');
+            if (averageWaitTimeElement) {
+                averageWaitTimeElement.textContent = avgWait;
+            }
+        }
+        
+        // Audio notification support
+        let audioEnabled = localStorage.getItem('queueAudioEnabled') !== 'false';
+        
+        function playNotificationSound() {
+            if (!audioEnabled) return;
+            
+            const audio = new Audio('data:audio/wav;base64,UklGRhwGAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAGAACAhYiLjo+Rk5WXmZqcnZ+ho6WmqKmrrK6vsLGys7S1t7i5uru8vL29vr6/v8DAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwL+/v7+/vr69vby7uru6ubm4t7a2tbSzsrGwr66trKuqqainpqWko6GgnpybmpmXlpSSkZCOjIuJh4WEgoB+fHp4dnRycG5sa2llY2FeXFpYVlRSUE5MSklGREJAPjw6ODY0MjAuLCooJiQiIB4cGhgWFBIQDgwKCAYEAgABAwUHCQsMDhASFBYYGhweICIkJigqLC4wMjQ2ODo8PkBCREdJSk1OUFFTVFZYW1xeYGNlZ2lrbG5vcXN1d3l7fX+AgoSGiImLjY6QkpOVl5iZm52eoKKkpaanqaqrrK2ur7CxsrO0tba3uLm6uru8vb6+v7/AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcG/vLm1sq+rp6Sgm5eTj4uHg4B8eHRwbGhkYFxYVFBMSERAOzc0MC0oJCEcGRUNDAkFAv78+vj29PPx7+zq6Obk4uDe3Nva2NbU0tDOzMvJyMbEw8HAwL++vby7urm4t7a1tLOysbCvrq2sq6qpqKempaSjoqGhoKCfn56enZ2cnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJybnZybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJybnJydnZ2enp+fn6ChoaKio6SlpqeoqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpbXF1eX2BhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8=');
+            audio.volume = 0.5;
+            audio.play().catch(e => {
+                console.log('Audio playback failed:', e);
+            });
+        }
+        
+        function toggleAudioNotifications() {
+            audioEnabled = !audioEnabled;
+            localStorage.setItem('queueAudioEnabled', audioEnabled.toString());
+            updateAudioButton();
+        }
+        
+        function updateAudioButton() {
+            const btn = document.getElementById('audioControlBtn');
+            if (btn) {
+                if (audioEnabled) {
+                    btn.classList.remove('muted');
+                    btn.innerHTML = '<i class="bi bi-volume-up-fill"></i>';
+                    btn.title = 'Mute notifications';
+                } else {
+                    btn.classList.add('muted');
+                    btn.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
+                    btn.title = 'Enable notification sounds';
+                }
+            }
+        }
+        
+        // Update wait times dynamically
+        function updateWaitTimes() {
+            const now = new Date();
+            
+            document.querySelectorAll('.customer-row').forEach(row => {
+                const customerId = row.getAttribute('data-customer-id');
+                const joinedAt = row.getAttribute('data-joined-at');
+                
+                if (joinedAt) {
+                    const waitMinutes = Math.floor((now - new Date(joinedAt)) / (1000 * 60));
+                    const waitTimeElement = row.querySelector('.wait-time');
+                    if (waitTimeElement) {
+                        waitTimeElement.textContent = `${waitMinutes} min`;
+                    }
+                }
+            });
+            
+            updateAverageWaitTime();
+        }
+        
+        // Update notification timers every minute
+        function updateNotificationTimers() {
+            const timerElements = document.querySelectorAll('.notified-time .timer');
+            timerElements.forEach(timer => {
+                const row = timer.closest('.customer-row');
+                const calledAt = row.getAttribute('data-called-at');
+                
+                if (calledAt) {
+                    const calledTime = new Date(calledAt);
+                    const now = new Date();
+                    const diffMinutes = Math.floor((now - calledTime) / (1000 * 60));
+                    
+                    if (diffMinutes < 60) {
+                        timer.textContent = `${diffMinutes} min`;
+                    } else {
+                        const hours = Math.floor(diffMinutes / 60);
+                        const minutes = diffMinutes % 60;
+                        timer.textContent = `${hours}h ${minutes}m`;
+                    }
+                }
+            });
+        }
+        
+        // Start timer updates
+        setInterval(updateNotificationTimers, 60000); // Update every minute
+        updateNotificationTimers(); // Initial update
     </script>
+    
+    <!-- Audio Control Button -->
+    <button id="audioControlBtn" class="audio-control" onclick="toggleAudioNotifications()" title="Toggle notification sounds">
+        <i class="bi bi-volume-up-fill"></i>
+    </button>
     
     <!-- Bottom Navigation for Mobile -->
     <nav class="bottom-nav">

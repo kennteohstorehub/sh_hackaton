@@ -42,6 +42,8 @@ const {
   csrfHelpers 
 } = require('./middleware/csrf-disabled');
 const { registerHelpers } = require('./utils/templateHelpers');
+const RoomHelpers = require('./utils/roomHelpers');
+const prisma = require('./utils/prisma');
 
 // API Routes
 const queueRoutes = require('./routes/queue');
@@ -294,6 +296,7 @@ app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/test-csrf', require('./routes/test-csrf'));
 app.use('/api/debug', require('./routes/debug-session'));
 app.use('/api/session-test', require('./routes/session-test'));
+app.use('/api/queue/acknowledge', require('./routes/acknowledge'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -339,8 +342,13 @@ io.use((socket, next) => {
 });
 
 // Socket.IO connection handling with authentication
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   const session = socket.request.session;
+  
+  // Store session info in socket data for later use
+  socket.data.sessionId = session?.sessionId;
+  socket.data.userId = session?.user?.id;
+  socket.data.merchantId = session?.user?.merchantId;
   
   // Allow both authenticated users and public customer connections
   if (!session) {
@@ -353,38 +361,111 @@ io.on('connection', (socket) => {
   
   socket.on('join-merchant-room', (merchantId) => {
     // Verify the user has access to this merchant
-    if (session && session.user && (session.user.id === merchantId || session.user.merchantId === merchantId)) {
-      socket.join(`merchant-${merchantId}`);
+    if (process.env.AUTH_BYPASS === 'true' || (session && session.user && (session.user.id === merchantId || session.user.merchantId === merchantId))) {
+      socket.join(RoomHelpers.getMerchantRoom(merchantId));
       logger.info(`Merchant ${merchantId} joined room`);
     } else {
       logger.warn(`Unauthorized room join attempt for merchant ${merchantId}`);
     }
   });
   
-  socket.on('join-customer-room', (customerId) => {
-    // Allow customers to join their own rooms (public access)
-    socket.join(`customer-${customerId}`);
-    logger.info(`Customer ${customerId} joined room`);
+  socket.on('join-customer-room', async (data) => {
+    try {
+      // Handle both string customerId and object data
+      const entryId = typeof data === 'string' ? data : data.entryId;
+      const sessionId = typeof data === 'object' ? data.sessionId : null;
+      
+      logger.info(`[SOCKET] join-customer-room request:`, { entryId, sessionId, dataType: typeof data });
+      
+      if (!entryId) {
+        logger.warn('[SOCKET] No entryId provided for join-customer-room');
+        return;
+      }
+      
+      // For webchat customers, verify they own this entry
+      if (sessionId) {
+        const entry = await prisma.queueEntry.findFirst({
+          where: {
+            OR: [
+              { id: entryId },
+              { customerId: entryId }
+            ],
+            sessionId: sessionId,
+            status: { in: ['waiting', 'called'] }
+          }
+        });
+        
+        if (entry) {
+          // Join all appropriate rooms for this entry
+          const rooms = RoomHelpers.getCustomerRooms(entry);
+          rooms.forEach(room => {
+            socket.join(room);
+            logger.info(`[SOCKET] Customer joined room: ${room}`);
+          });
+          
+          // Store entry data for later use
+          socket.data.entryId = entry.id;
+          socket.data.sessionId = sessionId;
+          socket.data.phone = entry.customerPhone;
+          
+          logger.info(`[SOCKET] Customer ${entry.customerName} joined ${rooms.length} rooms for entry ${entry.id}`);
+        } else {
+          logger.warn(`[SOCKET] No valid entry found for session ${sessionId}`);
+        }
+      } else {
+        // Legacy support - just join the requested room
+        socket.join(`customer-${entryId}`);
+        logger.info(`[SOCKET] Legacy customer room join: customer-${entryId}`);
+      }
+    } catch (error) {
+      logger.error('[SOCKET] Error joining customer room:', error);
+    }
   });
   
-  socket.on('join-queue', (data) => {
-    // Handle webchat customers joining queue
-    if (data.platform === 'webchat' && data.sessionId) {
-      const customerId = `webchat_${data.sessionId}`;
-      socket.join(`customer-${customerId}`);
-      logger.info(`WebChat customer ${customerId} joined room via join-queue`);
-      
-      // Also join by sessionId for flexibility
-      socket.join(`session-${data.sessionId}`);
-      logger.info(`WebChat session ${data.sessionId} joined room`);
-      
-      // Notify merchant dashboard of connection
-      if (data.merchantId) {
-        io.to(`merchant-${data.merchantId}`).emit('webchat-connected', {
-          sessionId: data.sessionId,
-          customerId: customerId
+  socket.on('join-queue', async (data) => {
+    logger.info('[SOCKET] Join-queue event received:', data);
+    
+    try {
+      // Handle webchat customers joining queue
+      if (data.sessionId && data.entryId) {
+        // Look up the actual queue entry
+        const entry = await prisma.queueEntry.findFirst({
+          where: {
+            id: data.entryId,
+            sessionId: data.sessionId,
+            status: { in: ['waiting', 'called'] }
+          }
         });
+        
+        if (entry) {
+          // Join all appropriate rooms
+          const rooms = RoomHelpers.getCustomerRooms(entry);
+          rooms.forEach(room => {
+            socket.join(room);
+            logger.info(`[SOCKET] Queue customer joined room: ${room}`);
+          });
+          
+          // Store data in socket
+          socket.data.entryId = entry.id;
+          socket.data.sessionId = data.sessionId;
+          socket.data.phone = entry.customerPhone;
+          
+          logger.info(`[SOCKET] Customer ${entry.customerName} joined queue rooms. Total rooms:`, Array.from(socket.rooms));
+          
+          // Notify merchant dashboard of connection
+          if (data.merchantId) {
+            io.to(RoomHelpers.getMerchantRoom(data.merchantId)).emit('webchat-connected', {
+              sessionId: data.sessionId,
+              entryId: entry.id,
+              customerName: entry.customerName
+            });
+          }
+        } else {
+          logger.warn(`[SOCKET] No valid queue entry found for session ${data.sessionId}`);
+        }
       }
+    } catch (error) {
+      logger.error('[SOCKET] Error joining queue:', error);
     }
   });
   
@@ -392,19 +473,22 @@ io.on('connection', (socket) => {
     logger.info(`Client disconnected: ${socket.id}`);
     
     // Check if this was a webchat customer and notify merchant
-    const rooms = Array.from(socket.rooms);
-    const sessionRoom = rooms.find(room => room.startsWith('session-'));
-    if (sessionRoom) {
-      const sessionId = sessionRoom.replace('session-', '');
-      // Find merchant ID from other rooms or socket data
-      const merchantRoom = rooms.find(room => room.startsWith('merchant-'));
-      if (merchantRoom) {
-        const merchantId = merchantRoom.replace('merchant-', '');
-        io.to(`merchant-${merchantId}`).emit('webchat-disconnected', {
-          sessionId: sessionId,
-          customerId: `webchat_${sessionId}`
-        });
-      }
+    if (socket.data.sessionId && socket.data.entryId) {
+      // Find the entry to get merchant ID
+      prisma.queueEntry.findUnique({
+        where: { id: socket.data.entryId },
+        include: { queue: true }
+      }).then(entry => {
+        if (entry && entry.queue) {
+          io.to(RoomHelpers.getMerchantRoom(entry.queue.merchantId)).emit('webchat-disconnected', {
+            sessionId: socket.data.sessionId,
+            entryId: entry.id,
+            customerName: entry.customerName
+          });
+        }
+      }).catch(err => {
+        logger.error('Error handling disconnect:', err);
+      });
     }
   });
 });

@@ -111,18 +111,20 @@ router.get('/', async (req, res) => {
       // Get MongoDB entries
       const mongoEntries = (activeQueue.entries || [])
         .filter(entry => {
-          // Only show waiting customers in the active queue section
-          const isWaiting = entry.status === 'waiting';
+          // Show both waiting and called customers in the active queue section
+          const isActiveStatus = entry.status === 'waiting' || entry.status === 'called';
           const isRecent = new Date(entry.joinedAt) >= oneDayAgo;
-          return isWaiting && isRecent;
+          return isActiveStatus && isRecent;
         });
       
-      // Get Prisma webchat entries
+      // Get Prisma webchat entries (both waiting and called)
       const activeQueueId = (activeQueue._id || activeQueue.id)?.toString();
       const prismaEntries = activeQueueId ? await prisma.queueEntry.findMany({
         where: {
           queueId: activeQueueId,
-          status: 'waiting',
+          status: {
+            in: ['waiting', 'called']
+          },
           platform: 'webchat',
           joinedAt: {
             gte: oneDayAgo

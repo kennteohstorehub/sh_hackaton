@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= queueName %> - Join Queue</title>
+    <link rel="stylesheet" href="/css/queue-info-minimal.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><%= businessName %></h1>
+            <p>Queue Management System</p>
+        </div>
+
+        <!-- Queue Status -->
+        <div class="queue-status <%= (queueActive && acceptingCustomers !== false) ? 'open' : 'closed' %>">
+            <%= (queueActive && acceptingCustomers !== false) ? '✓ Queue is open' : '✕ Queue is closed' %>
+        </div>
+
+        <% if (queueActive && acceptingCustomers !== false) { %>
+        <!-- Current Wait Info -->
+        <div class="wait-info">
+            <div class="wait-stat">
+                <span class="wait-number"><%= totalAhead %></span>
+                <span class="wait-label">People ahead</span>
+            </div>
+            <div class="wait-stat">
+                <span class="wait-number"><%= averageWaitTime %></span>
+                <span class="wait-label">Minutes wait</span>
+            </div>
+        </div>
+
+        <!-- Join Form -->
+        <div class="join-form">
+            <h2>Join the Queue</h2>
+            
+            <!-- Messages -->
+            <div id="successMessage" class="message success-message" style="display: none;">
+                <span id="successText"></span>
+            </div>
+            <div id="errorMessage" class="message error-message" style="display: none;">
+                <span id="errorText"></span>
+            </div>
+
+            <form id="joinQueueForm">
+                <div class="form-group">
+                    <label for="customerName" class="form-label">Your name</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="customerName" 
+                           name="name" 
+                           required
+                           autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label for="customerPhone" class="form-label">Phone number</label>
+                    <input type="tel" 
+                           class="form-control" 
+                           id="customerPhone" 
+                           name="phone" 
+                           required
+                           autocomplete="tel">
+                    <div class="form-text">We'll use this to notify you</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="partySize" class="form-label">Party size</label>
+                    <select class="form-control" id="partySize" name="partySize" required>
+                        <option value="1">1 person</option>
+                        <option value="2" selected>2 people</option>
+                        <option value="3">3 people</option>
+                        <option value="4">4 people</option>
+                        <option value="5">5 people</option>
+                        <option value="6">6+ people</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn" id="joinBtn">
+                    Join queue
+                </button>
+            </form>
+        </div>
+
+        <!-- Business Info -->
+        <div class="business-info">
+            <p>Questions? Call <a href="tel:<%= businessPhone %>"><%= businessPhone %></a></p>
+        </div>
+        <% } else { %>
+        <div class="business-info">
+            <p>We're currently not accepting new customers.</p>
+            <p>Please check back later or call <a href="tel:<%= businessPhone %>"><%= businessPhone %></a></p>
+        </div>
+        <% } %>
+    </div>
+
+    <script>
+        // Simple form handler
+        document.getElementById('joinQueueForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const joinBtn = document.getElementById('joinBtn');
+            const originalText = joinBtn.textContent;
+            
+            // Show loading
+            joinBtn.innerHTML = '<span class="loading"></span>Joining...';
+            joinBtn.disabled = true;
+            
+            // Hide messages
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Format phone number
+                let phone = data.phone.trim();
+                phone = phone.replace(/[^\d+]/g, '');
+                
+                if (!phone.startsWith('+')) {
+                    if (phone.startsWith('0')) {
+                        phone = '+60' + phone.substring(1);
+                    } else if (phone.startsWith('60')) {
+                        phone = '+' + phone;
+                    } else if (phone.length <= 10) {
+                        phone = '+60' + phone;
+                    } else {
+                        phone = '+' + phone;
+                    }
+                }
+                
+                data.phone = phone;
+                
+                const response = await fetch(`/api/customer/join/<%= queueId %>`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Store queue info
+                    const queueInfo = {
+                        queueId: result.customer.queueId,
+                        entryId: result.entryId || result.customer.id,
+                        position: result.position,
+                        customerName: result.customer.customerName,
+                        verificationCode: result.customer.verificationCode,
+                        estimatedWait: result.estimatedWait,
+                        customerId: result.customer.customerId,
+                        sessionId: result.customer.sessionId,
+                        customerPhone: data.phone
+                    };
+                    
+                    sessionStorage.setItem('queueInfo', JSON.stringify(queueInfo));
+                    sessionStorage.setItem('queueJoined', 'true');
+                    
+                    // Show success
+                    document.getElementById('successText').textContent = 'Success! Redirecting...';
+                    document.getElementById('successMessage').style.display = 'block';
+                    
+                    // Redirect
+                    setTimeout(() => {
+                        window.location.href = `/queue-chat/${result.customer.sessionId}`;
+                    }, 1000);
+                } else {
+                    document.getElementById('errorText').textContent = result.error || 'Failed to join queue';
+                    document.getElementById('errorMessage').style.display = 'block';
+                    
+                    // Reset button
+                    joinBtn.textContent = originalText;
+                    joinBtn.disabled = false;
+                }
+            } catch (error) {
+                document.getElementById('errorText').textContent = 'Network error. Please try again.';
+                document.getElementById('errorMessage').style.display = 'block';
+                
+                // Reset button
+                joinBtn.textContent = originalText;
+                joinBtn.disabled = false;
+            }
+        });
+
+        // Simple phone validation
+        document.getElementById('customerPhone')?.addEventListener('input', function(e) {
+            let value = e.target.value;
+            value = value.replace(/[^\d+\s()-]/g, '');
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

@@ -787,13 +787,20 @@
                     // Store queue info in session storage for the chatbot
                     const queueInfo = {
                         queueId: result.customer.queueId,
+                        entryId: result.entryId || result.customer.id || result.customer._id,  // Include entry ID
                         position: result.position,
                         queueNumber: result.customer.position,
                         customerName: result.customer.customerName,
                         verificationCode: result.customer.verificationCode,
                         estimatedWait: result.estimatedWait,
-                        joinedAt: new Date().toISOString()
+                        joinedAt: new Date().toISOString(),
+                        customerId: result.customer.customerId,
+                        sessionId: result.customer.sessionId || `qc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                        merchantId: result.customer.merchantId || '<%= merchantId %>'
                     };
+                    
+                    // Add customer phone to queue info
+                    queueInfo.customerPhone = data.phone;
                     
                     console.log('Storing queue info:', queueInfo);
                     sessionStorage.setItem('queueInfo', JSON.stringify(queueInfo));
@@ -804,9 +811,11 @@
                         `Successfully joined! Redirecting to your queue status...`;
                     document.getElementById('successMessage').style.display = 'flex';
                     
-                    // Redirect to full-screen queue chat after 1.5 seconds
+                    // Redirect to full-screen queue chat with session ID after 1.5 seconds
                     setTimeout(() => {
-                        window.location.href = '/queue-chat.html';
+                        // Use the sessionId from the response
+                        const sessionId = result.customer.sessionId || queueInfo.sessionId;
+                        window.location.href = `/queue-chat/${sessionId}`;
                     }, 1500);
                 } else {
                     // Show error message

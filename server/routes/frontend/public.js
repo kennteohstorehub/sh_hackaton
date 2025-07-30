@@ -152,6 +152,46 @@ router.get('/join/:merchantId', async (req, res) => {
   }
 });
 
+// GET /queue/:queueId/minimal - Minimalist queue join page (demo)
+router.get('/queue/:queueId/minimal', async (req, res) => {
+  try {
+    const { queueId } = req.params;
+    
+    const queue = await queueService.getQueueWithEntries(queueId);
+    
+    if (!queue) {
+      return res.render('public/error', {
+        title: 'Queue Not Found',
+        message: 'The queue you are looking for does not exist.',
+        showBackButton: false
+      });
+    }
+    
+    const merchantData = queue.merchantId || queue.merchant;
+    const waitingCustomers = queue.entries?.filter(e => e.status === 'waiting').length || 0;
+    const averageWaitTime = Math.round(waitingCustomers * (queue.averageServiceTime || 15));
+    
+    res.render('queue-info-minimal', {
+      queueId: queue.id || queue._id,
+      queueName: queue.name,
+      businessName: merchantData?.businessName || 'Restaurant',
+      businessPhone: merchantData?.phone || '+60123456789',
+      totalAhead: waitingCustomers,
+      averageWaitTime: averageWaitTime,
+      queueActive: queue.isActive !== false,
+      acceptingCustomers: queue.acceptingCustomers !== false,
+      merchantId: merchantData?.id || merchantData?._id || 'demo'
+    });
+    
+  } catch (error) {
+    logger.error('Queue info page error:', error);
+    res.status(500).render('public/error', {
+      title: 'Server Error',
+      message: 'An error occurred while loading the page. Please try again later.'
+    });
+  }
+});
+
 // GET /queue-status/:queueId/:customerId - Customer queue status page
 router.get('/queue-status/:queueId/:customerId', async (req, res) => {
   try {
@@ -474,7 +514,8 @@ router.get('/queue/:queueId', async (req, res) => {
       messengerLink,
       businessHours,
       businessAddress,
-      lastUpdated: new Date().toLocaleTimeString()
+      lastUpdated: new Date().toLocaleTimeString(),
+      merchantId: merchant.id || merchant._id || queue.merchantId
     });
 
   } catch (error) {
@@ -521,6 +562,81 @@ router.get('/join-queue/:merchantId', async (req, res) => {
       message: 'An error occurred while loading the page. Please try again later.'
     });
   }
+});
+
+// GET /queue-chat/:sessionId - Dynamic webchat route with session ID
+router.get('/queue-chat/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    // Validate session ID format
+    if (!sessionId || !sessionId.startsWith('qc_')) {
+      return res.status(400).render('error', {
+        title: 'Invalid Session',
+        status: 400,
+        message: 'Invalid session ID. Please join the queue again.'
+      });
+    }
+    
+    // Check if session has a queue entry
+    const queueEntry = await prisma.queueEntry.findFirst({
+      where: {
+        sessionId: sessionId,
+        status: 'waiting'
+      },
+      include: {
+        queue: {
+          include: {
+            merchant: true
+          }
+        }
+      }
+    });
+    
+    // Prepare queue data for the frontend
+    let queueData = null;
+    if (queueEntry) {
+      queueData = {
+        entryId: queueEntry.id,
+        queueId: queueEntry.queueId,
+        customerId: queueEntry.customerId,
+        customerName: queueEntry.customerName,
+        customerPhone: queueEntry.customerPhone,
+        position: queueEntry.position,
+        queueNumber: queueEntry.position,
+        verificationCode: queueEntry.verificationCode,
+        estimatedWait: queueEntry.estimatedWaitTime,
+        sessionId: queueEntry.sessionId,
+        merchantId: queueEntry.queue.merchantId,
+        status: queueEntry.status
+      };
+    }
+    
+    // Render the queue chat HTML page
+    // The actual chat functionality is handled by the client-side JavaScript
+    res.render('queue-chat', {
+      title: 'Queue Status - StoreHub',
+      sessionId: sessionId,
+      hasQueueEntry: !!queueEntry,
+      merchantName: queueEntry?.queue?.merchant?.businessName || 'StoreHub',
+      queueData: queueData ? JSON.stringify(queueData) : null
+    });
+    
+  } catch (error) {
+    logger.error('Queue chat page error:', error);
+    res.status(500).render('error', {
+      title: 'Server Error',
+      status: 500,
+      message: 'An error occurred while loading the chat. Please try again later.'
+    });
+  }
+});
+
+// GET /queue-chat - Static fallback for direct access (redirects to session-based URL)
+router.get('/queue-chat', (req, res) => {
+  // Generate a new session ID and redirect to the dynamic URL
+  const sessionId = 'qc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  res.redirect(`/queue-chat/${sessionId}`);
 });
 
 module.exports = router; 

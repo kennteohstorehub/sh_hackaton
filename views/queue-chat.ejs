@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title><%= title %></title>
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff8c00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/images/icon-144x144.svg">
+    <link rel="apple-touch-icon" href="/images/icon-144x144.svg">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/queue-chat.css">
+    
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Chat Interface -->
+        <div class="chat-container">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="header-left">
+                    <div class="business-info">
+                        <h1><%= merchantName %></h1>
+                        <span class="connection-status" id="connectionStatus">Connecting...</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="verification-display" id="verificationDisplay" style="display: none;">
+                        <span class="verify-label">Code:</span>
+                        <span class="verify-code" id="headerVerifyCode"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messages Container -->
+            <div class="messages-container" id="messagesContainer">
+                <!-- Messages will be dynamically added here -->
+            </div>
+            
+            <!-- Quick Actions (shown when in queue) -->
+            <div class="quick-actions" id="quickActions">
+                <button class="quick-action-btn" onclick="if(window.queueChat && window.queueChat.sendQuickAction) window.queueChat.sendQuickAction('status'); else console.warn('Chat not ready');">
+                    <i class="bi bi-info-circle"></i>
+                    Check Status
+                </button>
+                <button class="quick-action-btn" onclick="if(window.queueChat && window.queueChat.sendQuickAction) window.queueChat.sendQuickAction('cancel'); else console.warn('Chat not ready');">
+                    <i class="bi bi-x-circle"></i>
+                    Cancel Queue
+                </button>
+                <button class="quick-action-btn" onclick="if(window.queueChat && window.queueChat.sendQuickAction) window.queueChat.sendQuickAction('contact'); else console.warn('Chat not ready');">
+                    <i class="bi bi-telephone"></i>
+                    Contact Business
+                </button>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="input-area">
+                <form id="messageForm" class="message-form">
+                    <textarea 
+                        id="messageInput" 
+                        class="message-input" 
+                        placeholder="Type a message..."
+                        rows="1"
+                        maxlength="500"></textarea>
+                    <button type="submit" class="send-button" id="sendButton">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Notification Sound Manager -->
+    <script src="/js/notification-sound.js?v=<%= Date.now() %>"></script>
+    
+    <!-- Queue Chat JavaScript - Load FIRST (with cache busting) -->
+    <script src="/js/queue-chat.js?v=<%= Date.now() %>"></script>
+    
+    <!-- Session data for JavaScript - Load AFTER queue-chat.js -->
+    <script>
+        // Wait for DOM and QueueChat to be ready
+        function initializeQueueData() {
+            window.QUEUE_CHAT_SESSION = {
+                sessionId: '<%= sessionId %>',
+                hasQueueEntry: <%= hasQueueEntry %>,
+                merchantName: '<%= merchantName %>'
+            };
+            
+            // If we have queue data from the server, store it in sessionStorage
+            <% if (locals.queueData) { %>
+            const serverQueueData = <%- queueData %>;
+            if (serverQueueData) {
+                sessionStorage.setItem('queueInfo', JSON.stringify(serverQueueData));
+                sessionStorage.setItem('queueJoined', 'true');
+                console.log('[INIT] Queue data loaded from server:', serverQueueData);
+                
+                // If QueueChat is already initialized, trigger reload
+                if (window.queueChat && window.queueChat.checkQueueRedirect) {
+                    console.log('[INIT] Triggering queue data check...');
+                    window.queueChat.checkQueueRedirect();
+                }
+            }
+            <% } %>
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeQueueData);
+        } else {
+            // DOM already loaded, initialize immediately
+            initializeQueueData();
+        }
+    </script>
+</body>
+</html>

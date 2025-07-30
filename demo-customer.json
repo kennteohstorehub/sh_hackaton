@@ -1,0 +1,9 @@
+{
+  "entryId": "5c3ded54-13cd-4855-85b7-23325efeacd3",
+  "customerId": "web_+60863486007_1753792288628",
+  "queueId": "453b1b29-7d3b-4c0e-92d6-d86cc9952f8e",
+  "position": 32,
+  "verificationCode": "RNJG",
+  "chatUrl": "http://localhost:3838/queue-chat/qc_1753792288628_u9zlvgeia",
+  "notifyCommand": "curl -X POST http://localhost:3838/api/queue/notify -H \"Content-Type: application/json\" -d '{\"queueId\":\"453b1b29-7d3b-4c0e-92d6-d86cc9952f8e\",\"customerId\":\"web_+60863486007_1753792288628\",\"entryId\":\"5c3ded54-13cd-4855-85b7-23325efeacd3\"}'"
+}
