@@ -7,22 +7,30 @@ const RoomHelpers = require('../utils/roomHelpers');
 
 // Use appropriate auth middleware based on environment
 let requireAuth, loadUser;
-if (process.env.NODE_ENV !== 'production') {
+const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true' || 
+                     (process.env.NODE_ENV !== 'production' && process.env.USE_AUTH_BYPASS !== 'false');
+
+if (useAuthBypass) {
   ({ requireAuth, loadUser } = require('../middleware/auth-bypass'));
 } else {
   ({ requireAuth, loadUser } = require('../middleware/auth'));
 }
+
+// Import tenant isolation middleware
+const { tenantIsolationMiddleware, validateMerchantAccess } = require('../middleware/tenant-isolation');
 
 const queueService = require('../services/queueService');
 const merchantService = require('../services/merchantService');
 
 const router = express.Router();
 
-// GET /api/queue - Get all queues for merchant
-router.get('/', [requireAuth, loadUser], async (req, res) => {
+// GET /api/queue - Get all queues for merchant with tenant isolation
+router.get('/', [requireAuth, loadUser, tenantIsolationMiddleware, validateMerchantAccess], async (req, res) => {
   try {
     const merchantId = req.user.id || req.user._id;
-    const queues = await queueService.findByMerchant(merchantId, true);
+    const tenantId = req.tenantId;
+    
+    const queues = await queueService.findByMerchant(merchantId, true, tenantId);
     
     res.json({
       success: true,
@@ -38,17 +46,18 @@ router.get('/', [requireAuth, loadUser], async (req, res) => {
   }
 });
 
-// GET /api/queue/performance - Get queue performance data for dashboard
-router.get('/performance', [requireAuth, loadUser], async (req, res) => {
+// GET /api/queue/performance - Get queue performance data for dashboard with tenant isolation
+router.get('/performance', [requireAuth, loadUser, tenantIsolationMiddleware, validateMerchantAccess], async (req, res) => {
   try {
     const merchantId = req.user._id;
+    const tenantId = req.tenantId;
     
     // Get all queues for the merchant with performance stats
-    const queues = await queueService.findByMerchant(merchantId, true);
+    const queues = await queueService.findByMerchant(merchantId, true, tenantId);
     
     // Calculate performance metrics for each queue
     const queuePerformance = await Promise.all(queues.map(async queue => {
-      const stats = await queueService.getQueueStats(queue.id);
+      const stats = await queueService.getQueueStats(queue.id, tenantId);
       const totalCustomers = queue.entries?.length || 0;
       const efficiency = totalCustomers > 0 ? Math.round((stats.servedToday / totalCustomers) * 100) : 0;
       
@@ -76,8 +85,8 @@ router.get('/performance', [requireAuth, loadUser], async (req, res) => {
   }
 });
 
-// POST /api/queue - Create new queue
-router.post('/', [requireAuth, loadUser], [
+// POST /api/queue - Create new queue with tenant isolation
+router.post('/', [requireAuth, loadUser, tenantIsolationMiddleware, validateMerchantAccess], [
   body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Queue name is required'),
   body('description').optional().isLength({ max: 500 }).withMessage('Description too long'),
   body('maxCapacity').isInt({ min: 1, max: 1000 }).withMessage('Max capacity must be between 1 and 1000'),
@@ -90,22 +99,13 @@ router.post('/', [requireAuth, loadUser], [
     }
 
     const merchantId = req.user.id || req.user._id;
+    const tenantId = req.tenantId;
     const { name, description, maxCapacity, averageServiceTime } = req.body;
 
-    // Check if merchant can create more queues
-    const merchant = await prisma.merchant.findUnique({
-      where: { id: merchantId },
-      include: { queues: true, subscription: true }
-    });
+    // Check if merchant can create more queues (tenant-aware)
+    const canCreate = await merchantService.canCreateQueue(merchantId, tenantId);
     
-    if (!merchant) {
-      return res.status(404).json({ error: 'Merchant not found' });
-    }
-    
-    const existingQueues = merchant.queues.length;
-    const maxQueues = merchant.subscription?.maxQueues || 1;
-    
-    if (existingQueues >= maxQueues) {
+    if (!canCreate) {
       return res.status(403).json({ error: 'Queue limit reached for your subscription plan' });
     }
 
@@ -114,10 +114,10 @@ router.post('/', [requireAuth, loadUser], [
       description,
       maxCapacity,
       averageServiceTime
-    });
+    }, tenantId);
 
-    // Emit real-time update
-    req.io.to(`merchant-${merchantId}`).emit('queue-created', queue);
+    // Emit real-time update to tenant-scoped room
+    req.io.to(`tenant-${tenantId}-merchant-${merchantId}`).emit('queue-created', queue);
 
     res.status(201).json({
       success: true,
@@ -134,11 +134,12 @@ router.post('/', [requireAuth, loadUser], [
   }
 });
 
-// GET /api/queue/:id - Get specific queue
-router.get('/:id', [requireAuth, loadUser], async (req, res) => {
+// GET /api/queue/:id - Get specific queue with tenant isolation
+router.get('/:id', [requireAuth, loadUser, tenantIsolationMiddleware, validateMerchantAccess], async (req, res) => {
   try {
     const merchantId = req.user.id || req.user._id;
-    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
+    const tenantId = req.tenantId;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id, tenantId);
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
@@ -809,6 +810,16 @@ router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, re
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found in queue' });
     }
+    
+    // Emit cancellation event to the customer's webchat
+    if (customer.sessionId) {
+      req.io.to(`webchat-${customer.sessionId}`).emit('queue-cancelled', {
+        customerId: customer.id,
+        customerName: customer.customerName,
+        reason: req.body.reason || 'Service completed by merchant',
+        type: 'merchant-removed'
+      });
+    }
 
     // Send welcome message with menu link to the seated customer
     try {
@@ -866,6 +877,65 @@ router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, re
   } catch (error) {
     logger.error('Error completing customer service:', error);
     res.status(500).json({ error: 'Failed to complete customer service' });
+  }
+});
+
+// POST /api/queue/:id/remove/:customerId - Remove customer from queue (cancel)
+router.post('/:id/remove/:customerId', [requireAuth, loadUser], async (req, res) => {
+  try {
+    const merchantId = req.user.id || req.user._id;
+    const { reason } = req.body;
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
+    
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+    
+    // Find the customer entry
+    const customerEntry = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: { in: ['waiting', 'called'] }
+      }
+    });
+    
+    if (!customerEntry) {
+      return res.status(404).json({ error: 'Customer not found in queue' });
+    }
+    
+    // Remove customer
+    const removedCustomer = await queueService.removeCustomer(req.params.customerId, 'cancelled');
+    
+    // Emit cancellation event to the customer's webchat
+    if (customerEntry.sessionId) {
+      req.io.to(`webchat-${customerEntry.sessionId}`).emit('queue-cancelled', {
+        customerId: customerEntry.id,
+        customerName: customerEntry.customerName,
+        reason: reason || 'Removed from queue by merchant',
+        type: 'merchant-removed'
+      });
+    }
+    
+    // Emit updates to merchant dashboard
+    req.io.to(`merchant-${merchantId}`).emit('customer-removed', {
+      queueId: queue.id,
+      customerId: req.params.customerId,
+      action: 'merchant-cancelled'
+    });
+    
+    // Send position updates to remaining customers
+    await sendPositionUpdateNotifications(queue.id, queue.name, req.io, merchantId);
+    
+    res.json({
+      success: true,
+      message: 'Customer removed from queue successfully',
+      customer: removedCustomer
+    });
+    
+  } catch (error) {
+    logger.error('Error removing customer from queue:', error);
+    res.status(500).json({ error: 'Failed to remove customer from queue' });
   }
 });
 

@@ -3,29 +3,64 @@
 
 const logger = require('../utils/logger');
 
+// CRITICAL: Production safeguard - this should NEVER run in production
+if (process.env.NODE_ENV === 'production' && !process.env.FORCE_AUTH_BYPASS) {
+  logger.error('CRITICAL: auth-bypass.js loaded in production environment!');
+  logger.error('This is a security vulnerability. Ensure proper middleware is loaded.');
+  throw new Error('Auth bypass cannot be used in production');
+}
+
+// Additional feature flag check
+const USE_AUTH_BYPASS = process.env.USE_AUTH_BYPASS === 'true';
+if (!USE_AUTH_BYPASS) {
+  logger.warn('Auth bypass loaded but USE_AUTH_BYPASS is not set to "true"');
+}
+
 // Middleware that creates a demo session for all requests
 const createDemoSession = (req, res, next) => {
+  // Double-check production safeguard
+  if (process.env.NODE_ENV === 'production') {
+    logger.error('SECURITY: Auth bypass attempted in production!');
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+  
+  // Log warning on every request in non-development environments
+  if (process.env.NODE_ENV !== 'development') {
+    logger.warn('⚠️  AUTH BYPASS ACTIVE - This should only be used in development!');
+  }
+  // Skip auth bypass for certain routes
+  const skipPaths = [
+    '/auth/logout',
+    '/',  // Allow main page to check session
+    '/auth/login',  // Allow login page to work
+    '/auth/register'  // Allow register page to work
+  ];
+  
+  if (skipPaths.includes(req.path) || req.path.startsWith('/auth/logout')) {
+    return next();
+  }
+  
   // ENHANCED: Ensure session exists
   if (!req.session) {
     req.session = {};
   }
   
   // Always set session data
-  req.session.userId = '7a99f35e-0f73-4f8e-831c-fde8fc3a5532'; // Demo merchant ID from Neon
+  req.session.userId = '0f97ed6c-7240-4f05-98f9-5f47571bd6b3'; // Demo merchant ID from Neon
   req.session.user = {
-    id: '7a99f35e-0f73-4f8e-831c-fde8fc3a5532',
-    email: 'demo@storehub.com',
-    businessName: 'StoreHub Demo Restaurant',
-    merchantId: '7a99f35e-0f73-4f8e-831c-fde8fc3a5532'
+    id: '0f97ed6c-7240-4f05-98f9-5f47571bd6b3',
+    email: 'admin@storehub.com',
+    businessName: 'StoreHub Restaurant',
+    merchantId: '0f97ed6c-7240-4f05-98f9-5f47571bd6b3'
   };
   
   // Always create fake user object with both id and _id for compatibility
   req.user = {
-    id: '7a99f35e-0f73-4f8e-831c-fde8fc3a5532',
-    _id: '7a99f35e-0f73-4f8e-831c-fde8fc3a5532',
-    email: 'demo@storehub.com',
-    businessName: 'StoreHub Demo Restaurant',
-    merchantId: '7a99f35e-0f73-4f8e-831c-fde8fc3a5532'
+    id: '0f97ed6c-7240-4f05-98f9-5f47571bd6b3',
+    _id: '0f97ed6c-7240-4f05-98f9-5f47571bd6b3',
+    email: 'admin@storehub.com',
+    businessName: 'StoreHub Restaurant',
+    merchantId: '0f97ed6c-7240-4f05-98f9-5f47571bd6b3'
   };
   
   // ENHANCED: Ensure res.locals exists and set user

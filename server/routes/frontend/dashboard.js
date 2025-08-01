@@ -6,7 +6,9 @@ const prisma = require('../../utils/prisma');
 
 // Use appropriate auth middleware based on environment
 let requireAuth, loadUser;
-if (process.env.NODE_ENV !== 'production') {
+const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true';
+
+if (useAuthBypass) {
   ({ requireAuth, loadUser } = require('../../middleware/auth-bypass'));
 } else {
   ({ requireAuth, loadUser } = require('../../middleware/auth'));

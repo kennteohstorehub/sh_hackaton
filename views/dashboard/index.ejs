@@ -8,10 +8,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/css/common-header.css" rel="stylesheet">
     <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/design-tokens.css" rel="stylesheet">
+    <link href="/css/minimalist-framework.css" rel="stylesheet">
+    <link href="/css/queue-drag-drop.css" rel="stylesheet">
+    <link href="/css/accessibility.css" rel="stylesheet">
     <!-- Preload critical resources for faster navigation -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <script src="/js/navigation-preload.js" defer></script>
+    <script src="/js/queue-drag-drop.js" defer></script>
+    <%- csrfMeta() %>
     <style>
         /* New Customer Animation */
         @keyframes slideInRight {
@@ -704,10 +710,20 @@
     </style>
 </head>
 <body>
+    <!-- Skip Navigation Links -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <a href="#queue-management" class="skip-link">Skip to queue management</a>
+    
     <!-- Header -->
     <div class="header">
         <div class="header-content">
             <h1>StoreHub Queue Management System</h1>
+            <% if (typeof user !== 'undefined' && user && user.businessName) { %>
+            <div class="tenant-badge" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255, 140, 0, 0.1); border: 1px solid rgba(255, 140, 0, 0.3); padding: 0.4rem 0.8rem; border-radius: 8px; margin-left: 1rem;">
+                <span style="color: rgba(255, 255, 255, 0.7); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Account:</span>
+                <span style="color: #ff8c00; font-weight: 600; font-size: 0.9rem;"><%= user.businessName %></span>
+            </div>
+            <% } %>
             
             <!-- Mobile Hamburger Menu -->
             <button class="mobile-nav-toggle" aria-label="Toggle navigation">
@@ -736,6 +752,7 @@
             <div class="user-section">
                 <div class="user-menu">
                     <form action="/auth/logout" method="POST" style="display: inline;">
+                        <%- csrfInput() %>
                         <button type="submit" class="user-button">
                             <i class="bi bi-box-arrow-right"></i>
                             Logout
@@ -750,7 +767,7 @@
     <div class="mobile-nav-overlay">
         <div class="mobile-nav-menu">
             <div class="mobile-nav-header">
-                <h3><%= user.businessName %></h3>
+                <h2><%= user.businessName %></h2>
                 <button class="mobile-nav-close" aria-label="Close navigation">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -788,6 +805,7 @@
             </nav>
             <div class="mobile-nav-footer">
                 <form action="/auth/logout" method="POST">
+                    <%- csrfInput() %>
                     <button type="submit" class="mobile-logout-btn">
                         <i class="bi bi-box-arrow-right"></i>
                         Logout
@@ -797,14 +815,34 @@
         </div>
     </div>
 
-    <div class="container">
+    <main id="main-content" class="container" role="main" aria-label="Queue Management Dashboard">
+        <!-- Tenant Context Banner -->
+        <% if (typeof user !== 'undefined' && user && user.businessName) { %>
+        <div class="tenant-context-banner" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.05), rgba(255, 107, 53, 0.05)); border: 1px solid rgba(255, 140, 0, 0.2); padding: 1rem 2rem; margin-bottom: 2rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="tenant-info" style="display: flex; align-items: center; gap: 1rem;">
+                <div class="tenant-icon" style="width: 48px; height: 48px; background: linear-gradient(135deg, #ff8c00, #ff6b35); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; font-weight: bold;">
+                    <%= user.businessName.charAt(0).toUpperCase() %>
+                </div>
+                <div class="tenant-details">
+                    <h3 style="color: white; font-size: 1.25rem; margin: 0 0 0.25rem 0;"><%= user.businessName %></h3>
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin: 0;">Business Account Dashboard</p>
+                </div>
+            </div>
+            <% if (user.email) { %>
+            <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">
+                <i class="bi bi-envelope"></i> <%= user.email %>
+            </div>
+            <% } %>
+        </div>
+        <% } %>
+
         <!-- WhatsApp Status Banner -->
         <div class="status-banner" id="whatsapp-status">
             <div class="status-icon">
                 <i class="fab fa-whatsapp"></i>
             </div>
             <div class="status-text">
-                <h6>WhatsApp Integration</h6>
+                <h4>WhatsApp Integration</h4>
                 <p>Checking connection status...</p>
             </div>
         </div>
@@ -827,7 +865,7 @@
 
 
         <!-- Queue Management Tabs -->
-        <div class="tabs-container">
+        <section id="queue-management" class="tabs-container" role="tabpanel" aria-label="Queue Management">
             <div class="tabs-header">
                 <button class="tab-button active" onclick="showTab('active-queue')">Active Queue</button>
                 <button class="tab-button" onclick="showTab('seated-customers')">Seated Customers</button>
@@ -841,7 +879,7 @@
                         <div class="queue-section">
                             <div class="queue-header">
                                 <div class="queue-title">
-                                    <h3><%= activeQueue.name %></h3>
+                                    <h2><%= activeQueue.name %></h2>
                                     <p class="queue-description"><%= activeQueue.description || 'Main restaurant queue' %></p>
                                 </div>
                                 <div class="queue-summary">
@@ -1102,8 +1140,8 @@
                     </div>
                 <% } %>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <!-- Indicators -->
     <div id="updating-indicator" class="updating-indicator">
@@ -1115,6 +1153,9 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script>
+        <%- csrfAjaxSetup %>
+    </script>
     <script>
         // Mobile Navigation Toggle
         const mobileNavToggle = document.querySelector('.mobile-nav-toggle');

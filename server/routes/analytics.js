@@ -9,7 +9,10 @@ const router = express.Router();
 
 // Use appropriate auth middleware based on environment
 let authMiddleware;
-if (process.env.NODE_ENV !== 'production') {
+const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true' || 
+                     (process.env.NODE_ENV !== 'production' && process.env.USE_AUTH_BYPASS !== 'false');
+
+if (useAuthBypass) {
   ({ authMiddleware } = require('../middleware/auth-bypass'));
 } else {
   ({ authMiddleware } = require('../middleware/auth'));

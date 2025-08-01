@@ -1,0 +1,161 @@
+/* Tenant Identity Styling */
+
+/* Enhanced header with tenant name */
+.tenant-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 140, 0, 0.1);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    margin-left: 1rem;
+}
+
+.tenant-badge .tenant-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tenant-badge .tenant-name {
+    color: #ff8c00;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Dashboard tenant context banner */
+.tenant-context-banner {
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.05), rgba(255, 107, 53, 0.05));
+    border: 1px solid rgba(255, 140, 0, 0.2);
+    padding: 1rem 2rem;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tenant-context-banner .tenant-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tenant-context-banner .tenant-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #ff8c00, #ff6b35);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    font-weight: bold;
+}
+
+.tenant-context-banner .tenant-details h2 {
+    color: white;
+    font-size: 1.25rem;
+    margin: 0 0 0.25rem 0;
+}
+
+.tenant-context-banner .tenant-details p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Account switcher dropdown */
+.account-switcher {
+    position: relative;
+}
+
+.account-switcher-button {
+    background: rgba(255, 140, 0, 0.1);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.account-switcher-button:hover {
+    background: rgba(255, 140, 0, 0.2);
+    border-color: rgba(255, 140, 0, 0.5);
+}
+
+.account-switcher-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-width: 200px;
+    display: none;
+    z-index: 1000;
+}
+
+.account-switcher-dropdown.active {
+    display: block;
+}
+
+.account-switcher-dropdown .tenant-item {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.account-switcher-dropdown .tenant-item:hover {
+    background: rgba(255, 140, 0, 0.1);
+}
+
+.account-switcher-dropdown .tenant-item.active {
+    background: rgba(255, 140, 0, 0.2);
+}
+
+.account-switcher-dropdown .tenant-item .tenant-name {
+    color: white;
+    font-weight: 500;
+}
+
+.account-switcher-dropdown .tenant-item .checkmark {
+    color: #ff8c00;
+    font-size: 1rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .tenant-badge {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+    
+    .tenant-context-banner {
+        padding: 1rem;
+    }
+    
+    .tenant-context-banner .tenant-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .tenant-context-banner .tenant-details h2 {
+        font-size: 1.1rem;
+    }
+}

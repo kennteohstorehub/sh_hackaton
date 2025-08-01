@@ -7,11 +7,17 @@ const logger = require('../utils/logger');
 
 // Use appropriate auth middleware based on environment
 let requireAuth, loadUser;
-if (process.env.NODE_ENV !== 'production') {
+const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true' || 
+                     (process.env.NODE_ENV !== 'production' && process.env.USE_AUTH_BYPASS !== 'false');
+
+if (useAuthBypass) {
   ({ requireAuth, loadUser } = require('../middleware/auth-bypass'));
 } else {
   ({ requireAuth, loadUser } = require('../middleware/auth'));
 }
+
+// Import tenant isolation middleware
+const { tenantIsolationMiddleware, validateMerchantAccess } = require('../middleware/tenant-isolation');
 
 const { generateQRPosterPDF, generateSimpleQRPDF } = require('../utils/pdfGenerator');
 
@@ -38,19 +44,22 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Apply authentication to protected merchant API routes
+// Apply authentication and tenant isolation to protected merchant API routes
 router.use(requireAuth);
 router.use(loadUser);
+router.use(tenantIsolationMiddleware);
+router.use(validateMerchantAccess);
 
-// GET /api/merchant/profile - Get merchant profile
+// GET /api/merchant/profile - Get merchant profile with tenant isolation
 router.get('/profile', async (req, res) => {
   try {
+    const tenantId = req.tenantId;
     const merchant = await merchantService.findById(req.user.id, {
       settings: true,
       businessHours: true,
       address: true,
       integrations: true
-    });
+    }, tenantId);
     
     if (!merchant) {
       return res.status(404).json({ error: 'Merchant not found' });

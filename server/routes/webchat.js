@@ -9,6 +9,10 @@ const webChatService = require('../services/webChatService');
 
 const router = express.Router();
 
+// Session recovery constants
+const SESSION_DURATION_HOURS = 4; // Session valid for 4 hours
+const GRACE_PERIOD_MINUTES = 15; // Grace period for recovery
+
 // POST /api/webchat/join - Join queue via webchat
 router.post('/join', [
     body('customerName').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required'),
@@ -77,11 +81,37 @@ router.post('/join', [
                 queueEntry: existingEntry 
             });
         }
+        
+        // Grace period check for accidental cancellations (2 minutes)
+        const GRACE_PERIOD_MINUTES = 2;
+        const gracePeriodTime = new Date();
+        gracePeriodTime.setMinutes(gracePeriodTime.getMinutes() - GRACE_PERIOD_MINUTES);
+        
+        const recentlyCancelled = await prisma.queueEntry.findFirst({
+            where: {
+                customerPhone: phone,
+                queueId: queue.id,
+                status: 'cancelled',
+                completedAt: {
+                    gte: gracePeriodTime
+                }
+            },
+            orderBy: {
+                completedAt: 'desc'
+            }
+        });
+        
+        // If found a recent cancellation within grace period, restore their position
+        let restoredPosition = null;
+        if (recentlyCancelled) {
+            restoredPosition = recentlyCancelled.position;
+            logger.info(`Customer ${phone} rejoining within grace period, restoring position ${restoredPosition}`);
+        }
 
         // Generate unique verification code
         const verificationCode = webChatService.generateVerificationCode();
 
-        // Create queue entry
+        // Create queue entry with optional restored position
         const entry = await queueService.addCustomer(queue.id, {
             customerId: `webchat_${sessionId}`,
             customerName,
@@ -91,7 +121,7 @@ router.post('/join', [
             partySize: parseInt(partySize),
             specialRequests,
             verificationCode
-        });
+        }, restoredPosition);
 
         // Generate queue number
         const queueNumber = webChatService.generateQueueNumber(entry.position);
@@ -134,12 +164,40 @@ router.post('/join', [
             status: 'in_queue'
         });
 
+        // Create WebChatSession for recovery
+        const sessionExpiresAt = new Date();
+        sessionExpiresAt.setHours(sessionExpiresAt.getHours() + SESSION_DURATION_HOURS);
+        
+        try {
+            await prisma.webChatSession.create({
+                data: {
+                    sessionId: sessionId,
+                    queueEntryId: entry.id,
+                    browserInfo: req.headers['user-agent'],
+                    ipAddress: req.ip,
+                    sessionExpiresAt: sessionExpiresAt,
+                    recoveryToken: `recovery_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                }
+            });
+            
+            // Update queue entry with session expiration
+            await prisma.queueEntry.update({
+                where: { id: entry.id },
+                data: { sessionExpiresAt: sessionExpiresAt }
+            });
+        } catch (sessionError) {
+            logger.error('Error creating WebChat session:', sessionError);
+            // Don't fail the request if session creation fails
+        }
+
         res.json({
             success: true,
             queueNumber,
             position: entry.position,
             estimatedWaitTime: entry.estimatedWaitTime,
             verificationCode,
+            positionRestored: !!restoredPosition,
+            gracePeriodUsed: !!recentlyCancelled,
             queueEntry: {
                 ...entry,
                 id: entry.id,  // Explicitly include the entry ID
@@ -310,7 +368,7 @@ router.post('/cancel/:sessionId', async (req, res) => {
             queueEntry = await prisma.queueEntry.findFirst({
                 where: {
                     sessionId: sessionId,
-                    status: 'waiting'
+                    status: { in: ['waiting', 'called'] }
                 },
                 include: { queue: true },
                 orderBy: {
@@ -325,7 +383,7 @@ router.post('/cancel/:sessionId', async (req, res) => {
             });
         }
 
-        if (!queueEntry || queueEntry.status !== 'waiting') {
+        if (!queueEntry || !['waiting', 'called'].includes(queueEntry.status)) {
             return res.status(400).json({ 
                 error: 'Cannot cancel - no active queue entry found' 
             });
@@ -480,6 +538,225 @@ router.post('/notify', async (req, res) => {
     } catch (error) {
         logger.error('Webchat notify error:', error);
         res.status(500).json({ error: 'Failed to process notification' });
+    }
+});
+
+// POST /api/webchat/session/validate - Validate and recover session
+router.post('/session/validate', [
+    body('sessionId').notEmpty().withMessage('Session ID is required')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ 
+                error: 'Validation failed', 
+                details: errors.array() 
+            });
+        }
+
+        const { sessionId } = req.body;
+        
+        // Check for active WebChat session
+        const webChatSession = await prisma.webChatSession.findFirst({
+            where: {
+                sessionId: sessionId,
+                isActive: true,
+                sessionExpiresAt: { gt: new Date() }
+            },
+            include: {
+                queueEntry: {
+                    include: {
+                        queue: {
+                            include: {
+                                merchant: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!webChatSession) {
+            // Check if there's a queue entry with this session that can be recovered
+            const queueEntry = await prisma.queueEntry.findFirst({
+                where: {
+                    sessionId: sessionId,
+                    status: 'waiting',
+                    // Check if within grace period (15 minutes)
+                    lastActivityAt: {
+                        gte: new Date(Date.now() - GRACE_PERIOD_MINUTES * 60 * 1000)
+                    }
+                },
+                include: {
+                    queue: {
+                        include: {
+                            merchant: true
+                        }
+                    }
+                }
+            });
+
+            if (queueEntry) {
+                // Create new session for recovery
+                const sessionExpiresAt = new Date();
+                sessionExpiresAt.setHours(sessionExpiresAt.getHours() + SESSION_DURATION_HOURS);
+
+                const newSession = await prisma.webChatSession.create({
+                    data: {
+                        sessionId: sessionId,
+                        queueEntryId: queueEntry.id,
+                        browserInfo: req.headers['user-agent'],
+                        ipAddress: req.ip,
+                        sessionExpiresAt: sessionExpiresAt,
+                        recoveryToken: `recovery_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                    }
+                });
+
+                // Update queue entry activity
+                await prisma.queueEntry.update({
+                    where: { id: queueEntry.id },
+                    data: {
+                        lastActivityAt: new Date(),
+                        sessionExpiresAt: sessionExpiresAt
+                    }
+                });
+
+                // Calculate current position
+                const entriesAhead = await prisma.queueEntry.count({
+                    where: {
+                        queueId: queueEntry.queueId,
+                        status: 'waiting',
+                        position: { lt: queueEntry.position }
+                    }
+                });
+
+                return res.json({
+                    success: true,
+                    recovered: true,
+                    withinGracePeriod: true,
+                    queueData: {
+                        id: queueEntry.id,
+                        entryId: queueEntry.id,
+                        queueId: queueEntry.queueId,
+                        merchantId: queueEntry.queue.merchantId,
+                        merchantName: queueEntry.queue.merchant.businessName,
+                        customerName: queueEntry.customerName,
+                        position: entriesAhead + 1,
+                        verificationCode: queueEntry.verificationCode,
+                        status: queueEntry.status,
+                        sessionId: sessionId,
+                        recoveryToken: newSession.recoveryToken
+                    }
+                });
+            }
+
+            return res.json({
+                success: false,
+                recovered: false,
+                message: 'No active session found or session expired'
+            });
+        }
+
+        // Update session activity
+        await prisma.webChatSession.update({
+            where: { id: webChatSession.id },
+            data: { lastActivityAt: new Date() }
+        });
+
+        await prisma.queueEntry.update({
+            where: { id: webChatSession.queueEntryId },
+            data: { lastActivityAt: new Date() }
+        });
+
+        // Calculate current position
+        const queueEntry = webChatSession.queueEntry;
+        const entriesAhead = await prisma.queueEntry.count({
+            where: {
+                queueId: queueEntry.queueId,
+                status: 'waiting',
+                position: { lt: queueEntry.position }
+            }
+        });
+
+        res.json({
+            success: true,
+            recovered: true,
+            withinGracePeriod: false,
+            queueData: {
+                id: queueEntry.id,
+                entryId: queueEntry.id,
+                queueId: queueEntry.queueId,
+                merchantId: queueEntry.queue.merchantId,
+                merchantName: queueEntry.queue.merchant.businessName,
+                customerName: queueEntry.customerName,
+                position: entriesAhead + 1,
+                verificationCode: queueEntry.verificationCode,
+                status: queueEntry.status,
+                sessionId: sessionId,
+                recoveryToken: webChatSession.recoveryToken
+            }
+        });
+
+    } catch (error) {
+        logger.error('Error validating session:', error);
+        res.status(500).json({ 
+            error: 'Failed to validate session',
+            message: error.message 
+        });
+    }
+});
+
+// POST /api/webchat/session/extend - Extend session on activity
+router.post('/session/extend', [
+    body('sessionId').notEmpty().withMessage('Session ID is required')
+], async (req, res) => {
+    try {
+        const { sessionId } = req.body;
+        
+        const webChatSession = await prisma.webChatSession.findFirst({
+            where: {
+                sessionId: sessionId,
+                isActive: true
+            }
+        });
+
+        if (!webChatSession) {
+            return res.status(404).json({
+                error: 'Session not found'
+            });
+        }
+
+        // Extend session by SESSION_DURATION_HOURS
+        const newExpiresAt = new Date();
+        newExpiresAt.setHours(newExpiresAt.getHours() + SESSION_DURATION_HOURS);
+
+        await prisma.webChatSession.update({
+            where: { id: webChatSession.id },
+            data: {
+                lastActivityAt: new Date(),
+                sessionExpiresAt: newExpiresAt
+            }
+        });
+
+        await prisma.queueEntry.update({
+            where: { id: webChatSession.queueEntryId },
+            data: {
+                lastActivityAt: new Date(),
+                sessionExpiresAt: newExpiresAt
+            }
+        });
+
+        res.json({
+            success: true,
+            sessionExpiresAt: newExpiresAt
+        });
+
+    } catch (error) {
+        logger.error('Error extending session:', error);
+        res.status(500).json({ 
+            error: 'Failed to extend session',
+            message: error.message 
+        });
     }
 });
 

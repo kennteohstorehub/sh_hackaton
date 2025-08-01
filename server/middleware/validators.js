@@ -1,5 +1,5 @@
 const { body, param, query, check } = require('express-validator');
-const { isValidObjectId } = require('./security');
+const { isValidObjectId, isValidUUID } = require('./security');
 
 // Common validation rules
 const validators = {
@@ -159,6 +159,217 @@ const validators = {
       .optional()
       .isInt({ min: 1, max: 100 })
       .withMessage('Limit must be between 1 and 100')
+  ],
+
+  // ===============================
+  // SUPERADMIN VALIDATIONS
+  // ===============================
+
+  // UUID validations for PostgreSQL IDs
+  validateUUID: (field = 'id') => 
+    param(field)
+      .custom(isValidUUID)
+      .withMessage('Invalid UUID format'),
+
+  validateTenantId: param('tenantId')
+    .custom(isValidUUID)
+    .withMessage('Invalid tenant ID format'),
+
+  validateSuperAdminId: param('superAdminId')
+    .custom(isValidUUID)
+    .withMessage('Invalid superadmin ID format'),
+
+  // SuperAdmin authentication validations
+  validateSuperAdminLogin: [
+    body('email')
+      .isEmail()
+      .normalizeEmail()
+      .withMessage('Valid email required'),
+    body('password')
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters')
+  ],
+
+  validateSuperAdminRegister: [
+    body('email')
+      .isEmail()
+      .normalizeEmail()
+      .withMessage('Valid email required'),
+    body('password')
+      .isLength({ min: 12 })
+      .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+      .withMessage('Password must be at least 12 characters with letters, numbers, and special characters'),
+    body('fullName')
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Full name must be between 2 and 100 characters'),
+    body('confirmPassword')
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error('Password confirmation does not match password');
+        }
+        return true;
+      })
+  ],
+
+  validateSuperAdminUpdate: [
+    body('email')
+      .optional()
+      .isEmail()
+      .normalizeEmail()
+      .withMessage('Valid email required'),
+    body('fullName')
+      .optional()
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Full name must be between 2 and 100 characters'),
+    body('isActive')
+      .optional()
+      .isBoolean()
+      .withMessage('isActive must be boolean')
+  ],
+
+  validatePasswordChange: [
+    body('currentPassword')
+      .isLength({ min: 1 })
+      .withMessage('Current password is required'),
+    body('newPassword')
+      .isLength({ min: 12 })
+      .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+      .withMessage('New password must be at least 12 characters with letters, numbers, and special characters'),
+    body('confirmPassword')
+      .custom((value, { req }) => {
+        if (value !== req.body.newPassword) {
+          throw new Error('Password confirmation does not match new password');
+        }
+        return true;
+      })
+  ],
+
+  // Tenant validations
+  validateCreateTenant: [
+    body('name')
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Tenant name must be between 2 and 100 characters'),
+    body('slug')
+      .trim()
+      .isLength({ min: 2, max: 50 })
+      .matches(/^[a-z0-9-]+$/)
+      .withMessage('Slug must be lowercase letters, numbers, and hyphens only'),
+    body('domain')
+      .optional()
+      .trim()
+      .isLength({ min: 4, max: 100 })
+      .matches(/^[a-z0-9.-]+\.[a-z]{2,}$/)
+      .withMessage('Domain must be a valid domain format')
+  ],
+
+  validateUpdateTenant: [
+    body('name')
+      .optional()
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Tenant name must be between 2 and 100 characters'),
+    body('domain')
+      .optional()
+      .trim()
+      .isLength({ min: 4, max: 100 })
+      .matches(/^[a-z0-9.-]+\.[a-z]{2,}$/)
+      .withMessage('Domain must be a valid domain format'),
+    body('isActive')
+      .optional()
+      .isBoolean()
+      .withMessage('isActive must be boolean')
+  ],
+
+  // Subscription validations
+  validateCreateSubscription: [
+    body('tenantId')
+      .custom(isValidUUID)
+      .withMessage('Valid tenant ID required'),
+    body('plan')
+      .isIn(['free', 'basic', 'premium', 'enterprise'])
+      .withMessage('Invalid subscription plan'),
+    body('maxQueues')
+      .isInt({ min: 1, max: 1000 })
+      .withMessage('Max queues must be between 1 and 1000'),
+    body('maxCustomersPerQueue')
+      .isInt({ min: 1, max: 10000 })
+      .withMessage('Max customers per queue must be between 1 and 10000'),
+    body('maxMerchants')
+      .optional()
+      .isInt({ min: 1, max: 1000 })
+      .withMessage('Max merchants must be between 1 and 1000')
+  ],
+
+  validateUpdateSubscription: [
+    body('plan')
+      .optional()
+      .isIn(['free', 'basic', 'premium', 'enterprise'])
+      .withMessage('Invalid subscription plan'),
+    body('maxQueues')
+      .optional()
+      .isInt({ min: 1, max: 1000 })
+      .withMessage('Max queues must be between 1 and 1000'),
+    body('maxCustomersPerQueue')
+      .optional()
+      .isInt({ min: 1, max: 10000 })
+      .withMessage('Max customers per queue must be between 1 and 10000'),
+    body('isActive')
+      .optional()
+      .isBoolean()
+      .withMessage('isActive must be boolean')
+  ],
+
+  // Audit log validations
+  validateAuditLogQuery: [
+    query('startDate')
+      .optional()
+      .isISO8601()
+      .withMessage('Start date must be valid ISO 8601 date'),
+    query('endDate')
+      .optional()
+      .isISO8601()
+      .withMessage('End date must be valid ISO 8601 date'),
+    query('action')
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Action must be between 1 and 100 characters'),
+    query('resourceType')
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 50 })
+      .withMessage('Resource type must be between 1 and 50 characters'),
+    query('superAdminId')
+      .optional()
+      .custom(isValidUUID)
+      .withMessage('Invalid superadmin ID format'),
+    query('tenantId')
+      .optional()
+      .custom(isValidUUID)
+      .withMessage('Invalid tenant ID format')
+  ],
+
+  // System settings validations
+  validateSystemSettings: [
+    body('maxTenantsPerSystem')
+      .optional()
+      .isInt({ min: 1, max: 10000 })
+      .withMessage('Max tenants must be between 1 and 10000'),
+    body('defaultSubscriptionPlan')
+      .optional()
+      .isIn(['free', 'basic', 'premium', 'enterprise'])
+      .withMessage('Invalid default subscription plan'),
+    body('systemMaintenanceMode')
+      .optional()
+      .isBoolean()
+      .withMessage('System maintenance mode must be boolean'),
+    body('allowNewTenantRegistration')
+      .optional()
+      .isBoolean()
+      .withMessage('Allow new tenant registration must be boolean')
   ]
 };
 

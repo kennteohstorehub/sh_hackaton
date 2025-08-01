@@ -1,0 +1,403 @@
+/* Queue Drag & Drop - Minimalist Design
+   ====================================== */
+
+/* Queue Board Layout */
+.queue-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--spacing-6);
+    margin-top: var(--spacing-6);
+}
+
+/* Queue Column */
+.queue-column {
+    background-color: var(--color-gray-50);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-4);
+    min-height: 500px;
+    position: relative;
+}
+
+.queue-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-4);
+    padding: var(--spacing-3) var(--spacing-4);
+    background-color: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.queue-column-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-gray-900);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.queue-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 var(--spacing-2);
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Queue Items Container */
+.queue-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    min-height: 200px;
+    padding: var(--spacing-2);
+}
+
+/* Queue Card */
+.queue-card {
+    background-color: var(--color-white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-sm);
+    cursor: grab;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.queue-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.queue-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    transform: rotate(2deg);
+}
+
+.queue-card.drag-over {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Queue Card Header */
+.queue-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-3);
+}
+
+.queue-number-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+}
+
+.queue-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-600);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-gray-400);
+}
+
+.status-dot.waiting { background-color: var(--color-warning); }
+.status-dot.serving { background-color: var(--color-info); }
+.status-dot.completed { background-color: var(--color-success); }
+
+/* Customer Info */
+.customer-info {
+    margin-bottom: var(--spacing-3);
+}
+
+.customer-name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-1);
+}
+
+.customer-details {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-600);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+/* Queue Actions */
+.queue-actions {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-3);
+}
+
+.action-btn {
+    flex: 1;
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-1);
+    min-height: 40px;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+}
+
+.action-btn.primary {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+.action-btn.primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.action-btn.secondary {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-700);
+}
+
+.action-btn.secondary:hover {
+    background-color: var(--color-gray-200);
+}
+
+.action-btn.success {
+    background-color: var(--color-success);
+    color: var(--color-white);
+}
+
+.action-btn.success:hover {
+    background-color: #2FB344;
+}
+
+/* Drag Placeholder */
+.drag-placeholder {
+    background-color: var(--color-primary-light);
+    border: 2px dashed var(--color-primary);
+    border-radius: var(--radius-lg);
+    height: 120px;
+    margin: var(--spacing-3) 0;
+    opacity: 0;
+    transition: all var(--transition-fast);
+}
+
+.drag-placeholder.active {
+    opacity: 1;
+}
+
+/* Empty State */
+.empty-queue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--color-gray-500);
+    text-align: center;
+    padding: var(--spacing-8);
+}
+
+.empty-icon {
+    font-size: var(--font-size-5xl);
+    margin-bottom: var(--spacing-3);
+    opacity: 0.3;
+}
+
+.empty-text {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+}
+
+.empty-subtext {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-400);
+}
+
+/* Touch Optimizations */
+@media (hover: none) {
+    .queue-card {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    .queue-card:active {
+        transform: scale(0.98);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .queue-board {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+    }
+    
+    .queue-column {
+        min-height: auto;
+        padding: var(--spacing-3);
+    }
+    
+    .queue-card {
+        padding: var(--spacing-3);
+    }
+    
+    .queue-actions {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
+    }
+}
+
+/* Animations */
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.queue-card.new {
+    animation: cardSlideIn var(--transition-slow) var(--ease-out);
+}
+
+/* Status Transitions */
+.queue-card[data-status="waiting"] {
+    border-left: 4px solid var(--color-warning);
+}
+
+.queue-card[data-status="serving"] {
+    border-left: 4px solid var(--color-info);
+    background-color: var(--color-primary-light);
+}
+
+.queue-card[data-status="completed"] {
+    border-left: 4px solid var(--color-success);
+    opacity: 0.7;
+}
+
+/* Quick Actions Overlay */
+.quick-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: var(--spacing-1);
+    padding: var(--spacing-2);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.queue-card:hover .quick-actions {
+    opacity: 1;
+}
+
+.quick-action {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.quick-action:hover {
+    background-color: var(--color-gray-100);
+    transform: scale(1.1);
+}
+
+/* Timer Display */
+.wait-timer {
+    position: absolute;
+    bottom: var(--spacing-3);
+    right: var(--spacing-3);
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-500);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+.timer-icon {
+    font-size: var(--font-size-base);
+}
+
+/* Swipe Indicators (Mobile) */
+@media (max-width: 768px) {
+    .swipe-indicator {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+    }
+    
+    .swipe-indicator.left {
+        left: -60px;
+        background: linear-gradient(to right, transparent, rgba(255, 59, 48, 0.2));
+    }
+    
+    .swipe-indicator.right {
+        right: -60px;
+        background: linear-gradient(to left, transparent, rgba(52, 199, 89, 0.2));
+    }
+    
+    .queue-card.swiping-left .swipe-indicator.left,
+    .queue-card.swiping-right .swipe-indicator.right {
+        opacity: 1;
+    }
+}

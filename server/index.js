@@ -3,12 +3,19 @@ console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v8');
 console.log('✅ Neon database migration completed successfully');
 console.log('✅ Demo data seeded in PostgreSQL');
 
-// Only show auth bypass messages in development
+// Show appropriate authentication messages
+const useAuthBypassStartup = process.env.USE_AUTH_BYPASS === 'true';
+
 if (process.env.NODE_ENV !== 'production') {
-  console.log('⚠️  CSRF PROTECTION IS COMPLETELY DISABLED FOR TESTING');
-  console.log('🔓 AUTHENTICATION BYPASSED - All requests use demo merchant');
-  console.log('🛡️  Enhanced auth-bypass to prevent redirect loops');
-  console.log('📝 Focus on core functionality development');
+  console.log('🔒 CSRF PROTECTION ENABLED');
+  if (useAuthBypassStartup) {
+    console.log('🔓 AUTHENTICATION BYPASSED - All requests use demo merchant');
+    console.log('🛡️  Enhanced auth-bypass to prevent redirect loops');
+    console.log('📝 Focus on core functionality development');
+  } else {
+    console.log('✅ AUTHENTICATION SYSTEM ACTIVE - Login required');
+    console.log('🔐 Session-based authentication enabled');
+  }
 } else {
   console.log('🔒 Running in production mode with authentication enabled');
 }
@@ -35,12 +42,12 @@ const {
   apiLimiter 
 } = require('./middleware/security');
 const { captureRawBody } = require('./middleware/webhook-auth');
-// Use CSRF disabled completely for testing
+// Use CSRF protection
 const { 
   csrfTokenManager, 
   csrfValidation, 
   csrfHelpers 
-} = require('./middleware/csrf-disabled');
+} = require('./middleware/csrf-protection');
 const { registerHelpers } = require('./utils/templateHelpers');
 const RoomHelpers = require('./utils/roomHelpers');
 const prisma = require('./utils/prisma');
@@ -57,8 +64,12 @@ const dashboardRoutes = require('./routes/frontend/dashboard');
 const authRoutes = require('./routes/frontend/auth');
 const publicRoutes = require('./routes/frontend/public');
 
+// SuperAdmin Routes
+const superAdminAuthRoutes = require('./routes/superadmin/auth');
+const superAdminDashboardRoutes = require('./routes/superadmin/dashboard');
+const superAdminTenantRoutes = require('./routes/superadmin/tenants');
+
 // Services
-const whatsappService = require('./services/whatsappService');
 const aiService = require('./services/aiService');
 const chatbotService = require('./services/chatbotService');
 
@@ -204,9 +215,9 @@ app.use(session(sessionConfig));
 
 app.use(flash());
 
-// CSRF Protection - COMPLETELY DISABLED
-// app.use(csrfTokenManager);
-// app.use(csrfHelpers);
+// CSRF Protection
+app.use(csrfTokenManager);
+app.use(csrfHelpers);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -235,11 +246,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// AUTH BYPASS: Only apply in development mode
-if (process.env.NODE_ENV !== 'production') {
+// AUTH BYPASS: Only apply when explicitly enabled
+const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true';
+
+if (useAuthBypass) {
   const { createDemoSession } = require('./middleware/auth-bypass');
   app.use(createDemoSession);
   logger.warn('🔓 AUTH BYPASS ENABLED - All requests use demo merchant');
+} else {
+  logger.info('✅ Authentication required - Login system active');
 }
 
 // Make io and user data accessible to all routes
@@ -268,18 +283,20 @@ app.use((req, res, next) => {
 });
 
 // Apply CSRF validation to all state-changing routes
-// TEMPORARILY DISABLED FOR TESTING
-// app.use(csrfValidation);
+app.use(csrfValidation);
 
 // Frontend Routes
 app.use('/', publicRoutes);
-// Use proper auth routes based on environment
-if (process.env.NODE_ENV !== 'production') {
-  app.use('/auth', require('./routes/frontend/auth-redirect'));
-} else {
-  app.use('/auth', require('./routes/frontend/auth'));
-}
+// Always use the real auth routes - no conditional routing
+app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
+
+// SuperAdmin Routes
+app.use('/superadmin/auth', superAdminAuthRoutes);
+app.use('/superadmin/dashboard', superAdminDashboardRoutes);
+app.use('/superadmin/tenants', superAdminTenantRoutes);
+// Dashboard root redirect
+app.get('/superadmin', (req, res) => res.redirect('/superadmin/dashboard'));
 
 // API Routes
 app.use('/api/queues', queueRoutes);
@@ -289,7 +306,6 @@ app.use('/api/merchant', merchantRoutes); // Backward compatibility
 app.use('/api/customer', customerRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/push', pushRoutes);
-app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/chatbot', require('./routes/chatbot'));
 app.use('/api/webchat', require('./routes/webchat'));
 app.use('/api/webhooks', require('./routes/webhooks'));
@@ -503,16 +519,17 @@ const initializeServices = async () => {
     const { startQueueCleanupSchedule } = require('./utils/queueCleanup');
     startQueueCleanupSchedule();
     
-    // Only initialize WhatsApp if enabled
-    if (process.env.ENABLE_WHATSAPP_WEB !== 'false') {
-      initPromises.push(
-        whatsappService.initialize(io)
-          .then(() => logger.info('WhatsApp service initialized'))
-          .catch(err => logger.warn('WhatsApp initialization failed (non-critical):', err.message))
-      );
-    } else {
-      logger.info('WhatsApp service disabled by ENABLE_WHATSAPP_WEB=false');
-    }
+    // Start session cleanup schedule
+    const { cleanupExpiredSessions } = require('./jobs/sessionCleanup');
+    setInterval(() => {
+      cleanupExpiredSessions()
+        .then(result => logger.info('Session cleanup completed:', result))
+        .catch(err => logger.error('Session cleanup failed:', err));
+    }, 60 * 60 * 1000); // Run every hour
+    logger.info('Session cleanup schedule started - will run every hour');
+    
+    // WhatsApp service has been removed from the system
+    logger.info('WhatsApp service has been removed - using webchat notifications only');
     
     // Always initialize AI service
     initPromises.push(

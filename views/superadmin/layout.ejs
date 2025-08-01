@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css?v=<%= Date.now() %>">
+  <% if (typeof csrfMeta === 'function') { %>
+    <%- csrfMeta() %>
+  <% } %>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+    
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* Sidebar Styles */
+    .sidebar {
+      width: 280px;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      z-index: 1000;
+    }
+    
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #4a90e2, #7b68ee);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    .logo-text {
+      color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    
+    .admin-badge {
+      background: linear-gradient(135deg, #4a90e2, #7b68ee);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+    
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0;
+      overflow-y: auto;
+    }
+    
+    .nav-section {
+      margin-bottom: 2rem;
+    }
+    
+    .nav-section-title {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+      padding: 0 1.5rem;
+    }
+    
+    .nav-item {
+      display: block;
+      padding: 0.75rem 1.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-left-color: #4a90e2;
+    }
+    
+    .nav-item.active {
+      background: rgba(74, 144, 226, 0.2);
+      color: white;
+      border-left-color: #4a90e2;
+    }
+    
+    .nav-item .nav-icon {
+      margin-right: 0.75rem;
+      width: 18px;
+      display: inline-block;
+      text-align: center;
+    }
+    
+    .sidebar-footer {
+      padding: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #4a90e2, #7b68ee);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .user-details {
+      flex: 1;
+    }
+    
+    .user-name {
+      color: white;
+      font-weight: 500;
+      font-size: 0.9rem;
+      line-height: 1.2;
+    }
+    
+    .user-role {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.75rem;
+    }
+    
+    .logout-btn {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 1rem;
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 6px;
+      text-decoration: none;
+      text-align: center;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: white;
+    }
+    
+    /* Main Content Styles */
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .top-bar {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .notification-badge {
+      position: relative;
+      padding: 0.5rem;
+      background: #f1f5f9;
+      border-radius: 8px;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    
+    .notification-badge:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    
+    .notification-badge.has-notifications::after {
+      content: '';
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+    }
+    
+    .content-area {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    
+    .content-header {
+      margin-bottom: 2rem;
+    }
+    
+    .content-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+    }
+    
+    .content-subtitle {
+      color: #64748b;
+      font-size: 1rem;
+    }
+    
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    
+    .breadcrumb a {
+      color: #4a90e2;
+      text-decoration: none;
+    }
+    
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+    
+    .breadcrumb-separator {
+      color: #cbd5e1;
+    }
+    
+    /* Alert Styles */
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .alert-error {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+    
+    .alert-success {
+      background: #f0fdf4;
+      color: #16a34a;
+      border: 1px solid #bbf7d0;
+    }
+    
+    .alert-warning {
+      background: #fffbeb;
+      color: #d97706;
+      border: 1px solid #fed7aa;
+    }
+    
+    .alert-info {
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+    }
+    
+    /* Card Styles */
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+    }
+    
+    .card-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    
+    .card-body {
+      padding: 1.5rem;
+    }
+    
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #4a90e2;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #3b7dd8;
+    }
+    
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s;
+      }
+      
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .top-bar {
+        padding: 1rem;
+      }
+      
+      .content-area {
+        padding: 1rem;
+      }
+      
+      .mobile-menu-btn {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: #64748b;
+        cursor: pointer;
+      }
+    }
+    
+    @media (min-width: 769px) {
+      .mobile-menu-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">SA</div>
+          <div class="logo-text">SuperAdmin</div>
+        </div>
+        <div class="admin-badge">System Admin</div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Overview</div>
+          <a href="/superadmin/dashboard" class="nav-item <%= locals.currentPage === 'dashboard' ? 'active' : '' %>">
+            <span class="nav-icon">📊</span>
+            Dashboard
+          </a>
+          <a href="/superadmin/analytics" class="nav-item <%= locals.currentPage === 'analytics' ? 'active' : '' %>">
+            <span class="nav-icon">📈</span>
+            Analytics
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Tenant Management</div>
+          <a href="/superadmin/tenants" class="nav-item <%= locals.currentPage === 'tenants' ? 'active' : '' %>">
+            <span class="nav-icon">🏢</span>
+            All Tenants
+          </a>
+          <a href="/superadmin/tenants/create" class="nav-item <%= locals.currentPage === 'tenants-create' ? 'active' : '' %>">
+            <span class="nav-icon">➕</span>
+            Add Tenant
+          </a>
+          <a href="/superadmin/merchants" class="nav-item <%= locals.currentPage === 'merchants' ? 'active' : '' %>">
+            <span class="nav-icon">👥</span>
+            All Merchants
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Billing & Subscriptions</div>
+          <a href="/superadmin/subscriptions" class="nav-item <%= locals.currentPage === 'subscriptions' ? 'active' : '' %>">
+            <span class="nav-icon">💳</span>
+            Subscriptions
+          </a>
+          <a href="/superadmin/billing" class="nav-item <%= locals.currentPage === 'billing' ? 'active' : '' %>">
+            <span class="nav-icon">💰</span>
+            Billing
+          </a>
+          <a href="/superadmin/plans" class="nav-item <%= locals.currentPage === 'plans' ? 'active' : '' %>">
+            <span class="nav-icon">📋</span>
+            Subscription Plans
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="/superadmin/admins" class="nav-item <%= locals.currentPage === 'admins' ? 'active' : '' %>">
+            <span class="nav-icon">👤</span>
+            Admin Users
+          </a>
+          <a href="/superadmin/audit-logs" class="nav-item <%= locals.currentPage === 'audit-logs' ? 'active' : '' %>">
+            <span class="nav-icon">📝</span>
+            Audit Logs
+          </a>
+          <a href="/superadmin/settings" class="nav-item <%= locals.currentPage === 'settings' ? 'active' : '' %>">
+            <span class="nav-icon">⚙️</span>
+            System Settings
+          </a>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">
+            <%= superAdmin ? superAdmin.fullName.split(' ').map(n => n[0]).join('').toUpperCase() : 'SA' %>
+          </div>
+          <div class="user-details">
+            <div class="user-name"><%= superAdmin ? superAdmin.fullName : 'SuperAdmin' %></div>
+            <div class="user-role">System Administrator</div>
+          </div>
+        </div>
+        <a href="/superadmin/auth/logout" class="logout-btn">Sign Out</a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1 class="page-title"><%= pageTitle || title || 'SuperAdmin Dashboard' %></h1>
+        <div class="top-bar-actions">
+          <div class="notification-badge">
+            <span>🔔</span>
+          </div>
+        </div>
+      </header>
+      
+      <div class="content-area">
+        <% if (locals.breadcrumb && breadcrumb.length > 0) { %>
+          <nav class="breadcrumb">
+            <% breadcrumb.forEach((item, index) => { %>
+              <% if (index > 0) { %>
+                <span class="breadcrumb-separator">›</span>
+              <% } %>
+              <% if (item.url && index < breadcrumb.length - 1) { %>
+                <a href="<%= item.url %>"><%= item.text %></a>
+              <% } else { %>
+                <span><%= item.text %></span>
+              <% } %>
+            <% }) %>
+          </nav>
+        <% } %>
+        
+        <% if (locals.contentHeader !== false) { %>
+          <div class="content-header">
+            <h2 class="content-title"><%= contentTitle || pageTitle || 'Dashboard' %></h2>
+            <% if (locals.contentSubtitle) { %>
+              <p class="content-subtitle"><%= contentSubtitle %></p>
+            <% } %>
+          </div>
+        <% } %>
+        
+        <% if (messages && messages.error) { %>
+          <div class="alert alert-error">
+            <%= messages.error %>
+          </div>
+        <% } %>
+        
+        <% if (messages && messages.success) { %>
+          <div class="alert alert-success">
+            <%= messages.success %>
+          </div>
+        <% } %>
+        
+        <% if (messages && messages.warning) { %>
+          <div class="alert alert-warning">
+            <%= messages.warning %>
+          </div>
+        <% } %>
+        
+        <% if (messages && messages.info) { %>
+          <div class="alert alert-info">
+            <%= messages.info %>
+          </div>
+        <% } %>
+        
+        <!-- Page Content -->
+        <%- body %>
+      </div>
+    </main>
+  </div>
+  
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('mobile-open');
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+      
+      if (window.innerWidth <= 768 && 
+          !sidebar.contains(event.target) && 
+          !menuBtn.contains(event.target)) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 <!-- Shared Header Component -->
+<link rel="stylesheet" href="/css/tenant-identity.css?v=<%= Date.now() %>">
 <style>
     /* Header Styles */
     .header {
@@ -176,6 +177,12 @@
     <div class="header-content">
         <div class="header-left">
             <h1>StoreHub Queue</h1>
+            <% if (typeof user !== 'undefined' && user && user.businessName) { %>
+            <div class="tenant-badge">
+                <span class="tenant-label">Account:</span>
+                <span class="tenant-name"><%= user.businessName %></span>
+            </div>
+            <% } %>
         </div>
         <div class="nav-container">
             <nav class="nav">
@@ -196,6 +203,7 @@
         <div class="user-section">
             <div class="user-menu">
                 <form action="/auth/logout" method="POST" style="display: inline;">
+                    <%- csrfInput() %>
                     <button type="submit" class="user-button">
                         <i class="bi bi-box-arrow-right"></i>
                         Logout

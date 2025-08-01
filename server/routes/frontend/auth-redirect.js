@@ -19,11 +19,23 @@ router.post('/register', (req, res) => {
 });
 
 router.get('/logout', (req, res) => {
-  res.redirect('/');
+  // Properly destroy session before redirecting
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+    }
+    res.redirect('/');
+  });
 });
 
 router.post('/logout', (req, res) => {
-  res.redirect('/');
+  // Properly destroy session before redirecting
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+    }
+    res.redirect('/');
+  });
 });
 
 module.exports = router;

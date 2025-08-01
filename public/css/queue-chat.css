@@ -55,12 +55,18 @@ body.customer-called {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  min-height: 60px;
 }
 
 .header-left .business-info h1 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
 }
 
 .connection-status {
@@ -77,15 +83,16 @@ body.customer-called {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .verify-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   opacity: 0.9;
 }
 
 .verify-code {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.1em;
 }
@@ -131,6 +138,7 @@ body.customer-called {
   padding: 0.75rem 1rem;
   border-radius: 16px;
   word-wrap: break-word;
+  word-break: break-word;
   max-width: 100%;
 }
 
@@ -228,6 +236,7 @@ body.customer-called {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: fit-content;
 }
 
 .quick-action-btn:hover {
@@ -462,6 +471,8 @@ body.customer-called {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .action-card:disabled {
@@ -537,6 +548,46 @@ body.customer-called {
   box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
 }
 
+.action-card-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.action-card-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+/* Recovery Success Message */
+.message.system.recovery-success .message-bubble {
+  background: rgba(40, 167, 69, 0.2);
+  border: 1px solid rgba(40, 167, 69, 0.4);
+  color: #ffffff;
+}
+
+.message.system.recovery-success .system-message-content {
+  font-weight: 500;
+}
+
+/* Session Recovery Card */
+.card-message .card-body {
+  padding: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+}
+
+.card-message .card-content {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+  font-family: monospace;
+  font-size: 0.9rem;
+  white-space: pre-line;
+}
+
 /* Warning Message Styles */
 .warning-message .message-bubble,
 .warning-message .card-bubble {
@@ -604,10 +655,12 @@ body.customer-called {
 @media (max-width: 768px) {
   .chat-header {
     padding: 0.75rem;
+    flex-wrap: wrap;
   }
   
   .header-left .business-info h1 {
     font-size: 1rem;
+    max-width: 180px;
   }
   
   .messages-container {
@@ -633,6 +686,7 @@ body.customer-called {
   
   .verification-code-card-display .code-value {
     font-size: 2rem;
+    letter-spacing: 0.2rem;
   }
   
   .action-cards-container {
@@ -719,4 +773,234 @@ body.customer-called {
   margin-top: -0.5rem;
 }
 
+/* Cancellation Card Styles */
+.cancellation-card {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 24px;
+    margin: 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.cancellation-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.cancellation-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.cancellation-message {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.cancellation-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.rejoin-btn, .close-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rejoin-btn {
+    background: #007bff;
+    color: white;
+}
+
+.rejoin-btn:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.close-btn {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.close-btn:hover {
+    background: #dee2e6;
+}
+
+/* Fade animations */
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .cancellation-card {
+        margin: 8px;
+        padding: 20px;
+    }
+    
+    .cancellation-icon {
+        font-size: 36px;
+    }
+    
+    .cancellation-title {
+        font-size: 20px;
+    }
+    
+    .cancellation-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .rejoin-btn, .close-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* Card-based acknowledgment system is now the primary UI method */
+
+/* Acknowledgment Loading Spinner */
+.acknowledgment-spinner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.acknowledgment-spinner .rotating {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Acknowledgment Success Animation */
+.acknowledgment-success {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+.success-checkmark {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+
+.checkmark {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: #28a745;
+  stroke-miterlimit: 10;
+  box-shadow: inset 0px 0px 0px #28a745;
+  animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+}
+
+.checkmark__circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke: #28a745;
+  fill: none;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark__check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes scale {
+  0%, 100% {
+    transform: none;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+  }
+}
+
+@keyframes fill {
+  100% {
+    box-shadow: inset 0px 0px 0px 30px rgba(40, 167, 69, 0.1);
+  }
+}
+
+.success-message {
+  flex: 1;
+  color: var(--text);
+}
+
+.success-message strong {
+  color: #28a745;
+}

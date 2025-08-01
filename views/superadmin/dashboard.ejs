@@ -1,0 +1,137 @@
+<%- include('layout') %>
+
+<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+  <!-- Stats Cards -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Total Tenants</h3>
+    </div>
+    <div class="card-body">
+      <div style="font-size: 2.5rem; font-weight: 600; color: #4a90e2; margin-bottom: 0.5rem;">
+        <%= stats?.totalTenants || 0 %>
+      </div>
+      <p style="color: #64748b; font-size: 0.9rem;">Active tenants in the system</p>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Total Merchants</h3>
+    </div>
+    <div class="card-body">
+      <div style="font-size: 2.5rem; font-weight: 600; color: #7b68ee; margin-bottom: 0.5rem;">
+        <%= stats?.totalMerchants || 0 %>
+      </div>
+      <p style="color: #64748b; font-size: 0.9rem;">Registered merchant accounts</p>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Active Queues</h3>
+    </div>
+    <div class="card-body">
+      <div style="font-size: 2.5rem; font-weight: 600; color: #10b981; margin-bottom: 0.5rem;">
+        <%= stats?.activeQueues || 0 %>
+      </div>
+      <p style="color: #64748b; font-size: 0.9rem;">Currently running queues</p>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">System Health</h3>
+    </div>
+    <div class="card-body">
+      <div style="font-size: 2.5rem; font-weight: 600; color: #10b981; margin-bottom: 0.5rem;">
+        ✅
+      </div>
+      <p style="color: #64748b; font-size: 0.9rem;">All systems operational</p>
+    </div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+  <!-- Recent Activity -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Recent Activity</h3>
+    </div>
+    <div class="card-body">
+      <% if (recentActivity && recentActivity.length > 0) { %>
+        <div style="space-y: 1rem;">
+          <% recentActivity.forEach(activity => { %>
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9;">
+              <div style="width: 8px; height: 8px; background: #4a90e2; border-radius: 50%;"></div>
+              <div style="flex: 1;">
+                <p style="font-weight: 500; color: #1e293b; margin-bottom: 0.25rem;"><%= activity.action %></p>
+                <p style="font-size: 0.85rem; color: #64748b;"><%= activity.details %></p>
+                <p style="font-size: 0.75rem; color: #94a3b8;"><%= activity.timestamp %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p style="color: #64748b; text-align: center; padding: 2rem;">No recent activity</p>
+      <% } %>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Quick Actions</h3>
+    </div>
+    <div class="card-body">
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <a href="/superadmin/tenants/create" class="btn btn-primary" style="justify-content: center;">
+          <span>➕</span>
+          Add New Tenant
+        </a>
+        <a href="/superadmin/merchants" class="btn btn-secondary" style="justify-content: center;">
+          <span>👥</span>
+          View All Merchants
+        </a>
+        <a href="/superadmin/audit-logs" class="btn btn-secondary" style="justify-content: center;">
+          <span>📝</span>
+          View Audit Logs
+        </a>
+        <a href="/superadmin/settings" class="btn btn-secondary" style="justify-content: center;">
+          <span>⚙️</span>
+          System Settings
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- System Information -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">System Information</h3>
+  </div>
+  <div class="card-body">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+      <div>
+        <h4 style="font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Database</h4>
+        <p style="color: #64748b; font-size: 0.9rem;">PostgreSQL - Connected</p>
+        <p style="color: #10b981; font-size: 0.8rem;">✅ Healthy</p>
+      </div>
+      <div>
+        <h4 style="font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Queue System</h4>
+        <p style="color: #64748b; font-size: 0.9rem;">WebSocket - Active</p>
+        <p style="color: #10b981; font-size: 0.8rem;">✅ Operational</p>
+      </div>
+      <div>
+        <h4 style="font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Notifications</h4>
+        <p style="color: #64748b; font-size: 0.9rem;">Multi-channel - Enabled</p>
+        <p style="color: #10b981; font-size: 0.8rem;">✅ Active</p>
+      </div>
+      <div>
+        <h4 style="font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Version</h4>
+        <p style="color: #64748b; font-size: 0.9rem;">StoreHub Queue v2.0</p>
+        <p style="color: #4a90e2; font-size: 0.8rem;">📅 Latest</p>
+      </div>
+    </div>
+  </div>
+</div>

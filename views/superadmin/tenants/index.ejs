@@ -1,0 +1,628 @@
+<%- include('../layout') %>
+
+<style>
+  .tenant-filters {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+  }
+  
+  .filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+  }
+  
+  .form-input, .form-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+  }
+  
+  .form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  }
+  
+  .tenant-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table th,
+  .table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  
+  .table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+  
+  .table tbody tr:hover {
+    background: #f8fafc;
+  }
+  
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+  
+  .status-active {
+    background: #dcfce7;
+    color: #166534;
+  }
+  
+  .status-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .priority-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+  
+  .priority-standard {
+    background: #e5e7eb;
+    color: #374151;
+  }
+  
+  .priority-high {
+    background: #ddd6fe;
+    color: #5b21b6;
+  }
+  
+  .priority-enterprise {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .usage-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .usage-bar {
+    width: 60px;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .usage-fill {
+    height: 100%;
+    transition: width 0.3s;
+  }
+  
+  .usage-low {
+    background: #10b981;
+  }
+  
+  .usage-medium {
+    background: #f59e0b;
+  }
+  
+  .usage-high {
+    background: #ef4444;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+  }
+  
+  .btn-outline {
+    background: transparent;
+    border: 1px solid currentColor;
+  }
+  
+  .btn-outline:hover {
+    background: currentColor;
+    color: white;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+  }
+  
+  .pagination a,
+  .pagination span {
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .pagination a:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+  }
+  
+  .pagination .active {
+    background: #4a90e2;
+    color: white;
+    border-color: #4a90e2;
+  }
+  
+  .bulk-actions {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    display: none;
+  }
+  
+  .bulk-actions.show {
+    display: block;
+  }
+  
+  .stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+  
+  @media (max-width: 768px) {
+    .filter-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .table {
+      font-size: 0.75rem;
+    }
+    
+    .table th,
+    .table td {
+      padding: 0.5rem;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<!-- Stats Summary -->
+<div class="stats-summary">
+  <div class="stat-card">
+    <div class="stat-value"><%= pagination.totalCount %></div>
+    <div class="stat-label">Total Tenants</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">
+      <%= tenants.filter(t => t.isActive).length %>
+    </div>
+    <div class="stat-label">Active Tenants</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">
+      <%= tenants.filter(t => t.subscription?.priority === 'ENTERPRISE').length %>
+    </div>
+    <div class="stat-label">Enterprise</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">
+      <%= tenants.reduce((sum, t) => sum + (t._count?.merchants || 0), 0) %>
+    </div>
+    <div class="stat-label">Total Merchants</div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="tenant-filters">
+  <form method="GET" action="/superadmin/tenants">
+    <div class="filter-grid">
+      <div class="form-group">
+        <label class="form-label">Search</label>
+        <input 
+          type="text" 
+          name="search" 
+          class="form-input" 
+          placeholder="Search by name, slug, or domain..."
+          value="<%= filters.search %>"
+        >
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="all" <%= filters.status === 'all' ? 'selected' : '' %>>All Status</option>
+          <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+          <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select name="priority" class="form-select">
+          <option value="all" <%= filters.priority === 'all' ? 'selected' : '' %>>All Priorities</option>
+          <option value="standard" <%= filters.priority === 'standard' ? 'selected' : '' %>>Standard</option>
+          <option value="high" <%= filters.priority === 'high' ? 'selected' : '' %>>High</option>
+          <option value="enterprise" <%= filters.priority === 'enterprise' ? 'selected' : '' %>>Enterprise</option>
+        </select>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+  </form>
+</div>
+
+<!-- Bulk Actions -->
+<div class="bulk-actions" id="bulkActions">
+  <form method="POST" action="/superadmin/tenants/bulk-action" id="bulkForm">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <span id="selectedCount">0 tenants selected</span>
+      <div style="display: flex; gap: 0.5rem;">
+        <select name="action" class="form-select" style="margin: 0;">
+          <option value="">Select Action</option>
+          <option value="activate">Activate</option>
+          <option value="deactivate">Deactivate</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="clearSelection()">Clear</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Tenant Table -->
+<div class="tenant-table">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>
+          <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+        </th>
+        <th>Tenant</th>
+        <th>Status</th>
+        <th>Subscription</th>
+        <th>Usage</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (tenants && tenants.length > 0) { %>
+        <% tenants.forEach(tenant => { %>
+          <tr>
+            <td>
+              <input 
+                type="checkbox" 
+                class="tenant-checkbox" 
+                value="<%= tenant.id %>"
+                onchange="updateSelection()"
+              >
+            </td>
+            <td>
+              <div>
+                <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;">
+                  <a href="/superadmin/tenants/<%= tenant.id %>" style="text-decoration: none; color: inherit;">
+                    <%= tenant.name %>
+                  </a>
+                </div>
+                <div style="font-size: 0.75rem; color: #64748b;">
+                  <%= tenant.slug %>
+                  <% if (tenant.domain) { %>
+                    • <%= tenant.domain %>
+                  <% } %>
+                </div>
+                <div style="font-size: 0.75rem; color: #94a3b8;">
+                  <%= (tenant._count?.merchants || 0) %> merchants, <%= (tenant._count?.users || 0) %> users
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge <%= tenant.isActive ? 'status-active' : 'status-inactive' %>">
+                <%= tenant.isActive ? 'Active' : 'Inactive' %>
+              </span>
+            </td>
+            <td>
+              <% if (tenant.subscription) { %>
+                <div>
+                  <span class="priority-badge priority-<%= tenant.subscription.priority.toLowerCase() %>">
+                    <%= tenant.subscription.priority %>
+                  </span>
+                  <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
+                    <%= tenant.subscription.billingCycle %>
+                  </div>
+                </div>
+              <% } else { %>
+                <span style="color: #ef4444; font-size: 0.75rem;">No subscription</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (tenant.subscription) { %>
+                <div class="usage-indicator">
+                  <div class="usage-bar">
+                    <% 
+                      const merchantUsage = Math.min(100, Math.round((tenant._count?.merchants || 0) / (tenant.subscription.maxMerchants || 1) * 100));
+                      const usageClass = merchantUsage >= 90 ? 'usage-high' : merchantUsage >= 70 ? 'usage-medium' : 'usage-low';
+                    %>
+                    <div class="usage-fill <%= usageClass %>" style="width: <%= merchantUsage %>%"></div>
+                  </div>
+                  <span><%= merchantUsage %>%</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #64748b; margin-top: 0.25rem;">
+                  <%= tenant._count?.merchants || 0 %>/<%= tenant.subscription.maxMerchants %> merchants
+                </div>
+              <% } else { %>
+                <span style="color: #64748b; font-size: 0.75rem;">-</span>
+              <% } %>
+            </td>
+            <td>
+              <div style="font-size: 0.75rem; color: #64748b;">
+                <%= new Date(tenant.createdAt).toLocaleDateString() %>
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a 
+                  href="/superadmin/tenants/<%= tenant.id %>" 
+                  class="btn btn-sm btn-outline"
+                  style="color: #4a90e2;"
+                  title="View Details"
+                >
+                  👁️
+                </a>
+                <a 
+                  href="/superadmin/tenants/<%= tenant.id %>/edit" 
+                  class="btn btn-sm btn-outline"
+                  style="color: #64748b;"
+                  title="Edit"
+                >
+                  ✏️
+                </a>
+                <% if (tenant.isActive) { %>
+                  <form method="POST" action="/superadmin/tenants/<%= tenant.id %>/deactivate" style="display: inline;">
+                    <button 
+                      type="submit" 
+                      class="btn btn-sm btn-outline"
+                      style="color: #f59e0b;"
+                      title="Deactivate"
+                      onclick="return confirm('Are you sure you want to deactivate this tenant?')"
+                    >
+                      ⏸️
+                    </button>
+                  </form>
+                <% } else { %>
+                  <form method="POST" action="/superadmin/tenants/<%= tenant.id %>/activate" style="display: inline;">
+                    <button 
+                      type="submit" 
+                      class="btn btn-sm btn-outline"
+                      style="color: #10b981;"
+                      title="Activate"
+                    >
+                      ▶️
+                    </button>
+                  </form>
+                <% } %>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 3rem; color: #64748b;">
+            <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">No tenants found</div>
+            <div style="font-size: 0.9rem;">
+              <% if (filters.search || filters.status !== 'all' || filters.priority !== 'all') { %>
+                Try adjusting your filters or 
+                <a href="/superadmin/tenants" style="color: #4a90e2;">clear all filters</a>
+              <% } else { %>
+                <a href="/superadmin/tenants/create" style="color: #4a90e2;">Create your first tenant</a>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<% if (pagination.totalPages > 1) { %>
+  <div class="pagination">
+    <% if (pagination.currentPage > 1) { %>
+      <a href="?page=<%= pagination.currentPage - 1 %>&search=<%= filters.search %>&status=<%= filters.status %>&priority=<%= filters.priority %>">
+        ← Previous
+      </a>
+    <% } %>
+    
+    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+      <% if (i === pagination.currentPage) { %>
+        <span class="active"><%= i %></span>
+      <% } else if (i === 1 || i === pagination.totalPages || Math.abs(i - pagination.currentPage) <= 2) { %>
+        <a href="?page=<%= i %>&search=<%= filters.search %>&status=<%= filters.status %>&priority=<%= filters.priority %>">
+          <%= i %>
+        </a>
+      <% } else if (i === pagination.currentPage - 3 || i === pagination.currentPage + 3) { %>
+        <span>…</span>
+      <% } %>
+    <% } %>
+    
+    <% if (pagination.currentPage < pagination.totalPages) { %>
+      <a href="?page=<%= pagination.currentPage + 1 %>&search=<%= filters.search %>&status=<%= filters.status %>&priority=<%= filters.priority %>">
+        Next →
+      </a>
+    <% } %>
+  </div>
+<% } %>
+
+<script>
+  let selectedTenants = new Set();
+  
+  function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.tenant-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAll.checked;
+      if (selectAll.checked) {
+        selectedTenants.add(checkbox.value);
+      } else {
+        selectedTenants.delete(checkbox.value);
+      }
+    });
+    
+    updateSelection();
+  }
+  
+  function updateSelection() {
+    const checkboxes = document.querySelectorAll('.tenant-checkbox');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    const selectAll = document.getElementById('selectAll');
+    
+    selectedTenants.clear();
+    let checkedCount = 0;
+    
+    checkboxes.forEach(checkbox => {
+      if (checkbox.checked) {
+        selectedTenants.add(checkbox.value);
+        checkedCount++;
+      }
+    });
+    
+    // Update select all checkbox
+    selectAll.checked = checkedCount === checkboxes.length;
+    selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+    
+    // Show/hide bulk actions
+    if (selectedTenants.size > 0) {
+      bulkActions.classList.add('show');
+      selectedCount.textContent = `${selectedTenants.size} tenant${selectedTenants.size === 1 ? '' : 's'} selected`;
+    } else {
+      bulkActions.classList.remove('show');
+    }
+  }
+  
+  function clearSelection() {
+    const checkboxes = document.querySelectorAll('.tenant-checkbox');
+    const selectAll = document.getElementById('selectAll');
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    selectAll.checked = false;
+    selectedTenants.clear();
+    updateSelection();
+  }
+  
+  // Handle bulk form submission
+  document.getElementById('bulkForm').addEventListener('submit', function(e) {
+    const action = this.querySelector('[name="action"]').value;
+    if (!action) {
+      e.preventDefault();
+      alert('Please select an action');
+      return;
+    }
+    
+    if (selectedTenants.size === 0) {
+      e.preventDefault();
+      alert('Please select at least one tenant');
+      return;
+    }
+    
+    // Add selected tenant IDs to form
+    selectedTenants.forEach(tenantId => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'tenantIds';
+      input.value = tenantId;
+      this.appendChild(input);
+    });
+    
+    // Confirm bulk action
+    const actionText = action === 'activate' ? 'activate' : 'deactivate';
+    if (!confirm(`Are you sure you want to ${actionText} ${selectedTenants.size} tenant(s)?`)) {
+      e.preventDefault();
+    }
+  });
+</script>

@@ -4,7 +4,12 @@ const { body, validationResult } = require('express-validator');
 const merchantService = require('../../services/merchantService');
 const prisma = require('../../utils/prisma');
 const logger = require('../../utils/logger');
-const { requireGuest } = require('../../middleware/auth-bypass');
+// Use appropriate auth middleware based on environment
+const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true';
+
+const { requireGuest } = useAuthBypass ? 
+  require('../../middleware/auth-bypass') : 
+  require('../../middleware/auth');
 const { validateLogin, validateRegister } = require('../../middleware/validators');
 const { handleValidationErrors, authLimiter } = require('../../middleware/security');
 
@@ -98,16 +103,30 @@ router.post('/login',
       return res.redirect('/auth/login');
     }
 
-    // Skip regeneration for now - just update the existing session
-    // req.session.regenerate((err) => {
-    //   if (err) {
-    //     logger.error('Session regeneration error:', err);
-    //     req.flash('error', 'Login error. Please try again.');
-    //     return res.redirect('/auth/login');
-    //   }
+    // Store data we need to preserve
+    const merchantId = merchant.id;
+    const redirectUrl = req.body.redirect || req.query.redirect || '/dashboard';
+    const successMessage = `Welcome back, ${merchant.businessName}!`;
+    
+    // Store the CSRF token before regeneration
+    const csrfToken = req.session.csrfToken;
+    const csrfTokenExpiry = req.session.csrfTokenExpiry;
+    
+    // Regenerate session to prevent fixation attacks
+    req.session.regenerate((err) => {
+      if (err) {
+        logger.error('Session regeneration error:', err);
+        req.flash('error', 'Login error. Please try again.');
+        return res.redirect('/auth/login');
+      }
+      
+      // Restore CSRF token after regeneration
+      if (csrfToken) {
+        req.session.csrfToken = csrfToken;
+        req.session.csrfTokenExpiry = csrfTokenExpiry;
+      }
       
       // Create session with userId - use consistent ID
-      const merchantId = merchant.id;
       req.session.userId = merchantId;
       req.session.user = {
         id: merchantId,
@@ -120,7 +139,8 @@ router.post('/login',
         merchantId,
         sessionId: req.sessionID,
         userId: req.session.userId,
-        userObj: req.session.user
+        userObj: req.session.user,
+        csrfTokenRestored: !!csrfToken
       });
 
       logger.info(`Merchant logged in: ${merchant.email}`);
@@ -129,7 +149,9 @@ router.post('/login',
         userId: req.session.userId,
         user: req.session.user
       });
-      req.flash('success', `Welcome back, ${merchant.businessName}!`);
+      
+      // Set flash message after regeneration
+      req.flash('success', successMessage);
       
       // Save session before redirect
       req.session.save((err) => {
@@ -138,11 +160,10 @@ router.post('/login',
         }
         
         // Redirect to original URL if provided
-        const redirectUrl = req.body.redirect || req.query.redirect || '/dashboard';
         logger.info(`Login successful, redirecting to: ${redirectUrl}`);
         res.redirect(redirectUrl);
       });
-    // }); // End of regenerate
+    }); // End of regenerate
 
   } catch (error) {
     logger.error('Login error:', error);
@@ -181,12 +202,22 @@ router.post('/register',
     // Initialize merchant defaults
     await merchantService.initializeDefaults(merchant.id);
 
+    // Store the CSRF token before regeneration
+    const csrfToken = req.session.csrfToken;
+    const csrfTokenExpiry = req.session.csrfTokenExpiry;
+
     // Regenerate session to prevent fixation attacks
     req.session.regenerate((err) => {
       if (err) {
         logger.error('Session regeneration error:', err);
         req.flash('error', 'Registration error. Please try again.');
         return res.redirect('/auth/register');
+      }
+      
+      // Restore CSRF token after regeneration
+      if (csrfToken) {
+        req.session.csrfToken = csrfToken;
+        req.session.csrfTokenExpiry = csrfTokenExpiry;
       }
       
       // Create session with userId

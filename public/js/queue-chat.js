@@ -68,18 +68,33 @@ class QueueChat {
         
         // Auto-resize textarea
         this.setupAutoResize();
+        
+        // Initialize accessibility features
+        this.initAccessibilityFeatures();
+        
+        // Start session recovery check
+        this.checkSessionRecovery();
+        
+        // Set up periodic session extension
+        this.setupSessionExtension();
     }
     
     initializeElements() {
         this.elements = {
             messagesContainer: document.getElementById('messagesContainer'),
             messageForm: document.getElementById('messageForm'),
-            messageInput: document.getElementById('messageInput'),
+            messageInput: document.getElementById('messageInput') || document.getElementById('message-input'),
             sendButton: document.getElementById('sendButton'),
             connectionStatus: document.getElementById('connectionStatus'),
             headerVerifyCode: document.getElementById('headerVerifyCode'),
-            verificationDisplay: document.getElementById('verificationDisplay')
+            verificationDisplay: document.getElementById('verificationDisplay'),
+            screenReaderAnnouncements: document.getElementById('screen-reader-announcements'),
+            urgentAnnouncements: document.getElementById('urgent-announcements'),
+            messagesList: document.getElementById('messages-list')
         };
+        
+        // Initialize screen reader support
+        this.initScreenReaderSupport();
         
         // Log which elements were found/not found for debugging
         const elementStatus = {};
@@ -116,6 +131,7 @@ class QueueChat {
         this.socket.on('connect', () => {
             console.log('Connected to server');
             this.updateConnectionStatus(true);
+            this.announceToScreenReader('Connected to queue system');
             
             // Join queue room if we have queue data
             if (this.queueData && this.queueData.queueId) {
@@ -156,6 +172,7 @@ class QueueChat {
         this.socket.on('disconnect', () => {
             console.log('Disconnected from server');
             this.updateConnectionStatus(false);
+            this.announceToScreenReader('Disconnected from queue system. Attempting to reconnect...', true);
         });
         
         // Listen for queue updates
@@ -164,6 +181,8 @@ class QueueChat {
         this.socket.on('customer-called', (data) => this.handleCustomerCalled(data));
         this.socket.on('queue-cancelled', (data) => this.handleQueueCancelled(data));
         this.socket.on('notification-revoked', (data) => this.handleNotificationRevoked(data));
+        this.socket.on('acknowledgment-confirmed', (data) => this.handleAcknowledgmentConfirmed(data));
+        this.socket.on('customer-seated-notification', (data) => this.handleCustomerSeated(data));
     }
     
     setupEventListeners() {
@@ -184,6 +203,116 @@ class QueueChat {
                 }
             });
         }
+    }
+    
+    initScreenReaderSupport() {
+        // Ensure announcement regions exist
+        if (!this.elements.screenReaderAnnouncements) {
+            const announcements = document.createElement('div');
+            announcements.id = 'screen-reader-announcements';
+            announcements.setAttribute('aria-live', 'polite');
+            announcements.setAttribute('aria-atomic', 'true');
+            announcements.className = 'queue-announcements';
+            document.body.appendChild(announcements);
+            this.elements.screenReaderAnnouncements = announcements;
+        }
+        
+        if (!this.elements.urgentAnnouncements) {
+            const urgent = document.createElement('div');
+            urgent.id = 'urgent-announcements';
+            urgent.setAttribute('aria-live', 'assertive');
+            urgent.setAttribute('aria-atomic', 'true');
+            urgent.className = 'queue-announcements';
+            document.body.appendChild(urgent);
+            this.elements.urgentAnnouncements = urgent;
+        }
+        
+        // Track announcement history to avoid duplicates
+        this.announcementHistory = [];
+        this.lastAnnouncementTime = 0;
+    }
+    
+    initAccessibilityFeatures() {
+        // Add proper ARIA labels to the messages container
+        if (this.elements.messagesContainer) {
+            this.elements.messagesContainer.setAttribute('role', 'log');
+            this.elements.messagesContainer.setAttribute('aria-label', 'Queue chat conversation');
+            this.elements.messagesContainer.setAttribute('aria-live', 'polite');
+        }
+        
+        // Add form labels and descriptions
+        if (this.elements.messageInput) {
+            if (!document.querySelector('label[for="messageInput"], label[for="message-input"]')) {
+                const label = document.createElement('label');
+                label.setAttribute('for', this.elements.messageInput.id);
+                label.className = 'sr-only';
+                label.textContent = 'Type your message';
+                this.elements.messageInput.parentNode.insertBefore(label, this.elements.messageInput);
+            }
+        }
+        
+        // Add skip navigation for keyboard users
+        if (!document.querySelector('.skip-link')) {
+            const skipLink = document.createElement('a');
+            skipLink.href = '#messagesContainer';
+            skipLink.className = 'skip-link';
+            skipLink.textContent = 'Skip to chat messages';
+            document.body.insertBefore(skipLink, document.body.firstChild);
+        }
+        
+        // Listen for keyboard navigation preferences
+        this.handleAccessibilityPreferences();
+    }
+    
+    handleAccessibilityPreferences() {
+        // Check for reduced motion preference
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.body.classList.add('reduce-motion');
+        }
+        
+        // Check for high contrast preference  
+        if (window.matchMedia && window.matchMedia('(prefers-contrast: high)').matches) {
+            document.body.classList.add('high-contrast');
+        }
+        
+        // Listen for preference changes
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+                document.body.classList.toggle('reduce-motion', e.matches);
+            });
+            
+            window.matchMedia('(prefers-contrast: high)').addEventListener('change', (e) => {
+                document.body.classList.toggle('high-contrast', e.matches);
+            });
+        }
+    }
+    
+    announceToScreenReader(message, urgent = false) {
+        // Avoid duplicate announcements within 1 second
+        const now = Date.now();
+        if (this.announcementHistory.includes(message) && (now - this.lastAnnouncementTime) < 1000) {
+            return;
+        }
+        
+        const announcer = urgent ? this.elements.urgentAnnouncements : this.elements.screenReaderAnnouncements;
+        if (announcer) {
+            announcer.textContent = message;
+            
+            // Clean up announcement history
+            this.announcementHistory.push(message);
+            if (this.announcementHistory.length > 5) {
+                this.announcementHistory.shift();
+            }
+            this.lastAnnouncementTime = now;
+            
+            // Clear after announcement to allow repeated messages later
+            setTimeout(() => {
+                announcer.textContent = '';
+            }, 1000);
+        }
+        
+        // Also log for development debugging
+        console.log(`[SCREEN READER ${urgent ? 'URGENT' : 'POLITE'}]:`, message);
     }
     
     setupAutoResize() {
@@ -255,6 +384,7 @@ class QueueChat {
                 }
                 
                 this.addMessage(`Welcome ${info.customerName}! 🎉`, 'bot');
+                this.announceToScreenReader(`Welcome ${info.customerName}! You have successfully joined the queue.`);
                 
                 setTimeout(() => {
                     this.addMessage(
@@ -264,6 +394,11 @@ class QueueChat {
                         `⏱️ Estimated wait: ${info.estimatedWait} minutes\n` +
                         `🎫 Verification code: ${info.verificationCode || 'Will be provided when called'}`,
                         'bot'
+                    );
+                    
+                    this.announceToScreenReader(
+                        `Queue details: You are number ${info.position} in line. ` +
+                        `Estimated wait time is ${info.estimatedWait} minutes.`
                     );
                     
                     // Send backend notification
@@ -398,6 +533,13 @@ class QueueChat {
                     // Update UI to show called status
                     this.updateConnectionStatus('Your table is ready! 🎉', 'ready');
                     document.body.classList.add('customer-called');
+                    
+                    // Screen reader announcement for called status
+                    this.announceToScreenReader(
+                        `Your table is ready! Please proceed to the counter. ` +
+                        `Your verification code is ${data.verificationCode}.`, 
+                        true
+                    );
                     
                     // Show acknowledgment cards if not already acknowledged
                     console.log('[STATUS] Customer is called, checking acknowledgment status:', this.queueData.acknowledged);
@@ -748,8 +890,14 @@ class QueueChat {
             const cancelUrl = `${baseUrl}/api/webchat/cancel/${this.sessionId}`;
             console.log('Cancel URL:', cancelUrl);
             
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
             const response = await fetch(cancelUrl, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                }
             });
             
             if (response.ok) {
@@ -757,19 +905,17 @@ class QueueChat {
                 this.removeAllActionCards();
                 this.clearNoResponseTimeout();
                 
-                this.addMessage(
-                    '✅ You\'ve been successfully removed from the queue.\n\n' +
-                    'Thank you for letting us know! We hope to serve you another time.',
-                    'bot'
-                );
-                
                 // Notify backend before clearing data
                 this.notifyBackend('customer_cancelled', {
                     queueId: this.queueData?.queueId,
                     customerName: this.queueData?.customerName
                 });
                 
-                this.clearQueueData();
+                // Show cancellation UI which includes the success message
+                this.showCancellationMessage({
+                    type: 'user-cancelled',
+                    reason: 'You have successfully cancelled your queue position.'
+                });
                 
                 // Re-enable message input
                 this.toggleMessageInput(true);
@@ -1048,6 +1194,14 @@ class QueueChat {
                 'system'
             );
             
+            // Urgent screen reader announcement
+            this.announceToScreenReader(
+                `It's your turn! Your table is ready. Please proceed to the counter immediately. ` +
+                `Your verification code is ${data.verificationCode || this.queueData.verificationCode}. ` +
+                `Show this code to the staff.`,
+                true
+            );
+            
             // Show acknowledgment cards
             console.log('[NOTIFICATION] About to show acknowledgment cards...');
             console.log('[NOTIFICATION] Card data:', {
@@ -1083,8 +1237,132 @@ class QueueChat {
     
     handleQueueCancelled(data) {
         if (data.customerId === this.queueData?.customerId) {
-            this.addMessage('Your queue has been cancelled.', 'system');
+            console.log('Queue cancelled event received:', data);
+            
+            // Store session data before clearing for potential rejoin
+            const sessionData = {
+                merchantId: this.queueData.merchantId,
+                queueId: this.queueData.queueId,
+                customerName: this.queueData.customerName,
+                customerPhone: this.queueData.customerPhone,
+                partySize: this.queueData.partySize
+            };
+            sessionStorage.setItem('lastSession', JSON.stringify(sessionData));
+            
+            // Clear queue data first
             this.clearQueueData();
+            
+            // Hide existing messages and show cancellation UI
+            this.showCancellationMessage(data);
+        }
+    }
+    
+    showCancellationMessage(data) {
+        // Ensure elements are initialized
+        if (!this.elements || !this.elements.messagesContainer) {
+            console.error('Chat elements not initialized');
+            // Fallback: try to find the element
+            this.elements = this.elements || {};
+            this.elements.messagesContainer = document.getElementById('chatMessages');
+            
+            if (!this.elements.messagesContainer) {
+                console.error('Could not find chat messages container');
+                // Show a simple alert as fallback
+                alert(data.reason || 'Your queue position has been cancelled.');
+                return;
+            }
+        }
+        
+        // Hide queue status elements with fade out
+        const queueStatus = document.querySelector('.queue-status');
+        if (queueStatus) {
+            queueStatus.style.transition = 'opacity 0.3s ease-out';
+            queueStatus.style.opacity = '0';
+            setTimeout(() => queueStatus.style.display = 'none', 300);
+        }
+        
+        // Create cancellation message based on type
+        let title, message, icon;
+        
+        if (data.type === 'merchant-removed') {
+            title = 'Session Ended';
+            message = data.reason || 'Your session has been ended by the merchant.';
+            icon = '🔚';
+        } else if (data.type === 'timeout') {
+            title = 'Session Timed Out';
+            message = 'Your session has timed out due to inactivity.';
+            icon = '⏱️';
+        } else if (data.type === 'user-cancelled') {
+            title = 'Queue Cancelled';
+            message = data.reason || 'You have cancelled your queue position.';
+            icon = '✅';
+        } else {
+            title = 'Queue Cancelled';
+            message = 'Your queue position has been cancelled.';
+            icon = '❌';
+        }
+        
+        // Create and display cancellation card
+        const cancellationCard = document.createElement('div');
+        cancellationCard.className = 'cancellation-card fade-in';
+        cancellationCard.innerHTML = `
+            <div class="cancellation-icon">${icon}</div>
+            <h3 class="cancellation-title">${title}</h3>
+            <p class="cancellation-message">${message}</p>
+            <div class="cancellation-actions">
+                <button class="btn btn-primary rejoin-btn" onclick="queueChat.rejoinQueue()">
+                    <i class="bi bi-arrow-repeat"></i> Join Queue Again
+                </button>
+                <button class="btn btn-secondary close-btn" onclick="queueChat.closeChat()">
+                    <i class="bi bi-x-lg"></i> Close
+                </button>
+            </div>
+        `;
+        
+        // Add to chat messages
+        this.elements.messagesContainer.appendChild(cancellationCard);
+        this.scrollToBottom();
+        
+        // Disable message input
+        this.toggleMessageInput(false);
+    }
+    
+    rejoinQueue() {
+        // Get stored session data
+        const lastSession = sessionStorage.getItem('lastSession');
+        if (lastSession) {
+            const sessionData = JSON.parse(lastSession);
+            // Clear old session to ensure new one is created
+            sessionStorage.removeItem('queueChatSessionId');
+            localStorage.removeItem('queueChatSessionId');
+            localStorage.removeItem('queueData');
+            
+            // Redirect to form with pre-filled data but force new session
+            const params = new URLSearchParams({
+                name: sessionData.customerName,
+                phone: sessionData.customerPhone,
+                partySize: sessionData.partySize,
+                rejoin: 'true',
+                previousCancelled: 'true'
+            });
+            window.location.href = `/webchat/queue/${sessionData.queueId}?${params.toString()}`;
+        } else {
+            // If no session data, redirect to clean form
+            const queueId = this.queueData?.queueId || window.location.pathname.split('/').pop();
+            window.location.href = `/webchat/queue/${queueId}`;
+        }
+    }
+    
+    closeChat() {
+        // Clear all data and close/redirect
+        this.clearQueueData();
+        sessionStorage.removeItem('lastSession');
+        
+        // You can either close the window or redirect to a landing page
+        if (window.opener) {
+            window.close();
+        } else {
+            window.location.href = '/';
         }
     }
     
@@ -1113,6 +1391,12 @@ class QueueChat {
         this.addMessage(
             `⚠️ ${data.message || 'Your notification has been revoked. You will be notified again when it\'s your turn.'}`,
             'system'
+        );
+        
+        // Screen reader announcement
+        this.announceToScreenReader(
+            data.message || 'Your table notification has been revoked. You will be notified again when it\'s your turn.',
+            true
         );
         
         // Update UI status
@@ -1154,10 +1438,16 @@ class QueueChat {
     
     async notifyBackend(event, data) {
         try {
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
             const baseUrl = window.location.origin;
             await fetch(`${baseUrl}/api/webchat/notify`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
                 body: JSON.stringify({
                     sessionId: this.sessionId,
                     event,
@@ -1242,6 +1532,14 @@ class QueueChat {
             footer: '⚠️ Please respond within 5 minutes or your spot may be released'
         });
         
+        // Screen reader announcement for action cards
+        this.announceToScreenReader(
+            `Action required: Your table is ready! Please choose to either acknowledge that you're ` +
+            `coming to the restaurant, or cancel your spot. You have 5 minutes to respond. ` +
+            `Two buttons are available: "I'm headed to the restaurant" and "Cancel my spot".`,
+            true
+        );
+        
         // Start playing notification sound
         if (window.notificationSoundManager) {
             window.notificationSoundManager.playNotificationSound();
@@ -1254,12 +1552,45 @@ class QueueChat {
         this.flashScreen();
     }
     
-    async acknowledge(type) {
+    async acknowledge(type, retryCount = 0) {
+        const MAX_RETRIES = 3;
+        const CONFIRMATION_TIMEOUT = 5000; // 5 seconds
+        
         try {
+            // Show loading state
+            this.showAcknowledgmentLoading();
+            
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            // Create a promise that resolves when we receive confirmation or times out
+            const confirmationPromise = new Promise((resolve, reject) => {
+                const confirmationHandler = (data) => {
+                    // Check if this confirmation is for us
+                    const myEntryId = this.queueData.entryId || this.queueData.id;
+                    if (data.entryId === myEntryId) {
+                        this.socket.off('acknowledgment-confirmed', confirmationHandler);
+                        clearTimeout(timeoutId);
+                        resolve(data);
+                    }
+                };
+                
+                // Listen for confirmation
+                this.socket.on('acknowledgment-confirmed', confirmationHandler);
+                
+                // Set timeout
+                const timeoutId = setTimeout(() => {
+                    this.socket.off('acknowledgment-confirmed', confirmationHandler);
+                    reject(new Error('Confirmation timeout'));
+                }, CONFIRMATION_TIMEOUT);
+            });
+            
+            // Send acknowledgment request
             const response = await fetch('/api/queue/acknowledge', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
                 },
                 body: JSON.stringify({
                     entryId: this.queueData.entryId || this.queueData.id,
@@ -1268,51 +1599,208 @@ class QueueChat {
                 })
             });
             
-            if (response.ok) {
-                // Stop notification sound
-                if (window.notificationSoundManager) {
-                    window.notificationSoundManager.stop();
-                    await window.notificationSoundManager.playAcknowledgmentSound();
-                }
-                
-                // Remove all action cards
-                this.removeAllActionCards();
-                this.clearNoResponseTimeout();
-                
-                // Update status
-                if (this.queueData) {
-                    this.queueData.acknowledged = true;
-                    localStorage.setItem('queueData', JSON.stringify(this.queueData));
-                }
-                
-                // Show confirmation message
-                this.addMessage(
-                    `✅ Great! We're expecting you. Your verification code is: ${this.queueData.verificationCode}`,
-                    'system'
-                );
-                
-                // Re-enable message input and quick actions
-                this.toggleMessageInput(true);
-                this.acknowledgmentCardsShown = false;
-                
-            } else {
-                console.error('Failed to acknowledge notification');
-                this.addMessage('Failed to send acknowledgment. Please try again.', 'system');
-                // Re-enable the cards
-                document.querySelectorAll('.action-card').forEach(card => {
-                    card.disabled = false;
-                    card.classList.remove('loading');
-                });
+            if (!response.ok) {
+                throw new Error('Failed to acknowledge notification');
             }
+            
+            // Wait for WebSocket confirmation
+            try {
+                const confirmation = await confirmationPromise;
+                console.log('[ACKNOWLEDGE] Received confirmation:', confirmation);
+                
+                // Success! Handle the successful acknowledgment
+                await this.handleAcknowledgmentSuccess(type, confirmation);
+                
+            } catch (confirmError) {
+                // Timeout or confirmation error
+                console.warn('[ACKNOWLEDGE] Confirmation timeout or error:', confirmError);
+                
+                // Retry if we haven't exceeded max retries
+                if (retryCount < MAX_RETRIES) {
+                    console.log(`[ACKNOWLEDGE] Retrying... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+                    this.addMessage('Retrying acknowledgment...', 'system');
+                    return this.acknowledge(type, retryCount + 1);
+                } else {
+                    throw new Error('Failed to receive confirmation after retries');
+                }
+            }
+            
         } catch (error) {
             console.error('Error acknowledging:', error);
-            this.addMessage('Error sending acknowledgment. Please proceed to the counter.', 'system');
+            this.hideAcknowledgmentLoading();
+            
+            // Show appropriate error message
+            if (retryCount >= MAX_RETRIES) {
+                this.addMessage(
+                    '⚠️ Could not confirm acknowledgment. Please proceed to the counter with your verification code.',
+                    'system'
+                );
+            } else {
+                this.addMessage('Failed to send acknowledgment. Please try again.', 'system');
+            }
+            
             // Re-enable the cards
             document.querySelectorAll('.action-card').forEach(card => {
                 card.disabled = false;
                 card.classList.remove('loading');
             });
         }
+    }
+    
+    async handleAcknowledgmentSuccess(type, confirmation) {
+        // Hide loading state
+        this.hideAcknowledgmentLoading();
+        
+        // Stop notification sound
+        if (window.notificationSoundManager) {
+            window.notificationSoundManager.stop();
+            await window.notificationSoundManager.playAcknowledgmentSound();
+        }
+        
+        // Remove all action cards
+        this.removeAllActionCards();
+        this.clearNoResponseTimeout();
+        
+        // Update status
+        if (this.queueData) {
+            this.queueData.acknowledged = true;
+            this.queueData.acknowledgedAt = confirmation.acknowledgedAt;
+            localStorage.setItem('queueData', JSON.stringify(this.queueData));
+        }
+        
+        // Show confirmation message with checkmark animation
+        this.showAcknowledgmentConfirmation(confirmation);
+        
+        // Screen reader confirmation
+        this.announceToScreenReader(
+            `Acknowledgment confirmed. We're expecting you. Your verification code is ${this.queueData.verificationCode}.`
+        );
+        
+        // Re-enable message input and quick actions
+        this.toggleMessageInput(true);
+        this.acknowledgmentCardsShown = false;
+    }
+    
+    showAcknowledgmentLoading() {
+        // Add loading spinner to the last message
+        const messages = document.querySelectorAll('.message');
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage) {
+            const spinner = document.createElement('div');
+            spinner.className = 'acknowledgment-spinner';
+            spinner.innerHTML = '<i class="bi bi-arrow-repeat rotating"></i> Sending acknowledgment...';
+            lastMessage.appendChild(spinner);
+        }
+    }
+    
+    hideAcknowledgmentLoading() {
+        const spinners = document.querySelectorAll('.acknowledgment-spinner');
+        spinners.forEach(spinner => spinner.remove());
+    }
+    
+    showAcknowledgmentConfirmation(confirmation) {
+        // Create animated confirmation message element
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message system';
+        
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'message-bubble';
+        bubbleDiv.innerHTML = `
+            <div class="acknowledgment-success">
+                <div class="success-checkmark">
+                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                </div>
+                <div class="success-message">
+                    <strong>✅ Acknowledgment Received!</strong><br>
+                    We're expecting you. Your verification code is: <strong>${this.queueData.verificationCode}</strong>
+                </div>
+            </div>
+        `;
+        
+        messageDiv.appendChild(bubbleDiv);
+        
+        // Add to messages container
+        if (this.elements.messagesContainer) {
+            this.elements.messagesContainer.appendChild(messageDiv);
+            this.scrollToBottom();
+        }
+    }
+    
+    handleAcknowledgmentConfirmed(data) {
+        console.log('[ACKNOWLEDGE] Confirmation received via WebSocket:', data);
+        // This is handled by the promise in acknowledge() method
+        // But we can use it for additional UI updates if needed
+    }
+    
+    handleCustomerSeated(data) {
+        console.log('[SEATED] Customer seated notification received:', data);
+        
+        // Clear any existing timeouts
+        this.clearNoResponseTimeout();
+        
+        // Update queue data status
+        if (this.queueData) {
+            this.queueData.status = 'seated';
+            this.queueData.tableNumber = data.tableNumber;
+            // Clear from localStorage as session is ending
+            localStorage.removeItem('queueData');
+        }
+        
+        // Remove all action cards
+        this.removeAllActionCards();
+        
+        // Add the seated message
+        this.addMessage(
+            `🎉 ${data.message || `You have been seated at table ${data.tableNumber}. Thank you for using our queue system!`}`,
+            'system',
+            'success'
+        );
+        
+        // Screen reader announcement
+        this.announceToScreenReader(
+            `You have been seated at table ${data.tableNumber}. Your queue session has ended. Thank you!`,
+            true
+        );
+        
+        // Update UI to show session ended state
+        this.updateConnectionStatus('Session Ended', 'disconnected');
+        
+        // Disable message input
+        this.toggleMessageInput(false);
+        if (this.elements.messageInput) {
+            this.elements.messageInput.placeholder = 'Queue session has ended';
+            this.elements.messageInput.disabled = true;
+        }
+        
+        // Hide quick actions
+        const quickActions = document.getElementById('quickActions');
+        if (quickActions) {
+            quickActions.style.display = 'none';
+        }
+        
+        // Hide verification display
+        if (this.elements.verificationDisplay) {
+            this.elements.verificationDisplay.style.display = 'none';
+        }
+        
+        // Add a final system message after a short delay
+        setTimeout(() => {
+            this.addMessage(
+                'This chat session is now closed. We hope you enjoy your visit!',
+                'system'
+            );
+            
+            // Disconnect socket after showing final message
+            if (this.socket && this.socket.connected) {
+                this.socket.disconnect();
+            }
+        }, 2000);
+        
+        // Clear session ID to prevent reconnection attempts
+        this.sessionId = null;
     }
     
     startNoResponseTimeout(data) {
@@ -1423,7 +1911,11 @@ class QueueChat {
             reason: 'no_response_timeout'
         });
         
-        this.clearQueueData();
+        // Show timeout cancellation UI
+        this.showCancellationMessage({
+            type: 'timeout',
+            reason: 'Your session has timed out due to no response.'
+        });
         
         // Re-enable message input
         this.toggleMessageInput(true);
@@ -1511,6 +2003,177 @@ class QueueChat {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
     
+    // Session recovery methods
+    async checkSessionRecovery() {
+        console.log('[RECOVERY] Checking for session recovery...');
+        
+        // Only attempt recovery if we don't already have queue data
+        if (this.queueData) {
+            console.log('[RECOVERY] Already have queue data, skipping recovery');
+            return;
+        }
+        
+        // Check if we have a stored session
+        const storedSessionId = localStorage.getItem('queueChatSessionId');
+        const storedQueueData = localStorage.getItem('queueData');
+        
+        if (!storedSessionId || !storedQueueData) {
+            console.log('[RECOVERY] No stored session data found');
+            return;
+        }
+        
+        try {
+            // Validate session with server
+            const response = await fetch('/api/webchat/session/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sessionId: storedSessionId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success && result.recovered) {
+                console.log('[RECOVERY] Session recovered successfully:', result);
+                
+                // Update queue data
+                this.queueData = result.queueData;
+                
+                // Update localStorage with fresh data
+                localStorage.setItem('queueData', JSON.stringify(result.queueData));
+                
+                // Display recovery message
+                if (result.withinGracePeriod) {
+                    this.addSystemMessage(
+                        'Welcome back! Your session has been restored.',
+                        'recovery-success'
+                    );
+                } else {
+                    this.addSystemMessage(
+                        'Welcome back! You\'re still in the queue.',
+                        'recovery-success'
+                    );
+                }
+                
+                // Display queue banner
+                this.displayQueueBanner(result.queueData);
+                
+                // Rejoin socket rooms
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit('join-customer-room', {
+                        entryId: result.queueData.entryId,
+                        sessionId: this.sessionId
+                    });
+                }
+                
+                // Show current status
+                setTimeout(() => {
+                    this.addMessage(
+                        `You're currently at position ${result.queueData.position} in the queue. ` +
+                        `Your verification code is: ${result.queueData.verificationCode}`,
+                        'bot'
+                    );
+                }, 1000);
+                
+            } else {
+                console.log('[RECOVERY] Session not recovered:', result.message);
+                
+                // Clear invalid session data
+                this.clearQueueData();
+                
+                // Check if we can offer to rejoin
+                const parsedQueueData = JSON.parse(storedQueueData);
+                if (parsedQueueData.customerName && parsedQueueData.customerPhone) {
+                    this.offerQuickRejoin(parsedQueueData);
+                }
+            }
+            
+        } catch (error) {
+            console.error('[RECOVERY] Error validating session:', error);
+            // Clear potentially corrupted data
+            this.clearQueueData();
+        }
+    }
+    
+    setupSessionExtension() {
+        // Extend session every 30 minutes while active
+        this.sessionExtensionInterval = setInterval(() => {
+            if (this.queueData && this.queueData.status === 'waiting') {
+                this.extendSession();
+            }
+        }, 30 * 60 * 1000); // 30 minutes
+        
+        // Also extend on user activity
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && this.queueData) {
+                this.extendSession();
+            }
+        });
+    }
+    
+    async extendSession() {
+        if (!this.sessionId || !this.queueData) return;
+        
+        try {
+            const response = await fetch('/api/webchat/session/extend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sessionId: this.sessionId
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('[SESSION] Extended until:', result.sessionExpiresAt);
+            }
+        } catch (error) {
+            console.error('[SESSION] Error extending session:', error);
+        }
+    }
+    
+    offerQuickRejoin(previousData) {
+        this.addSystemMessageWithCards({
+            header: 'Session Expired',
+            body: `Your previous queue session has expired, but you can quickly rejoin the queue.\n\n<div class="card-content">Name: ${previousData.customerName}\nPhone: ${previousData.customerPhone}</div>`,
+            cards: [{
+                label: 'Rejoin Queue',
+                action: 'quick-rejoin',
+                data: previousData,
+                style: 'primary',
+                icon: 'bi-arrow-clockwise'
+            }, {
+                label: 'Start Fresh',
+                action: 'clear-data',
+                style: 'secondary',
+                icon: 'bi-x-circle'
+            }],
+            messageId: 'rejoin-offer'
+        });
+    }
+    
+    addSystemMessage(message, type = 'info') {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message system ${type}`;
+        
+        const messageBubble = document.createElement('div');
+        messageBubble.className = 'message-bubble';
+        messageBubble.innerHTML = `
+            <div class="system-message-content">
+                ${this.escapeHtml(message)}
+            </div>
+        `;
+        
+        messageDiv.appendChild(messageBubble);
+        this.elements.messagesContainer.appendChild(messageDiv);
+        this.scrollToBottom();
+    }
+    
     // New card-based system methods
     addSystemMessageWithCards(options) {
         const { header, body, cards, footer, messageId } = options;
@@ -1590,17 +2253,17 @@ class QueueChat {
     }
     
     createActionCard(cardOptions) {
-        const { id, text, icon, type, action } = cardOptions;
+        const { id, text, icon, type, action, data, label, style } = cardOptions;
         
         const card = document.createElement('button');
-        card.className = `action-card action-card-${type || 'default'}`;
+        card.className = `action-card action-card-${style || type || 'default'}`;
         if (id) {
             card.id = id;
         }
         
         // Add ARIA labels for accessibility
         card.setAttribute('role', 'button');
-        card.setAttribute('aria-label', text);
+        card.setAttribute('aria-label', label || text);
         card.setAttribute('tabindex', '0');
         
         // Disable double-click
@@ -1611,7 +2274,12 @@ class QueueChat {
                 card.classList.add('loading');
                 card.setAttribute('aria-busy', 'true');
                 if (action) {
-                    action();
+                    if (typeof action === 'function') {
+                        action();
+                    } else if (typeof action === 'string') {
+                        // Handle string actions with optional data
+                        this.handleCardAction(action, data);
+                    }
                 }
             }
         });
@@ -1634,14 +2302,91 @@ class QueueChat {
         
         // Add text
         const textSpan = document.createElement('span');
-        textSpan.textContent = text;
+        textSpan.textContent = label || text;
         card.appendChild(textSpan);
         
         return card;
     }
     
-    async handleCardAction(action) {
-        console.log('[CARD ACTION]', action);
+    async quickRejoin(previousData) {
+        try {
+            // Remove the rejoin offer message
+            const rejoinOffer = document.getElementById('rejoin-offer');
+            if (rejoinOffer) {
+                rejoinOffer.remove();
+            }
+            
+            this.addMessage('Rejoining the queue with your previous details...', 'bot');
+            
+            // Get merchant ID from the page or previous data
+            const merchantId = previousData.merchantId || window.QUEUE_CHAT_SESSION?.merchantId;
+            
+            if (!merchantId) {
+                this.addMessage('Sorry, I couldn\'t find the merchant information. Please refresh the page.', 'bot');
+                return;
+            }
+            
+            // Call the join API with previous data
+            const response = await fetch('/api/webchat/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    customerName: previousData.customerName,
+                    customerPhone: previousData.customerPhone,
+                    partySize: previousData.partySize || 1,
+                    merchantId: merchantId,
+                    sessionId: this.sessionId,
+                    specialRequests: previousData.specialRequests || ''
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Update queue data
+                this.queueData = result.queueEntry;
+                
+                // Store in localStorage
+                localStorage.setItem('queueData', JSON.stringify(result.queueEntry));
+                
+                // Display queue banner
+                this.displayQueueBanner(result.queueEntry);
+                
+                // Show success message
+                this.addMessage(
+                    `Welcome back ${previousData.customerName}! You've rejoined the queue at position ${result.position}. ` +
+                    `Your verification code is: ${result.verificationCode}`,
+                    'bot'
+                );
+                
+                // Rejoin socket rooms
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit('join-customer-room', {
+                        entryId: result.queueEntry.entryId,
+                        sessionId: this.sessionId
+                    });
+                }
+            } else {
+                this.addMessage(
+                    `Sorry, I couldn't rejoin the queue: ${result.error || 'Unknown error'}. ` +
+                    `Please try joining manually.`,
+                    'bot'
+                );
+            }
+            
+        } catch (error) {
+            console.error('[QUICK REJOIN] Error:', error);
+            this.addMessage(
+                'Sorry, there was an error rejoining the queue. Please try again.',
+                'bot'
+            );
+        }
+    }
+    
+    async handleCardAction(action, data) {
+        console.log('[CARD ACTION]', action, data);
         
         switch (action) {
             case 'acknowledge':
@@ -1650,6 +2395,20 @@ class QueueChat {
                 
             case 'cancel':
                 this.showCancellationConfirmation();
+                break;
+                
+            case 'quick-rejoin':
+                await this.quickRejoin(data);
+                break;
+                
+            case 'clear-data':
+                this.clearQueueData();
+                this.addMessage('Session data cleared. You can start fresh.', 'bot');
+                // Remove the rejoin offer message
+                const rejoinOffer = document.getElementById('rejoin-offer');
+                if (rejoinOffer) {
+                    rejoinOffer.remove();
+                }
                 break;
                 
             case 'confirm-cancel':

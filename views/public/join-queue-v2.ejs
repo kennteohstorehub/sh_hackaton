@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Join Queue - <%= merchantName %></title>
+    
+    <!-- Design System -->
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <link rel="stylesheet" href="/css/minimalist-framework.css">
+    
+    <style>
+        /* Page Specific Styles */
+        body {
+            background-color: var(--color-gray-50);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background-color: var(--color-white);
+            border-bottom: 1px solid var(--color-gray-200);
+            padding: var(--spacing-4);
+            position: sticky;
+            top: 0;
+            z-index: var(--z-index-sticky);
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .merchant-info {
+            text-align: center;
+        }
+        
+        .merchant-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-xl);
+            margin: 0 auto var(--spacing-3);
+            background-color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: var(--spacing-6) var(--spacing-4);
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Queue Status Card */
+        .queue-status-card {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: var(--color-white);
+            padding: var(--spacing-8);
+            border-radius: var(--radius-2xl);
+            text-align: center;
+            margin-bottom: var(--spacing-8);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .queue-number {
+            font-size: var(--font-size-6xl);
+            font-weight: var(--font-weight-bold);
+            line-height: 1;
+            margin-bottom: var(--spacing-2);
+        }
+        
+        .queue-label {
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+        }
+        
+        .wait-time {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-8);
+            margin-top: var(--spacing-6);
+        }
+        
+        .wait-time-item {
+            text-align: center;
+        }
+        
+        .wait-time-value {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-semibold);
+            display: block;
+        }
+        
+        .wait-time-label {
+            font-size: var(--font-size-xs);
+            opacity: 0.8;
+        }
+        
+        /* Form Styles */
+        .join-form {
+            background-color: var(--color-white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-6);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: var(--spacing-6);
+        }
+        
+        .form-title {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-900);
+            margin-bottom: var(--spacing-2);
+        }
+        
+        .form-subtitle {
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+        }
+        
+        /* Progressive Form Fields */
+        .form-section {
+            margin-bottom: var(--spacing-6);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp var(--transition-slow) var(--ease-out) forwards;
+        }
+        
+        .form-section:nth-child(1) { animation-delay: 0ms; }
+        .form-section:nth-child(2) { animation-delay: 100ms; }
+        .form-section:nth-child(3) { animation-delay: 200ms; }
+        .form-section:nth-child(4) { animation-delay: 300ms; }
+        
+        /* Enhanced Input Styles */
+        .form-input-wrapper {
+            position: relative;
+        }
+        
+        .form-input {
+            padding-left: var(--spacing-12);
+            font-size: var(--font-size-lg);
+        }
+        
+        .form-input-icon {
+            position: absolute;
+            left: var(--spacing-4);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-gray-400);
+            pointer-events: none;
+        }
+        
+        .form-input:focus + .form-input-icon {
+            color: var(--color-primary);
+        }
+        
+        /* Party Size Selector */
+        .party-size-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-3);
+            margin-top: var(--spacing-3);
+        }
+        
+        .party-size-option {
+            min-height: var(--touch-target-comfortable);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-gray-100);
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .party-size-option:hover {
+            background-color: var(--color-gray-200);
+        }
+        
+        .party-size-option.selected {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            border-color: var(--color-primary);
+        }
+        
+        /* Special Requests */
+        .special-requests-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-3);
+            background-color: var(--color-gray-50);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .special-requests-toggle:hover {
+            background-color: var(--color-gray-100);
+        }
+        
+        .special-requests-content {
+            margin-top: var(--spacing-3);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height var(--transition-slow) var(--ease-out);
+        }
+        
+        .special-requests-content.open {
+            max-height: 200px;
+        }
+        
+        /* Submit Button */
+        .submit-section {
+            margin-top: var(--spacing-8);
+        }
+        
+        .btn-submit {
+            font-size: var(--font-size-lg);
+            padding: var(--spacing-4) var(--spacing-8);
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+        }
+        
+        /* Privacy Note */
+        .privacy-note {
+            text-align: center;
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+            margin-top: var(--spacing-4);
+        }
+        
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: var(--z-index-modal);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-slow);
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--color-gray-200);
+            border-top-color: var(--color-primary);
+            margin: 0 auto var(--spacing-4);
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .header {
+                padding: var(--spacing-3);
+            }
+            
+            .main-content {
+                padding: var(--spacing-4) var(--spacing-3);
+            }
+            
+            .queue-status-card {
+                padding: var(--spacing-6);
+            }
+            
+            .queue-number {
+                font-size: var(--font-size-5xl);
+            }
+            
+            .wait-time {
+                gap: var(--spacing-6);
+            }
+            
+            .join-form {
+                padding: var(--spacing-4);
+            }
+            
+            .party-size-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* Haptic Feedback Animation */
+        @keyframes haptic {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.98); }
+        }
+        
+        .haptic-feedback {
+            animation: haptic 0.1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="merchant-info">
+            <div class="merchant-logo">
+                <%= merchantName.charAt(0).toUpperCase() %>
+            </div>
+            <h1 class="text-xl font-semibold"><%= merchantName %></h1>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Queue Status Card -->
+        <div class="queue-status-card">
+            <div class="queue-number" id="currentNumber">23</div>
+            <div class="queue-label">Currently Serving</div>
+            
+            <div class="wait-time">
+                <div class="wait-time-item">
+                    <span class="wait-time-value" id="peopleAhead">5</span>
+                    <span class="wait-time-label">People Ahead</span>
+                </div>
+                <div class="wait-time-item">
+                    <span class="wait-time-value" id="waitTime">15</span>
+                    <span class="wait-time-label">Min Wait</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Join Form -->
+        <form class="join-form" id="joinQueueForm">
+            <div class="form-header">
+                <h2 class="form-title">Join the Queue</h2>
+                <p class="form-subtitle">We'll notify you when it's your turn</p>
+            </div>
+            
+            <!-- Name Field -->
+            <div class="form-section">
+                <label class="form-label" for="customerName">Your Name</label>
+                <div class="form-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="customerName" 
+                        name="name" 
+                        class="form-input" 
+                        placeholder="John Doe"
+                        required
+                        autocomplete="name"
+                    >
+                    <svg class="form-input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Phone Field -->
+            <div class="form-section">
+                <label class="form-label" for="customerPhone">Mobile Number</label>
+                <div class="form-input-wrapper">
+                    <input 
+                        type="tel" 
+                        id="customerPhone" 
+                        name="phoneNumber" 
+                        class="form-input" 
+                        placeholder="+60 12-345 6789"
+                        required
+                        autocomplete="tel"
+                        pattern="[+]?[0-9\s-]+"
+                    >
+                    <svg class="form-input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                    </svg>
+                </div>
+                <span class="form-error hidden" id="phoneError">Please enter a valid phone number</span>
+            </div>
+            
+            <!-- Party Size -->
+            <div class="form-section">
+                <label class="form-label">Party Size</label>
+                <div class="party-size-selector">
+                    <div class="party-size-option selected" data-size="1">1</div>
+                    <div class="party-size-option" data-size="2">2</div>
+                    <div class="party-size-option" data-size="3">3</div>
+                    <div class="party-size-option" data-size="4">4</div>
+                    <div class="party-size-option" data-size="5">5</div>
+                    <div class="party-size-option" data-size="6">6</div>
+                    <div class="party-size-option" data-size="7">7</div>
+                    <div class="party-size-option" data-size="8+">8+</div>
+                </div>
+                <input type="hidden" id="partySize" name="partySize" value="1">
+            </div>
+            
+            <!-- Special Requests (Optional) -->
+            <div class="form-section">
+                <div class="special-requests-toggle" id="specialRequestsToggle">
+                    <span class="text-gray">Special Requests (Optional)</span>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" class="chevron">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                    </svg>
+                </div>
+                <div class="special-requests-content" id="specialRequestsContent">
+                    <textarea 
+                        class="form-textarea" 
+                        id="specialRequests" 
+                        name="specialRequests"
+                        placeholder="e.g., High chair needed, Birthday celebration, Wheelchair accessible seating..."
+                        rows="3"
+                    ></textarea>
+                </div>
+            </div>
+            
+            <!-- Submit -->
+            <div class="submit-section">
+                <button type="submit" class="btn btn-submit btn-full">
+                    Join Queue Now
+                </button>
+                <p class="privacy-note">
+                    Your information is used only for queue management and will not be shared.
+                </p>
+            </div>
+        </form>
+    </main>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner loading-spinner"></div>
+            <p class="text-lg">Joining queue...</p>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize queue status
+        async function loadQueueStatus() {
+            try {
+                const response = await fetch(`/api/queue/<%= merchantId %>/status`);
+                const data = await response.json();
+                
+                if (data.currentServingNumber) {
+                    document.getElementById('currentNumber').textContent = data.currentServingNumber;
+                }
+                document.getElementById('peopleAhead').textContent = data.peopleAhead || 0;
+                document.getElementById('waitTime').textContent = data.estimatedWaitTime || 5;
+            } catch (error) {
+                console.error('Failed to load queue status:', error);
+            }
+        }
+        
+        // Party size selector
+        const partySizeOptions = document.querySelectorAll('.party-size-option');
+        const partySizeInput = document.getElementById('partySize');
+        
+        partySizeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Haptic feedback simulation
+                this.classList.add('haptic-feedback');
+                setTimeout(() => this.classList.remove('haptic-feedback'), 100);
+                
+                // Update selection
+                partySizeOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                partySizeInput.value = this.dataset.size;
+            });
+        });
+        
+        // Special requests toggle
+        const specialRequestsToggle = document.getElementById('specialRequestsToggle');
+        const specialRequestsContent = document.getElementById('specialRequestsContent');
+        
+        specialRequestsToggle.addEventListener('click', function() {
+            specialRequestsContent.classList.toggle('open');
+            this.querySelector('.chevron').style.transform = 
+                specialRequestsContent.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0)';
+        });
+        
+        // Phone validation
+        const phoneInput = document.getElementById('customerPhone');
+        const phoneError = document.getElementById('phoneError');
+        
+        phoneInput.addEventListener('blur', function() {
+            const phoneRegex = /^[+]?[\d\s-]{10,}$/;
+            if (!phoneRegex.test(this.value.replace(/\s/g, ''))) {
+                phoneError.classList.remove('hidden');
+                this.classList.add('border-error');
+            } else {
+                phoneError.classList.add('hidden');
+                this.classList.remove('border-error');
+            }
+        });
+        
+        // Form submission
+        const joinForm = document.getElementById('joinQueueForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        joinForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            
+            if (!name || !phone) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Show loading
+            loadingOverlay.classList.add('active');
+            
+            try {
+                const formData = {
+                    name,
+                    phoneNumber: phone,
+                    partySize: parseInt(partySizeInput.value),
+                    specialRequests: document.getElementById('specialRequests').value.trim(),
+                    source: 'WEB'
+                };
+                
+                const response = await fetch(`/api/queue/<%= merchantId %>/add-customer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // Redirect to queue status page
+                    window.location.href = `/queue-status/${result.sessionId}`;
+                } else {
+                    throw new Error(result.message || 'Failed to join queue');
+                }
+            } catch (error) {
+                console.error('Error joining queue:', error);
+                alert(error.message || 'Failed to join queue. Please try again.');
+            } finally {
+                loadingOverlay.classList.remove('active');
+            }
+        });
+        
+        // Load initial status
+        loadQueueStatus();
+        
+        // Auto-refresh queue status
+        setInterval(loadQueueStatus, 30000); // Every 30 seconds
+        
+        // Progressive enhancement - Autofocus on desktop
+        if (window.innerWidth > 768) {
+            document.getElementById('customerName').focus();
+        }
+    </script>
+</body>
+</html>

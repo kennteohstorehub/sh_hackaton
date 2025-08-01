@@ -47,6 +47,11 @@ const authLimiter = createRateLimiter(15 * 60 * 1000, 100, 'Too many authenticat
 const apiLimiter = createRateLimiter(15 * 60 * 1000, 500, 'API rate limit exceeded'); // Increased to 500
 const strictLimiter = createRateLimiter(60 * 1000, 50, 'Too many requests to this endpoint'); // Increased to 50
 
+// SuperAdmin specific rate limiters (more restrictive)
+const superAdminAuthLimiter = createRateLimiter(15 * 60 * 1000, 25, 'Too many SuperAdmin authentication attempts');
+const superAdminApiLimiter = createRateLimiter(15 * 60 * 1000, 200, 'SuperAdmin API rate limit exceeded');
+const superAdminStrictLimiter = createRateLimiter(60 * 1000, 20, 'Too many requests to SuperAdmin endpoint');
+
 // Input validation error handler
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
@@ -104,15 +109,24 @@ const isValidUUID = (id) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 };
 
+// Validate ObjectId format (MongoDB) - keeping for backward compatibility
+const isValidObjectId = (id) => {
+  return /^[0-9a-fA-F]{24}$/.test(id);
+};
+
 module.exports = {
   configureSecurityMiddleware,
   createRateLimiter,
   authLimiter,
   apiLimiter,
   strictLimiter,
+  superAdminAuthLimiter,
+  superAdminApiLimiter,
+  superAdminStrictLimiter,
   handleValidationErrors,
   csrfProtection,
   generateCSRFToken,
   sanitizeInput,
-  isValidUUID
+  isValidUUID,
+  isValidObjectId
 };

@@ -8,8 +8,118 @@ datasource db {
   directUrl = env("DATABASE_URL_DIRECT")
 }
 
+// ===============================
+// MULTI-TENANT CORE MODELS
+// ===============================
+
+model SuperAdmin {
+  id                    String                @id @default(uuid())
+  email                 String                @unique
+  password              String
+  fullName              String
+  isActive              Boolean               @default(true)
+  lastLogin             DateTime?
+  passwordResetToken    String?
+  passwordResetExpires  DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  auditLogs             SuperAdminAuditLog[]
+
+  @@index([email])
+  @@index([isActive])
+}
+
+model Tenant {
+  id                    String                @id @default(uuid())
+  name                  String
+  slug                  String                @unique
+  domain                String?               @unique
+  isActive              Boolean               @default(true)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  // Tenant relationships
+  users                 TenantUser[]
+  merchants             Merchant[]
+  subscription          TenantSubscription?
+  auditLogs             SuperAdminAuditLog[]
+
+  @@index([slug])
+  @@index([domain])
+  @@index([isActive])
+}
+
+model TenantUser {
+  id                    String                @id @default(uuid())
+  tenantId              String
+  email                 String
+  password              String
+  fullName              String
+  role                  TenantUserRole        @default(user)
+  isActive              Boolean               @default(true)
+  lastLogin             DateTime?
+  emailVerified         Boolean               @default(false)
+  emailVerificationToken String?
+  passwordResetToken    String?
+  passwordResetExpires  DateTime? 
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  tenant                Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, email])
+  @@index([tenantId, role])
+  @@index([email])
+  @@index([isActive])
+}
+
+model TenantSubscription {
+  id                    String                @id @default(uuid())
+  tenantId              String                @unique
+  status                SubscriptionStatus    @default(active)
+  priority              SubscriptionPriority  @default(standard)
+  billingCycle          BillingCycle          @default(monthly)
+  startDate             DateTime              @default(now())
+  endDate               DateTime?
+  maxMerchants          Int                   @default(1)
+  maxQueuesPerMerchant  Int                   @default(3)
+  maxUsersPerTenant     Int                   @default(5)
+  aiFeatures            Boolean               @default(false)
+  analytics             Boolean               @default(false)
+  customBranding        Boolean               @default(false)
+  priority_support      Boolean               @default(false)
+  tenant                Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([status, endDate])
+  @@index([priority])
+}
+
+model SuperAdminAuditLog {
+  id              String      @id @default(uuid())
+  superAdminId    String?
+  tenantId        String?
+  action          String
+  resourceType    String
+  resourceId      String?
+  details         Json?
+  ipAddress       String?
+  userAgent       String?
+  timestamp       DateTime    @default(now())
+  superAdmin      SuperAdmin? @relation(fields: [superAdminId], references: [id], onDelete: SetNull)
+  tenant          Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([superAdminId, timestamp])
+  @@index([tenantId, timestamp])
+  @@index([action, timestamp])
+  @@index([resourceType, resourceId])
+}
+
+// ===============================
+// MERCHANT MODELS (MODIFIED FOR MULTI-TENANCY)
+// ===============================
+
 model Merchant {
   id                     String                @id @default(uuid())
+  tenantId               String?               // Optional for backward compatibility
   businessName           String
   email                  String                @unique
   password               String
@@ -24,6 +134,8 @@ model Merchant {
   passwordResetExpires   DateTime?
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
+  // Relationships
+  tenant                 Tenant?               @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   businessHours          BusinessHours[]
   address                MerchantAddress?
   integrations           MerchantIntegrations?
@@ -35,7 +147,13 @@ model Merchant {
   @@index([email])
   @@index([businessName])
   @@index([businessType])
+  @@index([tenantId, isActive])
+  @@index([tenantId, businessType])
 }
+
+// ===============================
+// MERCHANT RELATED MODELS
+// ===============================
 
 model MerchantAddress {
   id         String   @id @default(uuid())
@@ -77,13 +195,9 @@ model ServiceType {
 }
 
 model MerchantIntegrations {
-  id                     String    @id @default(uuid())
-  merchantId             String    @unique
-  whatsappEnabled        Boolean   @default(false)
-  whatsappPhoneNumber    String?
-  whatsappSessionData    String?
-  whatsappLastConnected  DateTime?
-  merchant               Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  merchantId String   @unique
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 }
 
 model MerchantSettings {
@@ -136,6 +250,10 @@ model MerchantSubscription {
   customBranding       Boolean          @default(false)
   merchant             Merchant         @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 }
+
+// ===============================
+// QUEUE MANAGEMENT MODELS
+// ===============================
 
 model Queue {
   id                    String          @id @default(uuid())
@@ -193,10 +311,13 @@ model QueueEntry {
   acknowledgedAt    DateTime?
   acknowledgmentType String?
   estimatedArrival  DateTime?
+  lastActivityAt    DateTime            @default(now())
+  sessionExpiresAt  DateTime?
   queue             Queue               @relation(fields: [queueId], references: [id], onDelete: Cascade)
   serviceType       ServiceType?        @relation(fields: [serviceTypeId], references: [id])
   feedback          QueueEntryFeedback?
   pushSubscriptions PushSubscription[]
+  webChatSessions   WebChatSession[]
 
   @@index([queueId, status, joinedAt])
   @@index([customerId, status])
@@ -204,6 +325,7 @@ model QueueEntry {
   @@index([joinedAt(sort: Desc)])
   @@index([platform, joinedAt])
   @@index([sessionId])
+  @@index([sessionExpiresAt])
 }
 
 model QueueEntryFeedback {
@@ -227,6 +349,10 @@ model QueueAnalytics {
   queue                Queue    @relation(fields: [queueId], references: [id], onDelete: Cascade)
 }
 
+// ===============================
+// SESSION MANAGEMENT
+// ===============================
+
 model Session {
   sid       String   @id
   sess      String
@@ -234,6 +360,10 @@ model Session {
 
   @@index([expire])
 }
+
+// ===============================
+// ENUMS
+// ===============================
 
 enum BusinessType {
   restaurant
@@ -256,13 +386,40 @@ enum QueueEntryStatus {
   no_show
 }
 
-
 enum Platform {
-  whatsapp
   web
   webchat
   messenger
 }
+
+// Multi-tenant enums
+enum TenantUserRole {
+  admin
+  manager
+  user
+}
+
+enum SubscriptionStatus {
+  active
+  inactive
+  suspended
+  cancelled
+}
+
+enum BillingCycle {
+  monthly
+  yearly
+}
+
+enum SubscriptionPriority {
+  standard
+  high
+  enterprise
+}
+
+// ===============================
+// PUSH NOTIFICATION MODELS
+// ===============================
 
 model PushSubscription {
   id             String      @id @default(uuid())
@@ -276,4 +433,28 @@ model PushSubscription {
   queueEntry     QueueEntry  @relation(fields: [queueEntryId], references: [id], onDelete: Cascade)
 
   @@index([queueEntryId])
+}
+
+// ===============================
+// WEBCHAT SESSION MANAGEMENT
+// ===============================
+
+model WebChatSession {
+  id               String      @id @default(uuid())
+  sessionId        String      @unique
+  queueEntryId     String
+  browserInfo      String?
+  ipAddress        String?
+  lastActivityAt   DateTime    @default(now())
+  sessionExpiresAt DateTime
+  isActive         Boolean     @default(true)
+  recoveryToken    String?     @unique
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  queueEntry       QueueEntry  @relation(fields: [queueEntryId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([recoveryToken])
+  @@index([sessionExpiresAt])
+  @@index([isActive, lastActivityAt])
 }

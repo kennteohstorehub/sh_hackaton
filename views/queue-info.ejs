@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= queueName %> - Queue Information</title>
+    <%- csrfMeta() %>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -664,6 +665,8 @@
     </button>
 
     <script>
+        <%- csrfAjaxSetup %>
+        
         // Auto-refresh every 30 seconds
         setInterval(refreshData, 30000);
 
@@ -723,6 +726,36 @@
         // Debug queue ID
         console.log('Queue ID from template:', '<%= queueId %>');
         
+        // Check for rejoin parameters and pre-fill form
+        const urlParams = new URLSearchParams(window.location.search);
+        const isRejoin = urlParams.get('rejoin') === 'true';
+        const previousCancelled = urlParams.get('previousCancelled') === 'true';
+        
+        if (isRejoin) {
+            // Pre-fill form with data from URL params
+            const nameField = document.getElementById('customerName');
+            const phoneField = document.getElementById('customerPhone');
+            const partySizeField = document.getElementById('partySize');
+            
+            if (urlParams.get('name')) nameField.value = urlParams.get('name');
+            if (urlParams.get('phone')) phoneField.value = urlParams.get('phone');
+            if (urlParams.get('partySize')) partySizeField.value = urlParams.get('partySize');
+            
+            // Show rejoin notice
+            if (previousCancelled) {
+                const noticeDiv = document.createElement('div');
+                noticeDiv.className = 'alert alert-info mb-3';
+                noticeDiv.innerHTML = `
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Welcome back!</strong><br>
+                    You'll be joining at the end of the current queue.
+                    <br><small>Your previous information has been filled in for convenience.</small>
+                `;
+                const form = document.getElementById('joinQueueForm');
+                form.insertBefore(noticeDiv, form.firstChild);
+            }
+        }
+        
         // Handle form submission
         document.getElementById('joinQueueForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -771,10 +804,14 @@
                 console.log('Submitting to queue:', queueId);
                 console.log('Form data being sent:', JSON.stringify(data, null, 2));
                 
+                // Get CSRF token from meta tag
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                
                 const response = await fetch(`/api/customer/join/${queueId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify(data)
                 });
