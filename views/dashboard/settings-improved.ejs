@@ -14,7 +14,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-content">
-            <h1>StoreHub Queue Management System</h1>
+            <h1>StoreHub QMS</h1>
             
             <!-- Mobile Hamburger Menu -->
             <button class="mobile-nav-toggle" aria-label="Toggle navigation">
@@ -35,7 +35,6 @@
                 <nav class="nav">
                     <a href="/dashboard">Dashboard</a>
                     <a href="/dashboard/analytics">Analytics</a>
-                    <a href="/dashboard/whatsapp-setup">WhatsApp</a>
                     <a href="/dashboard/settings" class="active">Settings</a>
                     <a href="/dashboard/help">Help</a>
                 </nav>
@@ -93,7 +92,7 @@
                         <div class="form-group">
                             <label for="restaurantPhone">Phone Number *</label>
                             <input type="tel" id="restaurantPhone" name="restaurantPhone" required>
-                            <div class="form-help">Synced with WhatsApp when connected</div>
+                            <div class="form-help">Business contact number</div>
                         </div>
                     </div>
                     
@@ -912,8 +911,7 @@ Please respond within {Remaining} minutes or we'll need to release your table to
                     document.getElementById('qrCodePreview').innerHTML = `
                         <div class="no-queue-message">
                             <i class="bi bi-exclamation-circle"></i>
-                            <p>No active queue found. Please create a queue first.</p>
-                            <a href="/dashboard/queues/new" class="btn btn-primary">Create Queue</a>
+                            <p>No active queue found.</p>
                         </div>
                     `;
                 }

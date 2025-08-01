@@ -1,0 +1,85 @@
+/* Global text overflow fixes */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent text overflow in headers */
+h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Fix header overlapping issues */
+.header h1,
+.header-content h1,
+.chat-header h1 {
+  font-size: clamp(1rem, 4vw, 1.5rem) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 200px !important;
+}
+
+/* Fix business name in chat header */
+.business-info h1 {
+  font-size: clamp(0.9rem, 3vw, 1.1rem) !important;
+  max-width: 60vw !important;
+}
+
+/* Fix tenant badge */
+.tenant-badge {
+  flex-shrink: 0;
+  max-width: 250px !important;
+}
+
+.tenant-badge .tenant-name {
+  max-width: 180px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.1rem !important;
+    max-width: 150px !important;
+  }
+  
+  .header-content {
+    gap: 0.5rem !important;
+  }
+  
+  .tenant-badge {
+    font-size: 0.8rem !important;
+    padding: 0.3rem 0.6rem !important;
+  }
+}
+
+/* Prevent any absolute positioned elements from overlapping */
+.header-left,
+.header-right {
+  position: relative !important;
+  z-index: 1;
+}
+
+/* Fix verification display */
+.verification-display {
+  flex-shrink: 0;
+  min-width: auto !important;
+}
+
+/* Ensure proper spacing */
+.chat-header {
+  min-height: 70px !important;
+  flex-wrap: wrap !important;
+}
+
+.header-left {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.header-right {
+  flex: 0 0 auto !important;
+}

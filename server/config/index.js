@@ -139,15 +139,8 @@ const config = {
     }
   },
 
-  // WhatsApp
-  whatsapp: {
-    sessionPath: process.env.WHATSAPP_SESSION_PATH || './whatsapp-session',
-    enforceWhitelist: process.env.WHATSAPP_ENFORCE_WHITELIST === 'true',
-    productionMode: process.env.WHATSAPP_PRODUCTION_MODE === 'true',
-    allowedNumbers: process.env.WHATSAPP_ALLOWED_NUMBERS ? 
-      process.env.WHATSAPP_ALLOWED_NUMBERS.split(',').map(n => n.trim()) : [],
-    webhookSecret: process.env.WHATSAPP_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET
-  },
+  // WhatsApp - REMOVED
+  // WhatsApp integration has been removed from the system
 
 
   // AI Services
@@ -234,7 +227,6 @@ function initialize() {
     env: config.env,
     port: config.server.port,
     postgresConfigured: !!config.database.postgres.url,
-    whatsappWhitelist: config.whatsapp.enforceWhitelist,
     aiEnabled: config.ai.enabled,
     sentryEnabled: config.sentry.enabled
   });

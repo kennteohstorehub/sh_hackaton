@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <title><%= title %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -205,6 +206,108 @@
             transform: translateY(-4px);
             box-shadow: 0 16px 48px rgba(255, 140, 0, 0.2);
             border-color: rgba(255, 140, 0, 0.4);
+        }
+        
+        /* Settings Locked Styles - removed old styles as they're now in new location */
+        
+        .section.locked {
+            position: relative;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .section.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+        
+        .section.locked .form-group input,
+        .section.locked .form-group textarea,
+        .section.locked .form-group select,
+        .section.locked button[type="submit"] {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        /* Section Header Styles */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header h2 {
+            margin: 0;
+        }
+        
+        /* Lock Indicator Styles */
+        .lock-indicator {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ff8c00;
+            font-size: 0.9rem;
+            background: rgba(255, 140, 0, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+        }
+        
+        .lock-indicator i {
+            font-size: 1.1rem;
+        }
+        
+        /* Updated settings locked banner for new structure */
+        .settings-locked-banner {
+            display: none;
+            align-items: center;
+            gap: 2rem;
+            background: rgba(255, 140, 0, 0.2);
+            border: 2px solid rgba(255, 140, 0, 0.4);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .settings-locked-banner .lock-icon {
+            font-size: 3rem;
+            color: #ff8c00;
+        }
+        
+        .settings-locked-banner .lock-content {
+            flex: 1;
+        }
+        
+        .settings-locked-banner h4 {
+            color: #ff8c00;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+        }
+        
+        .settings-locked-banner p {
+            margin: 0 0 1rem 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .settings-locked-banner .active-queue-info {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .settings-locked-banner .queue-label {
+            font-weight: 600;
+        }
+        
+        .settings-locked-banner .queue-name {
+            color: #ff8c00;
+            font-weight: 700;
         }
         
         .section h2 {
@@ -501,26 +604,6 @@
             border-color: rgba(255, 140, 0, 0.3);
         }
         
-        /* WhatsApp specific styling */
-        .notification-item:has(#whatsappNotifications) {
-            background: rgba(37, 211, 102, 0.1);
-            border-color: rgba(37, 211, 102, 0.3);
-        }
-        
-        .notification-item:has(#whatsappNotifications):hover {
-            background: rgba(37, 211, 102, 0.15);
-            border-color: rgba(37, 211, 102, 0.4);
-        }
-        
-        .notification-item:has(#whatsappNotifications) h4 {
-            color: #25D366;
-        }
-        
-        /* WhatsApp toggle styling */
-        #whatsappNotifications:checked + .toggle-slider {
-            background: linear-gradient(135deg, #25D366, #20B858) !important;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3) !important;
-        }
         
         .notification-info h4 {
             color: rgba(255, 255, 255, 0.9);
@@ -1015,7 +1098,7 @@
 
     <header class="header">
         <div class="header-content">
-            <h1>StoreHub Queue Management System</h1>
+            <h1>StoreHub QMS</h1>
             
             <!-- Mobile Hamburger Menu -->
             <button class="mobile-nav-toggle" aria-label="Toggle navigation">
@@ -1035,9 +1118,7 @@
                 <% } %>
                 <nav class="nav">
                     <a href="/dashboard">Dashboard</a>
-                    <a href="/dashboard/queues">Queues</a>
                     <a href="/dashboard/analytics">Analytics</a>
-                    <a href="/dashboard/whatsapp-setup">WhatsApp</a>
                     <a href="/dashboard/settings" class="active">Settings</a>
                     <a href="/dashboard/help">Help</a>
                 </nav>
@@ -1056,13 +1137,37 @@
     </header>
 
     <div class="container">
+        <!-- Settings Locked Banner - shown when queue is operating -->
+        <div id="settings-locked-banner" class="settings-locked-banner" style="display: none;">
+            <div class="lock-icon">
+                <i class="bi bi-lock-fill"></i>
+            </div>
+            <div class="lock-content">
+                <h4>Configuration Locked</h4>
+                <p>Settings cannot be changed while the queue is operating. Please stop the queue first to make configuration changes.</p>
+                <div class="active-queue-info">
+                    <span class="queue-label">Active Queue:</span>
+                    <span id="active-queue-name" class="queue-name"></span>
+                </div>
+            </div>
+            <a href="/dashboard" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+        
         <!-- Success/Error Messages -->
         <div id="successMessage" class="success-message"></div>
         <div id="errorMessage" class="error-message"></div>
 
         <!-- Restaurant Information -->
         <div class="section">
-            <h2>🏪 Restaurant Information</h2>
+            <div class="section-header">
+                <h2>🏪 Restaurant Information</h2>
+                <div class="lock-indicator">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Locked</span>
+                </div>
+            </div>
             <form id="restaurantForm">
                 <div class="form-row">
                     <div class="form-group">
@@ -1215,7 +1320,13 @@
 
         <!-- Queue Settings -->
         <div class="section">
-            <h2>⚙️ Queue Configuration</h2>
+            <div class="section-header">
+                <h2>⚙️ Queue Configuration</h2>
+                <div class="lock-indicator">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Locked</span>
+                </div>
+            </div>
             <form id="queueSettingsForm">
                 <div class="form-row">
                     <div class="form-group">
@@ -1249,18 +1360,14 @@
 
         <!-- Notification Settings -->
         <div class="section">
-            <h2>🔔 Notification Preferences</h2>
-            <div class="notification-settings">
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>WhatsApp Notifications</h4>
-                        <p>Send queue updates via WhatsApp messages</p>
-                    </div>
-                    <label class="feature-toggle">
-                        <input type="checkbox" id="whatsappNotifications" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
+            <div class="section-header">
+                <h2>🔔 Notification Preferences</h2>
+                <div class="lock-indicator">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Locked</span>
                 </div>
+            </div>
+            <div class="notification-settings">
                 
 
                 
@@ -1283,7 +1390,13 @@
 
         <!-- Message Templates -->
         <div class="section">
-            <h2>💬 Message Templates</h2>
+            <div class="section-header">
+                <h2>💬 Message Templates</h2>
+                <div class="lock-indicator">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Locked</span>
+                </div>
+            </div>
             <form id="messageTemplatesForm">
                 <div class="form-group">
                     <label for="welcomeMessage">Welcome Message</label>
@@ -1309,7 +1422,13 @@
 
         <!-- System Settings -->
         <div class="section">
-            <h2>🔧 System Settings</h2>
+            <div class="section-header">
+                <h2>🔧 System Settings</h2>
+                <div class="lock-indicator">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Locked</span>
+                </div>
+            </div>
             <div class="settings-grid">
                 <div class="setting-card">
                     <h3>Data Retention</h3>
@@ -1364,16 +1483,30 @@
 
     <script>
         // Global variables
-        let whatsappDeviceInfo = null;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        // CSRF setup for fetch requests
+        function createFetchOptions(options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            if (csrfToken) {
+                headers['X-CSRF-Token'] = csrfToken;
+            }
+            
+            return {
+                ...options,
+                headers
+            };
+        }
         
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             loadBusinessInformation();
-            checkWhatsAppStatus();
             initializeOperationHours();
             
-            // Check WhatsApp status every 30 seconds
-            setInterval(checkWhatsAppStatus, 30000);
         });
         
         // Initialize operation hours functionality
@@ -1456,96 +1589,22 @@
             }
         }
         
-        // Check WhatsApp status and update phone number
-        async function checkWhatsAppStatus() {
-            try {
-                const response = await fetch('/api/whatsapp/status');
-                const data = await response.json();
-                
-                const statusElement = document.getElementById('whatsappStatus');
-                const messageElement = document.getElementById('whatsappMessage');
-                const phoneElement = document.getElementById('whatsappPhoneNumber');
-                const phoneInput = document.getElementById('restaurantPhone');
-                const phoneSyncInfo = document.getElementById('phoneSyncInfo');
-                const phoneSyncText = document.getElementById('phoneSyncText');
-                
-                if (data.isReady && data.deviceInfo) {
-                    // WhatsApp is connected
-                    whatsappDeviceInfo = data.deviceInfo;
-                    const devicePhone = data.deviceInfo.phoneNumber || 'Unknown';
-                    
-                    statusElement.textContent = '🟢 WhatsApp Integration';
-                    messageElement.textContent = `WhatsApp is connected and ready for customer notifications.`;
-                    phoneElement.textContent = devicePhone;
-                    
-                    // Update phone input with WhatsApp device number
-                    phoneInput.value = devicePhone.startsWith('+') ? devicePhone : `+${devicePhone}`;
-                    phoneSyncInfo.style.display = 'block';
-                    phoneSyncText.innerHTML = '<span class="sync-icon">✅</span>Automatically synced with connected WhatsApp device';
-                    phoneSyncInfo.style.backgroundColor = '#d4edda';
-                    phoneSyncInfo.style.borderColor = '#c3e6cb';
-                    phoneSyncInfo.style.color = '#155724';
-                    
-                } else if (data.status === 'waiting_for_scan') {
-                    // QR code is ready to scan
-                    statusElement.textContent = '🟡 WhatsApp Integration';
-                    messageElement.textContent = 'QR code is ready - scan to connect WhatsApp for customer notifications.';
-                    phoneElement.textContent = 'Not connected';
-                    
-                    phoneInput.value = '+1234567890'; // Default value
-                    phoneSyncInfo.style.display = 'block';
-                    phoneSyncText.innerHTML = '<span class="sync-icon">⚠️</span>Connect WhatsApp to automatically sync phone number';
-                    phoneSyncInfo.style.backgroundColor = '#fff3cd';
-                    phoneSyncInfo.style.borderColor = '#ffeaa7';
-                    phoneSyncInfo.style.color = '#856404';
-                    
-                } else {
-                    // WhatsApp is not connected
-                    statusElement.textContent = '🔴 WhatsApp Integration';
-                    messageElement.textContent = 'WhatsApp is not connected. Connect to enable automatic customer notifications.';
-                    phoneElement.textContent = 'Not connected';
-                    
-                    phoneInput.value = '+1234567890'; // Default value
-                    phoneSyncInfo.style.display = 'block';
-                    phoneSyncText.innerHTML = '<span class="sync-icon">❌</span>Connect WhatsApp to automatically sync phone number';
-                    phoneSyncInfo.style.backgroundColor = '#f8d7da';
-                    phoneSyncInfo.style.borderColor = '#f5c6cb';
-                    phoneSyncInfo.style.color = '#721c24';
-                }
-            } catch (error) {
-                console.error('Error checking WhatsApp status:', error);
-                
-                // Show error state
-                document.getElementById('whatsappStatus').textContent = '❓ WhatsApp Integration';
-                document.getElementById('whatsappMessage').textContent = 'Unable to check WhatsApp connection status.';
-                document.getElementById('whatsappPhoneNumber').textContent = 'Status unknown';
-                
-                const phoneSyncInfo = document.getElementById('phoneSyncInfo');
-                const phoneSyncText = document.getElementById('phoneSyncText');
-                phoneSyncInfo.style.display = 'block';
-                phoneSyncText.innerHTML = '<span class="sync-icon">❓</span>Unable to check WhatsApp connection';
-                phoneSyncInfo.style.backgroundColor = '#f8d7da';
-                phoneSyncInfo.style.borderColor = '#f5c6cb';
-                phoneSyncInfo.style.color = '#721c24';
-            }
-        }
         
         // Handle business form submission
         document.getElementById('restaurantForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const saveBtn = document.querySelector('.btn');
-            const originalText = saveBtn.textContent;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
             
             try {
-                saveBtn.disabled = true;
-                saveBtn.textContent = 'Saving...';
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
                 
-                const formData = new FormData(e.target);
-                
-                // Parse address
-                const addressText = formData.get('restaurantAddress');
-                const address = addressText ? { street: addressText } : null;
+                // Get form values directly from DOM elements to avoid concatenation
+                const restaurantName = document.getElementById('restaurantName').value.trim();
+                const restaurantPhone = document.getElementById('restaurantPhone').value.trim();
+                const restaurantAddress = document.getElementById('restaurantAddress').value.trim();
                 
                 // Parse business hours
                 const businessHours = {};
@@ -1563,34 +1622,30 @@
                 });
                 
                 const businessData = {
-                    businessName: formData.get('restaurantName'),
-                    phone: formData.get('restaurantPhone'),
-                    address: address,
+                    businessName: restaurantName,
+                    phone: restaurantPhone,
+                    address: restaurantAddress ? { street: restaurantAddress } : null,
                     businessHours: businessHours
                 };
                 
-                const response = await fetch('/api/merchant/profile', {
+                const response = await fetch('/api/merchant/profile', createFetchOptions({
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(businessData)
-                });
+                }));
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Show success message
                     showAlert('Business information saved successfully!', 'success');
                 } else {
-                    showAlert('Error saving business information: ' + (result.error || 'Unknown error'), 'danger');
+                    showAlert('Error: ' + (result.error || 'Failed to save business information'), 'error');
                 }
             } catch (error) {
                 console.error('Error saving business information:', error);
-                showAlert('Error saving business information. Please try again.', 'danger');
+                showAlert('Error saving business information. Please try again.', 'error');
             } finally {
-                saveBtn.disabled = false;
-                saveBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         });
 
@@ -1598,93 +1653,84 @@
         document.getElementById('queueSettingsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const formData = new FormData(e.target);
-            const settings = Object.fromEntries(formData);
-            
-            // Convert checkboxes to boolean
-            settings.autoNotifications = document.getElementById('autoNotifications').checked;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
             
             try {
-                const response = await fetch('/api/merchant/profile', {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+                
+                // Get form values directly to avoid issues
+                const maxCapacity = document.getElementById('maxCapacity').value;
+                const avgServiceTime = document.getElementById('avgServiceTime').value;
+                const autoNotifications = document.getElementById('autoNotifications').checked;
+                
+                const settingsData = {
+                    settings: {
+                        maxQueueSize: parseInt(maxCapacity) || 50,
+                        avgMealDuration: parseInt(avgServiceTime) || 15,
+                        autoNotifications: autoNotifications
+                    }
+                };
+                
+                const response = await fetch('/api/merchant/profile', createFetchOptions({
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        settings: {
-                            maxQueueSize: parseInt(settings.maxCapacity),
-                            notificationInterval: parseInt(settings.avgServiceTime),
-                            autoNotifications: settings.autoNotifications
-                        }
-                    })
-                });
+                    body: JSON.stringify(settingsData)
+                }));
                 
                 const result = await response.json();
                 
                 if (result.success) {
                     showAlert('Queue settings saved successfully!', 'success');
                 } else {
-                    showAlert('Error saving queue settings: ' + (result.error || 'Unknown error'), 'danger');
+                    showAlert('Error: ' + (result.error || 'Failed to save queue settings'), 'error');
                 }
             } catch (error) {
                 console.error('Error saving queue settings:', error);
-                showAlert('Error saving queue settings. Please try again.', 'danger');
+                showAlert('Error saving queue settings. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         });
         
         // Test integrations
         async function testIntegration(platform) {
-            if (platform === 'whatsapp') {
-                try {
-                    const response = await fetch('/api/test/whatsapp', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            phoneNumber: whatsappDeviceInfo?.phoneNumber || '+1234567890',
-                            message: 'Test message from StoreHub Queue Management System - WhatsApp integration is working!',
-                            merchantId: '507f1f77bcf86cd799439011'
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        showAlert('WhatsApp test message sent successfully!', 'success');
-                    } else {
-                        showAlert('WhatsApp test failed: ' + (result.error || 'Unknown error'), 'warning');
-                    }
-                } catch (error) {
-                    console.error('Error testing WhatsApp:', error);
-                    showAlert('WhatsApp integration test completed (simulation mode)', 'warning');
-                }
-            } else if (platform === 'messenger') {
+            if (platform === 'messenger') {
                 showAlert('Messenger integration is not available in demo mode', 'warning');
             }
         }
         
         // Show alert messages
         function showAlert(message, type = 'success') {
-            // Remove existing alerts
-            const existingAlerts = document.querySelectorAll('.alert');
-            existingAlerts.forEach(alert => alert.remove());
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
             
-            // Create new alert
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
+            // Hide both messages first
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
             
-            // Insert at the top of the container
-            const container = document.querySelector('.container');
-            container.insertBefore(alert, container.firstChild);
+            // Show the appropriate message
+            if (type === 'success') {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            } else {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                
+                // Auto-hide after 7 seconds for errors
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 7000);
+            }
             
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.remove();
-                }
-            }, 5000);
+            // Scroll to top to show the message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
         // Handle operating hours toggle functionality
@@ -1755,10 +1801,42 @@
             }
         }
         
+        // Check queue status and apply locked state if necessary
+        async function checkQueueStatus() {
+            try {
+                const response = await fetch('/api/queue/status');
+                const data = await response.json();
+                
+                if (data.activeQueue && data.activeQueue.acceptingCustomers) {
+                    // Queue is operating - lock the settings
+                    document.getElementById('settings-locked-banner').style.display = 'flex';
+                    document.getElementById('active-queue-name').textContent = data.activeQueue.name;
+                    
+                    // Add locked class to all sections
+                    document.querySelectorAll('.section').forEach(section => {
+                        section.classList.add('locked');
+                    });
+                    
+                    // Disable all form inputs
+                    document.querySelectorAll('input, select, textarea, button[type="submit"]').forEach(element => {
+                        element.disabled = true;
+                    });
+                    
+                    // Show lock indicators
+                    document.querySelectorAll('.lock-indicator').forEach(indicator => {
+                        indicator.style.display = 'flex';
+                    });
+                }
+            } catch (error) {
+                console.error('Error checking queue status:', error);
+            }
+        }
+        
         // Initialize operating hours toggles when page loads
         document.addEventListener('DOMContentLoaded', function() {
             initializeOperatingHours();
             loadMerchantData();
+            checkQueueStatus(); // Check if settings should be locked
         });
     </script>
 </body>

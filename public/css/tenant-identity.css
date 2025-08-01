@@ -10,6 +10,7 @@
     padding: 0.4rem 0.8rem;
     border-radius: 8px;
     margin-left: 1rem;
+    max-width: 200px;
 }
 
 .tenant-badge .tenant-label {
@@ -22,7 +23,11 @@
 .tenant-badge .tenant-name {
     color: #ff8c00;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
 }
 
 /* Dashboard tenant context banner */

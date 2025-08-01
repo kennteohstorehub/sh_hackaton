@@ -1,5 +1,6 @@
 <!-- Shared Header Component -->
 <link rel="stylesheet" href="/css/tenant-identity.css?v=<%= Date.now() %>">
+<link rel="stylesheet" href="/css/text-overflow-fix.css?v=<%= Date.now() %>">
 <style>
     /* Header Styles */
     .header {
@@ -36,6 +37,8 @@
         font-size: 1.5rem;
         font-weight: 700;
         margin: 0;
+        white-space: nowrap;
+        letter-spacing: 0.5px;
     }
     
     /* Navigation */
@@ -152,6 +155,10 @@
         .nav-container {
             display: none;
         }
+        
+        .header h1 {
+            font-size: 1.3rem;
+        }
     }
     
     @media (max-width: 768px) {
@@ -161,9 +168,15 @@
             padding: 1rem;
         }
         
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
         .header-left {
             width: 100%;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
         
         .user-section {
@@ -176,7 +189,7 @@
 <header class="header">
     <div class="header-content">
         <div class="header-left">
-            <h1>StoreHub Queue</h1>
+            <h1>StoreHub QMS</h1>
             <% if (typeof user !== 'undefined' && user && user.businessName) { %>
             <div class="tenant-badge">
                 <span class="tenant-label">Account:</span>
@@ -188,7 +201,6 @@
             <nav class="nav">
                 <a href="/dashboard" class="<%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">Dashboard</a>
                 <a href="/dashboard/analytics" class="<%= typeof activePage !== 'undefined' && activePage === 'analytics' ? 'active' : '' %>">Analytics</a>
-                <a href="/dashboard/queues" class="<%= typeof activePage !== 'undefined' && activePage === 'queues' ? 'active' : '' %>">Queues</a>
                 <a href="/dashboard/settings" class="<%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'active' : '' %>">Settings</a>
                 <a href="/dashboard/help" class="<%= typeof activePage !== 'undefined' && activePage === 'help' ? 'active' : '' %>">Help</a>
             </nav>

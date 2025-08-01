@@ -1,4 +1,4 @@
-/* StoreHub Queue Management - Accessibility Enhancements
+/* StoreHub QMS - Accessibility Enhancements
    =====================================================
    WCAG 2.1 AA Compliance Features */
 
@@ -10,23 +10,6 @@
     transition: outline-offset 0.1s ease-out;
 }
 
-/* Skip to Content Link */
-.skip-to-content {
-    position: absolute;
-    top: -40px;
-    left: 0;
-    background: var(--color-primary);
-    color: var(--color-white);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    z-index: var(--z-index-tooltip);
-    transition: top var(--transition-fast);
-}
-
-.skip-to-content:focus {
-    top: var(--spacing-2);
-}
 
 /* Screen Reader Only Text */
 .sr-only {

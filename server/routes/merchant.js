@@ -4,6 +4,7 @@ const merchantService = require('../services/merchantService');
 const queueService = require('../services/queueService');
 const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
+const checkQueueStatus = require('../middleware/checkQueueStatus');
 
 // Use appropriate auth middleware based on environment
 let requireAuth, loadUser;
@@ -78,6 +79,7 @@ router.get('/profile', async (req, res) => {
 
 // PUT /api/merchant/profile - Update merchant profile
 router.put('/profile', [
+  checkQueueStatus(), // Prevent changes when queue is operating
   body('businessName').optional().trim().isLength({ min: 2, max: 100 }),
   body('email').optional().isEmail(),
   body('phone').optional().isMobilePhone(),
@@ -97,17 +99,10 @@ router.put('/profile', [
       return res.status(404).json({ error: 'Merchant not found' });
     }
 
-    // Update allowed fields
-    const allowedFields = ['businessName', 'email', 'phone', 'businessType', 'address', 'businessHours'];
-    allowedFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        merchant[field] = req.body[field];
-      }
-    });
-
     // Prepare update data
     const updateData = {};
-    editableFields.forEach(field => {
+    const allowedFields = ['businessName', 'email', 'phone', 'businessType', 'address', 'businessHours'];
+    allowedFields.forEach(field => {
       if (req.body[field] !== undefined) {
         updateData[field] = req.body[field];
       }
@@ -121,12 +116,12 @@ router.put('/profile', [
       };
     }
 
-    // Update merchant in database
-    await merchantService.update(merchant.id, updateData);
+    // Update merchant in database with tenant context
+    const tenantId = req.tenantId;
+    await merchantService.update(merchant.id, updateData, tenantId);
 
-    // Session data will be updated via loadUser middleware on next request
-
-    const fullMerchant = await merchantService.getFullDetails(merchantId);
+    // Get the updated merchant details
+    const fullMerchant = await merchantService.getFullDetails(merchant.id, tenantId);
     res.json({
       success: true,
       merchant: fullMerchant
@@ -139,7 +134,7 @@ router.put('/profile', [
 });
 
 // PUT /api/merchant/settings/queue - Update queue-specific settings
-router.put('/settings/queue', async (req, res) => {
+router.put('/settings/queue', checkQueueStatus(), async (req, res) => {
   try {
     const merchant = await merchantService.findById(req.user.id, { settings: true });
     if (!merchant) {
@@ -182,7 +177,7 @@ router.put('/settings/queue', async (req, res) => {
 });
 
 // PUT /api/merchant/settings/notifications - Update notification settings
-router.put('/settings/notifications', async (req, res) => {
+router.put('/settings/notifications', checkQueueStatus(), async (req, res) => {
   try {
     const merchant = await merchantService.findById(req.user.id, { settings: true });
     if (!merchant) {
@@ -223,7 +218,7 @@ router.put('/settings/notifications', async (req, res) => {
 });
 
 // PUT /api/merchant/settings/operations - Update operations settings
-router.put('/settings/operations', async (req, res) => {
+router.put('/settings/operations', checkQueueStatus(), async (req, res) => {
   try {
     const merchant = await merchantService.findById(req.user.id, { settings: true });
     if (!merchant) {

@@ -208,7 +208,7 @@ class ChatbotService {
           merchantId 
         },
         options: {
-          buttons: queueOptions.slice(0, 3) // Limit to 3 buttons for WhatsApp
+          buttons: queueOptions.slice(0, 3) // Limit to 3 buttons for better UX
         }
       };
     } catch (error) {
@@ -576,7 +576,7 @@ class ChatbotService {
   /**
    * Send notification to customer
    */
-  async notifyCustomer(phoneNumber, message, platform = 'whatsapp') {
+  async notifyCustomer(phoneNumber, message, platform = 'webchat') {
     try {
       // This would integrate with actual messaging services
       logger.info(`Notification sent to ${phoneNumber} via ${platform}: ${message}`);

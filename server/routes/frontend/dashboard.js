@@ -14,11 +14,16 @@ if (useAuthBypass) {
   ({ requireAuth, loadUser } = require('../../middleware/auth'));
 }
 
+// Import tenant isolation middleware
+const { tenantIsolationMiddleware, validateMerchantAccess } = require('../../middleware/tenant-isolation');
+
 const router = express.Router();
 
-// Apply authentication to all dashboard routes
+// Apply authentication and tenant isolation to all dashboard routes
 router.use(requireAuth);
 router.use(loadUser);
+router.use(tenantIsolationMiddleware);
+router.use(validateMerchantAccess);
 
 // Dashboard home
 router.get('/', async (req, res) => {
@@ -37,10 +42,11 @@ router.get('/', async (req, res) => {
     }
     
     const merchantId = req.user.id || req.user._id;
+    const tenantId = req.tenantId; // Get tenant ID from middleware
     
-    // PERFORMANCE OPTIMIZATION: Only fetch active queues with recent entries
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const queues = await queueService.findActiveWithRecentEntries(merchantId, oneDayAgo);
+    // Fetch all queues for the merchant (both active and inactive)
+    // This ensures merchants can always see and manage their queues
+    const queues = await queueService.findByMerchant(merchantId, true, tenantId);
     
     // Calculate basic stats efficiently
     const stats = {
@@ -198,10 +204,8 @@ router.get('/', async (req, res) => {
 
 // Queue management page removed - no longer needed
 
-// WhatsApp setup redirect - handle legacy /dashboard/whatsapp route
-router.get('/whatsapp', (req, res) => {
-  res.redirect('/dashboard/whatsapp-setup');
-});
+// WhatsApp route - REMOVED
+// WhatsApp integration has been removed from the system
 
 // Queue create/edit routes removed - no longer needed
 
@@ -212,7 +216,7 @@ router.get('/settings', async (req, res) => {
     const merchant = await merchantService.getFullDetails(merchantId);
     const queues = await queueService.findByMerchant(merchantId);
 
-    res.render('dashboard/settings-improved', {
+    res.render('dashboard/settings', {
       title: 'Settings - StoreHub Queue Management System',
       merchant,
       queues,
@@ -249,25 +253,8 @@ router.get('/integrations', async (req, res) => {
   }
 });
 
-// WhatsApp Setup page
-router.get('/whatsapp-setup', async (req, res) => {
-  try {
-    const merchantId = req.user.id || req.user._id;
-    const queues = await queueService.findByMerchant(merchantId);
-    
-    res.render('dashboard/whatsapp-setup', {
-      title: 'WhatsApp Setup - StoreHub Queue Management System',
-      queues
-    });
-  } catch (error) {
-    logger.error('WhatsApp setup page error:', error);
-    res.render('error', {
-      title: 'Error',
-      status: 500,
-      message: 'Failed to load WhatsApp setup page'
-    });
-  }
-});
+// WhatsApp Setup page - REMOVED
+// WhatsApp integration has been removed from the system
 
 // Analytics
 router.get('/analytics', async (req, res) => {

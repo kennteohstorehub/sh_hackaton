@@ -67,7 +67,6 @@ const csrfValidation = (req, res, next) => {
     // Skip CSRF for webhook endpoints
     const skipPaths = [
       '/api/webhooks/',
-      '/api/whatsapp/webhook',
       '/api/messenger/webhook',
       '/webhook/'
     ];

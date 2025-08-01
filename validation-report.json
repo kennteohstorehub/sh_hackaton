@@ -1,0 +1,76 @@
+{
+  "timestamp": "2025-08-01T02:48:17.230Z",
+  "summary": {
+    "passed": 8,
+    "failed": 1,
+    "errors": 2,
+    "total": 11
+  },
+  "results": {
+    "acknowledgmentSystem": [
+      {
+        "name": "Basic Connectivity",
+        "status": "PASS",
+        "details": "Success"
+      },
+      {
+        "name": "Join Queue Endpoint",
+        "status": "FAIL",
+        "details": "Unknown result"
+      },
+      {
+        "name": "Dashboard Access Control",
+        "status": "PASS",
+        "details": "Success"
+      }
+    ],
+    "uiuxConsistency": [
+      {
+        "name": "Page Branding Consistency",
+        "status": "ERROR",
+        "details": "Page branding test failed: Request failed with status code 404"
+      },
+      {
+        "name": "CSS Loading Consistency",
+        "status": "ERROR",
+        "details": "CSS loading test failed: Request failed with status code 404"
+      }
+    ],
+    "websocketRealtime": [
+      {
+        "name": "WebSocket Connection",
+        "status": "PASS",
+        "details": "Success"
+      },
+      {
+        "name": "WebSocket Events",
+        "status": "PASS",
+        "details": "No events received within timeout"
+      }
+    ],
+    "functionalTesting": [
+      {
+        "name": "API Endpoints Accessibility",
+        "status": "PASS",
+        "details": "Success"
+      },
+      {
+        "name": "Static Assets Loading",
+        "status": "PASS",
+        "details": "Success"
+      }
+    ],
+    "edgeCases": [
+      {
+        "name": "Error Handling",
+        "status": "PASS",
+        "details": "Success"
+      },
+      {
+        "name": "High Concurrency",
+        "status": "PASS",
+        "details": "Success"
+      }
+    ]
+  }
+}

@@ -127,27 +127,8 @@ router.post('/join/:queueId', [
     const position = newEntry.position;
     const estimatedWait = Math.max(0, (position - 1) * (queue.averageServiceTime || 15));
 
-    // Send welcome WhatsApp message to customer
-    try {
-      const whatsappService = require('../services/whatsappService');
-      
-      // Use merchant's custom join template or fallback to default
-      const template = merchant.settings?.notifications?.templates?.join || 
-        'Welcome to {RestaurantName}! 🍽️ You\'re #{Position} in queue (Party of {PartySize}). Estimated wait: ~{WaitTime} minutes. We\'ll notify you when your table is ready!';
-      
-      // Replace placeholders in template
-      const welcomeMessage = template
-        .replace('{RestaurantName}', merchant.businessName || queue.name)
-        .replace('{CustomerName}', name)
-        .replace('{Position}', position)
-        .replace('{PartySize}', newEntry.partySize)
-        .replace('{WaitTime}', estimatedWait);
-      
-      await whatsappService.sendMessage(phone, welcomeMessage);
-      logger.info(`Welcome message sent to ${phone} for joining queue ${queue.name}`);
-    } catch (error) {
-      logger.error('Error sending welcome message:', error);
-    }
+    // WhatsApp notifications have been removed - using webchat notifications only
+    logger.info(`Customer ${name} joined queue ${queue.name} via webchat - notifications via WebSocket`);
 
     // Emit real-time update
     req.io.to(`merchant-${queue.merchantId}`).emit('queue-updated', {
@@ -197,7 +178,7 @@ router.post('/join', [
   body('customerName').trim().isLength({ min: 1, max: 100 }).withMessage('Customer name required'),
   body('customerPhone').matches(/^\+?[0-9]{7,15}$/).withMessage('Valid phone number required (e.g., +60123456789)'),
   body('serviceType').trim().isLength({ min: 1 }).withMessage('Service type required'),
-  body('platform').isIn(['whatsapp', 'messenger', 'web']).withMessage('Valid platform required'),
+  body('platform').isIn(['messenger', 'web']).withMessage('Valid platform required'),
   body('partySize').optional().isInt({ min: 1, max: 20 }).withMessage('Party size must be between 1 and 20')
 ], async (req, res) => {
   try {
@@ -273,28 +254,8 @@ router.post('/join', [
       partySize: partySize || 1
     });
 
-    // Send confirmation WhatsApp message to customer
-    try {
-      const whatsappService = require('../services/whatsappService');
-      const merchant = queue.merchant || await merchantService.findById(queue.merchantId);
-      
-      // Use merchant's custom join template or fallback to default
-      const template = merchant.settings?.notifications?.templates?.join || 
-        'Welcome to {RestaurantName}! 🍽️ You\'re #{Position} in queue (Party of {PartySize}). Estimated wait: ~{WaitTime} minutes. We\'ll notify you when your table is ready!';
-      
-      // Replace placeholders in template
-      const confirmationMessage = template
-        .replace('{RestaurantName}', merchant.businessName || queue.name)
-        .replace('{CustomerName}', customerName)
-        .replace('{Position}', newEntry.position)
-        .replace('{PartySize}', newEntry.partySize)
-        .replace('{WaitTime}', newEntry.estimatedWaitTime);
-      
-      await whatsappService.sendMessage(newEntry.customerPhone, confirmationMessage);
-      logger.info(`Confirmation sent to ${newEntry.customerPhone} for joining queue ${queue.name}`);
-    } catch (error) {
-      logger.error('Error sending join confirmation:', error);
-    }
+    // WhatsApp notifications have been removed - using webchat notifications only
+    logger.info(`Customer ${customerName} joined queue ${queue.name} - notifications via WebSocket`);
 
     // Emit real-time update
     req.io.to(`merchant-${queue.merchantId}`).emit('queue-updated', {

@@ -1,7 +1,7 @@
 {
   "name": "storehub-queue-management-system",
   "version": "1.0.0",
-  "description": "AI-powered queue management system with WhatsApp integration",
+  "description": "AI-powered queue management system with webchat notifications",
   "main": "server/index.js",
   "scripts": {
     "dev": "nodemon server/index.js",
@@ -49,7 +49,6 @@
     "socket.io-client": "^4.8.1",
     "validator": "^13.15.15",
     "web-push": "^3.6.7",
-    "whatsapp-web.js": "^1.30.0",
     "winston": "^3.10.0",
     "xss": "^1.0.15"
   },
@@ -69,7 +68,6 @@
   },
   "keywords": [
     "queue-management",
-    "whatsapp-bot",
     "ai",
     "customer-service",
     "chatbot",

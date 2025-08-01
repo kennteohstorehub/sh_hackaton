@@ -26,16 +26,35 @@ prisma = global.prisma;
  * Logs all tenant-related security events for audit trails
  */
 class TenantSecurityLogger {
+  static extractSafeRequestInfo(req) {
+    if (!req) return {};
+    
+    return {
+      method: req.method,
+      path: req.path,
+      userAgent: req.get?.('User-Agent'),
+      ip: req.ip || req.connection?.remoteAddress,
+      sessionId: req.sessionID,
+      userId: req.user?.id,
+      merchantId: req.merchantId
+    };
+  }
+
   static log(level, event, details = {}) {
     const timestamp = new Date().toISOString();
+    
+    // Extract safe request info if req is passed
+    const safeDetails = { ...details };
+    if (details.req) {
+      safeDetails.request = this.extractSafeRequestInfo(details.req);
+      delete safeDetails.req;
+    }
+    
     const logEntry = {
       timestamp,
       level,
       event,
-      ...details,
-      userAgent: details.req?.get('User-Agent'),
-      ip: details.req?.ip || details.req?.connection?.remoteAddress,
-      session: details.req?.sessionID
+      ...safeDetails
     };
 
     // Log to console in development, should integrate with proper logging service in production
@@ -54,6 +73,7 @@ class TenantSecurityLogger {
       await prisma.superAdminAuditLog.create({
         data: {
           action: logEntry.event,
+          resourceType: 'tenant_security',
           details: JSON.stringify({
             level: logEntry.level,
             ...logEntry
@@ -94,13 +114,27 @@ class TenantResolver {
       let tenant = null;
 
       // Method 1: Explicit tenant header (for API clients)
+      // Security: Only allow if no authenticated user or if user belongs to specified tenant
       if (req.headers['x-tenant-id']) {
         tenantId = req.headers['x-tenant-id'];
-        TenantSecurityLogger.info('TENANT_RESOLVED_BY_HEADER', {
-          req,
-          tenantId,
-          method: 'header'
-        });
+        
+        // If user is authenticated, validate they belong to the requested tenant
+        if (req.user && req.user.tenantId && req.user.tenantId !== tenantId) {
+          TenantSecurityLogger.critical('CROSS_TENANT_HEADER_ATTEMPT', {
+            req,
+            attemptedTenantId: tenantId,
+            userTenantId: req.user.tenantId,
+            method: 'header'
+          });
+          // Ignore the header and use the user's actual tenant
+          tenantId = req.user.tenantId;
+        } else {
+          TenantSecurityLogger.info('TENANT_RESOLVED_BY_HEADER', {
+            req,
+            tenantId,
+            method: 'header'
+          });
+        }
       }
 
       // Method 2: Subdomain resolution
@@ -133,7 +167,20 @@ class TenantResolver {
         tenant = await this.fetchTenant(tenantId, tenantSlug);
       }
 
-      // Method 4: Single-tenant fallback for backward compatibility
+      // Method 4: Check authenticated merchant's tenant
+      if (!tenant && req.user && req.user.tenantId) {
+        tenant = await this.fetchTenant(req.user.tenantId, null);
+        if (tenant) {
+          TenantSecurityLogger.info('TENANT_RESOLVED_BY_MERCHANT', {
+            req,
+            tenantId: tenant.id,
+            merchantId: req.user.id,
+            method: 'merchant'
+          });
+        }
+      }
+
+      // Method 5: Single-tenant fallback for backward compatibility
       if (!tenant) {
         tenant = await this.getSingleTenantFallback();
         if (tenant) {
@@ -358,21 +405,43 @@ const tenantIsolationMiddleware = async (req, res, next) => {
 
     // For authenticated routes, validate user-tenant relationship
     if (req.user && req.user.id) {
-      const hasAccess = await TenantValidator.validateUserTenantAccess(req.user, tenant, req);
-      
-      if (!hasAccess) {
-        TenantSecurityLogger.critical('UNAUTHORIZED_TENANT_ACCESS_BLOCKED', {
-          req,
-          userId: req.user.id,
-          tenantId: tenant.id,
-          path: req.path,
-          method: req.method
-        });
+      // Check if this is a merchant user (has businessName property)
+      if (req.user.businessName) {
+        // Validate merchant access
+        const hasAccess = await TenantValidator.validateMerchantTenantAccess(req.user.id, tenant, req);
         
-        return res.status(403).json({
-          error: 'Access denied to tenant resources',
-          code: 'TENANT_ACCESS_DENIED'
-        });
+        if (!hasAccess) {
+          TenantSecurityLogger.critical('UNAUTHORIZED_TENANT_ACCESS_BLOCKED', {
+            req,
+            merchantId: req.user.id,
+            tenantId: tenant.id,
+            path: req.path,
+            method: req.method
+          });
+          
+          return res.status(403).json({
+            error: 'Access denied to tenant resources',
+            code: 'TENANT_ACCESS_DENIED'
+          });
+        }
+      } else {
+        // Validate tenant user access
+        const hasAccess = await TenantValidator.validateUserTenantAccess(req.user, tenant, req);
+        
+        if (!hasAccess) {
+          TenantSecurityLogger.critical('UNAUTHORIZED_TENANT_ACCESS_BLOCKED', {
+            req,
+            userId: req.user.id,
+            tenantId: tenant.id,
+            path: req.path,
+            method: req.method
+          });
+          
+          return res.status(403).json({
+            error: 'Access denied to tenant resources',
+            code: 'TENANT_ACCESS_DENIED'
+          });
+        }
       }
     }
 
@@ -386,7 +455,6 @@ const tenantIsolationMiddleware = async (req, res, next) => {
     next();
   } catch (error) {
     TenantSecurityLogger.critical('TENANT_MIDDLEWARE_ERROR', {
-      req,
       error: error.message,
       stack: error.stack
     });

@@ -530,7 +530,7 @@
         <div class="queue-card">
             <!-- Header -->
             <div class="header">
-                <h1>StoreHub Queue System</h1>
+                <h1>StoreHub QMS</h1>
                 <h2><%= merchant.businessName %></h2>
                 <p>Join our queue and get notified when it's your turn</p>
             </div>
@@ -552,35 +552,56 @@
             </div>
 
             <% if (isOpen && queues.length > 0) { %>
-                <!-- Available Queues -->
-                <div class="queue-list">
-                    <h3 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; font-size: 1.1rem;">Select a Queue to Join:</h3>
-                    <% queues.forEach(queue => { %>
-                        <div class="queue-item" onclick="selectQueue('<%= queue._id %>', '<%= queue.name %>')" data-queue-id="<%= queue._id %>">
-                            <div class="queue-name"><%= queue.name %></div>
-                            <% if (queue.description) { %>
-                                <div class="queue-description"><%= queue.description %></div>
-                            <% } %>
-                            <div class="queue-stats">
-                                <div class="stat-item">
-                                    <div class="stat-number"><%= queue.currentLength || 0 %></div>
-                                    <div class="stat-label">Waiting</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-number"><%= queue.averageServiceTime || 15 %></div>
-                                    <div class="stat-label">Avg Wait (min)</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-number"><%= queue.maxCapacity %></div>
-                                    <div class="stat-label">Capacity</div>
+                <% if (queues.length > 1) { %>
+                    <!-- Multiple Queues - Show Selection -->
+                    <div class="queue-list">
+                        <h3 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; font-size: 1.1rem;">Select a Queue to Join:</h3>
+                        <% queues.forEach(queue => { %>
+                            <div class="queue-item" onclick="selectQueue('<%= queue._id || queue.id %>', '<%= queue.name %>')" data-queue-id="<%= queue._id || queue.id %>">
+                                <div class="queue-name"><%= queue.name %></div>
+                                <% if (queue.description) { %>
+                                    <div class="queue-description"><%= queue.description %></div>
+                                <% } %>
+                                <div class="queue-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-number"><%= queue.currentLength || 0 %></div>
+                                        <div class="stat-label">Waiting</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number"><%= queue.averageServiceTime || 15 %></div>
+                                        <div class="stat-label">Avg Wait (min)</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number"><%= queue.maxCapacity %></div>
+                                        <div class="stat-label">Capacity</div>
+                                    </div>
                                 </div>
                             </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <!-- Single Queue - Show Stats Only -->
+                    <% const singleQueue = queues[0]; %>
+                    <div class="queue-stats-display" style="background: rgba(255, 140, 0, 0.1); border: 1px solid rgba(255, 140, 0, 0.2); border-radius: 15px; padding: 1rem; margin-bottom: 1.5rem;">
+                        <h3 style="color: #ffffff; margin-bottom: 0.5rem;"><%= singleQueue.name %></h3>
+                        <% if (singleQueue.description) { %>
+                            <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;"><%= singleQueue.description %></p>
+                        <% } %>
+                        <div style="display: flex; justify-content: space-around; gap: 1rem;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 600; color: #ff8c00;"><%= singleQueue.currentLength || 0 %></div>
+                                <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6);">Currently Waiting</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 600; color: #ff8c00;"><%= singleQueue.averageServiceTime || 15 %></div>
+                                <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6);">Avg Wait (min)</div>
+                            </div>
                         </div>
-                    <% }); %>
-                </div>
+                    </div>
+                <% } %>
 
                 <!-- Join Form -->
-                <div class="join-form" id="joinForm">
+                <div class="join-form <%= queues.length === 1 ? 'active' : '' %>" id="joinForm">
                     <h3>
                         <i class="bi bi-person-plus-fill"></i>
                         Join Queue: <span id="selectedQueueName"></span>
@@ -659,6 +680,20 @@
 
         // Detect if device is mobile
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        
+        // Auto-select single queue on page load
+        <% if (isOpen && queues.length === 1) { %>
+            const singleQueue = {
+                id: '<%= queues[0]._id || queues[0].id %>',
+                name: '<%= queues[0].name %>'
+            };
+            
+            window.addEventListener('DOMContentLoaded', function() {
+                selectedQueueId = singleQueue.id;
+                document.getElementById('selectedQueueId').value = singleQueue.id;
+                document.getElementById('selectedQueueName').textContent = singleQueue.name;
+            });
+        <% } %>
 
         // Select queue function
         function selectQueue(queueId, queueName) {
@@ -740,15 +775,37 @@
                         navigator.vibrate(200);
                     }
                     
-                    // Reset form after 3 seconds
+                    // Store queue data in localStorage for the chat
+                    const queueData = {
+                        entryId: result.entryId,
+                        customerId: result.customer.customerId,
+                        customerName: result.customer.customerName,
+                        customerPhone: result.customer.customerPhone,
+                        position: result.customer.position,
+                        estimatedWaitTime: result.customer.estimatedWaitTime,
+                        verificationCode: result.customer.verificationCode,
+                        sessionId: result.customer.sessionId,
+                        queueId: result.queue.id,
+                        queueName: result.queue.name,
+                        merchantId: '<%= merchant._id %>',
+                        merchantName: '<%= merchant.businessName %>',
+                        status: 'waiting',
+                        platform: 'web'
+                    };
+                    
+                    localStorage.setItem('queueData', JSON.stringify(queueData));
+                    
+                    // Redirect to webchat after a short delay
                     setTimeout(() => {
-                        this.reset();
-                        document.getElementById('joinForm').classList.remove('active');
-                        document.querySelectorAll('.queue-item').forEach(item => {
-                            item.classList.remove('selected');
-                        });
-                        selectedQueueId = null;
-                    }, 3000);
+                        if (result.chatUrl) {
+                            window.location.href = result.chatUrl;
+                        } else if (result.customer.sessionId) {
+                            window.location.href = `/queue-chat/${result.customer.sessionId}`;
+                        } else {
+                            // Fallback: redirect to queue status page
+                            window.location.href = result.statusUrl || '/';
+                        }
+                    }, 1500);
                 } else {
                     showError(result.error || 'Failed to join queue. Please try again.');
                 }

@@ -88,15 +88,7 @@ class QueueNotificationService {
         this.formatMessage(template, replacements)
       );
       
-      // Legacy WhatsApp support (if enabled)
-      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customer.customerPhone) {
-        try {
-          const whatsappService = require('./whatsappService');
-          await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
-        } catch (error) {
-          logger.warn('WhatsApp notification failed (non-critical):', error.message);
-        }
-      }
+      // WhatsApp notifications have been removed - using webchat and push notifications only
       
       // Update notification count
       customer.notificationCount = (customer.notificationCount || 0) + 1;
@@ -140,15 +132,7 @@ class QueueNotificationService {
         this.formatMessage(template, replacements)
       );
       
-      // Legacy WhatsApp support (if enabled)
-      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customer.customerPhone) {
-        try {
-          const whatsappService = require('./whatsappService');
-          await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
-        } catch (error) {
-          logger.warn('WhatsApp notification failed (non-critical):', error.message);
-        }
-      }
+      // WhatsApp notifications have been removed - using webchat and push notifications only
       
       // Update notification count
       customer.notificationCount = (customer.notificationCount || 0) + 1;
@@ -223,15 +207,7 @@ class QueueNotificationService {
         this.formatMessage(template, replacements)
       );
       
-      // Legacy WhatsApp support (if enabled)
-      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customer.customerPhone) {
-        try {
-          const whatsappService = require('./whatsappService');
-          await whatsappService.sendTemplatedNotification(customer.customerPhone, template, replacements);
-        } catch (error) {
-          logger.warn('WhatsApp notification failed (non-critical):', error.message);
-        }
-      }
+      // WhatsApp notifications have been removed - using webchat and push notifications only
       
       logger.info(`Sent no-show warning to ${customer.customerPhone}`);
     } catch (error) {
@@ -265,15 +241,7 @@ class QueueNotificationService {
         });
       }
       
-      // Legacy WhatsApp support (if enabled)
-      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customer.customerPhone) {
-        try {
-          const whatsappService = require('./whatsappService');
-          await whatsappService.sendMessage(customer.customerPhone, finalMessage);
-        } catch (error) {
-          logger.warn('WhatsApp notification failed (non-critical):', error.message);
-        }
-      }
+      // WhatsApp notifications have been removed - using webchat and push notifications only
       
       logger.info(`Marked customer ${customer.customerId} as no-show`);
       

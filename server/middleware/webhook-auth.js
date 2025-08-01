@@ -136,27 +136,8 @@ const createWebhookVerifier = (options) => {
  * Pre-configured webhook verifiers for common services
  */
 
-// WhatsApp webhook verifier - lazy initialization
-const whatsappWebhookAuth = (req, res, next) => {
-  const secret = process.env.WHATSAPP_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET;
-  if (!secret) {
-    logger.warn('WhatsApp webhook secret not configured, skipping verification');
-    return next();
-  }
-  
-  const verifier = createWebhookVerifier({
-    secret,
-    headerName: 'x-hub-signature-256',
-    algorithm: 'sha256',
-    service: 'whatsapp',
-    getPayload: (req) => {
-      // WhatsApp sends the raw body
-      return req.rawBody || JSON.stringify(req.body);
-    }
-  });
-  
-  return verifier(req, res, next);
-};
+// WhatsApp webhook verifier - REMOVED
+// WhatsApp integration has been removed from the system
 
 // Facebook Messenger webhook verifier - lazy initialization
 const messengerWebhookAuth = (req, res, next) => {
@@ -212,7 +193,7 @@ const captureRawBody = (req, res, buf, encoding) => {
  * Webhook challenge verification for initial setup
  */
 const handleWebhookChallenge = (req, res, next) => {
-  // Facebook/WhatsApp webhook verification
+  // Facebook webhook verification
   if (req.method === 'GET' && req.query['hub.mode'] === 'subscribe') {
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
@@ -221,7 +202,7 @@ const handleWebhookChallenge = (req, res, next) => {
     
     if (token === expectedToken) {
       logger.info('Webhook challenge verified', {
-        service: req.path.includes('whatsapp') ? 'whatsapp' : 'messenger'
+        service: 'messenger'
       });
       return res.status(200).send(challenge);
     } else {
@@ -238,7 +219,6 @@ const handleWebhookChallenge = (req, res, next) => {
 
 module.exports = {
   createWebhookVerifier,
-  whatsappWebhookAuth,
   messengerWebhookAuth,
   genericWebhookAuth,
   captureRawBody,

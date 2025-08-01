@@ -46,6 +46,34 @@ router.get('/', [requireAuth, loadUser, tenantIsolationMiddleware, validateMerch
   }
 });
 
+// GET /api/queue/status - Get queue status (for checking if any queue is operating)
+router.get('/status', [requireAuth, loadUser, tenantIsolationMiddleware, validateMerchantAccess], async (req, res) => {
+  try {
+    const merchantId = req.user.id || req.user._id;
+    const tenantId = req.tenantId;
+    
+    // Get all queues for the merchant
+    const queues = await queueService.findByMerchant(merchantId, false, tenantId);
+    
+    // Find if any queue is accepting customers
+    const activeQueue = queues.find(queue => queue.isActive && queue.acceptingCustomers);
+    
+    res.json({
+      success: true,
+      hasActiveQueue: !!activeQueue,
+      activeQueue: activeQueue ? {
+        id: activeQueue.id || activeQueue._id,
+        name: activeQueue.name,
+        acceptingCustomers: activeQueue.acceptingCustomers,
+        isActive: activeQueue.isActive
+      } : null
+    });
+  } catch (error) {
+    logger.error('Error checking queue status:', error);
+    res.status(500).json({ error: 'Failed to check queue status' });
+  }
+});
+
 // GET /api/queue/performance - Get queue performance data for dashboard with tenant isolation
 router.get('/performance', [requireAuth, loadUser, tenantIsolationMiddleware, validateMerchantAccess], async (req, res) => {
   try {
@@ -353,18 +381,7 @@ router.post('/:id/call-next', [requireAuth, loadUser], async (req, res) => {
       
       logger.info(`Notifications sent to ${updatedCustomer.customerName} via websocket and push`);
       
-      // Legacy WhatsApp support (only if enabled)
-      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && updatedCustomer.customerPhone) {
-        try {
-          const whatsappService = require('../services/whatsappService');
-          const notificationMessage = `🔔 It's your turn ${updatedCustomer.customerName}!\n\n📍 Queue: ${queue.name}\n🎫 Your position: #${updatedCustomer.position}\n🎫 Verification code: ${updatedCustomer.verificationCode}\n👥 Party size: ${updatedCustomer.partySize} pax\n\n🔐 Please show this code to our staff to be seated.`;
-          
-          await whatsappService.sendMessage(updatedCustomer.customerPhone, notificationMessage);
-          logger.info(`WhatsApp notification sent to ${updatedCustomer.customerPhone} (legacy support)`);
-        } catch (whatsappError) {
-          logger.warn('WhatsApp notification failed (non-critical):', whatsappError.message);
-        }
-      }
+      // WhatsApp notifications have been removed - using webchat and push notifications only
     } catch (error) {
       logger.error('Error sending customer notification:', error);
     }
@@ -557,18 +574,7 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
       
       logger.info(`Notifications sent to ${customerEntry.customerName} via websocket and push`);
       
-      // Legacy WhatsApp support (only if enabled)
-      if (process.env.ENABLE_WHATSAPP_WEB !== 'false' && customerEntry.customerPhone) {
-        try {
-          const whatsappService = require('../services/whatsappService');
-          const notificationMessage = `🔔 It's your turn ${customerEntry.customerName}!\n\n📍 Queue: ${queue.name}\n🎫 Your position: #${customerEntry.position}\n🎫 Verification code: ${customerEntry.verificationCode}\n👥 Party size: ${customerEntry.partySize} pax\n\n⚡ You've been called ahead of schedule!\nPlease come to the service counter now.`;
-          
-          await whatsappService.sendMessage(customerEntry.customerPhone, notificationMessage);
-          logger.info(`WhatsApp notification sent to ${customerEntry.customerPhone} (legacy support)`);
-        } catch (whatsappError) {
-          logger.warn('WhatsApp notification failed (non-critical):', whatsappError.message);
-        }
-      }
+      // WhatsApp notifications have been removed - using webchat and push notifications only
     } catch (error) {
       logger.error('Error sending customer notification:', error);
     }
@@ -619,7 +625,7 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
 // Function to send position update notifications to all waiting customers
 async function sendPositionUpdateNotifications(queueId, queueName, io, merchantId) {
   try {
-    const whatsappService = require('../services/whatsappService');
+    // WhatsApp service removed - using webchat notifications only
     const pushNotificationService = require('../services/pushNotificationService');
     const waitingCustomers = await prisma.queueEntry.findMany({
       where: { queueId, status: 'waiting' },
@@ -640,11 +646,8 @@ async function sendPositionUpdateNotifications(queueId, queueName, io, merchantI
           logger.info(`Push position update sent to ${customer.customerName} - Position: #${customer.position}`);
         }
         
-        // Also send WhatsApp notification
-        const notificationMessage = `📍 Queue Update ${customer.customerName}!\n\n🏪 ${queueName}\n🎫 Your position: #${customer.position}\n👥 Party size: ${customer.partySize} pax\n⏱️ Estimated wait: ${customer.estimatedWaitTime} minutes\n\n✅ Someone has been seated - you're moving up in the queue!`;
-        
-        await whatsappService.sendMessage(customer.customerPhone, notificationMessage);
-        logger.info(`WhatsApp position update sent to ${customer.customerPhone} - Position: #${customer.position}`);
+        // WhatsApp notifications removed - position updates via webchat only
+        logger.info(`Position update sent via webchat to ${customer.customerName} - Position: #${customer.position}`);
       } catch (error) {
         logger.error(`Error sending position update to ${customer.customerPhone}:`, error);
       }
@@ -710,6 +713,30 @@ router.post('/:id/assign-table/:customerId', [requireAuth, loadUser], [
       tableNumber: tableNumber
     });
 
+    // Send notification to customer about being seated
+    if (seatedCustomer.sessionId) {
+      const notificationData = {
+        tableNumber: tableNumber,
+        customerName: seatedCustomer.customerName,
+        message: `You have been seated at table ${tableNumber}. Thank you for using our queue system!`,
+        sessionEnded: true
+      };
+      
+      // Get all rooms the customer should be in
+      const customerRooms = RoomHelpers.getCustomerRooms(seatedCustomer);
+      
+      // Send notification to all customer rooms
+      for (const room of customerRooms) {
+        req.io.to(room).emit('customer-seated-notification', notificationData);
+        logger.info(`[SEATED] Sent seated notification to room: ${room}`);
+      }
+      
+      // Clear the WebChat session
+      const webChatService = require('../services/webChatService');
+      webChatService.clearSession(seatedCustomer.sessionId);
+      logger.info(`[SEATED] Cleared WebChat session for customer ${seatedCustomer.customerName}`);
+    }
+
     res.json({
       success: true,
       customer: seatedCustomer
@@ -760,18 +787,8 @@ router.post('/:id/verify-and-seat/:customerId', [requireAuth, loadUser], [
     // Mark as completed (seated)
     const seatedCustomer = await queueService.removeCustomer(customer.id, 'completed');
 
-    // Send welcome message with menu link
-    try {
-      const whatsappService = require('../services/whatsappService');
-      const merchant = await merchantService.getFullDetails(merchantId);
-      const menuUrl = merchant?.settings?.menuUrl || 'https://beepdeliveryops.beepit.com/dine?s=5e806691322bdd231653d70c&from=home';
-      
-      const welcomeMessage = `🎉 Welcome ${seatedCustomer.customerName}!\n\n✅ You've been seated successfully!\n👥 Party size: ${seatedCustomer.partySize} pax\n\n🍽️ Ready to order? Check out our menu:\n\n📱 Online Menu: ${menuUrl}\n\n🛎️ Need assistance? Our staff will be right with you!\n\nEnjoy your dining experience!`;
-      
-      await whatsappService.sendMessage(seatedCustomer.customerPhone, welcomeMessage);
-    } catch (error) {
-      logger.error('Error sending welcome message:', error);
-    }
+    // WhatsApp welcome messages have been removed - using webchat notifications only
+    logger.info(`Customer ${seatedCustomer.customerName} seated successfully - welcome via webchat`);
 
     // Send position updates
     await sendPositionUpdateNotifications(queue.id, queue.name, req.io, merchantId);
@@ -821,20 +838,8 @@ router.post('/:id/complete/:customerId', [requireAuth, loadUser], async (req, re
       });
     }
 
-    // Send welcome message with menu link to the seated customer
-    try {
-      const whatsappService = require('../services/whatsappService');
-      const merchant = await merchantService.getFullDetails(merchantId);
-      // Get merchant menu URL if available
-      const menuUrl = merchant?.settings?.menuUrl || 'https://beepdeliveryops.beepit.com/dine?s=5e806691322bdd231653d70c&from=home';
-      
-      const welcomeMessage = `🎉 Welcome ${customer.customerName}!\n\n✅ You've been seated successfully!\n👥 Party size: ${customer.partySize} pax\n\n🍽️ Ready to order? Check out our menu:\n\n📱 Online Menu: ${menuUrl}\n\n🛎️ Need assistance? Our staff will be right with you!\n\nEnjoy your dining experience!`;
-      
-      await whatsappService.sendMessage(customer.customerPhone, welcomeMessage);
-      logger.info(`Welcome message with menu link sent to ${customer.customerPhone} for queue ${queue.name}`);
-    } catch (error) {
-      logger.error('Error sending welcome message:', error);
-    }
+    // WhatsApp welcome messages have been removed - using webchat notifications only
+    logger.info(`Customer ${customer.customerName} seated successfully - welcome via webchat`);
 
     // Send position update notifications to all waiting customers
     await sendPositionUpdateNotifications(queue.id, queue.name, req.io, merchantId);
@@ -981,16 +986,8 @@ router.post('/:id/requeue/:customerId', [requireAuth, loadUser], async (req, res
       }
     });
 
-    // Send WhatsApp notification to customer
-    try {
-      const whatsappService = require('../services/whatsappService');
-      const notificationMessage = `🔄 You've been requeued ${customerEntry.customerName}!\n\n📍 Queue: ${queue.name}\n🎫 Your new position: #${customerEntry.position}\n👥 Party size: ${customerEntry.partySize} pax\n\nYou've been added back to the waiting list. We'll notify you when it's your turn. Thank you for your patience!`;
-      
-      await whatsappService.sendMessage(customerEntry.customerPhone, notificationMessage);
-      logger.info(`Requeue notification sent to ${customerEntry.customerPhone} for queue ${queue.name}`);
-    } catch (error) {
-      logger.error('Error sending requeue notification:', error);
-    }
+    // WhatsApp notifications have been removed - using webchat notifications only
+    logger.info(`Customer ${customerEntry.customerName} requeued successfully - notification via webchat`);
 
     // Emit real-time updates
     const finalStats = await queueService.getQueueStats(queue.id);
@@ -1351,16 +1348,8 @@ router.post('/join', [
       }
     });
 
-    // Send WhatsApp notification if enabled
-    try {
-      const whatsappService = require('../services/whatsappService');
-      const confirmationMessage = `🎉 Welcome ${customerName}!\n\n✅ You've joined the queue at ${merchant.businessName}\n🎫 Queue Number: ${queueNumber}\n👥 Party Size: ${partySize}\n📍 Position: #${entry.position}\n⏱️ Estimated Wait: ${entry.estimatedWaitTime} minutes\n\nWe'll notify you when your table is ready!`;
-      
-      await whatsappService.sendMessage(customerPhone, confirmationMessage);
-    } catch (notifError) {
-      logger.error('Error sending WhatsApp notification:', notifError);
-      // Don't fail the request if notification fails
-    }
+    // WhatsApp notifications have been removed - using webchat notifications only
+    logger.info(`Customer ${customerName} joined queue successfully - confirmation via webchat`);
 
     res.json({
       success: true,
@@ -1487,6 +1476,24 @@ router.post('/acknowledge', async (req, res) => {
     
     // Log the acknowledgment
     logger.info(`Customer ${entry.customerName} acknowledged notification for queue ${entry.queue.name}`);
+    
+    // Send confirmation back to the customer via WebSocket
+    const RoomHelpers = require('../utils/roomHelpers');
+    const customerRooms = RoomHelpers.getCustomerRooms(updatedEntry);
+    
+    // Emit acknowledgment confirmation to all customer rooms
+    for (const room of customerRooms) {
+      req.io.to(room).emit('acknowledgment-confirmed', {
+        entryId: updatedEntry.id,
+        customerId: updatedEntry.customerId,
+        customerName: updatedEntry.customerName,
+        type: type || 'on_way',
+        acknowledgedAt: updatedEntry.acknowledgedAt,
+        message: 'Your acknowledgment has been received successfully!',
+        queueName: entry.queue.name
+      });
+      logger.info(`[ACKNOWLEDGE] Sent confirmation to room: ${room}`);
+    }
     
     res.json({
       success: true,

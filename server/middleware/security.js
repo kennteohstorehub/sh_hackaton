@@ -70,7 +70,7 @@ const csrfProtection = (req, res, next) => {
   return next();
   
   // Skip CSRF for webhooks and API endpoints that use other authentication
-  const skipPaths = ['/webhook/', '/api/whatsapp/webhook'];
+  const skipPaths = ['/webhook/'];
   if (skipPaths.some(path => req.path.includes(path))) {
     return next();
   }

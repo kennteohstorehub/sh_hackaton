@@ -53,7 +53,6 @@ const csrfValidation = (req, res, next) => {
   // Skip CSRF for webhook endpoints (they use signature verification)
   const skipPaths = [
     '/api/webhooks/',
-    '/api/whatsapp/webhook',
     '/api/messenger/webhook',
     '/webhook/'
   ];
@@ -85,14 +84,17 @@ const csrfValidation = (req, res, next) => {
   let providedToken = null;
 
   // Check for CSRF token in different locations
-  if (req.xhr || req.headers['content-type'] === 'application/json') {
+  const contentType = req.headers['content-type'] || '';
+  const isAjax = req.xhr || contentType.includes('application/json');
+  
+  if (isAjax) {
     // AJAX request - check custom header
     providedToken = req.headers['x-csrf-token'];
   } else {
     // Form submission - check body, query, or cookie
     providedToken = req.body._csrf || 
                    req.query._csrf || 
-                   req.cookies['csrf-token'];
+                   (req.cookies && req.cookies['csrf-token']);
   }
 
   // Validate token

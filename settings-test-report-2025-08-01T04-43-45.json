@@ -1,0 +1,103 @@
+{
+  "testName": "Settings Page Edit Functionality Test",
+  "timestamp": "2025-08-01T04:43:45.166Z",
+  "testResults": {
+    "loginSuccess": true,
+    "pageLoadSuccess": true,
+    "formFieldsAccessible": true,
+    "phoneEditSuccess": false,
+    "businessNameEditSuccess": false,
+    "formSubmissionSuccess": false,
+    "apiErrors": [],
+    "jsErrors": [
+      {
+        "type": "console_error",
+        "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "timestamp": "2025-08-01T04:43:43.908Z"
+      }
+    ],
+    "networkErrors": []
+  },
+  "errors": [
+    {
+      "type": "console_error",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": "2025-08-01T04:43:43.908Z"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "01-login-page",
+      "description": "Login page loaded",
+      "filepath": "/Users/kennteoh/Development/Hack/auth-test-screenshots/settings-test-01-login-page-2025-08-01T04-43-40-651Z.png",
+      "timestamp": "2025-08-01T04:43:40.755Z"
+    },
+    {
+      "name": "02-login-filled",
+      "description": "Login form filled",
+      "filepath": "/Users/kennteoh/Development/Hack/auth-test-screenshots/settings-test-02-login-filled-2025-08-01T04-43-40-814Z.png",
+      "timestamp": "2025-08-01T04:43:40.884Z"
+    },
+    {
+      "name": "03-login-success",
+      "description": "Login successful - Dashboard loaded",
+      "filepath": "/Users/kennteoh/Development/Hack/auth-test-screenshots/settings-test-03-login-success-2025-08-01T04-43-42-951Z.png",
+      "timestamp": "2025-08-01T04:43:43.054Z"
+    },
+    {
+      "name": "04-settings-page",
+      "description": "Settings page loaded",
+      "filepath": "/Users/kennteoh/Development/Hack/auth-test-screenshots/settings-test-04-settings-page-2025-08-01T04-43-44-177Z.png",
+      "timestamp": "2025-08-01T04:43:44.348Z"
+    },
+    {
+      "name": "05-form-fields-accessible",
+      "description": "Form fields accessible and populated",
+      "filepath": "/Users/kennteoh/Development/Hack/auth-test-screenshots/settings-test-05-form-fields-accessible-2025-08-01T04-43-44-358Z.png",
+      "timestamp": "2025-08-01T04:43:44.493Z"
+    },
+    {
+      "name": "06-phone-edited",
+      "description": "Phone number edited to: +1-555-TEST-123",
+      "filepath": "/Users/kennteoh/Development/Hack/auth-test-screenshots/settings-test-06-phone-edited-2025-08-01T04-43-44-508Z.png",
+      "timestamp": "2025-08-01T04:43:44.675Z"
+    },
+    {
+      "name": "07-name-edited",
+      "description": "Business name edited to: Test Restaurant Updated",
+      "filepath": "/Users/kennteoh/Development/Hack/auth-test-screenshots/settings-test-07-name-edited-2025-08-01T04-43-44-696Z.png",
+      "timestamp": "2025-08-01T04:43:44.921Z"
+    },
+    {
+      "name": "08-no-submit-button",
+      "description": "Submit button not found",
+      "filepath": "/Users/kennteoh/Development/Hack/auth-test-screenshots/settings-test-08-no-submit-button-2025-08-01T04-43-44-923Z.png",
+      "timestamp": "2025-08-01T04:43:45.166Z"
+    }
+  ],
+  "networkRequests": [],
+  "consoleLogs": [
+    {
+      "type": "log",
+      "text": "Socket.IO connected",
+      "timestamp": "2025-08-01T04:43:41.973Z"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": "2025-08-01T04:43:43.908Z"
+    }
+  ],
+  "summary": {
+    "totalErrors": 1,
+    "loginWorking": true,
+    "settingsPageWorking": true,
+    "formFieldsWorking": true,
+    "phoneEditWorking": false,
+    "businessNameEditWorking": false,
+    "formSubmissionWorking": false,
+    "apiErrorCount": 0,
+    "jsErrorCount": 1,
+    "networkErrorCount": 0
+  }
+}

@@ -3,37 +3,8 @@ const router = express.Router();
 const chatbotService = require('../services/chatbotService');
 const { body, validationResult } = require('express-validator');
 
-/**
- * POST /api/chatbot/whatsapp
- * Handle incoming WhatsApp messages
- */
-router.post('/whatsapp', [
-  body('phoneNumber').notEmpty().withMessage('Phone number is required'),
-  body('message').notEmpty().withMessage('Message is required')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation failed',
-        details: errors.array()
-      });
-    }
-
-    const { phoneNumber, message, merchantId } = req.body;
-    
-    const response = await chatbotService.processMessage('whatsapp', phoneNumber, message, merchantId);
-    
-    res.json(response);
-  } catch (error) {
-    console.error('Error processing WhatsApp message:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to process message'
-    });
-  }
-});
+// WhatsApp endpoint - REMOVED
+// WhatsApp integration has been removed from the system
 
 /**
  * POST /api/chatbot/messenger
@@ -85,7 +56,7 @@ router.post('/test', [
       });
     }
 
-    const { phoneNumber, message, platform = 'whatsapp' } = req.body;
+    const { phoneNumber, message, platform = 'webchat' } = req.body;
     const merchantId = '507f1f77bcf86cd799439011'; // Demo merchant
     
     const response = await chatbotService.processMessage(platform, phoneNumber, message, merchantId);
@@ -178,7 +149,7 @@ router.post('/notify', [
       });
     }
 
-    const { phoneNumber, message, platform = 'whatsapp' } = req.body;
+    const { phoneNumber, message, platform = 'webchat' } = req.body;
     
     const result = await chatbotService.notifyCustomer(phoneNumber, message, platform);
     

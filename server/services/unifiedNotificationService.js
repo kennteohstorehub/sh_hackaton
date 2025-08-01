@@ -1,16 +1,13 @@
 const logger = require('../utils/logger');
 const telegramService = require('./telegramService');
-const twilioWhatsAppService = require('./twilioWhatsAppService');
 const smsService = require('./smsService');
 
 class UnifiedNotificationService {
   constructor() {
     this.services = {
       telegram: telegramService,
-      whatsapp_api: twilioWhatsAppService,
-      sms: smsService,
-      // Legacy whatsapp-web.js can still be used in development
-      whatsapp_web: null
+      sms: smsService
+      // WhatsApp services have been removed
     };
   }
 
@@ -30,31 +27,14 @@ class UnifiedNotificationService {
 
     if (process.env.TWILIO_ACCOUNT_SID) {
       initPromises.push(
-        this.services.whatsapp_api.initialize()
-          .then(() => logger.info('✅ WhatsApp API service ready'))
-          .catch(err => logger.error('❌ WhatsApp API init failed:', err))
-      );
-      
-      initPromises.push(
         this.services.sms.initialize()
           .then(() => logger.info('✅ SMS service ready'))
           .catch(err => logger.error('❌ SMS init failed:', err))
       );
     }
 
-    // Legacy WhatsApp Web (only in development/Docker)
-    if (process.env.NODE_ENV !== 'production' && process.env.ENABLE_WHATSAPP_WEB) {
-      try {
-        this.services.whatsapp_web = require('./whatsappService');
-        initPromises.push(
-          this.services.whatsapp_web.initialize()
-            .then(() => logger.info('✅ WhatsApp Web service ready'))
-            .catch(err => logger.error('❌ WhatsApp Web init failed:', err))
-        );
-      } catch (error) {
-        logger.warn('WhatsApp Web not available in this environment');
-      }
-    }
+    // WhatsApp services have been removed - using webchat and other channels only
+    logger.info('WhatsApp services disabled - using webchat, Telegram, and SMS only');
 
     await Promise.allSettled(initPromises);
     logger.info('Notification services initialization complete');
@@ -87,12 +67,7 @@ class UnifiedNotificationService {
             }
             break;
             
-          case 'whatsapp_api':
-          case 'whatsapp_web':
-            if (entry.customerPhone) {
-              success = await service.sendQueueNotification(entry, type);
-            }
-            break;
+          // WhatsApp cases have been removed
             
           case 'sms':
             if (entry.customerPhone && this.shouldSendSMS(type)) {
@@ -130,15 +105,10 @@ class UnifiedNotificationService {
       // User has explicit preference
       channels.push(entry.notificationChannel);
     } else {
-      // Auto-detect available channels
+      // Auto-detect available channels (WhatsApp removed)
       if (entry.telegramChatId) channels.push('telegram');
       if (entry.customerPhone) {
-        if (this.services.whatsapp_api?.isInitialized) {
-          channels.push('whatsapp_api');
-        } else if (this.services.whatsapp_web?.isInitialized) {
-          channels.push('whatsapp_web');
-        }
-        // SMS as last resort
+        // SMS as primary option for phone numbers
         if (this.services.sms?.isInitialized) {
           channels.push('sms');
         }
@@ -181,14 +151,7 @@ class UnifiedNotificationService {
       });
     }
     
-    if (this.services.whatsapp_api?.isInitialized || this.services.whatsapp_web?.isInitialized) {
-      available.push({
-        id: 'whatsapp',
-        name: 'WhatsApp',
-        description: 'Get updates on WhatsApp',
-        requiresSetup: false
-      });
-    }
+    // WhatsApp option removed
     
     if (this.services.sms?.isInitialized) {
       available.push({

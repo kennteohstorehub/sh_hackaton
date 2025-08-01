@@ -1,6 +1,6 @@
 # StoreHub Queue Management System 🚀
 
-An AI-powered queue management system that reduces customer friction and manages expectations during busy peak hours by allowing customers to join and track virtual queues via WhatsApp or web interface.
+An AI-powered queue management system that reduces customer friction and manages expectations during busy peak hours by allowing customers to join and track virtual queues via web interface with real-time webchat notifications.
 
 ## 🔥 Recent Updates (Latest Version)
 
@@ -20,15 +20,15 @@ An AI-powered queue management system that reduces customer friction and manages
 - **Multi-Queue Management**: Create and manage multiple service queues
 - **Operating Hours Management**: Dynamic business hours with real-time status indicators
 - **AI-Powered Insights**: Get intelligent recommendations for queue optimization
-- **WhatsApp Integration**: Automated chatbot responses for customers
+- **Webchat Integration**: Real-time web-based chat notifications for customers
 - **Analytics & Reporting**: Track performance metrics and customer satisfaction with demo data
 - **Customizable Settings**: Configure business hours, service types, and notifications
 
 ### For Customers
-- **Easy Queue Joining**: Join queues via WhatsApp or web interface
-- **Real-time Updates**: Get live position updates and estimated wait times
+- **Easy Queue Joining**: Join queues via web interface with simple registration
+- **Real-time Updates**: Get live position updates and estimated wait times through webchat
 - **Smart Notifications**: AI-optimized notification timing based on sentiment analysis
-- **Multi-platform Support**: Access from any device or messaging platform
+- **Cross-platform Support**: Access from any web browser on any device
 - **Queue Status Tracking**: Check position and wait time anytime
 
 ### AI Features
@@ -43,8 +43,7 @@ An AI-powered queue management system that reduces customer friction and manages
 ### Backend (Node.js)
 - **Express.js** server with EJS templating
 - **PostgreSQL** with Prisma ORM for data persistence (migrated from MongoDB)
-- **Socket.IO** for real-time updates
-- **WhatsApp Web.js** for WhatsApp integration
+- **Socket.IO** for real-time webchat updates
 - **Natural.js** for AI/ML features
 - **Service-oriented architecture** with dedicated services for queue and merchant operations
 
@@ -55,7 +54,7 @@ An AI-powered queue management system that reduces customer friction and manages
 - **Mobile-first** approach
 
 ### Integrations
-- **WhatsApp Business API**
+- **Webchat System** for real-time customer communication
 - **AI/ML Services** for predictions and analysis
 
 ## 🚀 Quick Start
@@ -63,7 +62,6 @@ An AI-powered queue management system that reduces customer friction and manages
 ### Prerequisites
 - Node.js (v16 or higher)
 - PostgreSQL (v12 or higher) - Primary database
-- WhatsApp account for business integration (optional)
 - Note: MongoDB is no longer required (migrated to PostgreSQL)
 
 ### Installation
@@ -121,13 +119,8 @@ MONGODB_URI=mongodb://localhost:27017/storehub-queue-management
 # JWT Secret
 JWT_SECRET=your-super-secret-jwt-key-here
 
-# WhatsApp Configuration
-WHATSAPP_SESSION_PATH=./whatsapp-session
-
-# Facebook Messenger Configuration
-FB_PAGE_ACCESS_TOKEN=your-facebook-page-access-token
-FB_VERIFY_TOKEN=your-facebook-verify-token
-FB_APP_SECRET=your-facebook-app-secret
+# Webchat Configuration
+SOCKET_IO_PATH=/socket.io
 
 # AI Services (Optional)
 OPENAI_API_KEY=your-openai-api-key
@@ -145,21 +138,16 @@ MAX_QUEUE_SIZE=100
 1. **Register/Login**: Create a merchant account at `/auth/register`
 2. **Setup Business**: Configure business hours, service types, and settings
 3. **Create Queues**: Set up different service queues for your business
-4. **Integrate Messaging**: Connect WhatsApp and/or Facebook Messenger
+4. **Enable Webchat**: Activate real-time webchat notifications for customers
 5. **Monitor Dashboard**: Track real-time queue status and customer activity
 
 ### For Customers
 
-#### Via WhatsApp
-- Send "join" to join a queue
-- Send "status" to check position
-- Send "cancel" to leave queue
-- Send "help" for available commands
-
 #### Via Web Interface
 - Visit `/join/{merchantId}` to access queue joining page
 - Select service type and join queue
-- Track status via provided link
+- Receive real-time updates through webchat interface
+- Track status via provided link with live notifications
 
 ## 🔧 API Endpoints
 
@@ -243,8 +231,7 @@ For common issues and solutions, see the [Troubleshooting Guide](TROUBLESHOOTING
 **Quick fixes for common problems:**
 
 - **Port already in use**: `./scripts/server-manager.sh start` (handles automatically)
-- **WhatsApp service errors**: `./scripts/server-manager.sh cleanup && ./scripts/server-manager.sh restart`
-- **High CPU usage**: `pkill -f "chrome-mac/Chromium" && ./scripts/server-manager.sh restart`
+- **Socket.IO connection issues**: Check network connectivity and restart server
 - **Template errors**: Check server logs and verify all variables are passed to templates
 
 ## 🚀 Deployment

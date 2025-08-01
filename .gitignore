@@ -149,3 +149,49 @@ coverage/
 playwright-report/
 test-results/
 tests/e2e/.env
+
+# Session cookies and auth tokens
+*cookies*.txt
+*-cookies.txt
+
+# Test screenshots and artifacts
+test-screenshots/
+*.png
+auth-test-screenshots/
+
+# Backup files (more specific patterns)
+CLAUDE.md.backup.*
+*.backup.*
+
+# Temporary test HTML files
+test-*.html
+
+# Temporary JSON test data
+demo-*.json
+last-test-entry.json
+
+# Debug and demo scripts
+debug-*.js
+diagnose*.js
+demo-*.js
+verify-*.js
+visual-demo.js
+
+# Applied patches and migration files
+*.patch
+add_*.sql
+fix-*.sql
+
+# Temporary documentation
+cleanup-summary.md
+clear-cache-fix.md
+*-demo.md
+manual-*.md
+
+# Server output logs
+server.out
+server-*.log
+test-output.log
+
+# Build version tracking (if generated)
+BUILD_VERSION.txt

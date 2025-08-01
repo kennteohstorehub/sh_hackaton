@@ -17,6 +17,31 @@ router.get('/', (req, res) => {
   res.redirect('/auth/login');
 });
 
+// Join redirect - helps users who access /join without a merchant ID
+router.get('/join', async (req, res) => {
+  try {
+    // Find the first active merchant for demo purposes
+    const demoMerchant = await prisma.merchant.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    if (demoMerchant) {
+      // Redirect to the merchant's join queue page
+      res.redirect(`/queue/join/${demoMerchant.id}`);
+    } else {
+      res.render('error', {
+        title: 'No Active Merchants',
+        message: 'There are no active merchants available. Please contact support.',
+        showBackButton: false
+      });
+    }
+  } catch (error) {
+    logger.error('Join redirect error:', error);
+    res.redirect('/');
+  }
+});
+
 // Demo page
 router.get('/demo', (req, res) => {
   res.render('demo', {
@@ -24,10 +49,8 @@ router.get('/demo', (req, res) => {
   });
 });
 
-// WhatsApp setup redirect - redirect to dashboard setup
-router.get('/whatsapp', (req, res) => {
-  res.redirect('/dashboard/whatsapp-setup');
-});
+// WhatsApp route - REMOVED
+// WhatsApp integration has been removed from the system
 
 // Chatbot demo page
 router.get('/chatbot-demo', (req, res) => {
@@ -130,8 +153,8 @@ router.get('/join/:merchantId', async (req, res) => {
     const todayHours = merchant.businessHours?.find(h => h.dayOfWeek === dayOfWeek);
     const isOpen = todayHours && !todayHours.closed;
     
-    // Get active queues
-    const queues = await queueService.findByMerchant(merchant.id);
+    // Get active queues - pass merchant's tenantId
+    const queues = await queueService.findByMerchant(merchant.id, true, merchant.tenantId);
     const activeQueues = queues.filter(q => q.isActive);
     
     res.render('public/join-queue', {
@@ -144,6 +167,40 @@ router.get('/join/:merchantId', async (req, res) => {
     
   } catch (error) {
     logger.error('Join queue page error:', error);
+    res.render('public/error', {
+      title: 'Error',
+      message: 'An error occurred while loading the queue. Please try again.',
+      showBackButton: true
+    });
+  }
+});
+
+// GET /join-queue/:merchantId - New minimalist customer queue joining page
+router.get('/join-queue/:merchantId', async (req, res) => {
+  try {
+    const merchant = await merchantService.getFullDetails(req.params.merchantId);
+    
+    if (!merchant || !merchant.isActive) {
+      return res.render('public/error', {
+        title: 'Business Not Found',
+        message: 'The business you are looking for is not available.',
+        showBackButton: false
+      });
+    }
+    
+    // Get active queues - pass merchant's tenantId
+    const queues = await queueService.findByMerchant(merchant.id, true, merchant.tenantId);
+    const activeQueue = queues.find(q => q.isActive);
+    
+    res.render('public/join-queue-v2', {
+      title: `Join Queue - ${merchant.businessName}`,
+      merchantId: merchant.id,
+      merchantName: merchant.businessName,
+      queue: activeQueue
+    });
+    
+  } catch (error) {
+    logger.error('Join queue v2 page error:', error);
     res.render('public/error', {
       title: 'Error',
       message: 'An error occurred while loading the queue. Please try again.',
@@ -453,9 +510,8 @@ router.get('/queue/:queueId', async (req, res) => {
         .sort((a, b) => b.minutesWaiting - a.minutesWaiting)[0]
     });
 
-    // Generate WhatsApp and Messenger links
+    // Generate Messenger links
     const baseMessage = `Hi! I'm interested in joining the queue for ${queue.name} at ${merchant.businessName}. Can you help me with the current wait time and queue status?`;
-    const whatsappLink = `https://wa.me/${merchant.phone || '1234567890'}?text=${encodeURIComponent(baseMessage)}`;
     const messengerLink = `https://m.me/${merchant.integrations?.messenger?.pageId || 'your-page'}?ref=${encodeURIComponent(`queue_${queue._id}`)}`;
 
     // Format business hours - show today's hours
@@ -510,7 +566,6 @@ router.get('/queue/:queueId', async (req, res) => {
       acceptingCustomers: queue.acceptingCustomers,
       totalAhead,
       averageWaitTime,
-      whatsappLink,
       messengerLink,
       businessHours,
       businessAddress,

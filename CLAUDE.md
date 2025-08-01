@@ -121,6 +121,22 @@ Claude will automatically detect when to use specialist agents based on keywords
 - "Check for vulnerabilities"
 - "Ensure GDPR compliance"
 
+#### **QA Tester** (Uses Sonnet)
+**Auto-triggers on:**
+- "test", "testing", "unit test", "integration test", "e2e test"
+- "test coverage", "test suite", "jest", "cypress", "playwright"
+- "test automation", "QA", "quality assurance", "test cases"
+- "regression test", "smoke test", "TDD", "BDD"
+- Flaky or failing tests
+
+**Examples that trigger:**
+- "Write unit tests for authentication"
+- "Improve test coverage to 80%"
+- "Set up E2E tests for checkout flow"
+- "My tests are flaky"
+
+**Collaboration**: Works closely with Debug-Performance Specialist on failing/flaky tests
+
 ### 🧠 CONTEXTUAL AGENT ACTIVATION
 
 Agents also activate based on file patterns and project context:
@@ -159,6 +175,8 @@ Agents also activate based on file patterns and project context:
 - Realtime + DevOps: Scaling WebSocket infrastructure
 - Data Engineer + Database: Optimizing analytics queries
 - Fullstack + Security: Implementing secure authentication
+- QA Tester + Debug-Performance: Investigating flaky tests
+- QA Tester + Fullstack: Test-driven feature development
 
 ### 🎯 AGENT SELECTION LOGIC
 
@@ -183,6 +201,9 @@ ELSE IF request contains deploy/infrastructure/monitoring keywords:
   
 ELSE IF request contains security/vulnerability/compliance keywords:
   → Security Specialist
+  
+ELSE IF request contains test/testing/coverage keywords:
+  → QA Tester
   
 ELSE:
   → No agent needed, Claude handles directly
@@ -262,6 +283,7 @@ Claude: This requires real-time expertise for collaborative features.
 - **Data Engineer**: Full pipeline tools including Bash
 - **DevOps**: Infrastructure tools + document creation only
 - **Security**: Read-only audit tools + limited browser testing
+- **QA Tester**: Test creation tools + Bash for test runners, no UI components
 
 **See `/Users/kennteoh/.claude/agents/agent-tools-config.json` for detailed restrictions**
 
@@ -1098,12 +1120,15 @@ docker ps
 - **Data Engineer**: ETL, big data, pipelines, data warehouses
 - **DevOps Cloud**: Deployment, K8s, monitoring, infrastructure
 - **Security Specialist**: Audits, vulnerabilities, compliance, auth issues
+- **QA Tester**: Test creation, automation, coverage, works with debugger
 
 ### Key Triggers That Activate Multiple Agents:
 - "Scale to millions" → Database + DevOps  
 - "Real-time dashboard" → Realtime + Fullstack
 - "Secure authentication" → Security + Fullstack
 - "Data pipeline monitoring" → Data Engineer + DevOps
+- "Flaky test" → QA Tester + Debug-Performance
+- "Test failing" → QA Tester + Debug-Performance
 
 ### Remember:
 - Agents activate automatically based on context
