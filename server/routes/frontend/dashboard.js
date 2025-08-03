@@ -169,6 +169,19 @@ router.get('/', async (req, res) => {
       // Sort by position
       templateWaitingCustomers = allEntries.sort((a, b) => a.position - b.position);
       
+      logger.info('[DASHBOARD] Preparing template data:', {
+        activeQueueId,
+        mongoEntriesCount: mongoEntries.length,
+        prismaEntriesCount: prismaEntries.length,
+        totalEntriesCount: allEntries.length,
+        entriesBreakdown: allEntries.map(e => ({
+          id: e._id || e.id,
+          name: e.customerName,
+          status: e.status,
+          calledAt: e.calledAt
+        }))
+      });
+      
       // Get called customers separately if needed
       const calledCustomers = (activeQueue.entries || [])
         .filter(entry => entry.status === 'called' && new Date(entry.joinedAt) >= oneDayAgo);

@@ -1249,11 +1249,11 @@ class QueueChat {
             };
             sessionStorage.setItem('lastSession', JSON.stringify(sessionData));
             
-            // Clear queue data first
-            this.clearQueueData();
-            
-            // Hide existing messages and show cancellation UI
+            // Show cancellation UI first (while we still have queue data)
             this.showCancellationMessage(data);
+            
+            // Clear queue data after showing the message
+            this.clearQueueData();
         }
     }
     
@@ -1807,20 +1807,27 @@ class QueueChat {
         // Clear any existing timeout
         this.clearNoResponseTimeout();
         
+        console.log('[NO_RESPONSE_TIMEOUT] Starting timeouts for customer response');
+        
         // Set 4 minute warning timeout
         this.warningTimeout = setTimeout(() => {
+            console.log('[NO_RESPONSE_TIMEOUT] 4-minute warning triggered');
             this.showTimeoutWarning(1);
         }, 4 * 60 * 1000); // 4 minutes
         
         // Set 5 minute final warning timeout
         this.finalWarningTimeout = setTimeout(() => {
+            console.log('[NO_RESPONSE_TIMEOUT] 5-minute final warning triggered');
             this.showFinalWarning();
         }, 5 * 60 * 1000); // 5 minutes
         
         // Set 7 minute auto-cancel timeout
         this.autoCancelTimeout = setTimeout(() => {
+            console.log('[NO_RESPONSE_TIMEOUT] 7-minute auto-cancel triggered');
             this.autoCancelNoResponse();
         }, 7 * 60 * 1000); // 7 minutes
+        
+        console.log('[NO_RESPONSE_TIMEOUT] All timeouts set successfully');
     }
     
     clearNoResponseTimeout() {
@@ -1878,6 +1885,13 @@ class QueueChat {
     }
     
     async autoCancelNoResponse() {
+        console.log('[AUTO_CANCEL] autoCancelNoResponse called - customer did not respond in time');
+        console.log('[AUTO_CANCEL] Current time:', new Date().toISOString());
+        console.log('[AUTO_CANCEL] Queue data before cancel:', this.queueData);
+        
+        // Save queue data before any operations that might clear it
+        const savedQueueData = this.queueData ? { ...this.queueData } : null;
+        
         // Remove all cards
         this.removeAllActionCards();
         this.clearNoResponseTimeout();
@@ -1892,26 +1906,28 @@ class QueueChat {
             messageId: 'auto-cancelled',
             header: '❌ Spot given away',
             body: 'Sorry, we had to give your table to the next customer',
-            cards: this.queueData?.queueId ? [
+            cards: savedQueueData?.queueId ? [
                 {
                     id: 'rejoin-card',
                     text: 'Join queue again',
                     icon: 'bi-arrow-clockwise',
                     type: 'primary',
-                    action: () => window.location.href = `/queue/${this.queueData.queueId}/join`
+                    action: () => window.location.href = `/queue/${savedQueueData.queueId}/join`
                 }
             ] : []
         });
         
-        // Don't call executeCancellation as it would duplicate messages
-        // Just clear the data and notify backend
-        this.notifyBackend('auto_cancelled', {
-            queueId: this.queueData?.queueId,
-            customerName: this.queueData?.customerName,
+        // Notify backend BEFORE clearing data
+        await this.notifyBackend('auto_cancelled', {
+            queueId: savedQueueData?.queueId,
+            customerName: savedQueueData?.customerName,
             reason: 'no_response_timeout'
         });
         
-        // Show timeout cancellation UI
+        // Now we can safely clear the data
+        this.clearQueueData();
+        
+        // Show timeout cancellation UI (no longer needs queueData)
         this.showCancellationMessage({
             type: 'timeout',
             reason: 'Your session has timed out due to no response.'
@@ -1942,6 +1958,8 @@ class QueueChat {
     clearQueueData() {
         console.log('!!! clearQueueData called - Stack trace:');
         console.trace();
+        console.log('Queue data being cleared:', this.queueData);
+        console.log('Current time:', new Date().toISOString());
         
         this.queueData = null;
         localStorage.removeItem('queueData');

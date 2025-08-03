@@ -1,21 +1,28 @@
 /* Queue Drag & Drop - Minimalist Design
    ====================================== */
 
-/* Queue Board Layout */
+/* Queue Board Layout - Prevent horizontal overflow */
 .queue-board {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: var(--spacing-6);
     margin-top: var(--spacing-6);
+    overflow-x: hidden !important;
+    max-width: 100%;
+    width: 100%;
+    position: relative;
 }
 
-/* Queue Column */
+/* Queue Column - Contained within viewport */
 .queue-column {
     background-color: var(--color-gray-50);
     border-radius: var(--radius-xl);
     padding: var(--spacing-4);
     min-height: 500px;
     position: relative;
+    overflow-x: hidden !important;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .queue-column-header {
@@ -52,16 +59,19 @@
     font-weight: var(--font-weight-medium);
 }
 
-/* Queue Items Container */
+/* Queue Items Container - Prevent overflow */
 .queue-items {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
     min-height: 200px;
     padding: var(--spacing-2);
+    overflow-x: hidden !important;
+    max-width: 100%;
+    position: relative;
 }
 
-/* Queue Card */
+/* Queue Card - Strict overflow prevention */
 .queue-card {
     background-color: var(--color-white);
     border-radius: var(--radius-lg);
@@ -70,7 +80,11 @@
     cursor: grab;
     transition: all var(--transition-fast);
     position: relative;
-    overflow: hidden;
+    overflow: hidden !important;
+    max-width: 100% !important;
+    width: 100%;
+    box-sizing: border-box;
+    contain: layout style paint;
 }
 
 .queue-card:hover {
@@ -82,11 +96,16 @@
     opacity: 0.5;
     cursor: grabbing;
     transform: rotate(2deg);
+    overflow: hidden !important;
+    max-width: 100% !important;
+    contain: layout style paint;
 }
 
 .queue-card.drag-over {
     transform: scale(1.02);
     box-shadow: var(--shadow-lg);
+    overflow: hidden !important;
+    max-width: 100% !important;
 }
 
 /* Queue Card Header */

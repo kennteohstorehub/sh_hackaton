@@ -74,7 +74,9 @@ class QueueService {
       include: {
         entries: includeEntries ? {
           where: {
-            status: 'waiting'
+            status: {
+              in: ['waiting', 'called']  // Include both waiting and called customers
+            }
           },
           orderBy: {
             position: 'asc'

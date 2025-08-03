@@ -137,6 +137,20 @@ Claude will automatically detect when to use specialist agents based on keywords
 
 **Collaboration**: Works closely with Debug-Performance Specialist on failing/flaky tests
 
+#### **UI/UX Minimalist**
+**Auto-triggers on:**
+- "UI", "UX", "design", "interface", "mockup", "user experience"
+- "minimalist", "clean design", "simple interface", "rounded edges"
+- "usability", "user-friendly", "intuitive", "design system"
+- "typography", "color palette", "whitespace", "layout"
+- Design review requests, UI improvement suggestions
+
+**Examples that trigger:**
+- "Design a clean interface for the dashboard"
+- "Review this UI for usability improvements"
+- "Create a minimalist design system"
+- "Make this interface more user-friendly"
+
 ### 🧠 CONTEXTUAL AGENT ACTIVATION
 
 Agents also activate based on file patterns and project context:
@@ -177,6 +191,8 @@ Agents also activate based on file patterns and project context:
 - Fullstack + Security: Implementing secure authentication
 - QA Tester + Debug-Performance: Investigating flaky tests
 - QA Tester + Fullstack: Test-driven feature development
+- UI/UX Minimalist + Fullstack: Designing and implementing user interfaces
+- UI/UX Minimalist + Security: Ensuring accessible and secure interfaces
 
 ### 🎯 AGENT SELECTION LOGIC
 
@@ -204,6 +220,9 @@ ELSE IF request contains security/vulnerability/compliance keywords:
   
 ELSE IF request contains test/testing/coverage keywords:
   → QA Tester
+  
+ELSE IF request contains UI/UX/design/interface keywords:
+  → UI/UX Minimalist
   
 ELSE:
   → No agent needed, Claude handles directly
@@ -284,6 +303,7 @@ Claude: This requires real-time expertise for collaborative features.
 - **DevOps**: Infrastructure tools + document creation only
 - **Security**: Read-only audit tools + limited browser testing
 - **QA Tester**: Test creation tools + Bash for test runners, no UI components
+- **UI/UX Minimalist**: Design and development tools, uses Sonnet for efficiency
 
 **See `/Users/kennteoh/.claude/agents/agent-tools-config.json` for detailed restrictions**
 
@@ -328,6 +348,20 @@ When you see these keywords, **automatically consult Gemini**:
 * **ONLY ONE AGENT AT A TIME** - prevents token exhaustion and terminal hangs
 * **SEQUENTIAL EXECUTION** - complete current work before next agent
 * **NO PARALLEL AGENTS** - causes system instability and token waste
+
+### 🔍 VERBOSE MODE FOR AGENT VISIBILITY
+**To see detailed agent actions and reasoning:**
+- Claude automatically runs in verbose mode when `"verbose": true` is set in `.claude.json`
+- This shows agent's step-by-step thinking, tool usage, and decision-making
+- Helpful for debugging and understanding agent behavior
+
+**What you'll see in verbose mode:**
+- Agent initialization and selection reasoning
+- Each tool the agent considers and uses
+- Detailed output from agent's analysis
+- Agent's internal decision-making process
+
+**Note:** Your `.claude.json` already has `"verbose": true` enabled, so you should see detailed agent output.
 
 ### Reality Checkpoints
 **Stop and validate** at these moments:
@@ -1121,6 +1155,7 @@ docker ps
 - **DevOps Cloud**: Deployment, K8s, monitoring, infrastructure
 - **Security Specialist**: Audits, vulnerabilities, compliance, auth issues
 - **QA Tester**: Test creation, automation, coverage, works with debugger
+- **UI/UX Minimalist**: Interface design, mockups, usability, minimalist principles
 
 ### Key Triggers That Activate Multiple Agents:
 - "Scale to millions" → Database + DevOps  
@@ -1129,6 +1164,8 @@ docker ps
 - "Data pipeline monitoring" → Data Engineer + DevOps
 - "Flaky test" → QA Tester + Debug-Performance
 - "Test failing" → QA Tester + Debug-Performance
+- "Design new feature" → UI/UX Minimalist + Fullstack
+- "Improve UX of dashboard" → UI/UX Minimalist + Fullstack
 
 ### Remember:
 - Agents activate automatically based on context

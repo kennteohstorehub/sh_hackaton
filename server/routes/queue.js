@@ -399,13 +399,25 @@ router.post('/:id/call-next', [requireAuth, loadUser], async (req, res) => {
     
     const nextPosition = (nextPositionEntry?.position || 0) + 1;
 
-    // Emit real-time updates
+    // Get all queue entries for the updated display
+    const allEntries = await prisma.queueEntry.findMany({
+      where: { 
+        queueId: queue.id,
+        status: {
+          in: ['waiting', 'called']
+        }
+      },
+      orderBy: { position: 'asc' }
+    });
+
+    // Emit real-time updates with complete queue data
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
       queueId: queue.id,
       action: 'customer-called',
       customer: updatedCustomer,
       queue: {
         ...queue,
+        entries: allEntries,  // Include all entries for display
         currentLength: waitingEntries,
         nextPosition: nextPosition
       }
@@ -592,13 +604,25 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
     
     const nextPosition = (nextPositionEntry?.position || 0) + 1;
 
-    // Emit real-time updates
+    // Get all queue entries for the updated display
+    const allEntries = await prisma.queueEntry.findMany({
+      where: { 
+        queueId: queue.id,
+        status: {
+          in: ['waiting', 'called']
+        }
+      },
+      orderBy: { position: 'asc' }
+    });
+
+    // Emit real-time updates with complete queue data
     req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
       queueId: queue.id,
       action: 'customer-called-specific',
       customer: customerEntry,
       queue: {
         ...queue,
+        entries: allEntries,  // Include all entries for display
         currentLength: waitingEntries,
         nextPosition: nextPosition
       }

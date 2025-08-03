@@ -19,16 +19,89 @@
     <script src="/js/queue-drag-drop.js" defer></script>
     <%- csrfMeta() %>
     <style>
-        /* New Customer Animation */
+        /* COMPREHENSIVE WHITE BAR FIX - Prevent any horizontal overflow */
+        
+        /* Global overflow prevention - highest priority */
+        html {
+            overflow-x: hidden !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+        }
+        
+        body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Prevent all major containers from overflow */
+        * {
+            max-width: 100vw;
+            box-sizing: border-box;
+        }
+        
+        /* Dashboard structure overflow prevention */
+        .dashboard-wrapper,
+        .dashboard-main,
+        .container,
+        .row,
+        .col,
+        .tab-content,
+        .tab-pane {
+            overflow-x: hidden !important;
+            width: 100%;
+            max-width: 100%;
+            position: relative;
+        }
+        
+        /* Customer elements - ensure they never exceed viewport */
+        .customer-row,
+        .customer-card,
+        .customer-list,
+        .customer-list-mobile,
+        .queue-container,
+        .queue-board,
+        .queue-column,
+        .queue-items {
+            overflow-x: hidden !important;
+            max-width: 100%;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        /* MINIMALIST ANIMATIONS - Viewport-contained transforms */
         @keyframes slideInRight {
             0% {
-                transform: translateX(100%);
+                transform: translateX(20px) scale(0.95);
                 opacity: 0;
             }
             100% {
-                transform: translateX(0);
+                transform: translateX(0) scale(1);
                 opacity: 1;
             }
+        }
+        
+        
+        @keyframes fadeOutScale {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        /* Ensure all animated elements stay within bounds during animation */
+        .new-customer-row,
+        .customer-row {
+            overflow: hidden !important;
+            max-width: 100% !important;
+            position: relative;
         }
         
         @keyframes highlightPulse {
@@ -57,6 +130,7 @@
             }
         }
         
+        /* FIXED NEW CUSTOMER NOTIFICATION - Prevent overflow */
         .new-customer-notification {
             position: fixed;
             top: 20px;
@@ -70,8 +144,24 @@
             align-items: center;
             gap: 12px;
             z-index: 9999;
-            animation: slideInRight 0.3s ease-out;
-            max-width: 350px;
+            transform: translateX(100%);
+            animation: slideInNotification 0.3s ease-out forwards;
+            max-width: calc(100vw - 40px);
+            width: auto;
+            pointer-events: auto;
+            box-sizing: border-box;
+        }
+        
+        /* Safe notification slide-in animation */
+        @keyframes slideInNotification {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         
         .new-customer-notification i {
@@ -92,6 +182,90 @@
             opacity: 0.9;
         }
         
+        /* FIXED NOTIFICATION STYLES - Prevent horizontal overflow */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(100%) scale(0.8);
+            transition: all 0.3s ease-out;
+            max-width: calc(100vw - 40px);
+            width: auto;
+            font-weight: 500;
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: auto;
+        }
+        
+        .notification-success {
+            background: #28a745;
+        }
+        
+        .notification-error {
+            background: #dc3545;
+        }
+        
+        .notification-info {
+            background: #17a2b8;
+        }
+        
+        .notification i {
+            font-size: 1.2rem;
+        }
+        
+        /* Mobile notification adjustments */
+        @media (max-width: 768px) {
+            .notification,
+            .new-customer-notification {
+                right: 10px;
+                left: 10px;
+                max-width: calc(100vw - 20px);
+                width: auto;
+            }
+            
+            .notification {
+                transform: translateY(-100%) scale(0.8);
+            }
+            
+            .notification.show {
+                transform: translateY(0) scale(1);
+            }
+            
+            .notification.show {
+                right: 10px; /* Move to final position */
+            }
+        }
+        
+        /* CLEAN SEATING FLOW - Minimalist animation containment */
+        .customer-row,
+        .customer-card,
+        .queue-card {
+            contain: layout style paint;
+            transform-style: flat;
+        }
+        
+        /* Animation states */
+        .customer-row[style*="animation"],
+        .customer-card[style*="animation"] {
+            contain: layout style paint;
+            isolation: isolate;
+        }
+
         /* Audio Control Button */
         .audio-control {
             position: fixed;
@@ -1422,6 +1596,23 @@
 
         const socket = io();
         
+        // Store active queue ID for refresh operations
+        const activeQueueId = '<%= activeQueue.id || activeQueue._id %>';
+        
+        // Log initial page data
+        console.log('📊 [DASHBOARD] Page loaded with initial data:', {
+            waitingCustomersCount: <%= waitingCustomers.length %>,
+            waitingCustomers: <%- JSON.stringify(waitingCustomers.map(c => ({ 
+                id: c._id || c.id, 
+                name: c.customerName, 
+                status: c.status,
+                calledAt: c.calledAt,
+                position: c.position
+            }))) %>,
+            activeQueueId: activeQueueId,
+            totalQueues: <%= queues.length %>
+        });
+        
         // Queue for managing rapid customer additions
         const customerAdditionQueue = [];
         let isProcessingQueue = false;
@@ -1514,7 +1705,15 @@
         
         // Socket.IO event listeners
         socket.on('queue-updated', (data) => {
-            console.log('Queue updated event received:', data);
+            console.log('📡 [DASHBOARD] queue-updated event received:', {
+                action: data?.action,
+                hasQueue: !!data?.queue,
+                hasEntries: !!data?.queue?.entries,
+                entriesCount: data?.queue?.entries?.length || 0,
+                customerId: data?.customer?.id,
+                customerName: data?.customer?.customerName,
+                fullData: data
+            });
             handleQueueUpdate(data);
         });
         
@@ -1699,6 +1898,21 @@
         }
         
         function updateQueueDisplay(queueData) {
+            console.log('🔍 [DASHBOARD] updateQueueDisplay called with:', {
+                hasEntries: !!queueData.entries,
+                entriesIsArray: Array.isArray(queueData.entries),
+                entriesLength: queueData.entries ? queueData.entries.length : 'N/A',
+                queueId: queueData.id || queueData._id,
+                queueData: queueData
+            });
+            
+            // Skip update if no entries array
+            if (!queueData.entries || !Array.isArray(queueData.entries)) {
+                console.warn('❌ [DASHBOARD] Queue update received without entries array:', queueData);
+                console.warn('❌ [DASHBOARD] This is why customers disappear! Missing entries array.');
+                return;
+            }
+            
             // Update queue stats
             const queueStatsElements = document.querySelectorAll('.queue-stats .number');
             if (queueStatsElements.length >= 2) {
@@ -1743,37 +1957,258 @@
         }
         
         function updateActiveQueueCustomerList(queueData) {
-            // Update the customer list dynamically without page reload
+            // Skip update if no entries array
+            if (!queueData.entries || !Array.isArray(queueData.entries)) {
+                console.warn('Queue update received without entries array:', queueData);
+                return;
+            }
+            
             const activeQueueTab = document.getElementById('active-queue');
             if (!activeQueueTab || !activeQueueTab.classList.contains('active')) {
                 return;
             }
             
-            // For now, still reload for complete queue updates
-            // In future, this can be enhanced to do full dynamic updates
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            console.log('🔄 Updating customer list dynamically with', queueData.entries.length, 'entries');
+            
+            // Update customer list dynamically instead of reloading
+            updateCustomerDisplayList(queueData.entries);
+        }
+        
+        function updateCustomerDisplayList(entries) {
+            console.log('📋 Updating customer display with entries:', entries.map(e => `${e.customerName} (${e.status})`));
+            
+            // Filter entries to show waiting and called customers
+            const displayEntries = entries.filter(entry => 
+                entry.status === 'waiting' || entry.status === 'called'
+            ).sort((a, b) => a.position - b.position);
+            
+            // Update desktop view
+            const desktopList = document.querySelector('#active-queue .customer-list-desktop');
+            if (desktopList) {
+                updateDesktopCustomerList(desktopList, displayEntries);
+            }
+            
+            // Update mobile view
+            const mobileList = document.querySelector('#active-queue .customer-list-mobile');
+            if (mobileList) {
+                updateMobileCustomerList(mobileList, displayEntries);
+            }
+        }
+        
+        function updateDesktopCustomerList(container, entries) {
+            const customerRows = container.querySelectorAll('.customer-row');
+            const existingCustomerIds = new Set();
+            
+            // Update existing rows and track which customers we have
+            customerRows.forEach(row => {
+                const customerId = row.getAttribute('data-customer-id');
+                const matchingEntry = entries.find(e => (e._id || e.id) === customerId);
+                
+                if (matchingEntry) {
+                    existingCustomerIds.add(customerId);
+                    updateCustomerRow(row, matchingEntry);
+                } else {
+                    // Customer not in current entries, remove with animation
+                    console.log('🗑️ Removing customer row:', customerId);
+                    row.style.animation = 'slideOutRight 0.3s ease-out';
+                    setTimeout(() => {
+                        if (row.parentNode) row.remove();
+                        renumberCustomers();
+                    }, 300);
+                }
+            });
+            
+            // Add new customers that don't exist yet
+            entries.forEach((entry, index) => {
+                const customerId = entry._id || entry.id;
+                if (!existingCustomerIds.has(customerId)) {
+                    console.log('➕ Adding new customer row:', entry.customerName);
+                    const newRow = createCustomerRow(entry, index);
+                    container.appendChild(newRow);
+                    // Add animation
+                    setTimeout(() => newRow.classList.add('new-customer-row'), 10);
+                }
+            });
+            
+            // Renumber all customers
+            setTimeout(renumberCustomers, 100);
+        }
+        
+        function updateMobileCustomerList(container, entries) {
+            const customerCards = container.querySelectorAll('.customer-card');
+            const existingCustomerIds = new Set();
+            
+            // Update existing cards
+            customerCards.forEach(card => {
+                const customerId = card.getAttribute('data-customer-id');
+                const matchingEntry = entries.find(e => (e._id || e.id) === customerId);
+                
+                if (matchingEntry) {
+                    existingCustomerIds.add(customerId);
+                    updateCustomerCard(card, matchingEntry);
+                } else {
+                    // Remove card with animation
+                    console.log('🗑️ Removing customer card:', customerId);
+                    card.style.animation = 'slideOutRight 0.3s ease-out';
+                    setTimeout(() => {
+                        if (card.parentNode) card.remove();
+                    }, 300);
+                }
+            });
+            
+            // Add new customer cards
+            entries.forEach((entry, index) => {
+                const customerId = entry._id || entry.id;
+                if (!existingCustomerIds.has(customerId)) {
+                    console.log('➕ Adding new customer card:', entry.customerName);
+                    const newCard = createCustomerCard(entry, index);
+                    container.appendChild(newCard);
+                    // Add animation
+                    setTimeout(() => newCard.classList.add('new-customer-row'), 10);
+                }
+            });
+        }
+        
+        function updateCustomerRow(row, entry) {
+            const customerId = entry._id || entry.id;
+            
+            // Update status classes
+            row.className = `customer-row ${entry.status === 'called' ? 'notified-customer' : ''}`;
+            row.setAttribute('data-customer-id', customerId);
+            row.setAttribute('data-called-at', entry.calledAt || '');
+            
+            // Update position
+            const positionDiv = row.querySelector('.position');
+            if (positionDiv) {
+                positionDiv.textContent = entry.position;
+            }
+            
+            // Update status badge
+            const statusBadge = row.querySelector('.status-badge');
+            if (statusBadge) {
+                if (entry.status === 'called') {
+                    statusBadge.textContent = 'CALLED';
+                    statusBadge.className = 'status-badge notified';
+                } else {
+                    statusBadge.remove();
+                }
+            }
+            
+            // Update action buttons
+            updateRowActionButtons(row, entry);
+        }
+        
+        function updateCustomerCard(card, entry) {
+            const customerId = entry._id || entry.id;
+            
+            // Update status classes  
+            card.className = `customer-card ${entry.status === 'called' ? 'notified-customer' : ''}`;
+            card.setAttribute('data-customer-id', customerId);
+            
+            // Update position badge
+            const positionBadge = card.querySelector('.position-badge');
+            if (positionBadge) {
+                positionBadge.textContent = entry.position;
+            }
+            
+            // Update status badge
+            const statusBadge = card.querySelector('.status-badge');
+            if (entry.status === 'called') {
+                if (statusBadge) {
+                    statusBadge.textContent = 'CALLED';
+                    statusBadge.className = 'status-badge notified';
+                } else {
+                    // Add status badge if it doesn't exist
+                    const header = card.querySelector('.customer-card-header');
+                    if (header) {
+                        const badge = document.createElement('span');
+                        badge.className = 'status-badge notified';
+                        badge.textContent = 'CALLED';
+                        header.appendChild(badge);
+                    }
+                }
+            } else if (statusBadge) {
+                statusBadge.remove();
+            }
+            
+            // Update action buttons
+            updateCardActionButtons(card, entry);
+        }
+        
+        function updateRowActionButtons(row, entry) {
+            const actionsCell = row.querySelector('.actions');
+            if (!actionsCell) return;
+            
+            if (entry.status === 'called') {
+                // Show notified state buttons
+                actionsCell.innerHTML = `
+                    <button onclick="assignTable('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button assign-button">
+                        <i class="bi bi-person-check"></i> Assign Table
+                    </button>
+                    <button onclick="revokeNotification('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button btn-revoke">
+                        <i class="bi bi-x-circle"></i> Revoke
+                    </button>
+                `;
+            } else {
+                // Show call button
+                actionsCell.innerHTML = `
+                    <button onclick="callCustomer('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button call-button">
+                        <i class="bi bi-megaphone"></i> Call
+                    </button>
+                `;
+            }
+        }
+        
+        function updateCardActionButtons(card, entry) {
+            const actionsDiv = card.querySelector('.customer-card-actions');
+            if (!actionsDiv) return;
+            
+            if (entry.status === 'called') {
+                // Show notified state buttons
+                actionsDiv.innerHTML = `
+                    <button onclick="assignTable('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button assign-button">
+                        <i class="bi bi-person-check"></i> Assign Table
+                    </button>
+                    <button onclick="revokeNotification('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button btn-revoke">
+                        <i class="bi bi-x-circle"></i> Revoke
+                    </button>
+                `;
+            } else {
+                // Show call button
+                actionsDiv.innerHTML = `
+                    <button onclick="callCustomer('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button call-button">
+                        <i class="bi bi-megaphone"></i> Call
+                    </button>
+                `;
+            }
         }
         
         function removeCustomerFromQueue(customerId) {
             // Remove from desktop view
             const desktopRow = document.querySelector(`.customer-row[data-customer-id="${customerId}"]`);
             if (desktopRow) {
-                desktopRow.style.animation = 'slideInRight 0.3s ease-out reverse';
+                desktopRow.style.animation = 'slideOutRight 0.3s ease-out forwards';
+                desktopRow.style.position = 'relative';
+                desktopRow.style.zIndex = '1';
                 setTimeout(() => {
-                    desktopRow.remove();
-                    // Re-number remaining customers
-                    renumberCustomers();
+                    if (desktopRow && desktopRow.parentNode) {
+                        desktopRow.remove();
+                        // Re-number remaining customers
+                        renumberCustomers();
+                    }
                 }, 300);
             }
             
             // Remove from mobile view
             const mobileCard = document.querySelector(`.customer-card[data-customer-id="${customerId}"]`);
             if (mobileCard) {
-                mobileCard.style.animation = 'slideInRight 0.3s ease-out reverse';
+                mobileCard.style.animation = 'slideOutRight 0.3s ease-out forwards';
+                mobileCard.style.position = 'relative';
+                mobileCard.style.zIndex = '1';
                 setTimeout(() => {
-                    mobileCard.remove();
+                    if (mobileCard && mobileCard.parentNode) {
+                        mobileCard.remove();
+                    }
                 }, 300);
             }
         }
@@ -1890,21 +2325,8 @@
         }
         
         function refreshDashboardData() {
-            showUpdatingIndicator();
-            fetch('/dashboard')
-                .then(response => {
-                    if (response.ok) {
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 500);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error refreshing dashboard:', error);
-                })
-                .finally(() => {
-                    setTimeout(hideUpdatingIndicator, 1000);
-                });
+            // Use the existing queue refresh mechanism instead
+            refreshQueue();
         }
         
         
@@ -1994,10 +2416,12 @@
             `;
             document.body.appendChild(modal);
             
-            // Auto-refresh after 3 seconds
+            // Auto-close modal after 3 seconds
             setTimeout(() => {
-                if (document.querySelector('.notification-modal')) {
-                    window.location.reload();
+                const modal = document.querySelector('.notification-modal');
+                if (modal) {
+                    modal.remove();
+                    // WebSocket events will keep the UI updated
                 }
             }, 3000);
         }
@@ -2006,7 +2430,7 @@
             const modal = document.querySelector('.notification-modal');
             if (modal) {
                 modal.remove();
-                window.location.reload();
+                // No need to reload - the WebSocket events will keep the UI updated
             }
         }
         
@@ -2060,8 +2484,24 @@
         }
         
         function closeVerificationModal() {
-            const modal = document.querySelector('.verification-modal');
-            if (modal) modal.remove();
+            // Remove all possible modal elements to prevent white background remnants
+            const selectors = ['.verification-modal', '.modal', '[class*="modal"]'];
+            selectors.forEach(selector => {
+                const modals = document.querySelectorAll(selector);
+                modals.forEach(modal => {
+                    if (modal && modal.parentNode) {
+                        modal.remove();
+                    }
+                });
+            });
+            
+            // Also remove any modal backdrop or overlay
+            const backdrops = document.querySelectorAll('.modal-backdrop, [class*="backdrop"], .overlay');
+            backdrops.forEach(backdrop => {
+                if (backdrop && backdrop.parentNode) {
+                    backdrop.remove();
+                }
+            });
         }
         
         async function assignTableAndSeatCustomer(queueId, customerId) {
@@ -2088,8 +2528,39 @@
                 
                 if (result.success) {
                     closeVerificationModal();
-                    alert(`✅ ${result.customer.customerName} has been seated!`);
-                    window.location.reload();
+                    showNotification(`✅ ${result.customer.customerName} has been seated!`, 'success');
+                    
+                    // Remove the customer from active queue display since they're now seated
+                    const customerRow = document.querySelector(`[data-customer-id="${customerId}"]`);
+                    const customerCard = document.querySelector(`.customer-card[data-customer-id="${customerId}"]`);
+                    
+                    if (customerRow) {
+                        // Use minimalist fadeOut animation - no transforms that can cause overflow
+                        customerRow.style.animation = 'fadeOutScale 0.3s ease-out forwards';
+                        customerRow.style.contain = 'layout style paint';
+                        
+                        setTimeout(() => {
+                            if (customerRow && customerRow.parentNode) {
+                                customerRow.remove();
+                                // Trigger renumbering after removal
+                                renumberCustomers();
+                            }
+                        }, 300);
+                    }
+                    
+                    if (customerCard) {
+                        // Use minimalist fadeOut animation - no transforms that can cause overflow
+                        customerCard.style.animation = 'fadeOutScale 0.3s ease-out forwards';
+                        customerCard.style.contain = 'layout style paint';
+                        
+                        setTimeout(() => {
+                            if (customerCard && customerCard.parentNode) {
+                                customerCard.remove();
+                            }
+                        }, 300);
+                    }
+                    
+                    // The WebSocket event will also update the UI
                 } else {
                     showVerificationError(result.error || 'Failed to assign table');
                 }
@@ -2152,10 +2623,30 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert(result.message);
-                    window.location.reload();
+                    showNotification(result.message, 'success');
+                    
+                    // Update button and status immediately
+                    if (result.isActive) {
+                        button.textContent = 'Stop Queue';
+                        button.className = 'btn-action btn-danger';
+                        const statusBadge = document.querySelector('.queue-status');
+                        if (statusBadge) {
+                            statusBadge.textContent = 'ACTIVE';
+                            statusBadge.className = 'queue-status active';
+                        }
+                    } else {
+                        button.textContent = 'Start Queue';
+                        button.className = 'btn-action btn-success';
+                        const statusBadge = document.querySelector('.queue-status');
+                        if (statusBadge) {
+                            statusBadge.textContent = 'STOPPED';
+                            statusBadge.className = 'queue-status stopped';
+                        }
+                    }
+                    
+                    // The WebSocket event will also update the UI
                 } else {
-                    alert(result.error || 'Failed to update queue status');
+                    showNotification(result.error || 'Failed to update queue status', 'error');
                     button.disabled = false;
                     button.textContent = button.classList.contains('btn-danger') ? 'Stop Queue' : 'Start Queue';
                 }
@@ -2262,10 +2753,18 @@
                 
                 if (result.success) {
                     closeStopQueueModal();
-                    alert('✅ ' + result.message);
-                    window.location.reload();
+                    showNotification('✅ ' + result.message, 'success');
+                    
+                    // Update queue status in the UI
+                    const statusBadge = document.querySelector('.queue-status');
+                    if (statusBadge) {
+                        statusBadge.textContent = 'STOPPED';
+                        statusBadge.className = 'queue-status stopped';
+                    }
+                    
+                    // The WebSocket event will also update the UI
                 } else {
-                    alert('❌ ' + (result.error || 'Failed to stop queue'));
+                    showNotification('❌ ' + (result.error || 'Failed to stop queue'), 'error');
                     button.disabled = false;
                     button.textContent = 'Stop Queue';
                 }
@@ -2304,10 +2803,27 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert(`✅ ${customerName} successfully seated!`);
-                    setTimeout(() => window.location.reload(), 500);
+                    showNotification(`✅ ${customerName} successfully seated!`, 'success');
+                    
+                    // Remove the customer from active queue display since they're now seated
+                    const customerRow = event.target.closest('.customer-row');
+                    if (customerRow) {
+                        // Use minimalist fadeOut animation - no transforms that can cause overflow
+                        customerRow.style.animation = 'fadeOutScale 0.3s ease-out forwards';
+                        customerRow.style.contain = 'layout style paint';
+                        
+                        setTimeout(() => {
+                            if (customerRow && customerRow.parentNode) {
+                                customerRow.remove();
+                                // Trigger renumbering after removal
+                                renumberCustomers();
+                            }
+                        }, 300);
+                    }
+                    
+                    // The WebSocket event will also update the UI
                 } else {
-                    alert(result.error || 'Failed to seat customer');
+                    showNotification(result.error || 'Failed to seat customer', 'error');
                     button.disabled = false;
                     button.textContent = 'Seated';
                 }
@@ -2338,10 +2854,14 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert(`Notified: ${result.customer.customerName}`);
-                    setTimeout(() => window.location.reload(), 1000);
+                    showNotification(`✅ Notified: ${result.customer.customerName}`, 'success');
+                    
+                    // Update the customer status immediately in the UI
+                    updateCustomerStatus(customerId, 'called', result.customer);
+                    
+                    // The WebSocket event will also update the UI
                 } else {
-                    alert(result.error || 'Failed to notify customer');
+                    showNotification(result.error || 'Failed to notify customer', 'error');
                 }
             } catch (error) {
                 console.error('Error notifying customer:', error);
@@ -2350,7 +2870,27 @@
         }
         
         function refreshQueue() {
-            window.location.reload();
+            // Use the existing queue update mechanism instead of reload
+            showUpdatingIndicator();
+            
+            // Request fresh queue data
+            fetch(`/api/queue/${activeQueueId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.queue) {
+                        handleQueueUpdate(data);
+                        showNotification('Queue refreshed', 'success');
+                    } else {
+                        showNotification('Failed to refresh queue', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error refreshing queue:', error);
+                    showNotification('Error refreshing queue', 'error');
+                })
+                .finally(() => {
+                    setTimeout(hideUpdatingIndicator, 1000);
+                });
         }
         
         function copyQueueLink(queuePath) {
@@ -2372,12 +2912,183 @@
             });
         }
 
+        // Helper function to show notifications
+        function showNotification(message, type = 'info') {
+            // Clean up any existing notifications first
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notif => {
+                if (notif.parentNode) {
+                    notif.parentNode.removeChild(notif);
+                }
+            });
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : 'bi-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            // Add to DOM
+            document.body.appendChild(notification);
+            
+            // Force browser to recalculate layout
+            notification.offsetHeight;
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                notification.classList.add('show');
+            });
+            
+            // Remove after delay
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300); // Match transition duration
+            }, 3000);
+        }
+
+        // Helper function to update customer status immediately for better UX
+        function updateCustomerStatus(customerId, newStatus, customerData) {
+            // Find and update desktop row
+            const row = document.querySelector(`[data-customer-id="${customerId}"]`);
+            if (row) {
+                if (newStatus === 'called') {
+                    row.classList.add('notified-customer');
+                    
+                    // Add status badge if not exists
+                    let statusBadge = row.querySelector('.status-badge');
+                    if (!statusBadge) {
+                        statusBadge = document.createElement('span');
+                        statusBadge.className = 'status-badge notified';
+                        const nameCell = row.querySelector('.customer-name') || row.querySelector('.name');
+                        if (nameCell) {
+                            nameCell.appendChild(statusBadge);
+                        }
+                    }
+                    statusBadge.textContent = 'CALLED';
+                    statusBadge.className = 'status-badge notified';
+                    
+                    // Update action buttons
+                    const actionsCell = row.querySelector('.actions');
+                    if (actionsCell) {
+                        actionsCell.innerHTML = `
+                            <button onclick="assignTable('${customerData.queueId || customerData.queue}', '${customerId}')" class="action-button assign-button">
+                                <i class="bi bi-person-check"></i> Assign Table
+                            </button>
+                            <button onclick="revokeNotification('${customerData.queueId || customerData.queue}', '${customerId}')" class="action-button btn-revoke">
+                                <i class="bi bi-x-circle"></i> Revoke
+                            </button>
+                        `;
+                    }
+                }
+            }
+            
+            // Find and update mobile card
+            const card = document.querySelector(`.customer-card[data-customer-id="${customerId}"]`);
+            if (card) {
+                if (newStatus === 'called') {
+                    card.classList.add('notified-customer');
+                    
+                    // Add status badge if not exists
+                    let statusBadge = card.querySelector('.status-badge');
+                    if (!statusBadge) {
+                        const header = card.querySelector('.customer-card-header');
+                        if (header) {
+                            statusBadge = document.createElement('span');
+                            statusBadge.className = 'status-badge notified';
+                            header.appendChild(statusBadge);
+                        }
+                    }
+                    if (statusBadge) {
+                        statusBadge.textContent = 'CALLED';
+                        statusBadge.className = 'status-badge notified';
+                    }
+                    
+                    // Update action buttons
+                    const actionsDiv = card.querySelector('.customer-card-actions');
+                    if (actionsDiv) {
+                        actionsDiv.innerHTML = `
+                            <button onclick="assignTable('${customerData.queueId || customerData.queue}', '${customerId}')" class="action-button assign-button">
+                                <i class="bi bi-person-check"></i> Assign Table
+                            </button>
+                            <button onclick="revokeNotification('${customerData.queueId || customerData.queue}', '${customerId}')" class="action-button btn-revoke">
+                                <i class="bi bi-x-circle"></i> Revoke
+                            </button>
+                        `;
+                    }
+                }
+            }
+        }
+
+        // Helper function to update customer status back to waiting (for revoke)
+        function updateCustomerStatusToWaiting(customerId, customerData) {
+            // Find and update desktop row
+            const row = document.querySelector(`[data-customer-id="${customerId}"]`);
+            if (row) {
+                row.classList.remove('notified-customer');
+                
+                // Remove status badge
+                const statusBadge = row.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.remove();
+                }
+                
+                // Update action buttons back to call button
+                const actionsCell = row.querySelector('.actions');
+                if (actionsCell) {
+                    actionsCell.innerHTML = `
+                        <button onclick="callCustomer('${customerData.queueId || customerData.queue}', '${customerId}')" class="action-button call-button">
+                            <i class="bi bi-megaphone"></i> Call
+                        </button>
+                    `;
+                }
+            }
+            
+            // Find and update mobile card
+            const card = document.querySelector(`.customer-card[data-customer-id="${customerId}"]`);
+            if (card) {
+                card.classList.remove('notified-customer');
+                
+                // Remove status badge
+                const statusBadge = card.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.remove();
+                }
+                
+                // Update action buttons back to call button
+                const actionsDiv = card.querySelector('.customer-card-actions');
+                if (actionsDiv) {
+                    actionsDiv.innerHTML = `
+                        <button onclick="callCustomer('${customerData.queueId || customerData.queue}', '${customerId}')" class="action-button call-button">
+                            <i class="bi bi-megaphone"></i> Call
+                        </button>
+                    `;
+                }
+            }
+        }
+
         async function callCustomer(queueId, customerId) {
+            console.log('🔔 [DASHBOARD] callCustomer initiated:', { queueId, customerId });
+            
             if (!confirm('Are you sure you want to notify this customer?')) {
+                console.log('🔔 [DASHBOARD] Call cancelled by user');
                 return;
             }
             
+            console.log('🔔 [DASHBOARD] Sending call request to backend...');
+            
             try {
+                // Show loading state
+                const button = event.target.closest('button');
+                const originalHTML = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="bi bi-hourglass-split"></i> Calling...';
+                
                 const response = await fetch(`/api/queue/${queueId}/call-specific`, {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -2389,16 +3100,36 @@
                 });
                 
                 const result = await response.json();
+                console.log('🔔 [DASHBOARD] Call response received:', {
+                    success: result.success,
+                    customerName: result.customer?.customerName,
+                    hasQueue: !!result.queue,
+                    hasEntries: !!result.queue?.entries,
+                    entriesCount: result.queue?.entries?.length || 0,
+                    fullResult: result
+                });
                 
                 if (result.success) {
-                    alert(`✅ Notified: ${result.customer.customerName}`);
-                    setTimeout(() => window.location.reload(), 1000);
+                    // Show success notification
+                    showNotification(`✅ Notified: ${result.customer.customerName}`, 'success');
+                    
+                    // Update the customer status immediately in the UI
+                    updateCustomerStatus(customerId, 'called', result.customer);
+                    
+                    // The WebSocket event will also update the UI, but this provides immediate feedback
                 } else {
                     alert(result.error || 'Failed to notify customer');
+                    // Restore button state on error
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
                 }
             } catch (error) {
                 console.error('Error notifying customer:', error);
                 alert('Error notifying customer');
+                // Restore button state on error
+                const button = event.target.closest('button');
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-megaphone"></i> Call';
             }
         }
 
@@ -2423,10 +3154,22 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert(`✅ Service completed for ${customerName}`);
-                    setTimeout(() => window.location.reload(), 1000);
+                    showNotification(`✅ Service completed for ${customerName}`, 'success');
+                    
+                    // Remove the customer card with proper animation since service is completed
+                    customerCard.style.animation = 'slideOutRight 0.3s ease-out forwards';
+                    customerCard.style.position = 'relative';
+                    customerCard.style.zIndex = '1';
+                    
+                    setTimeout(() => {
+                        if (customerCard && customerCard.parentNode) {
+                            customerCard.remove();
+                        }
+                    }, 300);
+                    
+                    // The WebSocket event will also update the UI
                 } else {
-                    alert(result.error || 'Failed to complete service');
+                    showNotification(result.error || 'Failed to complete service', 'error');
                 }
             } catch (error) {
                 console.error('Error completing service:', error);
@@ -2452,10 +3195,10 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('Customer requeued successfully');
-                    setTimeout(() => window.location.reload(), 1000);
+                    showNotification('Customer requeued successfully', 'success');
+                    // The WebSocket event will update the UI
                 } else {
-                    alert(result.error || 'Failed to requeue customer');
+                    showNotification(result.error || 'Failed to requeue customer', 'error');
                 }
             } catch (error) {
                 console.error('Error requeuing customer:', error);
@@ -2481,10 +3224,14 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('Notification revoked successfully');
-                    setTimeout(() => window.location.reload(), 1000);
+                    showNotification('Notification revoked successfully', 'success');
+                    
+                    // Update customer status immediately
+                    updateCustomerStatusToWaiting(customerId, result.customer);
+                    
+                    // The WebSocket event will also update the UI
                 } else {
-                    alert(result.error || 'Failed to revoke notification');
+                    showNotification(result.error || 'Failed to revoke notification', 'error');
                 }
             } catch (error) {
                 console.error('Error revoking notification:', error);
@@ -2758,9 +3505,11 @@
             
             // Auto-remove after 5 seconds
             setTimeout(() => {
-                notification.style.animation = 'slideInRight 0.3s ease-out reverse';
+                notification.style.animation = 'slideOutRight 0.3s ease-out forwards';
                 setTimeout(() => {
-                    notification.remove();
+                    if (notification && notification.parentNode) {
+                        notification.remove();
+                    }
                 }, 300);
             }, 5000);
         }

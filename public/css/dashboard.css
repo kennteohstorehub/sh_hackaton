@@ -61,7 +61,71 @@ body {
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    position: relative;
+}
+
+/* MINIMALIST CONTAINMENT SYSTEM - Bulletproof white bar prevention */
+
+/* Global containment with modern CSS containment */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+/* Root viewport control */
+html {
     overflow-x: hidden;
+    width: 100vw;
+    contain: layout style;
+}
+
+body {
+    overflow-x: hidden;
+    width: 100%;
+    contain: layout style;
+    isolation: isolate; /* Create new stacking context */
+}
+
+/* Primary containment layer */
+.container,
+.dashboard-wrapper,
+.dashboard-main,
+#main-content {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    contain: layout style paint;
+    isolation: isolate;
+}
+
+/* Content containment */
+.tab-content,
+.customer-list,
+.queue-container,
+#active-queue,
+.queue-board {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    contain: layout style;
+    position: relative;
+}
+
+/* Element-level containment */
+.customer-row,
+.customer-card,
+.queue-card {
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    contain: layout style paint;
+    position: relative;
+    transform-style: flat; /* Prevent 3D transforms */
 }
 
 /* Mobile Hamburger Menu */
@@ -296,11 +360,14 @@ body {
     border-color: var(--border-hover);
 }
 
-/* Container */
+/* Container - Clean minimalist containment */
 .container {
-    max-width: 1400px;
+    max-width: min(1400px, 100vw);
     margin: 0 auto;
     padding: var(--spacing-xl);
+    overflow-x: hidden;
+    contain: layout style;
+    isolation: isolate;
 }
 
 /* Status Banner */
@@ -496,6 +563,7 @@ body {
 .tab-content {
     display: none;
     padding: var(--spacing-xl);
+    overflow-x: hidden; /* Prevent horizontal overflow from child elements */
 }
 
 .tab-content.active {
@@ -652,6 +720,9 @@ body {
 /* Customer List */
 .customer-list {
     padding: var(--spacing-lg);
+    overflow-x: hidden;
+    contain: layout style;
+    isolation: isolate;
 }
 
 .customer-list-header,
@@ -660,6 +731,10 @@ body {
     grid-template-columns: 60px 1fr 120px 80px 80px 1fr 120px;
     gap: var(--spacing-md);
     padding: var(--spacing-md);
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    contain: layout style paint;
 }
 
 .customer-list-header {
@@ -679,6 +754,7 @@ body {
     background: rgba(255, 140, 0, 0.05);
     position: relative;
     overflow: hidden;
+    max-width: 100%; /* Prevent extending beyond container */
 }
 
 .customer-row:hover {
@@ -1298,8 +1374,8 @@ body {
     }
 }
 
-/* Tablets and small desktops (769px - 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* Tablets and small desktops */
+@media (max-width: 1024px) {
     .header-content {
         padding: 0 var(--spacing-lg);
     }
@@ -1578,7 +1654,7 @@ input:checked + .toggle-slider:before {
     border-radius: 12px;
 }
 
-/* Mobile Modal Enhancements */
+/* FIXED MODAL - Prevent overflow during modal operations */
 .modal {
     display: none;
     position: fixed;
@@ -1590,6 +1666,9 @@ input:checked + .toggle-slider:before {
     z-index: var(--z-modal);
     opacity: 0;
     transition: opacity var(--transition-fast);
+    overflow-x: hidden !important;
+    width: 100vw;
+    max-width: 100vw;
 }
 
 .modal.active {
@@ -1603,11 +1682,15 @@ input:checked + .toggle-slider:before {
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     border-radius: 16px;
-    max-width: 90%;
+    max-width: 90vw;
+    width: 90vw;
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: var(--spacing-xl);
     position: relative;
+    box-sizing: border-box;
+    margin: 0 auto;
 }
 
 .modal-header {
