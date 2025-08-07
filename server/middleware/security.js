@@ -5,21 +5,67 @@ const { validationResult } = require('express-validator');
 
 // Security middleware configuration
 const configureSecurityMiddleware = (app) => {
+  // Different security settings for development vs production
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  
   // Helmet for security headers
-  app.use(helmet({
+  const helmetConfig = {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://cdn.socket.io"],
+        styleSrc: [
+          "'self'", 
+          "'unsafe-inline'", 
+          "https://cdn.jsdelivr.net", 
+          "https://fonts.googleapis.com",
+          // Allow HTTP in development
+          ...(isDevelopment ? ["http://admin.lvh.me:3838", "http://localhost:3838", "http://demo.lvh.me:3838", "http://*.lvh.me:3838"] : [])
+        ],
+        scriptSrc: [
+          "'self'", 
+          "'unsafe-inline'", 
+          "'unsafe-eval'", 
+          "https://cdn.jsdelivr.net", 
+          "https://cdn.socket.io",
+          // Allow HTTP in development
+          ...(isDevelopment ? ["http://admin.lvh.me:3838", "http://localhost:3838", "http://demo.lvh.me:3838", "http://*.lvh.me:3838"] : [])
+        ],
         scriptSrcAttr: ["'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "wss:", "ws:"],
-        fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", ...(isDevelopment ? ["http:"] : [])],
+        connectSrc: [
+          "'self'", 
+          "wss:", 
+          "ws:",
+          // Allow HTTP WebSocket connections in development
+          ...(isDevelopment ? ["http://admin.lvh.me:3838", "http://localhost:3838", "http://demo.lvh.me:3838", "http://*.lvh.me:3838", "ws://admin.lvh.me:3838", "ws://localhost:3838", "ws://demo.lvh.me:3838", "ws://*.lvh.me:3838"] : [])
+        ],
+        fontSrc: [
+          "'self'", 
+          "https://cdn.jsdelivr.net", 
+          "https://fonts.gstatic.com",
+          // Allow HTTP fonts in development
+          ...(isDevelopment ? ["http://admin.lvh.me:3838", "http://localhost:3838", "http://demo.lvh.me:3838", "http://*.lvh.me:3838"] : [])
+        ],
+        // Only add upgrade-insecure-requests in production
+        ...(isDevelopment ? {} : { upgradeInsecureRequests: [] })
       },
+      // Disable auto-generation of upgrade-insecure-requests in development
+      useDefaults: !isDevelopment
     },
     crossOriginEmbedderPolicy: false,
-  }));
+    // Ensure consistent Cross-Origin policies across all pages
+    crossOriginOpenerPolicy: isDevelopment ? { policy: "unsafe-none" } : { policy: "same-origin" },
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  };
+
+  app.use(helmet(helmetConfig));
+
+  // Add custom Origin-Agent-Cluster header for consistency
+  app.use((req, res, next) => {
+    // Remove the Origin-Agent-Cluster header to avoid conflicts
+    res.removeHeader('Origin-Agent-Cluster');
+    next();
+  });
 
   // XSS protection - provides sanitized getters instead of modifying data
   app.use(xssProtection);
@@ -47,10 +93,15 @@ const authLimiter = createRateLimiter(15 * 60 * 1000, 100, 'Too many authenticat
 const apiLimiter = createRateLimiter(15 * 60 * 1000, 500, 'API rate limit exceeded'); // Increased to 500
 const strictLimiter = createRateLimiter(60 * 1000, 50, 'Too many requests to this endpoint'); // Increased to 50
 
-// SuperAdmin specific rate limiters (more restrictive)
-const superAdminAuthLimiter = createRateLimiter(15 * 60 * 1000, 25, 'Too many SuperAdmin authentication attempts');
-const superAdminApiLimiter = createRateLimiter(15 * 60 * 1000, 200, 'SuperAdmin API rate limit exceeded');
-const superAdminStrictLimiter = createRateLimiter(60 * 1000, 20, 'Too many requests to SuperAdmin endpoint');
+// BackOffice specific rate limiters (more restrictive)
+const backOfficeAuthLimiter = createRateLimiter(15 * 60 * 1000, 25, 'Too many BackOffice authentication attempts');
+const backOfficeApiLimiter = createRateLimiter(15 * 60 * 1000, 200, 'BackOffice API rate limit exceeded');
+const backOfficeStrictLimiter = createRateLimiter(60 * 1000, 20, 'Too many requests to BackOffice endpoint');
+
+// Legacy aliases for compatibility
+const superAdminAuthLimiter = backOfficeAuthLimiter;
+const superAdminApiLimiter = backOfficeApiLimiter;
+const superAdminStrictLimiter = backOfficeStrictLimiter;
 
 // Input validation error handler
 const handleValidationErrors = (req, res, next) => {
@@ -120,9 +171,12 @@ module.exports = {
   authLimiter,
   apiLimiter,
   strictLimiter,
-  superAdminAuthLimiter,
-  superAdminApiLimiter,
-  superAdminStrictLimiter,
+  backOfficeAuthLimiter,
+  backOfficeApiLimiter,
+  backOfficeStrictLimiter,
+  superAdminAuthLimiter, // Legacy alias
+  superAdminApiLimiter, // Legacy alias
+  superAdminStrictLimiter, // Legacy alias
   handleValidationErrors,
   csrfProtection,
   generateCSRFToken,

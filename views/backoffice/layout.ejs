@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <!-- StoreHub Design System -->
+  <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+  <link rel="stylesheet" href="/css/storehub-global.css?v=<%= Date.now() %>">
+  <link rel="stylesheet" href="/css/storehub-backoffice.css?v=<%= Date.now() %>">
+  <script src="/js/storehub-design-system.js?v=<%= Date.now() %>" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <% if (typeof csrfMeta === 'function') { %>
+    <%- csrfMeta() %>
+  <% } %>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">SH</div>
+          <div class="logo-text">StoreHub</div>
+        </div>
+        <div class="admin-badge">BackOffice</div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Overview</div>
+          <a href="/backoffice/dashboard" class="nav-item <%= locals.currentPage === 'dashboard' ? 'active' : '' %>" title="Dashboard">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </a>
+          <a href="/backoffice/analytics" class="nav-item <%= locals.currentPage === 'analytics' ? 'active' : '' %>" title="Analytics">
+            <span class="nav-icon">📈</span>
+            <span>Analytics</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Tenant Management</div>
+          <a href="/backoffice/tenants" class="nav-item <%= locals.currentPage === 'tenants' ? 'active' : '' %>" title="All Tenants">
+            <span class="nav-icon">🏢</span>
+            <span>All Tenants</span>
+          </a>
+          <a href="/backoffice/tenants/create" class="nav-item <%= locals.currentPage === 'tenants-create' ? 'active' : '' %>" title="Add Tenant">
+            <span class="nav-icon">➕</span>
+            <span>Add Tenant</span>
+          </a>
+          <a href="/backoffice/merchants" class="nav-item <%= locals.currentPage === 'merchants' ? 'active' : '' %>" title="All Merchants">
+            <span class="nav-icon">👥</span>
+            <span>All Merchants</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Billing & Subscriptions</div>
+          <a href="/backoffice/subscriptions" class="nav-item <%= locals.currentPage === 'subscriptions' ? 'active' : '' %>" title="Subscriptions">
+            <span class="nav-icon">💳</span>
+            <span>Subscriptions</span>
+          </a>
+          <a href="/backoffice/billing" class="nav-item <%= locals.currentPage === 'billing' ? 'active' : '' %>" title="Billing">
+            <span class="nav-icon">💰</span>
+            <span>Billing</span>
+          </a>
+          <a href="/backoffice/plans" class="nav-item <%= locals.currentPage === 'plans' ? 'active' : '' %>" title="Subscription Plans">
+            <span class="nav-icon">📋</span>
+            <span>Subscription Plans</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="/backoffice/admins" class="nav-item <%= locals.currentPage === 'admins' ? 'active' : '' %>" title="Admin Users">
+            <span class="nav-icon">👤</span>
+            <span>Admin Users</span>
+          </a>
+          <a href="/backoffice/audit-logs" class="nav-item <%= locals.currentPage === 'audit-logs' ? 'active' : '' %>" title="Audit Logs">
+            <span class="nav-icon">📝</span>
+            <span>Audit Logs</span>
+          </a>
+          <a href="/backoffice/settings" class="nav-item <%= locals.currentPage === 'settings' ? 'active' : '' %>" title="System Settings">
+            <span class="nav-icon">⚙️</span>
+            <span>System Settings</span>
+          </a>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">
+            <%= backOfficeUser ? backOfficeUser.fullName.split(' ').map(n => n[0]).join('').toUpperCase() : 'SA' %>
+          </div>
+          <div class="user-details">
+            <div class="user-name"><%= backOfficeUser ? backOfficeUser.fullName : 'System Admin' %></div>
+            <div class="user-role">Administrator</div>
+          </div>
+        </div>
+        <a href="/backoffice/auth/logout" class="logout-btn" title="Sign Out">
+          <span class="nav-icon">🚪</span>
+          <span>Sign Out</span>
+        </a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+        
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" placeholder="Search tenants, merchants, users...">
+        </div>
+        
+        <div class="top-bar-actions">
+          <div class="notification-badge <%= typeof hasNotifications !== 'undefined' && hasNotifications ? 'has-notifications' : '' %>">
+            <span>🔔</span>
+          </div>
+          <div class="user-menu">
+            <div class="user-avatar-small">
+              <%= backOfficeUser ? backOfficeUser.fullName.split(' ').map(n => n[0]).join('').toUpperCase() : 'SA' %>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <div class="content-area">
+        <% if (locals.breadcrumb && breadcrumb.length > 0) { %>
+          <nav class="breadcrumb">
+            <% breadcrumb.forEach((item, index) => { %>
+              <% if (index > 0) { %>
+                <span class="breadcrumb-separator">›</span>
+              <% } %>
+              <% if (item.url && index < breadcrumb.length - 1) { %>
+                <a href="<%= item.url %>"><%= item.text %></a>
+              <% } else { %>
+                <span><%= item.text %></span>
+              <% } %>
+            <% }) %>
+          </nav>
+        <% } %>
+        
+        <% if (locals.contentHeader !== false) { %>
+          <div class="content-header">
+            <h2 class="content-title"><%= contentTitle || pageTitle || 'Dashboard' %></h2>
+            <% if (locals.contentSubtitle) { %>
+              <p class="content-subtitle"><%= contentSubtitle %></p>
+            <% } %>
+          </div>
+        <% } %>
+        
+        <% if (messages && messages.error) { %>
+          <div class="alert alert-error">
+            <%= messages.error %>
+          </div>
+        <% } %>
+        
+        <% if (messages && messages.success) { %>
+          <div class="alert alert-success">
+            <%= messages.success %>
+          </div>
+        <% } %>
+        
+        <% if (messages && messages.warning) { %>
+          <div class="alert alert-warning">
+            <%= messages.warning %>
+          </div>
+        <% } %>
+        
+        <% if (messages && messages.info) { %>
+          <div class="alert alert-info">
+            <%= messages.info %>
+          </div>
+        <% } %>
+        
+        <!-- Page Content -->
+        <%- body %>
+      </div>
+    </main>
+  </div>
+  
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('mobile-open');
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+      
+      if (window.innerWidth <= 768 && 
+          !sidebar.contains(event.target) && 
+          !menuBtn.contains(event.target)) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+  </script>
+</body>
+</html>

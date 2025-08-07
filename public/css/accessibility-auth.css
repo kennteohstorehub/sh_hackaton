@@ -1,0 +1,590 @@
+/**
+ * Authentication Accessibility Enhancements
+ * WCAG 2.1 AA compliance focused styles
+ */
+
+/* ==========================================================================
+   Screen Reader Utilities
+   ========================================================================== */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.sr-only-focusable:focus {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: inherit !important;
+  margin: inherit !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+}
+
+/* ==========================================================================
+   Focus Management
+   ========================================================================== */
+
+/* Enhanced focus styles for better visibility */
+.form-group input:focus,
+.btn-login:focus,
+.password-toggle:focus,
+.auth-links a:focus,
+.nav-item:focus,
+.user-button:focus {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+  z-index: 10;
+  position: relative;
+}
+
+/* High contrast focus for better visibility */
+@media (prefers-contrast: high) {
+  .form-group input:focus,
+  .btn-login:focus,
+  .password-toggle:focus,
+  .auth-links a:focus {
+    outline: 4px solid #ffff00;
+    outline-offset: 2px;
+    background: rgba(0, 0, 0, 0.9) !important;
+    color: #ffffff !important;
+  }
+}
+
+/* Focus visible (only show outline when using keyboard) */
+.form-group input:focus:not(:focus-visible),
+.btn-login:focus:not(:focus-visible),
+.password-toggle:focus:not(:focus-visible),
+.auth-links a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.form-group input:focus-visible,
+.btn-login:focus-visible,
+.password-toggle:focus-visible,
+.auth-links a:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000000;
+  color: #ffffff;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 10000;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.skip-link:focus {
+  top: 6px;
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Color Contrast Enhancements
+   ========================================================================== */
+
+/* Ensure minimum 4.5:1 contrast ratio */
+.login-header p {
+  color: rgba(255, 255, 255, 0.9); /* Increased from 0.8 for better contrast */
+}
+
+.form-group label {
+  color: rgba(255, 255, 255, 0.95); /* Increased from 0.9 for better contrast */
+  font-weight: 600; /* Increased weight for better visibility */
+}
+
+.form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.6); /* Increased from 0.5 for better contrast */
+}
+
+.auth-links p {
+  color: rgba(255, 255, 255, 0.8); /* Increased from 0.7 for better contrast */
+}
+
+/* Error state colors with better contrast */
+.alert-error {
+  background: rgba(239, 68, 68, 0.15); /* Slightly more opaque */
+  color: #fecaca; /* Lighter red for better contrast */
+  border-color: rgba(239, 68, 68, 0.4); /* More visible border */
+}
+
+.alert-success {
+  background: rgba(34, 197, 94, 0.15); /* Slightly more opaque */
+  color: #bbf7d0; /* Lighter green for better contrast */
+  border-color: rgba(34, 197, 94, 0.4); /* More visible border */
+}
+
+/* Field validation colors */
+.field-feedback {
+  font-weight: 600; /* Make error text more prominent */
+}
+
+.form-group.has-error input {
+  border-color: rgba(239, 68, 68, 0.7); /* More visible error border */
+}
+
+.form-group.has-success input {
+  border-color: rgba(34, 197, 94, 0.7); /* More visible success border */
+}
+
+/* ==========================================================================
+   Typography and Readability
+   ========================================================================== */
+
+/* Improved line heights for better readability */
+.login-header p,
+.security-notice,
+.alert-message,
+.auth-links p {
+  line-height: 1.6;
+}
+
+.field-feedback {
+  line-height: 1.4;
+}
+
+/* Better font weights for accessibility */
+.login-header h1 {
+  font-weight: 800; /* Increased for better visibility */
+}
+
+.btn-login {
+  font-weight: 700; /* Increased for better button prominence */
+}
+
+.alert-title {
+  font-weight: 700; /* Increased for better hierarchy */
+}
+
+/* Improved spacing for better readability */
+.form-group {
+  margin-bottom: 2rem; /* Increased spacing */
+}
+
+.form-group label {
+  margin-bottom: 0.75rem; /* Increased spacing */
+}
+
+/* ==========================================================================
+   Interactive Element Accessibility
+   ========================================================================== */
+
+/* Minimum touch target sizes (44px x 44px minimum) */
+.form-group input {
+  min-height: 48px;
+  padding: 0.875rem 1rem;
+}
+
+.btn-login {
+  min-height: 48px;
+  padding: 0.875rem 1rem;
+}
+
+.password-toggle {
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-links a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+
+/* Enhanced button states */
+.btn-login:disabled,
+.btn-login.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.btn-login:disabled::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: inherit;
+}
+
+/* ==========================================================================
+   Form Validation Accessibility
+   ========================================================================== */
+
+/* ARIA live regions for dynamic feedback */
+.field-feedback[role="alert"] {
+  /* Ensure screen readers announce validation messages */
+  speak: polite;
+}
+
+.field-feedback.show {
+  /* Animation that doesn't interfere with screen readers */
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Error state styling that doesn't rely only on color */
+.form-group.has-error input {
+  border-left: 4px solid #ef4444; /* Additional visual indicator */
+}
+
+.form-group.has-error label::after {
+  content: ' *';
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.form-group.has-success input {
+  border-left: 4px solid #22c55e; /* Additional visual indicator */
+}
+
+/* Required field indicators */
+input[required] + label::before,
+input[aria-required="true"] + label::before {
+  content: '* ';
+  color: #ef4444;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   Modal Accessibility (Session Timeout)
+   ========================================================================== */
+
+/* Modal focus trap and ARIA */
+.session-timeout-modal[aria-hidden="false"] {
+  display: flex;
+}
+
+.session-timeout-modal[aria-hidden="true"] {
+  display: none;
+}
+
+.session-timeout-content {
+  /* Ensure modal is properly focused */
+  position: relative;
+}
+
+.session-timeout-content:focus {
+  outline: 3px solid #ffffff;
+  outline-offset: -3px;
+}
+
+/* Modal button accessibility */
+.btn-extend-session,
+.btn-logout-now {
+  min-height: 48px;
+  min-width: 120px;
+  font-weight: 600;
+}
+
+.btn-extend-session:focus,
+.btn-logout-now:focus {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+  z-index: 10;
+}
+
+/* ==========================================================================
+   Navigation Accessibility
+   ========================================================================== */
+
+/* Sidebar navigation for BackOffice */
+.nav-item {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.nav-item:focus {
+  outline: 3px solid #ffffff;
+  outline-offset: -3px;
+  z-index: 10;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #4a90e2;
+}
+
+.nav-item.active {
+  font-weight: 600;
+}
+
+/* Mobile menu accessibility */
+.mobile-menu-btn {
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-menu-btn:focus {
+  outline: 3px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Loading State Accessibility
+   ========================================================================== */
+
+/* Loading indicators for screen readers */
+.btn-login.loading::before {
+  content: 'Loading...';
+  position: absolute;
+  left: -9999px;
+  speak: polite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Ensure loading spinner doesn't cause seizures */
+@media (prefers-reduced-motion: reduce) {
+  .btn-login.loading::after {
+    animation: none;
+  }
+  
+  .btn-login.loading::before {
+    content: 'Processing...';
+  }
+}
+
+/* ==========================================================================
+   Error Prevention and Recovery
+   ========================================================================== */
+
+/* Clear error styling */
+.alert {
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.alert-error {
+  border-left-color: #ef4444;
+}
+
+.alert-success {
+  border-left-color: #22c55e;
+}
+
+.alert-warning {
+  border-left-color: #f59e0b;
+}
+
+.alert-info {
+  border-left-color: #3b82f6;
+}
+
+/* Help text styling */
+.help-text {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+.form-group .help-text {
+  margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   Print and Alternative Media
+   ========================================================================== */
+
+@media print {
+  /* Ensure content is accessible when printed */
+  .login-container {
+    background: white !important;
+    color: black !important;
+    border: 2px solid black !important;
+  }
+  
+  .form-group input {
+    border: 1px solid black !important;
+    background: transparent !important;
+    color: black !important;
+  }
+  
+  .btn-login {
+    border: 2px solid black !important;
+    background: transparent !important;
+    color: black !important;
+  }
+  
+  .field-feedback {
+    color: black !important;
+    font-weight: bold !important;
+  }
+  
+  /* Hide interactive elements that don't work in print */
+  .password-toggle,
+  .session-timeout-modal {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   Language and Internationalization Support
+   ========================================================================== */
+
+/* RTL language support */
+[dir="rtl"] .login-container {
+  text-align: right;
+}
+
+[dir="rtl"] .password-toggle {
+  left: 0.75rem;
+  right: auto;
+}
+
+[dir="rtl"] .portal-identifier {
+  left: 1rem;
+  right: auto;
+}
+
+[dir="rtl"] .form-group.has-error input {
+  border-left: none;
+  border-right: 4px solid #ef4444;
+}
+
+[dir="rtl"] .form-group.has-success input {
+  border-left: none;
+  border-right: 4px solid #22c55e;
+}
+
+/* Language-specific font adjustments */
+:lang(ar) .login-container,
+:lang(he) .login-container {
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+
+:lang(zh) .login-container,
+:lang(ja) .login-container,
+:lang(ko) .login-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans CJK', sans-serif;
+}
+
+/* ==========================================================================
+   Voice Control and Speech Recognition
+   ========================================================================== */
+
+/* Enhanced labels for voice control */
+.form-group input[name="email"] {
+  /* Voice command: "Click email" or "Focus email field" */
+}
+
+.form-group input[name="password"] {
+  /* Voice command: "Click password" or "Focus password field" */
+}
+
+.btn-login {
+  /* Voice command: "Click sign in" or "Click login button" */
+}
+
+.password-toggle {
+  /* Voice command: "Click show password" or "Toggle password" */
+}
+
+/* ==========================================================================
+   Cognitive Accessibility
+   ========================================================================== */
+
+/* Clear visual hierarchy */
+.login-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.login-header p {
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+/* Consistent spacing */
+.form-group + .form-group {
+  margin-top: 0;
+}
+
+/* Clear button styling */
+.btn-login {
+  border-radius: 10px;
+  font-size: 1rem;
+  letter-spacing: 0.025em;
+}
+
+/* Error messages that are easy to understand */
+.field-feedback {
+  clear: both;
+  display: block;
+  margin-top: 0.5rem;
+}
+
+/* ==========================================================================
+   Animation and Motion Accessibility
+   ========================================================================== */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .alert,
+  .field-feedback,
+  .session-timeout-modal,
+  .login-container {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .btn-login:hover,
+  .form-group input:focus {
+    transform: none !important;
+  }
+  
+  body {
+    animation: none !important;
+  }
+}
+
+/* Ensure animations don't cause seizures */
+@media (prefers-reduced-motion: no-preference) {
+  .gradientShift {
+    animation-duration: 20s; /* Slow enough to not trigger seizures */
+  }
+  
+  .spin {
+    animation-duration: 1s; /* Maximum safe speed */
+  }
+}

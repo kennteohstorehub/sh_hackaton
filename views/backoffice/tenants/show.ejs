@@ -1,0 +1,395 @@
+<%- include('../layout', { title: title }) %>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i class="fas fa-building me-2"></i>
+          <%= tenant.name %>
+          <% if (!tenant.isActive) { %>
+            <span class="badge bg-danger ms-2">Inactive</span>
+          <% } %>
+        </h2>
+        <div>
+          <a href="/superadmin/tenants/<%= tenant.id %>/edit" class="btn btn-primary">
+            <i class="fas fa-edit me-2"></i>Edit
+          </a>
+          <a href="/superadmin/tenants" class="btn btn-secondary ms-2">
+            <i class="fas fa-arrow-left me-2"></i>Back to List
+          </a>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">Merchants</h5>
+              <p class="card-text display-6 <%= usage.merchants.current >= limits.merchants.limit ? 'text-danger' : '' %>">
+                <%= usage.merchants.current %> / <%= limits.merchants.limit %>
+              </p>
+              <% if (usage.merchants.current >= limits.merchants.limit) { %>
+                <small class="text-danger">Limit reached</small>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">Total Queues</h5>
+              <p class="card-text display-6">
+                <%= usage.totalQueues %>
+              </p>
+              <small class="text-muted">Across all merchants</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">Total Users</h5>
+              <p class="card-text display-6 <%= usage.users.current >= limits.users.limit ? 'text-danger' : '' %>">
+                <%= usage.users.current %> / <%= limits.users.limit %>
+              </p>
+              <% if (usage.users.current >= limits.users.limit) { %>
+                <small class="text-danger">Limit reached</small>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">Active Customers</h5>
+              <p class="card-text display-6">
+                <%= usage.activeCustomers %>
+              </p>
+              <small class="text-muted">Currently in queues</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tenant Details -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Tenant Information</h5>
+            </div>
+            <div class="card-body">
+              <table class="table table-sm">
+                <tbody>
+                  <tr>
+                    <th width="40%">ID:</th>
+                    <td><code><%= tenant.id %></code></td>
+                  </tr>
+                  <tr>
+                    <th>Subdomain:</th>
+                    <td>
+                      <a href="https://<%= tenant.slug %>.storehubqms.com" target="_blank">
+                        <%= tenant.slug %>.storehubqms.com
+                        <i class="fas fa-external-link-alt ms-1"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  <% if (tenant.domain) { %>
+                    <tr>
+                      <th>Custom Domain:</th>
+                      <td>
+                        <a href="https://<%= tenant.domain %>" target="_blank">
+                          <%= tenant.domain %>
+                          <i class="fas fa-external-link-alt ms-1"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  <% } %>
+                  <tr>
+                    <th>Business Type:</th>
+                    <td><%= tenant.businessType || 'Not specified' %></td>
+                  </tr>
+                  <tr>
+                    <th>Phone:</th>
+                    <td><%= tenant.phone || 'Not provided' %></td>
+                  </tr>
+                  <tr>
+                    <th>Timezone:</th>
+                    <td><%= tenant.timezone || 'Asia/Kuala_Lumpur' %></td>
+                  </tr>
+                  <tr>
+                    <th>Status:</th>
+                    <td>
+                      <% if (tenant.isActive) { %>
+                        <span class="badge bg-success">Active</span>
+                      <% } else { %>
+                        <span class="badge bg-danger">Inactive</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Created:</th>
+                    <td><%= new Date(tenant.createdAt).toLocaleString() %></td>
+                  </tr>
+                  <tr>
+                    <th>Last Updated:</th>
+                    <td><%= new Date(tenant.updatedAt).toLocaleString() %></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Subscription Details</h5>
+            </div>
+            <div class="card-body">
+              <% if (tenant.subscription) { %>
+                <table class="table table-sm">
+                  <tbody>
+                    <tr>
+                      <th width="40%">Plan:</th>
+                      <td>
+                        <span class="badge bg-<%= tenant.subscription.plan === 'enterprise' ? 'primary' : tenant.subscription.plan === 'premium' ? 'info' : tenant.subscription.plan === 'basic' ? 'secondary' : 'light text-dark' %>">
+                          <%= tenant.subscription.plan.toUpperCase() %>
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Billing Cycle:</th>
+                      <td><%= tenant.subscription.billingCycle %></td>
+                    </tr>
+                    <tr>
+                      <th>Status:</th>
+                      <td>
+                        <% if (tenant.subscription.status === 'active') { %>
+                          <span class="badge bg-success">Active</span>
+                        <% } else if (tenant.subscription.status === 'trial') { %>
+                          <span class="badge bg-info">Trial</span>
+                        <% } else if (tenant.subscription.status === 'suspended') { %>
+                          <span class="badge bg-warning">Suspended</span>
+                        <% } else { %>
+                          <span class="badge bg-danger">Cancelled</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Start Date:</th>
+                      <td><%= new Date(tenant.subscription.startDate).toLocaleDateString() %></td>
+                    </tr>
+                    <% if (tenant.subscription.endDate) { %>
+                      <tr>
+                        <th>End Date:</th>
+                        <td><%= new Date(tenant.subscription.endDate).toLocaleDateString() %></td>
+                      </tr>
+                    <% } %>
+                    <% if (tenant.subscription.trialEndDate) { %>
+                      <tr>
+                        <th>Trial Ends:</th>
+                        <td><%= new Date(tenant.subscription.trialEndDate).toLocaleDateString() %></td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+
+                <h6 class="mt-3">Features</h6>
+                <div class="row">
+                  <div class="col-6">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" <%= tenant.subscription.aiFeatures ? 'checked' : '' %> disabled>
+                      <label class="form-check-label">AI Features</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" <%= tenant.subscription.analytics ? 'checked' : '' %> disabled>
+                      <label class="form-check-label">Analytics</label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" <%= tenant.subscription.customBranding ? 'checked' : '' %> disabled>
+                      <label class="form-check-label">Custom Branding</label>
+                    </div>
+                  </div>
+                </div>
+
+                <h6 class="mt-3">Limits</h6>
+                <ul class="list-unstyled">
+                  <li>Max Merchants: <strong><%= tenant.subscription.maxMerchants %></strong></li>
+                  <li>Max Queues per Merchant: <strong><%= tenant.subscription.maxQueuesPerMerchant %></strong></li>
+                  <li>Max Customers per Queue: <strong><%= tenant.subscription.maxCustomersPerQueue %></strong></li>
+                </ul>
+              <% } else { %>
+                <p class="text-muted">No subscription information available</p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <button class="btn btn-<%= tenant.isActive ? 'warning' : 'success' %> w-100 mb-2" 
+                      onclick="toggleTenantStatus('<%= tenant.id %>', <%= tenant.isActive %>)">
+                <i class="fas fa-<%= tenant.isActive ? 'pause' : 'play' %> me-2"></i>
+                <%= tenant.isActive ? 'Deactivate Tenant' : 'Activate Tenant' %>
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-info w-100 mb-2" 
+                      onclick="checkSubdomainStatus('<%= tenant.id %>')">
+                <i class="fas fa-globe me-2"></i>
+                Check Subdomain Status
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-danger w-100 mb-2" 
+                      onclick="deleteTenant('<%= tenant.id %>', '<%= tenant.name %>')">
+                <i class="fas fa-trash me-2"></i>
+                Delete Tenant
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Merchants List -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Merchants</h5>
+        </div>
+        <div class="card-body">
+          <% if (tenant.merchants && tenant.merchants.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Queues</th>
+                    <th>Owner</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% tenant.merchants.forEach(merchant => { %>
+                    <tr>
+                      <td><%= merchant.name %></td>
+                      <td><%= merchant._count.queues %></td>
+                      <td><%= merchant.owner?.name || 'N/A' %></td>
+                      <td>
+                        <% if (merchant.isActive) { %>
+                          <span class="badge bg-success">Active</span>
+                        <% } else { %>
+                          <span class="badge bg-danger">Inactive</span>
+                        <% } %>
+                      </td>
+                      <td><%= new Date(merchant.createdAt).toLocaleDateString() %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <p class="text-muted mb-0">No merchants created yet</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTenantStatus(tenantId, currentStatus) {
+  const action = currentStatus ? 'deactivate' : 'activate';
+  
+  if (confirm(`Are you sure you want to ${action} this tenant?`)) {
+    fetch(`/superadmin/tenants/${tenantId}/toggle-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= csrfToken %>'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Error: ' + (data.error || 'Failed to update tenant status'));
+      }
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+}
+
+function checkSubdomainStatus(tenantId) {
+  const statusBtn = event.target;
+  statusBtn.disabled = true;
+  statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking...';
+  
+  fetch(`/superadmin/tenants/${tenantId}/subdomain-status`)
+    .then(response => response.json())
+    .then(data => {
+      let message = `Subdomain: ${data.subdomain || 'Not configured'}\n`;
+      message += `Status: ${data.status || 'Unknown'}\n`;
+      
+      if (data.sslStatus) {
+        message += `SSL: ${data.sslStatus}\n`;
+      }
+      
+      if (data.error) {
+        message += `Error: ${data.error}`;
+      }
+      
+      alert(message);
+    })
+    .catch(error => {
+      alert('Error checking subdomain status: ' + error.message);
+    })
+    .finally(() => {
+      statusBtn.disabled = false;
+      statusBtn.innerHTML = '<i class="fas fa-globe me-2"></i>Check Subdomain Status';
+    });
+}
+
+function deleteTenant(tenantId, tenantName) {
+  if (confirm(`Are you sure you want to delete the tenant "${tenantName}"?\n\nThis action cannot be undone!`)) {
+    if (prompt(`Type "${tenantName}" to confirm deletion:`) === tenantName) {
+      fetch(`/superadmin/tenants/${tenantId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': '<%= csrfToken %>'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '/superadmin/tenants';
+        } else {
+          alert('Error: ' + (data.error || 'Failed to delete tenant'));
+        }
+      })
+      .catch(error => {
+        alert('Error: ' + error.message);
+      });
+    }
+  }
+}
+</script>

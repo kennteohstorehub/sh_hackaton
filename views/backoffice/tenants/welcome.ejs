@@ -1,0 +1,552 @@
+<%- include('../layout', { title: 'Welcome to StoreHub QMS' }) %>
+
+<style>
+  .welcome-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .success-banner {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 3rem;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .success-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+  }
+
+  .success-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: checkmark 0.8s ease-out;
+  }
+
+  @keyframes checkmark {
+    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(-45deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .success-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .success-subtitle {
+    font-size: 1.25rem;
+    opacity: 0.95;
+    position: relative;
+    z-index: 1;
+  }
+
+  .info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .info-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .info-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+
+  .info-content {
+    color: #64748b;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .info-link {
+    display: inline-block;
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    transition: color 0.2s ease;
+  }
+
+  .info-link:hover {
+    color: #357abd;
+    text-decoration: underline;
+  }
+
+  .onboarding-section {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .onboarding-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+
+  .checklist-item:hover {
+    border-color: #e2e8f0;
+    transform: translateX(4px);
+  }
+
+  .checklist-item.completed {
+    opacity: 0.7;
+  }
+
+  .checklist-item.completed .checklist-content {
+    text-decoration: line-through;
+    color: #94a3b8;
+  }
+
+  .checklist-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    margin-top: 2px;
+  }
+
+  .checklist-item.completed .checklist-checkbox {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+  }
+
+  .checklist-content {
+    flex: 1;
+  }
+
+  .checklist-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .checklist-description {
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 3rem;
+  }
+
+  .btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: white;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(74, 144, 226, 0.4);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #475569;
+    border: 2px solid #e2e8f0;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  .resource-links {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .resource-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+  }
+
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .resource-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .resource-item:hover {
+    background: #f8fafc;
+  }
+
+  .resource-icon {
+    font-size: 2rem;
+  }
+
+  .resource-label {
+    font-size: 0.875rem;
+    color: #475569;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .welcome-container {
+      padding: 1rem;
+    }
+
+    .success-banner {
+      padding: 2rem 1.5rem;
+    }
+
+    .success-title {
+      font-size: 1.75rem;
+    }
+
+    .success-subtitle {
+      font-size: 1rem;
+    }
+
+    .info-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .btn-large {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<div class="welcome-container">
+  <!-- Success Banner -->
+  <div class="success-banner">
+    <div class="success-icon">🎉</div>
+    <h1 class="success-title">Welcome to StoreHub QMS!</h1>
+    <p class="success-subtitle">Your queue management system is ready to go</p>
+  </div>
+
+  <!-- Important Information Cards -->
+  <div class="info-cards">
+    <div class="info-card">
+      <div class="info-icon">🌐</div>
+      <h3 class="info-title">Your Subdomain</h3>
+      <div class="info-content">
+        <p>Your customers can access your queue at:</p>
+        <strong><%= tenant.slug %>.storehubqms.com</strong>
+        <br>
+        <a href="https://<%= tenant.slug %>.storehubqms.com" target="_blank" class="info-link">
+          Visit your site →
+        </a>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon">👤</div>
+      <h3 class="info-title">Admin Access</h3>
+      <div class="info-content">
+        <p>Log in with:</p>
+        <strong>Email:</strong> <%= adminEmail %><br>
+        <strong>Password:</strong> The one you just created
+        <br>
+        <a href="https://<%= tenant.slug %>.storehubqms.com/login" target="_blank" class="info-link">
+          Go to login →
+        </a>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon">📅</div>
+      <h3 class="info-title">Your Plan</h3>
+      <div class="info-content">
+        <p><strong><%= plan %> Plan</strong></p>
+        <p>14-day free trial (no credit card required)</p>
+        <a href="/backoffice/tenants/<%= tenant.id %>" class="info-link">
+          View details →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onboarding Checklist -->
+  <div class="onboarding-section">
+    <h2 class="onboarding-title">
+      <span>📋</span>
+      <span>Quick Setup Checklist</span>
+    </h2>
+    
+    <ul class="checklist" id="onboardingChecklist">
+      <li class="checklist-item" data-step="1">
+        <div class="checklist-checkbox">
+          <span style="display: none;">✓</span>
+        </div>
+        <div class="checklist-content">
+          <div class="checklist-title">Log in to your dashboard</div>
+          <div class="checklist-description">Access your admin panel at <%= tenant.slug %>.storehubqms.com/login</div>
+        </div>
+      </li>
+
+      <li class="checklist-item" data-step="2">
+        <div class="checklist-checkbox">
+          <span style="display: none;">✓</span>
+        </div>
+        <div class="checklist-content">
+          <div class="checklist-title">Configure your business settings</div>
+          <div class="checklist-description">Set up your business hours, logo, and contact information</div>
+        </div>
+      </li>
+
+      <li class="checklist-item" data-step="3">
+        <div class="checklist-checkbox">
+          <span style="display: none;">✓</span>
+        </div>
+        <div class="checklist-content">
+          <div class="checklist-title">Create your first queue</div>
+          <div class="checklist-description">Set up queues for different services or departments</div>
+        </div>
+      </li>
+
+      <li class="checklist-item" data-step="4">
+        <div class="checklist-checkbox">
+          <span style="display: none;">✓</span>
+        </div>
+        <div class="checklist-content">
+          <div class="checklist-title">Invite your team members</div>
+          <div class="checklist-description">Add staff members who will manage the queues</div>
+        </div>
+      </li>
+
+      <li class="checklist-item" data-step="5">
+        <div class="checklist-checkbox">
+          <span style="display: none;">✓</span>
+        </div>
+        <div class="checklist-content">
+          <div class="checklist-title">Test with a sample customer</div>
+          <div class="checklist-description">Try the customer flow to ensure everything works smoothly</div>
+        </div>
+      </li>
+
+      <li class="checklist-item" data-step="6">
+        <div class="checklist-checkbox">
+          <span style="display: none;">✓</span>
+        </div>
+        <div class="checklist-content">
+          <div class="checklist-title">Print or share QR codes</div>
+          <div class="checklist-description">Get QR codes for customers to join queues easily</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <a href="https://<%= tenant.slug %>.storehubqms.com/login" target="_blank" class="btn-large btn-primary">
+      <span>🚀</span>
+      <span>Go to Your Dashboard</span>
+    </a>
+    <a href="/backoffice/tenants" class="btn-large btn-secondary">
+      <span>←</span>
+      <span>Back to Tenants</span>
+    </a>
+  </div>
+
+  <!-- Resource Links -->
+  <div class="resource-links">
+    <h3 class="resource-title">Helpful Resources</h3>
+    <div class="resource-grid">
+      <a href="/docs/getting-started" class="resource-item">
+        <span class="resource-icon">📚</span>
+        <span class="resource-label">Documentation</span>
+      </a>
+      <a href="/docs/video-tutorials" class="resource-item">
+        <span class="resource-icon">🎥</span>
+        <span class="resource-label">Video Tutorials</span>
+      </a>
+      <a href="mailto:support@storehubqms.com" class="resource-item">
+        <span class="resource-icon">💬</span>
+        <span class="resource-label">Get Support</span>
+      </a>
+      <a href="/docs/api" class="resource-item">
+        <span class="resource-icon">🔌</span>
+        <span class="resource-label">API Docs</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Interactive checklist
+document.querySelectorAll('.checklist-item').forEach(item => {
+  item.addEventListener('click', function() {
+    this.classList.toggle('completed');
+    const checkbox = this.querySelector('.checklist-checkbox span');
+    checkbox.style.display = this.classList.contains('completed') ? 'block' : 'none';
+    
+    // Save progress to localStorage
+    const step = this.dataset.step;
+    const progress = JSON.parse(localStorage.getItem('onboardingProgress') || '{}');
+    progress[`<%= tenant.id %>_${step}`] = this.classList.contains('completed');
+    localStorage.setItem('onboardingProgress', JSON.stringify(progress));
+  });
+});
+
+// Load saved progress
+window.addEventListener('DOMContentLoaded', () => {
+  const progress = JSON.parse(localStorage.getItem('onboardingProgress') || '{}');
+  document.querySelectorAll('.checklist-item').forEach(item => {
+    const step = item.dataset.step;
+    if (progress[`<%= tenant.id %>_${step}`]) {
+      item.classList.add('completed');
+      item.querySelector('.checklist-checkbox span').style.display = 'block';
+    }
+  });
+});
+
+// Confetti effect on page load
+function createConfetti() {
+  const colors = ['#4a90e2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const confettiCount = 50;
+  
+  for (let i = 0; i < confettiCount; i++) {
+    const confetti = document.createElement('div');
+    confetti.style.cssText = `
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      left: ${Math.random() * 100}%;
+      top: -10px;
+      opacity: ${Math.random()};
+      transform: rotate(${Math.random() * 360}deg);
+      animation: confettiFall ${3 + Math.random() * 2}s linear;
+      z-index: 9999;
+    `;
+    document.body.appendChild(confetti);
+    
+    setTimeout(() => confetti.remove(), 5000);
+  }
+}
+
+// CSS for confetti animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes confettiFall {
+    to {
+      transform: translateY(100vh) rotate(720deg);
+    }
+  }
+`;
+document.head.appendChild(style);
+
+// Trigger confetti on load
+createConfetti();
+</script>

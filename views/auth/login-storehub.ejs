@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <!-- StoreHub Design System -->
+  <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+  <link rel="stylesheet" href="/css/storehub-global.css?v=<%= Date.now() %>">
+  <script src="/js/storehub-design-system.js?v=<%= Date.now() %>" defer></script>
+  <%- csrfMeta() %>
+  <style>
+    body {
+      background: linear-gradient(135deg, var(--gray-100) 0%, var(--base-white) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .auth-container {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+    
+    .auth-header {
+      background: var(--primary-orange);
+      color: white;
+      padding: var(--space-8) var(--space-6);
+      text-align: center;
+    }
+    
+    .auth-logo {
+      font-size: var(--heading-1);
+      font-weight: var(--weight-bold);
+      margin-bottom: var(--space-2);
+    }
+    
+    .auth-subtitle {
+      font-size: var(--body);
+      opacity: 0.9;
+    }
+    
+    .auth-body {
+      padding: var(--space-8) var(--space-6);
+    }
+    
+    .auth-title {
+      font-size: var(--heading-3);
+      font-weight: var(--weight-semibold);
+      color: var(--gray-900);
+      margin-bottom: var(--space-6);
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: var(--space-5);
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-size: var(--small);
+      font-weight: var(--weight-medium);
+      color: var(--gray-700);
+    }
+    
+    .form-control {
+      width: 100%;
+      height: 48px;
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--body);
+      border: 1px solid var(--gray-400);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-orange);
+      box-shadow: 0 0 0 3px rgba(250, 140, 22, 0.1);
+      outline: none;
+    }
+    
+    .btn-auth {
+      width: 100%;
+      height: 48px;
+      margin-top: var(--space-6);
+      font-size: var(--body);
+      font-weight: var(--weight-semibold);
+    }
+    
+    .auth-divider {
+      text-align: center;
+      margin: var(--space-6) 0;
+      position: relative;
+    }
+    
+    .auth-divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      background: var(--gray-300);
+    }
+    
+    .auth-divider span {
+      background: white;
+      padding: 0 var(--space-4);
+      position: relative;
+      color: var(--gray-600);
+      font-size: var(--small);
+    }
+    
+    .auth-footer {
+      text-align: center;
+      margin-top: var(--space-6);
+      font-size: var(--small);
+      color: var(--gray-600);
+    }
+    
+    .auth-footer a {
+      color: var(--primary-orange);
+      text-decoration: none;
+      font-weight: var(--weight-medium);
+    }
+    
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    .alert {
+      margin-bottom: var(--space-4);
+    }
+    
+    .tenant-info {
+      background: var(--gray-100);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-5);
+      text-align: center;
+    }
+    
+    .tenant-info-label {
+      font-size: var(--tiny);
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .tenant-info-name {
+      font-size: var(--body-large);
+      font-weight: var(--weight-semibold);
+      color: var(--gray-900);
+      margin-top: var(--space-1);
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container fade-in">
+    <div class="auth-header">
+      <div class="auth-logo">StoreHub</div>
+      <div class="auth-subtitle">Queue Management System</div>
+    </div>
+    
+    <div class="auth-body">
+      <h1 class="auth-title">Welcome Back</h1>
+      
+      <% if (locals.tenant) { %>
+      <div class="tenant-info">
+        <div class="tenant-info-label">Logging in to</div>
+        <div class="tenant-info-name"><%= tenant.name %></div>
+      </div>
+      <% } %>
+      
+      <% if (messages && messages.error) { %>
+      <div class="alert alert-danger">
+        <%= messages.error %>
+      </div>
+      <% } %>
+      
+      <% if (messages && messages.success) { %>
+      <div class="alert alert-success">
+        <%= messages.success %>
+      </div>
+      <% } %>
+      
+      <form action="/auth/login" method="POST" class="needs-validation" novalidate>
+        <%- csrfInput() %>
+        
+        <div class="form-group">
+          <label for="email" class="form-label">Email Address</label>
+          <input 
+            type="email" 
+            class="form-control" 
+            id="email" 
+            name="email" 
+            required 
+            autofocus
+            placeholder="Enter your email"
+          >
+          <div class="invalid-feedback">
+            Please enter a valid email address.
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input 
+            type="password" 
+            class="form-control" 
+            id="password" 
+            name="password" 
+            required
+            placeholder="Enter your password"
+          >
+          <div class="invalid-feedback">
+            Please enter your password.
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-auth">
+          Sign In
+        </button>
+      </form>
+      
+      <div class="auth-divider">
+        <span>or</span>
+      </div>
+      
+      <div class="auth-footer">
+        Don't have an account? 
+        <a href="/auth/register">Sign up here</a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Form validation
+    (function() {
+      'use strict';
+      const forms = document.querySelectorAll('.needs-validation');
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
+  </script>
+</body>
+</html>

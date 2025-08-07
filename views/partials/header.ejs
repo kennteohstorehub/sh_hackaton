@@ -1,6 +1,8 @@
 <!-- Shared Header Component -->
+<link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
 <link rel="stylesheet" href="/css/tenant-identity.css?v=<%= Date.now() %>">
 <link rel="stylesheet" href="/css/text-overflow-fix.css?v=<%= Date.now() %>">
+<script src="/js/storehub-design-system.js?v=<%= Date.now() %>"></script>
 <style>
     /* Header Styles */
     .header {
@@ -190,10 +192,10 @@
     <div class="header-content">
         <div class="header-left">
             <h1>StoreHub QMS</h1>
-            <% if (typeof user !== 'undefined' && user && user.businessName) { %>
+            <% if (typeof tenant !== 'undefined' && tenant && tenant.name) { %>
             <div class="tenant-badge">
                 <span class="tenant-label">Account:</span>
-                <span class="tenant-name"><%= user.businessName %></span>
+                <span class="tenant-name"><%= tenant.name %></span>
             </div>
             <% } %>
         </div>

@@ -4,17 +4,303 @@ const merchantService = require('../../services/merchantService');
 const logger = require('../../utils/logger');
 const prisma = require('../../utils/prisma');
 
+// Use appropriate auth middleware based on environment
+const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true';
+const { requireAuth, loadUser } = useAuthBypass ? 
+  require('../../middleware/auth-bypass') : 
+  require('../../middleware/auth');
+
 const router = express.Router();
 
 // Home page - redirect to login if not authenticated
 router.get('/', (req, res) => {
-  // Check if user is already logged in
+  // Check if this is the admin subdomain
+  if (req.isBackOffice) {
+    // Check if BackOffice user is already logged in
+    if (req.session && req.session.backOfficeUserId) {
+      // BackOffice user is logged in, redirect to BackOffice dashboard
+      return res.redirect('/backoffice/dashboard');
+    }
+    // BackOffice user is not logged in, redirect to BackOffice login page
+    return res.redirect('/backoffice/auth/login');
+  }
+  
+  // Check if regular user is already logged in
   if (req.session && req.session.userId) {
     // User is logged in, redirect to dashboard
     return res.redirect('/dashboard');
   }
   // User is not logged in, redirect to login page
   res.redirect('/auth/login');
+});
+
+// Dashboard - Protected merchant dashboard route
+router.get('/dashboard', requireAuth, loadUser, async (req, res) => {
+  try {
+    // Skip if this is admin subdomain
+    if (req.isBackOffice) {
+      return res.redirect('/backoffice/dashboard');
+    }
+
+    const merchantId = req.user.id || req.user._id;
+    logger.info(`Dashboard access for merchant: ${merchantId}`);
+
+    // Get merchant data with tenant context
+    const merchant = await merchantService.findById(merchantId, {}, req.tenantId);
+    if (!merchant) {
+      req.flash('error', 'Merchant not found.');
+      return res.redirect('/auth/login');
+    }
+
+    // Get merchant's queues with tenant context
+    const queues = await queueService.findByMerchant(merchantId, req.tenantId);
+    const activeQueue = queues.find(q => q.isActive);
+
+    // Get queue statistics and entries if there's an active queue
+    let queueStats = null;
+    let waitingCustomers = [];
+    let servingCustomers = [];
+    let completedCustomers = [];
+    let recentEntries = [];
+    
+    if (activeQueue) {
+      queueStats = await queueService.getQueueStats(activeQueue.id, req.tenantId);
+      
+      // Get queue with entries for dashboard display
+      const queueWithEntries = await queueService.getQueueWithEntries(activeQueue.id, req.tenantId);
+      // Filter entries by status
+      const allEntries = queueWithEntries?.entries || [];
+      waitingCustomers = allEntries.filter(e => e.status === 'waiting');
+      servingCustomers = allEntries.filter(e => e.status === 'serving' || e.status === 'called');
+      completedCustomers = allEntries.filter(e => e.status === 'completed');
+      
+      recentEntries = waitingCustomers.slice(0, 10);
+    }
+
+    // Transform queueStats to match template expectations
+    const stats = queueStats ? {
+      totalWaiting: queueStats.waitingCount || 0,
+      averageWaitTime: Math.round(queueStats.averageWaitTime || 0),
+      totalServed: queueStats.servedToday || 0
+    } : {
+      totalWaiting: 0,
+      averageWaitTime: 0,
+      totalServed: 0
+    };
+
+    // Prepare user object to match template expectations
+    const dashboardUser = {
+      id: merchant.id,
+      merchantId: merchant.id,
+      businessName: merchant.businessName,
+      email: merchant.email || req.user.email || 'Not available',
+      primaryColor: merchant.primaryColor || '#ff8c00',
+      secondaryColor: merchant.secondaryColor || '#ff6b35'
+    };
+
+    // Render the merchant dashboard
+    res.render('dashboard/index-storehub-new', {
+      title: `Dashboard - ${merchant.businessName}`,
+      merchant: {
+        id: merchant.id,
+        businessName: merchant.businessName,
+        primaryColor: merchant.primaryColor || '#ff8c00',
+        secondaryColor: merchant.secondaryColor || '#ff6b35',
+        logoUrl: merchant.logoUrl
+      },
+      merchantSettings: merchant.settings || {}, // Add merchant settings for party size limits
+      activeQueue, // Dashboard template expects activeQueue, not queue
+      queue: activeQueue, // Keep for backward compatibility
+      queueId: activeQueue ? activeQueue.id : null, // Add the missing queueId variable
+      queues,
+      waitingCustomers, // Dashboard template expects this
+      activeCount: waitingCustomers.length, // Add missing activeCount variable
+      waitingCount: waitingCustomers.length, // Add missing waitingCount variable
+      servingCount: servingCustomers.length, // Add missing servingCount variable
+      completedCount: completedCustomers.length, // Add missing completedCount variable
+      stats,
+      queueStats,
+      recentEntries,
+      user: dashboardUser, // Use the properly formatted user object
+      csrfToken: res.locals.csrfToken || ''
+    });
+
+  } catch (error) {
+    logger.error('Dashboard error:', error);
+    req.flash('error', 'Error loading dashboard. Please try again.');
+    res.redirect('/');
+  }
+});
+
+// Dashboard Analytics - Protected route for analytics
+router.get('/dashboard/analytics', requireAuth, loadUser, async (req, res) => {
+  try {
+    // Skip if this is admin subdomain
+    if (req.isBackOffice) {
+      return res.redirect('/backoffice/dashboard');
+    }
+
+    const merchantId = req.user.id || req.user._id;
+    logger.info(`Analytics access for merchant: ${merchantId}`);
+
+    // Get merchant data with tenant context
+    const merchant = await merchantService.findById(merchantId, {}, req.tenantId);
+    if (!merchant) {
+      req.flash('error', 'Merchant not found.');
+      return res.redirect('/auth/login');
+    }
+
+    // Get merchant's queues with tenant context
+    const queues = await queueService.findByMerchant(merchantId, req.tenantId);
+    const activeQueue = queues.find(q => q.isActive);
+
+    // Prepare user object to match template expectations
+    const dashboardUser = {
+      id: merchant.id,
+      merchantId: merchant.id,
+      businessName: merchant.businessName,
+      email: merchant.email || req.user.email || 'Not available',
+      primaryColor: merchant.primaryColor || '#ff8c00',
+      secondaryColor: merchant.secondaryColor || '#ff6b35'
+    };
+
+    // Render the analytics page with StoreHub design
+    res.render('dashboard/analytics-storehub', {
+      title: `Analytics - ${merchant.businessName}`,
+      merchant: {
+        id: merchant.id,
+        businessName: merchant.businessName,
+        primaryColor: merchant.primaryColor || '#ff8c00',
+        secondaryColor: merchant.secondaryColor || '#ff6b35',
+        logoUrl: merchant.logoUrl,
+        businessHours: merchant.businessHours || {}
+      },
+      activeQueue,
+      queue: activeQueue,
+      queues,
+      user: dashboardUser,
+      csrfToken: res.locals.csrfToken || ''
+    });
+
+  } catch (error) {
+    logger.error('Analytics page error:', error);
+    req.flash('error', 'Error loading analytics. Please try again.');
+    res.redirect('/dashboard');
+  }
+});
+
+// Dashboard Settings - Protected route for settings
+router.get('/dashboard/settings', requireAuth, loadUser, async (req, res) => {
+  try {
+    // Skip if this is admin subdomain
+    if (req.isBackOffice) {
+      return res.redirect('/backoffice/dashboard');
+    }
+
+    const merchantId = req.user.id || req.user._id;
+    logger.info(`Settings access for merchant: ${merchantId}`);
+
+    // Get merchant data with tenant context
+    const merchant = await merchantService.findById(merchantId, {}, req.tenantId);
+    if (!merchant) {
+      req.flash('error', 'Merchant not found.');
+      return res.redirect('/auth/login');
+    }
+
+    // Get merchant's queues with tenant context
+    const queues = await queueService.findByMerchant(merchantId, req.tenantId);
+    const activeQueue = queues.find(q => q.isActive);
+
+    // Prepare user object to match template expectations
+    const dashboardUser = {
+      id: merchant.id,
+      merchantId: merchant.id,
+      businessName: merchant.businessName,
+      email: merchant.email || req.user.email || 'Not available',
+      primaryColor: merchant.primaryColor || '#ff8c00',
+      secondaryColor: merchant.secondaryColor || '#ff6b35'
+    };
+
+    // Render the settings page
+    res.render('dashboard/settings-storehub', {
+      title: `Settings - ${merchant.businessName}`,
+      merchant: {
+        id: merchant.id,
+        businessName: merchant.businessName,
+        primaryColor: merchant.primaryColor || '#ff8c00',
+        secondaryColor: merchant.secondaryColor || '#ff6b35',
+        logoUrl: merchant.logoUrl,
+        businessHours: merchant.businessHours || {},
+        settings: merchant.settings || {}
+      },
+      activeQueue,
+      queue: activeQueue,
+      queues,
+      user: dashboardUser,
+      csrfToken: res.locals.csrfToken || ''
+    });
+
+  } catch (error) {
+    logger.error('Settings page error:', error);
+    req.flash('error', 'Error loading settings. Please try again.');
+    res.redirect('/dashboard');
+  }
+});
+
+// Dashboard Help - Protected route for help
+router.get('/dashboard/help', requireAuth, loadUser, async (req, res) => {
+  try {
+    // Skip if this is admin subdomain
+    if (req.isBackOffice) {
+      return res.redirect('/backoffice/dashboard');
+    }
+
+    const merchantId = req.user.id || req.user._id;
+    logger.info(`Help access for merchant: ${merchantId}`);
+
+    // Get merchant data with tenant context
+    const merchant = await merchantService.findById(merchantId, {}, req.tenantId);
+    if (!merchant) {
+      req.flash('error', 'Merchant not found.');
+      return res.redirect('/auth/login');
+    }
+
+    // Get merchant's queues with tenant context
+    const queues = await queueService.findByMerchant(merchantId, req.tenantId);
+    const activeQueue = queues.find(q => q.isActive);
+
+    // Prepare user object to match template expectations
+    const dashboardUser = {
+      id: merchant.id,
+      merchantId: merchant.id,
+      businessName: merchant.businessName,
+      email: merchant.email || req.user.email || 'Not available',
+      primaryColor: merchant.primaryColor || '#ff8c00',
+      secondaryColor: merchant.secondaryColor || '#ff6b35'
+    };
+
+    // Render the help page
+    res.render('dashboard/help-storehub', {
+      title: `Help - ${merchant.businessName}`,
+      merchant: {
+        id: merchant.id,
+        businessName: merchant.businessName,
+        primaryColor: merchant.primaryColor || '#ff8c00',
+        secondaryColor: merchant.secondaryColor || '#ff6b35',
+        logoUrl: merchant.logoUrl
+      },
+      activeQueue,
+      queue: activeQueue,
+      queues,
+      user: dashboardUser,
+      csrfToken: res.locals.csrfToken || ''
+    });
+
+  } catch (error) {
+    logger.error('Help page error:', error);
+    req.flash('error', 'Error loading help. Please try again.');
+    res.redirect('/dashboard');
+  }
 });
 
 // Join redirect - helps users who access /join without a merchant ID
@@ -555,7 +841,7 @@ router.get('/queue/:queueId', async (req, res) => {
       businessAddress = merchant.address;
     }
 
-    res.render('queue-info', {
+    res.render('queue-info-storehub', {
       queueId: queue.id || queue._id,
       queueName: queue.name,
       businessName: merchant.businessName,
@@ -570,7 +856,10 @@ router.get('/queue/:queueId', async (req, res) => {
       businessHours,
       businessAddress,
       lastUpdated: new Date().toLocaleTimeString(),
-      merchantId: merchant.id || merchant._id || queue.merchantId
+      merchantId: merchant.id || merchant._id || queue.merchantId,
+      logoUrl: merchant.logoUrl,
+      merchantSettings: merchant.settings || {}, // Add merchant settings for party size limits
+      csrfToken: res.locals.csrfToken || ''
     });
 
   } catch (error) {
@@ -692,6 +981,125 @@ router.get('/queue-chat', (req, res) => {
   // Generate a new session ID and redirect to the dynamic URL
   const sessionId = 'qc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   res.redirect(`/queue-chat/${sessionId}`);
+});
+
+// New StoreHub Design System Demo
+router.get('/design-demo', (req, res) => {
+  res.render('dashboard/index-storehub', {
+    title: 'Dashboard - StoreHub Design System Demo',
+    user: req.user || { businessName: 'Demo Business', email: 'demo@storehub.com' },
+    tenant: { name: 'Demo Tenant' },
+    showViewPublic: true,
+    currentQueueId: 'demo-queue-123',
+    activePage: 'dashboard'
+  });
+});
+
+// StoreHub Design System - Queue Join Demo
+router.get('/queue-join-demo/:queueId', async (req, res) => {
+  try {
+    const queue = await queueService.getQueueWithEntries(req.params.queueId);
+    if (!queue) {
+      return res.status(404).render('error', { title: 'Queue Not Found' });
+    }
+    
+    const stats = await queueService.getQueueStats(req.params.queueId);
+    
+    // Get merchant with settings for party size limits
+    const merchant = queue.merchant || {};
+    const merchantSettings = merchant.settings || {};
+    
+    res.render('queue-join-storehub', {
+      queueId: queue.id,
+      queueName: queue.name,
+      merchantId: queue.merchantId,
+      merchantName: merchant.businessName || 'Demo Business',
+      logoUrl: merchant.logoUrl,
+      totalWaiting: stats?.waitingCount || 0,
+      avgWaitTime: stats?.averageWaitTime || 15,
+      queueActive: queue.isActive,
+      acceptingCustomers: queue.acceptingCustomers,
+      serviceTypes: merchant.serviceTypes || [],
+      maxPartySize: merchantSettings.partySizeRegularMax || 5 // Add party size limit
+    });
+  } catch (error) {
+    logger.error('Queue join demo error:', error);
+    res.status(500).render('error', { title: 'Server Error' });
+  }
+});
+
+// StoreHub Design System - Queue Status Demo
+router.get('/queue-status-demo/:queueId/:customerId', async (req, res) => {
+  try {
+    const { queueId, customerId } = req.params;
+    const queue = await queueService.getQueueWithEntries(queueId);
+    
+    if (!queue) {
+      return res.status(404).render('error', { title: 'Queue Not Found' });
+    }
+    
+    const customer = await prisma.queueEntry.findUnique({
+      where: { id: customerId }
+    });
+    
+    if (!customer) {
+      return res.status(404).render('error', { title: 'Entry Not Found' });
+    }
+    
+    // Calculate position
+    let currentPosition = customer.position;
+    if (customer.status === 'waiting') {
+      const customersAhead = queue.entries
+        .filter(entry => entry.status === 'waiting' && entry.position < customer.position)
+        .length;
+      currentPosition = customersAhead + 1;
+    }
+    
+    res.render('queue-status-storehub', {
+      queue,
+      customer,
+      currentPosition,
+      merchant: queue.merchant || { businessName: 'Demo Business', phone: '+60123456789' }
+    });
+  } catch (error) {
+    logger.error('Queue status demo error:', error);
+    res.status(500).render('error', { title: 'Server Error' });
+  }
+});
+
+// StoreHub Design System - Queue Info Demo  
+router.get('/queue-info-demo/:queueId', async (req, res) => {
+  try {
+    const queue = await queueService.getQueueWithEntries(req.params.queueId);
+    if (!queue) {
+      return res.status(404).render('error', { title: 'Queue Not Found' });
+    }
+    
+    const stats = await queueService.getQueueStats(req.params.queueId);
+    const merchant = queue.merchant || {};
+    
+    res.render('queue-info-storehub', {
+      queueId: queue.id,
+      queueName: queue.name,
+      businessName: merchant.businessName || 'Demo Business',
+      businessType: merchant.businessType === 'restaurant' ? 'Food & Beverage' : 'Retail',
+      businessPhone: merchant.phone || '+60123456789',
+      businessEmail: merchant.email || 'contact@demo.com',
+      businessAddress: 'Main Street, City Center',
+      businessHours: '9:00 AM - 10:00 PM',
+      queueActive: queue.isActive,
+      acceptingCustomers: queue.acceptingCustomers,
+      totalAhead: stats?.waitingCount || 0,
+      averageWaitTime: stats?.averageWaitTime || 15,
+      merchantId: queue.merchantId,
+      logoUrl: merchant.logoUrl,
+      merchantSettings: merchant.settings || {}, // Add merchant settings for party size limits
+      csrfToken: res.locals.csrfToken || ''
+    });
+  } catch (error) {
+    logger.error('Queue info demo error:', error);
+    res.status(500).render('error', { title: 'Server Error' });
+  }
 });
 
 module.exports = router; 

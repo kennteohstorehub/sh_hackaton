@@ -1,0 +1,518 @@
+/* StoreHub Help Styles
+   Purpose: Help page specific styles using the design system
+*/
+
+/* ========================================
+   1. Help Header
+   ======================================== */
+.help-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.help-header h1 {
+    font-size: var(--heading-1);
+    font-weight: var(--weight-bold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-3);
+}
+
+.help-header p {
+    font-size: var(--body-large);
+    color: var(--gray-600);
+    margin: 0;
+}
+
+/* ========================================
+   2. Search Section
+   ======================================== */
+.search-section {
+    margin-bottom: var(--space-8);
+}
+
+.search-box {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-box svg {
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-500);
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--body);
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(250, 140, 22, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--gray-500);
+}
+
+/* ========================================
+   3. Quick Links
+   ======================================== */
+.quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+}
+
+.quick-link-card {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.quick-link-card:hover {
+    border-color: var(--primary-orange);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.quick-link-card.active {
+    border-color: var(--primary-orange);
+    background: rgba(250, 140, 22, 0.05);
+}
+
+.quick-link-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--gray-100);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-3);
+    color: var(--primary-orange);
+}
+
+.quick-link-card h3 {
+    font-size: var(--body);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+}
+
+.quick-link-card p {
+    font-size: var(--small);
+    color: var(--gray-600);
+    margin: 0;
+}
+
+/* ========================================
+   4. Help Sections
+   ======================================== */
+.help-section {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-6);
+}
+
+.help-section h2 {
+    font-size: var(--heading-3);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.help-section h2 svg {
+    color: var(--primary-orange);
+}
+
+/* ========================================
+   5. Help Cards
+   ======================================== */
+.help-card {
+    background: var(--gray-100);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    margin-bottom: var(--space-4);
+}
+
+.help-card h3 {
+    font-size: var(--body-large);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-3);
+}
+
+.help-card p {
+    font-size: var(--body);
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: var(--space-3);
+}
+
+/* ========================================
+   6. Step Lists
+   ======================================== */
+.step-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: step-counter;
+}
+
+.step-list li {
+    position: relative;
+    padding-left: var(--space-10);
+    margin-bottom: var(--space-3);
+    counter-increment: step-counter;
+    font-size: var(--body);
+    color: var(--gray-700);
+    line-height: 1.6;
+}
+
+.step-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: var(--primary-orange);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--weight-semibold);
+    font-size: var(--small);
+}
+
+/* ========================================
+   7. Feature Lists
+   ======================================== */
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+    font-size: var(--body);
+    color: var(--gray-700);
+    line-height: 1.6;
+}
+
+.feature-list svg {
+    color: var(--success-green);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* ========================================
+   8. FAQ Grid
+   ======================================== */
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-4);
+}
+
+.faq-item {
+    background: var(--gray-100);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    transition: all var(--transition-fast);
+}
+
+.faq-item:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+.faq-item h4 {
+    font-size: var(--body);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.faq-item p {
+    font-size: var(--small);
+    color: var(--gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ========================================
+   9. Analytics Grid
+   ======================================== */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-4);
+}
+
+.analytics-card {
+    background: var(--gray-100);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    text-align: center;
+    transition: all var(--transition-normal);
+}
+
+.analytics-card:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.analytics-icon {
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-3);
+    color: var(--primary-orange);
+}
+
+.analytics-card h4 {
+    font-size: var(--body);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.analytics-card p {
+    font-size: var(--small);
+    color: var(--gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ========================================
+   10. FAQ Accordion
+   ======================================== */
+.faq-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.faq-accordion-item {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+}
+
+.faq-accordion-item:hover {
+    border-color: var(--gray-400);
+}
+
+.faq-accordion-item.active {
+    border-color: var(--primary-orange);
+}
+
+.faq-question {
+    width: 100%;
+    padding: var(--space-4);
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--body);
+    font-weight: var(--weight-medium);
+    color: var(--gray-900);
+    transition: all var(--transition-fast);
+}
+
+.faq-question:hover {
+    background: var(--gray-50);
+}
+
+.faq-question svg {
+    color: var(--gray-600);
+    transition: transform var(--transition-fast);
+}
+
+.faq-answer {
+    padding: 0 var(--space-4);
+    max-height: 0;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.faq-accordion-item.active .faq-answer {
+    padding: 0 var(--space-4) var(--space-4);
+    max-height: 500px;
+}
+
+.faq-answer p {
+    font-size: var(--body);
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ========================================
+   11. Support Section
+   ======================================== */
+.support-section {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+}
+
+.support-section h2 {
+    font-size: var(--heading-3);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-3);
+}
+
+.support-section p {
+    font-size: var(--body-large);
+    color: var(--gray-600);
+    margin-bottom: var(--space-6);
+}
+
+.support-buttons {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.support-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
+    background: var(--primary-orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--body);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.support-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.support-btn.secondary {
+    background: white;
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+}
+
+.support-btn.secondary:hover {
+    background: var(--gray-100);
+    border-color: var(--gray-400);
+}
+
+/* ========================================
+   12. Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+    .help-header h1 {
+        font-size: var(--heading-2);
+    }
+    
+    .quick-links {
+        grid-template-columns: 1fr;
+    }
+    
+    .help-section {
+        padding: var(--space-4);
+    }
+    
+    .faq-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .support-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .support-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ========================================
+   13. Print Styles
+   ======================================== */
+@media print {
+    .search-section,
+    .quick-links,
+    .support-section {
+        display: none !important;
+    }
+    
+    .help-section {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+    }
+    
+    .faq-accordion-item {
+        border: 1px solid #ddd;
+    }
+    
+    .faq-accordion-item .faq-answer {
+        max-height: none !important;
+        padding: var(--space-4) !important;
+    }
+}

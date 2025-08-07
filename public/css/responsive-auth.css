@@ -1,0 +1,652 @@
+/**
+ * Responsive Authentication Design System
+ * Mobile-first approach with progressive enhancement
+ */
+
+/* ==========================================================================
+   Base Responsive Framework
+   ========================================================================== */
+
+/* Mobile First - Base styles for mobile devices */
+@media screen and (max-width: 767px) {
+  
+  /* Login Container Adjustments */
+  .login-container {
+    margin: 0.5rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    max-width: none;
+    width: calc(100% - 1rem);
+  }
+  
+  /* Header Adjustments */
+  .login-header h1 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  
+  .login-header p {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Logo Adjustments */
+  .logo {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Badge Adjustments */
+  .admin-badge,
+  .portal-identifier {
+    position: static;
+    display: block;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  /* Form Adjustments */
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-group input {
+    padding: 0.75rem 1rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+  
+  /* Password Toggle */
+  .password-toggle {
+    right: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  /* Button Adjustments */
+  .btn-login {
+    padding: 0.875rem;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+  
+  /* Security Notice */
+  .security-notice {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Auth Links */
+  .auth-links {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+  }
+  
+  .auth-links p {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Alert Adjustments */
+  .alert {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+  
+  .alert-title {
+    font-size: 0.9rem;
+  }
+  
+  .alert-message {
+    font-size: 0.8rem;
+  }
+  
+  /* Field Feedback */
+  .field-feedback {
+    font-size: 0.75rem;
+    bottom: -1rem;
+  }
+}
+
+/* ==========================================================================
+   Tablet Portrait (768px - 1023px)
+   ========================================================================== */
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  
+  .login-container {
+    max-width: 450px;
+    padding: 2.5rem;
+    border-radius: 20px;
+  }
+  
+  .login-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .logo {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .form-group input {
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
+  }
+  
+  .btn-login {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* ==========================================================================
+   Desktop (1024px and up)
+   ========================================================================== */
+
+@media screen and (min-width: 1024px) {
+  
+  .login-container {
+    max-width: 420px;
+    padding: 3rem;
+    border-radius: 24px;
+  }
+  
+  /* Enhanced hover effects for desktop */
+  .form-group input:hover {
+    border-color: rgba(255, 140, 0, 0.4);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  
+  .backoffice .form-group input:hover {
+    border-color: rgba(74, 144, 226, 0.4);
+  }
+  
+  .btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+  }
+  
+  .backoffice .btn-login:hover {
+    box-shadow: 0 10px 30px rgba(74, 144, 226, 0.45);
+  }
+}
+
+/* ==========================================================================
+   Large Desktop (1440px and up)
+   ========================================================================== */
+
+@media screen and (min-width: 1440px) {
+  
+  .login-container {
+    max-width: 480px;
+    padding: 3.5rem;
+  }
+  
+  .login-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .logo {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+}
+
+/* ==========================================================================
+   Orientation Specific Styles
+   ========================================================================== */
+
+/* Landscape Mobile Phones */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  
+  .login-container {
+    margin: 0.25rem;
+    padding: 1rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .login-header {
+    margin-bottom: 1rem;
+  }
+  
+  .login-header h1 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .logo {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .security-notice {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+  }
+  
+  .auth-links {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+}
+
+/* ==========================================================================
+   Session Timeout Modal Responsive
+   ========================================================================== */
+
+@media screen and (max-width: 767px) {
+  
+  .session-timeout-content {
+    margin: 1rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    max-width: none;
+  }
+  
+  .session-timeout-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .session-timeout-message {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  
+  .session-timeout-timer {
+    margin-bottom: 1rem;
+  }
+  
+  .session-timeout-timer {
+    font-size: 1.25rem;
+  }
+  
+  .session-timeout-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .btn-extend-session,
+  .btn-logout-now {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Header Component Responsive (for dashboard pages)
+   ========================================================================== */
+
+@media screen and (max-width: 1023px) {
+  
+  .header-content {
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .nav-container {
+    display: none; /* Hide navigation on smaller screens */
+  }
+  
+  .header h1 {
+    font-size: 1.25rem;
+  }
+  
+  .user-section {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  
+  .tenant-badge {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .user-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* ==========================================================================
+   BackOffice Layout Responsive
+   ========================================================================== */
+
+@media screen and (max-width: 768px) {
+  
+  .sidebar {
+    width: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .top-bar {
+    padding: 1rem;
+  }
+  
+  .content-area {
+    padding: 1rem;
+  }
+  
+  .mobile-menu-btn {
+    display: block;
+  }
+  
+  .page-title {
+    font-size: 1.25rem;
+  }
+  
+  .content-title {
+    font-size: 1.5rem;
+  }
+  
+  .nav-item {
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .user-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .logout-btn {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* ==========================================================================
+   Touch Device Optimizations
+   ========================================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  
+  /* Increase touch targets */
+  .form-group input {
+    min-height: 48px;
+  }
+  
+  .btn-login {
+    min-height: 48px;
+  }
+  
+  .password-toggle {
+    min-width: 48px;
+    min-height: 48px;
+  }
+  
+  .nav-item {
+    min-height: 48px;
+  }
+  
+  .user-button {
+    min-height: 44px;
+  }
+  
+  /* Remove hover effects */
+  .btn-login:hover,
+  .form-group input:hover,
+  .nav-item:hover,
+  .user-button:hover {
+    transform: none;
+  }
+  
+  /* Enhanced focus states for touch */
+  .btn-login:focus,
+  .form-group input:focus,
+  .password-toggle:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+  }
+}
+
+/* ==========================================================================
+   High DPI / Retina Display Optimizations
+   ========================================================================== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  
+  /* Sharper borders and shadows */
+  .login-container {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  }
+  
+  .btn-login {
+    box-shadow: 0 4px 20px rgba(255, 140, 0, 0.4);
+  }
+  
+  .backoffice .btn-login {
+    box-shadow: 0 6px 25px rgba(74, 144, 226, 0.4);
+  }
+}
+
+/* ==========================================================================
+   Print Styles (for documentation/debugging)
+   ========================================================================== */
+
+@media print {
+  
+  .login-container {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: 2px solid #ccc !important;
+  }
+  
+  .login-header h1 {
+    background: none !important;
+    color: black !important;
+    -webkit-text-fill-color: black !important;
+  }
+  
+  .form-group input,
+  .btn-login {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .alert {
+    border: 1px solid #ccc !important;
+    color: black !important;
+  }
+  
+  .security-notice {
+    border: 1px solid #ccc !important;
+    background: #f5f5f5 !important;
+    color: black !important;
+  }
+  
+  /* Hide interactive elements */
+  .password-toggle,
+  .session-timeout-modal {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   Dark Mode Support (System Preference)
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  
+  /* Enhanced dark mode - already dark by default, but ensure consistency */
+  .login-container {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .form-group input {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
+  
+  .alert {
+    backdrop-filter: blur(15px);
+  }
+}
+
+/* ==========================================================================
+   Light Mode Support (if user prefers light)
+   ========================================================================== */
+
+@media (prefers-color-scheme: light) {
+  
+  body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  }
+  
+  .login-container {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .login-header h1 {
+    background: linear-gradient(135deg, #ff8c00, #ff6b35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .backoffice .login-header h1 {
+    background: linear-gradient(135deg, #4a90e2, #7b68ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .form-group input {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1e293b;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-group input::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .form-group label {
+    color: #374151;
+  }
+  
+  .auth-links p {
+    color: #6b7280;
+  }
+}
+
+/* ==========================================================================
+   Reduced Motion Support
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .login-container {
+    animation: none !important;
+  }
+  
+  body {
+    animation: none !important;
+  }
+  
+  .gradientShift {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   High Contrast Support
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+  
+  .login-container {
+    border: 3px solid #ffffff;
+    background: rgba(0, 0, 0, 0.95);
+  }
+  
+  .form-group input {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .btn-login {
+    border: 2px solid #ffffff;
+    background: #ff8c00;
+    color: #000000;
+  }
+  
+  .backoffice .btn-login {
+    background: #4a90e2;
+    color: #ffffff;
+  }
+  
+  .alert {
+    border: 2px solid;
+  }
+  
+  .alert-error {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.9);
+  }
+  
+  .alert-success {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.9);
+  }
+}

@@ -1,0 +1,428 @@
+# Comprehensive Security Monitoring and Observability Stack
+# Multi-tenant security monitoring with real-time threat detection
+
+---
+# Falco Security Monitoring Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-config
+  namespace: monitoring
+data:
+  falco.yaml: |
+    rules_file:
+      - /etc/falco/falco_rules.yaml
+      - /etc/falco/falco_rules.local.yaml
+      - /etc/falco/tenant_rules.yaml
+    
+    time_format_iso_8601: true
+    json_output: true
+    json_include_output_property: true
+    json_include_tags_property: true
+    
+    log_stderr: true
+    log_syslog: false
+    log_level: info
+    
+    priority: debug
+    
+    buffered_outputs: false
+    
+    outputs:
+      rate: 1
+      max_burst: 1000
+    
+    syslog_output:
+      enabled: false
+    
+    file_output:
+      enabled: true
+      keep_alive: false
+      filename: /var/log/falco/events.log
+    
+    stdout_output:
+      enabled: true
+    
+    webserver:
+      enabled: true
+      listen_port: 8765
+      k8s_audit_endpoint: /k8s-audit
+      k8s_healthz_endpoint: /healthz
+      ssl_enabled: false
+    
+    program_output:
+      enabled: true
+      keep_alive: false
+      program: "curl -X POST http://security-aggregator:8080/falco-events -H 'Content-Type: application/json' -d @-"
+  
+  tenant_rules.yaml: |
+    # Custom rules for tenant isolation monitoring
+    - rule: Tenant Boundary Violation
+      desc: Detect attempts to access resources outside tenant namespace
+      condition: >
+        k8s_audit and ka.verb in (get, list, create, update, patch, delete) and
+        not ka.target.namespace = ka.user.name and
+        ka.user.name != "system:serviceaccount:kube-system:default"
+      output: >
+        Tenant boundary violation detected (user=%ka.user.name verb=%ka.verb 
+        target_namespace=%ka.target.namespace user_namespace=%ka.user.name 
+        resource=%ka.target.resource)
+      priority: CRITICAL
+      tags: [tenant-isolation, security, compliance]
+    
+    - rule: Suspicious Database Access
+      desc: Detect unusual database access patterns
+      condition: >
+        spawned_process and proc.name in (psql, pg_dump, pg_restore) and
+        not proc.pname in (storehubqms, migration-job)
+      output: >
+        Suspicious database access detected (user=%user.name command=%proc.cmdline 
+        parent=%proc.pname namespace=%k8s.ns.name pod=%k8s.pod.name)
+      priority: HIGH
+      tags: [database, security, anomaly]
+    
+    - rule: Privilege Escalation Attempt
+      desc: Detect attempts to escalate privileges
+      condition: >
+        spawned_process and (
+          (proc.name = sudo) or
+          (proc.name = su) or
+          (proc.args contains "chmod +s") or
+          (proc.args contains "setuid")
+        )
+      output: >
+        Privilege escalation attempt (user=%user.name command=%proc.cmdline 
+        namespace=%k8s.ns.name pod=%k8s.pod.name container=%container.name)
+      priority: CRITICAL
+      tags: [privilege-escalation, security]
+    
+    - rule: Unauthorized Network Connection
+      desc: Detect network connections to unexpected destinations
+      condition: >
+        outbound and not (
+          (fd.sip.name contains ".storehubqms.com") or
+          (fd.dip.name contains "amazonaws.com") or
+          (fd.dip.name contains "cloudflare.com") or
+          (fd.dip in ("8.8.8.8", "8.8.4.4", "1.1.1.1")) or
+          (fd.dport in (53, 80, 443, 5432, 6379))
+        )
+      output: >
+        Unauthorized network connection (connection=%fd.name direction=%evt.type 
+        namespace=%k8s.ns.name pod=%k8s.pod.name container=%container.name)
+      priority: WARNING
+      tags: [network, security, egress]
+
+---
+# Falco DaemonSet for runtime security monitoring
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+  namespace: monitoring
+  labels:
+    app: falco
+    role: security-monitor
+spec:
+  selector:
+    matchLabels:
+      app: falco
+      role: security-monitor
+  template:
+    metadata:
+      labels:
+        app: falco
+        role: security-monitor
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8765"
+    spec:
+      serviceAccount: falco
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      containers:
+      - name: falco
+        image: falcosecurity/falco:0.35.1
+        securityContext:
+          privileged: true
+        args:
+        - /usr/bin/falco
+        - --cri=/run/containerd/containerd.sock
+        - --k8s-api=https://kubernetes.default.svc.cluster.local
+        - --k8s-api-cert=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        - --k8s-api-token=/var/run/secrets/kubernetes.io/serviceaccount/token
+        volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: docker-socket
+        - mountPath: /run/containerd/containerd.sock
+          name: containerd-socket
+        - mountPath: /dev
+          name: dev-fs
+        - mountPath: /proc
+          name: proc-fs
+          readOnly: true
+        - mountPath: /boot
+          name: boot-fs
+          readOnly: true
+        - mountPath: /lib/modules
+          name: lib-modules
+          readOnly: true
+        - mountPath: /usr
+          name: usr-fs
+          readOnly: true
+        - mountPath: /etc/falco
+          name: falco-config
+        - mountPath: /var/log/falco
+          name: falco-logs
+        env:
+        - name: FALCO_K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        resources:
+          limits:
+            memory: 1Gi
+            cpu: 500m
+          requests:
+            memory: 512Mi
+            cpu: 200m
+      volumes:
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+      - name: containerd-socket
+        hostPath:
+          path: /run/containerd/containerd.sock
+      - name: dev-fs
+        hostPath:
+          path: /dev
+      - name: proc-fs
+        hostPath:
+          path: /proc
+      - name: boot-fs
+        hostPath:
+          path: /boot
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+      - name: usr-fs
+        hostPath:
+          path: /usr
+      - name: falco-config
+        configMap:
+          name: falco-config
+      - name: falco-logs
+        emptyDir: {}
+
+---
+# Prometheus ServiceMonitor for Falco
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: falco
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: falco
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+
+---
+# Security Event Aggregator Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: security-aggregator
+  namespace: monitoring
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: security-aggregator
+  template:
+    metadata:
+      labels:
+        app: security-aggregator
+    spec:
+      containers:
+      - name: aggregator
+        image: storehubqms/security-aggregator:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ELASTICSEARCH_URL
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-credentials
+              key: url
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: alerting-credentials
+              key: slack-webhook
+        - name: PAGERDUTY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: alerting-credentials
+              key: pagerduty-token
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 250m
+          requests:
+            memory: 256Mi
+            cpu: 100m
+
+---
+# Service for Security Aggregator
+apiVersion: v1
+kind: Service
+metadata:
+  name: security-aggregator
+  namespace: monitoring
+spec:
+  selector:
+    app: security-aggregator
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+---
+# PrometheusRule for Security Alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: security-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: security.rules
+    rules:
+    - alert: TenantBoundaryViolation
+      expr: increase(falco_events_total{rule_name="Tenant Boundary Violation"}[5m]) > 0
+      for: 0m
+      labels:
+        severity: critical
+        category: security
+      annotations:
+        summary: "Tenant boundary violation detected"
+        description: "{{ $value }} tenant boundary violations detected in the last 5 minutes"
+    
+    - alert: PrivilegeEscalationAttempt
+      expr: increase(falco_events_total{rule_name="Privilege Escalation Attempt"}[5m]) > 0
+      for: 0m
+      labels:
+        severity: critical
+        category: security
+      annotations:
+        summary: "Privilege escalation attempt detected"
+        description: "{{ $value }} privilege escalation attempts detected in the last 5 minutes"
+    
+    - alert: SuspiciousDatabaseAccess
+      expr: increase(falco_events_total{rule_name="Suspicious Database Access"}[15m]) > 3
+      for: 0m
+      labels:
+        severity: high
+        category: security
+      annotations:
+        summary: "Suspicious database access pattern"
+        description: "{{ $value }} suspicious database access events in the last 15 minutes"
+    
+    - alert: UnauthorizedNetworkConnection
+      expr: increase(falco_events_total{rule_name="Unauthorized Network Connection"}[10m]) > 10
+      for: 5m
+      labels:
+        severity: warning
+        category: security
+      annotations:
+        summary: "Multiple unauthorized network connections"
+        description: "{{ $value }} unauthorized network connections detected"
+    
+    - alert: HighSecurityEventRate
+      expr: rate(falco_events_total[5m]) > 1
+      for: 10m
+      labels:
+        severity: warning
+        category: security
+      annotations:
+        summary: "High rate of security events"
+        description: "Security event rate is {{ $value }} events per second"
+    
+    - alert: PodSecurityPolicyViolation
+      expr: increase(kube_pod_container_status_restarts_total[5m]) > 5
+      for: 2m
+      labels:
+        severity: warning
+        category: security
+      annotations:
+        summary: "Frequent pod restarts may indicate security policy violations"
+        description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in 5 minutes"
+
+---
+# Grafana Dashboard ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  security-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Security Overview - StoreHub QMS",
+        "description": "Security monitoring for multi-tenant queue management system",
+        "tags": ["security", "falco", "kubernetes"],
+        "timezone": "utc",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Security Events Timeline",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(falco_events_total[5m])",
+                "legendFormat": "{{ rule_name }}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Tenant Isolation Violations",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(increase(falco_events_total{rule_name=\"Tenant Boundary Violation\"}[24h]))",
+                "legendFormat": "24h Total"
+              }
+            ],
+            "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Critical Security Events",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "falco_events_total{priority=\"CRITICAL\"}",
+                "format": "table"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+          }
+        ],
+        "time": {
+          "from": "now-24h",
+          "to": "now"
+        },
+        "refresh": "30s"
+      }
+    }

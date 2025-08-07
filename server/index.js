@@ -60,14 +60,17 @@ const analyticsRoutes = require('./routes/analytics');
 const pushRoutes = require('./routes/push');
 
 // Frontend Routes
-const dashboardRoutes = require('./routes/frontend/dashboard');
 const authRoutes = require('./routes/frontend/auth');
 const publicRoutes = require('./routes/frontend/public');
 
-// SuperAdmin Routes
-const superAdminAuthRoutes = require('./routes/superadmin/auth');
-const superAdminDashboardRoutes = require('./routes/superadmin/dashboard');
-const superAdminTenantRoutes = require('./routes/superadmin/tenants');
+// BackOffice Routes
+const backOfficeAuthRoutes = require('./routes/backoffice/auth');
+const backOfficeDashboardRoutes = require('./routes/backoffice/dashboard');
+const backOfficeTenantRoutes = require('./routes/backoffice/tenants');
+const backOfficeUserRoutes = require('./routes/backoffice/users');
+const backOfficeMerchantRoutes = require('./routes/backoffice/merchants');
+const backOfficeAuditLogRoutes = require('./routes/backoffice/audit-logs');
+const backOfficeSettingsRoutes = require('./routes/backoffice/settings');
 
 // Services
 const aiService = require('./services/aiService');
@@ -151,8 +154,32 @@ configureSecurityMiddleware(app);
 
 // CORS for API routes only
 app.use('/api', cors({
-  origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3001'],
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // In development, allow all lvh.me subdomains and localhost
+    if (process.env.NODE_ENV !== 'production') {
+      const allowedPatterns = [
+        /^http:\/\/localhost:\d+$/,
+        /^http:\/\/[^.]+\.lvh\.me:\d+$/
+      ];
+      
+      const isAllowed = allowedPatterns.some(pattern => pattern.test(origin));
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.log('CORS: Rejected origin:', origin);
+        callback(null, false);
+      }
+    } else {
+      // In production, be more restrictive
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'X-CSRF-Token', 'Authorization']
 }));
 
 // Apply rate limiting to API routes
@@ -215,6 +242,15 @@ app.use(session(sessionConfig));
 
 app.use(flash());
 
+// Tenant Resolution Middleware (Multi-tenant support)
+const { resolveTenant } = require('./middleware/tenantResolver');
+app.use(resolveTenant);
+
+// Authentication Context Middleware (Must run after tenant resolution)
+const { setAuthContext, validateAuthContext } = require('./middleware/auth-context');
+app.use(setAuthContext);
+app.use(validateAuthContext);
+
 // CSRF Protection
 app.use(csrfTokenManager);
 app.use(csrfHelpers);
@@ -227,7 +263,10 @@ app.use((req, res, next) => {
   logger.info(`Incoming ${req.method} ${req.path}`, {
     sessionId: req.sessionID,
     userId: req.session?.userId,
-    hasSession: !!req.session
+    tenantId: req.tenantId,
+    tenantSlug: req.tenant?.slug,
+    hasSession: !!req.session,
+    isBackOffice: req.isBackOffice
   });
   
   // Log response when finished
@@ -289,14 +328,19 @@ app.use(csrfValidation);
 app.use('/', publicRoutes);
 // Always use the real auth routes - no conditional routing
 app.use('/auth', authRoutes);
-app.use('/dashboard', dashboardRoutes);
 
-// SuperAdmin Routes
-app.use('/superadmin/auth', superAdminAuthRoutes);
-app.use('/superadmin/dashboard', superAdminDashboardRoutes);
-app.use('/superadmin/tenants', superAdminTenantRoutes);
+// BackOffice Routes
+app.use('/backoffice/auth', backOfficeAuthRoutes);
+app.use('/backoffice/dashboard', backOfficeDashboardRoutes);
+app.use('/backoffice/tenants', backOfficeTenantRoutes);
+app.use('/backoffice/users', backOfficeUserRoutes);
+app.use('/backoffice/merchants', backOfficeMerchantRoutes);
+app.use('/backoffice/audit-logs', backOfficeAuditLogRoutes);
+app.use('/backoffice/settings', backOfficeSettingsRoutes);
 // Dashboard root redirect
-app.get('/superadmin', (req, res) => res.redirect('/superadmin/dashboard'));
+app.get('/backoffice', (req, res) => res.redirect('/backoffice/dashboard'));
+// Login redirect
+app.get('/backoffice/login', (req, res) => res.redirect('/backoffice/auth/login'));
 
 // API Routes
 app.use('/api/queues', queueRoutes);
@@ -314,6 +358,11 @@ app.use('/api/debug', require('./routes/debug-session'));
 app.use('/api/session-test', require('./routes/session-test'));
 app.use('/api/queue/acknowledge', require('./routes/acknowledge'));
 
+// Test auth bypass (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/test', require('./routes/test-auth-bypass'));
+}
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -321,6 +370,15 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+// Legacy URL redirects
+app.use('/superadmin*', (req, res) => {
+  const newPath = req.originalUrl.replace('/superadmin', '/backoffice');
+  res.redirect(301, newPath);
+});
+app.use('/admin*', (req, res) => {
+  res.redirect(301, '/backoffice');
 });
 
 // Debug routes (only in development/debugging)
@@ -515,6 +573,14 @@ const initializeServices = async () => {
     // Initialize services with individual error handling
     const initPromises = [];
     
+    // Initialize system settings
+    const systemSettingsService = require('./services/systemSettingsService');
+    initPromises.push(
+      systemSettingsService.initializeSettings()
+        .then(() => logger.info('System settings initialized'))
+        .catch(err => logger.error('System settings initialization failed:', err))
+    );
+    
     // Start queue cleanup schedule
     const { startQueueCleanupSchedule } = require('./utils/queueCleanup');
     startQueueCleanupSchedule();
@@ -527,6 +593,24 @@ const initializeServices = async () => {
         .catch(err => logger.error('Session cleanup failed:', err));
     }, 60 * 60 * 1000); // Run every hour
     logger.info('Session cleanup schedule started - will run every hour');
+    
+    // Start analytics data retention schedule (6 months max)
+    const { cleanupOldAnalyticsData } = require('./jobs/analyticsDataRetention');
+    // Run immediately on startup
+    cleanupOldAnalyticsData()
+      .then(result => logger.info('Initial analytics retention cleanup completed:', result))
+      .catch(err => logger.error('Initial analytics retention cleanup failed:', err));
+    
+    // Then run daily at 2 AM
+    setInterval(() => {
+      const now = new Date();
+      if (now.getHours() === 2) {
+        cleanupOldAnalyticsData()
+          .then(result => logger.info('Analytics retention cleanup completed:', result))
+          .catch(err => logger.error('Analytics retention cleanup failed:', err));
+      }
+    }, 60 * 60 * 1000); // Check every hour, but only run at 2 AM
+    logger.info('Analytics data retention schedule started - will run daily at 2 AM (6 months retention)');
     
     // WhatsApp service has been removed from the system
     logger.info('WhatsApp service has been removed - using webchat notifications only');
@@ -586,7 +670,8 @@ app.use((error, req, res, next) => {
         title: 'Server Error',
         status: 500,
         message: 'Something went wrong. Please try again later.',
-        error: process.env.NODE_ENV === 'development' ? error : null
+        error: process.env.NODE_ENV === 'development' ? error : null,
+        req: req // Pass request object for URL checking
       });
     }
   } catch (renderError) {
@@ -617,7 +702,8 @@ app.use('*', (req, res) => {
         title: 'Page Not Found',
         status: 404,
         message: 'The page you are looking for does not exist.',
-        error: null // Ensure error variable exists
+        error: null, // Ensure error variable exists
+        req: req // Pass request object for URL checking
       });
     } catch (renderError) {
       logger.error('Failed to render 404 page:', renderError);

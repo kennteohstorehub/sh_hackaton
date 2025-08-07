@@ -896,7 +896,7 @@ class QueueChat {
             const response = await fetch(cancelUrl, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-Token': csrfToken
+                    'x-csrf-token': csrfToken
                 }
             });
             
@@ -1446,7 +1446,7 @@ class QueueChat {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
+                    'x-csrf-token': csrfToken
                 },
                 body: JSON.stringify({
                     sessionId: this.sessionId,
@@ -1590,7 +1590,7 @@ class QueueChat {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
+                    'x-csrf-token': csrfToken
                 },
                 body: JSON.stringify({
                     entryId: this.queueData.entryId || this.queueData.id,

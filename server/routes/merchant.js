@@ -87,6 +87,18 @@ router.put('/profile', [
   body('address').optional(),
   body('businessHours').optional()
 ], async (req, res) => {
+  console.log('--- PROFILE UPDATE HANDLER REACHED ---');
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  console.log('Request user:', req.user?.id);
+  console.log('Request tenantId:', req.tenantId);
+  
+  // CRITICAL FIX: Remove empty address object that causes Prisma errors
+  if (req.body.address && 
+      (!req.body.address.street || req.body.address.street.trim() === '')) {
+    console.log('Removing empty address object from request');
+    delete req.body.address;
+  }
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -101,9 +113,14 @@ router.put('/profile', [
 
     // Prepare update data
     const updateData = {};
-    const allowedFields = ['businessName', 'email', 'phone', 'businessType', 'address', 'businessHours'];
+    // Only include direct merchant fields, exclude relations that need special handling
+    const allowedFields = ['businessName', 'email', 'phone', 'businessType'];
+    
+    // CRITICAL: Exclude system fields that should never be updated by users
+    const excludedFields = ['tenantId', 'id', 'createdAt', 'updatedAt'];
+    
     allowedFields.forEach(field => {
-      if (req.body[field] !== undefined) {
+      if (req.body[field] !== undefined && !excludedFields.includes(field)) {
         updateData[field] = req.body[field];
       }
     });
@@ -120,6 +137,76 @@ router.put('/profile', [
     const tenantId = req.tenantId;
     await merchantService.update(merchant.id, updateData, tenantId);
 
+    // Handle address update separately if provided
+    // CRITICAL: Only update address if it has actual content, not just empty street
+    if (req.body.address && 
+        typeof req.body.address === 'object' && 
+        req.body.address.street && 
+        req.body.address.street.trim().length > 0) {
+      const db = require('../utils/prisma');
+      
+      // Ensure all address fields have values
+      const addressData = {
+        street: req.body.address.street || '',
+        city: req.body.address.city || '',
+        state: req.body.address.state || '',
+        zipCode: req.body.address.zipCode || '',
+        country: req.body.address.country || ''
+      };
+      
+      await db.merchantAddress.upsert({
+        where: { merchantId: merchant.id },
+        update: addressData,
+        create: {
+          merchantId: merchant.id,
+          ...addressData
+        }
+      });
+    }
+
+    // Handle business hours update separately if provided
+    if (req.body.businessHours && typeof req.body.businessHours === 'object') {
+      const db = require('../utils/prisma');
+      const businessHours = req.body.businessHours;
+      
+      // Convert object format to array format for database
+      const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      const dayNameMap = {
+        monday: 'Monday',
+        tuesday: 'Tuesday', 
+        wednesday: 'Wednesday',
+        thursday: 'Thursday',
+        friday: 'Friday',
+        saturday: 'Saturday',
+        sunday: 'Sunday'
+      };
+
+      for (const day of daysOfWeek) {
+        if (businessHours[day]) {
+          await db.businessHours.upsert({
+            where: { 
+              merchantId_dayOfWeek: {
+                merchantId: merchant.id,
+                dayOfWeek: dayNameMap[day]
+              }
+            },
+            update: {
+              start: businessHours[day].start,
+              end: businessHours[day].end,
+              closed: businessHours[day].closed
+            },
+            create: {
+              merchantId: merchant.id,
+              dayOfWeek: dayNameMap[day],
+              start: businessHours[day].start,
+              end: businessHours[day].end,
+              closed: businessHours[day].closed
+            }
+          });
+        }
+      }
+    }
+
     // Get the updated merchant details
     const fullMerchant = await merchantService.getFullDetails(merchant.id, tenantId);
     res.json({
@@ -128,8 +215,22 @@ router.put('/profile', [
     });
 
   } catch (error) {
-    logger.error('Error updating merchant profile:', error);
-    res.status(500).json({ error: 'Failed to update profile' });
+    logger.error('Error updating merchant profile:', {
+      error: error.message,
+      stack: error.stack,
+      requestBody: req.body,
+      merchantId: req.user?.id,
+      tenantId: req.tenantId
+    });
+    
+    // Send more specific error message based on the error type
+    if (error.code === 'P2002') {
+      res.status(400).json({ error: 'Business name already exists' });
+    } else if (error.code === 'P2025') {
+      res.status(404).json({ error: 'Record not found' });
+    } else {
+      res.status(500).json({ error: 'Failed to update profile' });
+    }
   }
 });
 
@@ -234,6 +335,12 @@ router.put('/settings/operations', checkQueueStatus(), async (req, res) => {
     if (req.body.adjustForPeakHours !== undefined) settingsData.adjustForPeakHours = req.body.adjustForPeakHours;
     if (req.body.peakMultiplier !== undefined) settingsData.peakMultiplier = req.body.peakMultiplier;
     if (req.body.advanceBookingHours !== undefined) settingsData.advanceBookingHours = req.body.advanceBookingHours;
+    
+    // Add party size limits
+    if (req.body.partySizeRegularMin !== undefined) settingsData.partySizeRegularMin = req.body.partySizeRegularMin;
+    if (req.body.partySizeRegularMax !== undefined) settingsData.partySizeRegularMax = req.body.partySizeRegularMax;
+    if (req.body.partySizePeakMin !== undefined) settingsData.partySizePeakMin = req.body.partySizePeakMin;
+    if (req.body.partySizePeakMax !== undefined) settingsData.partySizePeakMax = req.body.partySizePeakMax;
     
     // Update or create settings
     let updatedSettings;

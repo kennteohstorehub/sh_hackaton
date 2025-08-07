@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <!-- StoreHub Design System -->
+    <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+    <link rel="stylesheet" href="/css/storehub-global.css?v=<%= Date.now() %>">
+    <link rel="stylesheet" href="/css/storehub-dashboard.css?v=<%= Date.now() %>">
+    <script src="/js/storehub-design-system.js?v=<%= Date.now() %>"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <%- csrfMeta() %>
+</head>
+<body>
+    <!-- Header -->
+    <%- include('../partials/header-storehub', { activePage: 'dashboard', showViewPublic: true, currentQueueId: queueId }) %>
+    
+    <!-- Main Dashboard -->
+    <div class="dashboard-container">
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-value"><%= stats.totalToday || 0 %></div>
+                    <div class="stats-label">Customers Today</div>
+                </div>
+                <div class="stats-trend trend-positive">
+                    <span>↑ 12%</span> from yesterday
+                </div>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-value"><%= stats.averageWaitTime || '0' %></div>
+                    <div class="stats-label">Avg. Wait Time</div>
+                </div>
+                <div class="stats-trend trend-neutral">
+                    <span>→</span> Same as average
+                </div>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-value"><%= stats.servedToday || 0 %></div>
+                    <div class="stats-label">Served Today</div>
+                </div>
+                <div class="stats-trend trend-positive">
+                    <span>↑ 8%</span> efficiency
+                </div>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-value"><%= activeCount || 0 %></div>
+                    <div class="stats-label">In Queue Now</div>
+                </div>
+                <div class="stats-trend <%= activeCount > 10 ? 'trend-negative' : 'trend-positive' %>">
+                    <span><%= activeCount > 10 ? '⚠' : '✓' %></span> <%= activeCount > 10 ? 'High volume' : 'Normal flow' %>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Queue Management -->
+        <div class="queue-section">
+            <div class="section-header">
+                <h2 class="section-title">Queue Management</h2>
+                <div class="section-actions">
+                    <% if (typeof queue !== 'undefined' && queue) { %>
+                        <% if (queue.acceptingCustomers !== false) { %>
+                            <button class="btn btn-danger btn-sm" onclick="toggleQueueAccepting('<%= queue._id || queue.id %>')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                                </svg>
+                                Stop Queue
+                            </button>
+                        <% } else { %>
+                            <button class="btn btn-success btn-sm" onclick="toggleQueueAccepting('<%= queue._id || queue.id %>')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Start Queue
+                            </button>
+                        <% } %>
+                    <% } %>
+                    <button class="btn btn-secondary btn-sm" onclick="refreshQueue()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="showAddCustomerModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Customer
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-link active" data-tab="waiting">
+                    Waiting (<span id="waitingCount"><%= waitingCount || 0 %></span>)
+                </button>
+                <button class="tab-link" data-tab="completed">
+                    Completed (<span id="completedCount"><%= completedCount || 0 %></span>)
+                </button>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Waiting Tab -->
+                <div class="tab-pane active" id="waiting-tab">
+                    <div class="queue-grid" id="waitingQueue">
+                        <% if (waitingCustomers && waitingCustomers.length > 0) { %>
+                            <% waitingCustomers.forEach(customer => { %>
+                                <div class="queue-card" data-customer-id="<%= customer.id %>">
+                                    <div class="queue-number">#<%= customer.queueNumber %></div>
+                                    <div class="queue-info">
+                                        <div class="queue-name"><%= customer.customerName || customer.name || 'Guest' %></div>
+                                        <div class="queue-details">
+                                            <div class="queue-detail-item">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                </svg>
+                                                <%= customer.partySize || 1 %> <%= customer.partySize === 1 ? 'person' : 'people' %>
+                                            </div>
+                                            <div class="queue-detail-item">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <%= customer.waitTime || '0 min' %>
+                                            </div>
+                                            <% if (customer.customerPhone || customer.phone) { %>
+                                            <div class="queue-detail-item">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                                </svg>
+                                                <%= customer.customerPhone || customer.phone %>
+                                            </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <div class="queue-actions">
+                                        <button class="btn btn-primary btn-sm" onclick="callCustomer('<%= queueId || activeQueue?.id || activeQueue?._id %>', '<%= customer.id %>', event)">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-right: 4px;">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                                            </svg>
+                                            Call
+                                        </button>
+                                        <button class="btn btn-text btn-sm" onclick="removeCustomer('<%= customer.id %>')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h3>No customers waiting</h3>
+                                <p>New customers will appear here</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <!-- Completed Tab -->
+                <div class="tab-pane" id="completed-tab">
+                    <div class="queue-list" id="completedQueue">
+                        <!-- Completed customers will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions-section">
+            <h3>Quick Actions</h3>
+            <div class="quick-actions-grid">
+                <button class="quick-action-btn" onclick="callNext()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    Call Next
+                </button>
+                <button class="quick-action-btn" onclick="pauseQueue()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Pause Queue
+                </button>
+                <button class="quick-action-btn" onclick="clearQueue()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Clear Completed
+                </button>
+                <button class="quick-action-btn" onclick="exportData()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export Data
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Customer Modal -->
+    <div class="modal" id="addCustomerModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Customer</h3>
+                <button class="modal-close" onclick="closeModal('addCustomerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addCustomerForm">
+                    <div class="form-group">
+                        <label class="form-label required">Customer Name</label>
+                        <input type="text" class="form-control" id="customerName" placeholder="Enter customer name" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">Phone Number</label>
+                            <input type="tel" class="form-control" id="customerPhone" placeholder="+60123456789" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Party Size</label>
+                            <select class="form-control" id="partySize" required>
+                                <option value="">Select size</option>
+                                <% 
+                                // Use merchant's max party size setting, default to 5
+                                const maxPartySize = locals.merchantSettings?.partySizeRegularMax || 5;
+                                for (let i = 1; i <= maxPartySize; i++) { 
+                                %>
+                                    <option value="<%= i %>"><%= i %> <%= i === 1 ? 'person' : 'people' %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Special Requests</label>
+                        <textarea class="form-control" id="specialRequests" rows="3" placeholder="Any special requirements or requests (optional)"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addCustomerModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="addCustomer()">Add to Queue</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        const queueId = '<%= queueId %>';
+        
+        // Tab functionality
+        document.querySelectorAll('.tab-link').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                
+                // Update active tab
+                document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update tab content
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+                
+                // Load tab data
+                loadTabData(tabName);
+            });
+        });
+        
+        // Socket events
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            socket.emit('join-queue', queueId);
+        });
+        
+        socket.on('queue-updated', (data) => {
+            updateQueueDisplay(data);
+        });
+        
+        socket.on('customer-added', (customer) => {
+            addCustomerToDisplay(customer);
+            showNotification('New customer added to queue', 'success');
+        });
+        
+        socket.on('customer-called', (customer) => {
+            moveCustomerToCompleted(customer);
+            showNotification(`Customer #${customer.queueNumber} seated`, 'info');
+        });
+        
+        // Functions
+        function refreshQueue() {
+            location.reload();
+        }
+        
+        function showAddCustomerModal() {
+            const modal = document.getElementById('addCustomerModal');
+            if (modal) {
+                if (typeof StoreHubDS !== 'undefined' && StoreHubDS.openModal) {
+                    StoreHubDS.openModal(modal);
+                } else {
+                    // Fallback if StoreHubDS is not available
+                    modal.style.display = 'flex';
+                }
+            }
+        }
+        
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                if (typeof StoreHubDS !== 'undefined' && StoreHubDS.openModal) {
+                    StoreHubDS.openModal(modal);
+                } else {
+                    // Fallback if StoreHubDS is not available
+                    modal.style.display = 'flex';
+                }
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const backdrop = document.getElementById('stopQueueBackdrop');
+            
+            if (modal) {
+                if (typeof StoreHubDS !== 'undefined' && StoreHubDS.closeModal) {
+                    StoreHubDS.closeModal(modal);
+                } else {
+                    // Fallback if StoreHubDS is not available
+                    modal.remove();
+                }
+            }
+            
+            // Also remove backdrop if it exists
+            if (backdrop) {
+                backdrop.remove();
+            }
+        }
+        
+        function addCustomer() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const partySize = document.getElementById('partySize').value;
+            const specialRequests = document.getElementById('specialRequests').value.trim();
+            
+            // Validate required fields
+            if (!name) {
+                showNotification('Please enter customer name', 'error');
+                return;
+            }
+            
+            if (!phone) {
+                showNotification('Please enter phone number', 'error');
+                return;
+            }
+            
+            if (!partySize) {
+                showNotification('Please select party size', 'error');
+                return;
+            }
+            
+            fetch(`/api/queues/${queueId}/customers`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ 
+                    name, 
+                    phone, 
+                    partySize: parseInt(partySize),
+                    specialRequests 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal('addCustomerModal');
+                    document.getElementById('addCustomerForm').reset();
+                    showNotification('Customer added successfully', 'success');
+                    // Refresh the queue display
+                    if (data.customer) {
+                        addCustomerToDisplay(data.customer);
+                    }
+                } else {
+                    showNotification(data.message || 'Failed to add customer', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding customer:', error);
+                showNotification('Error adding customer', 'error');
+            });
+        }
+        
+        function callCustomer(queueId, customerId, event) {
+            // Confirm with user
+            if (!confirm('Are you sure you want to notify this customer?')) {
+                return;
+            }
+            
+            // Get button element if event is provided
+            const button = event ? (event.target ? event.target.closest('button') : null) : null;
+            let originalHTML = '';
+            
+            if (button) {
+                originalHTML = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="bi bi-hourglass-split"></i> Calling...';
+            }
+            
+            fetch(`/api/queue/${queueId}/call-specific`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-csrf-token': '<%= locals.csrfToken %>'
+                },
+                body: JSON.stringify({ customerId })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success notification
+                    showNotification(`✅ Notified: ${data.customer?.customerName || 'Customer'}`, 'success');
+                    
+                    // Update UI to reflect the new status
+                    if (window.updateCustomerStatus) {
+                        window.updateCustomerStatus(customerId, 'called', data.customer);
+                    }
+                } else {
+                    showNotification(data.error || 'Failed to call customer', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error calling customer:', error);
+                showNotification('Error calling customer. Please try again.', 'error');
+            })
+            .finally(() => {
+                // Restore button state
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalHTML || '<i class="bi bi-megaphone"></i> Call';
+                }
+            });
+        }
+        
+        // Helper function to show notifications
+        function showNotification(message, type = 'info') {
+            // Try to use StoreHubDS if available, otherwise use alert
+            if (typeof StoreHubDS !== 'undefined' && StoreHubDS.showToast) {
+                StoreHubDS.showToast(message, type);
+            } else {
+                // Fallback to a simple notification
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${type}`;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+                    color: white;
+                    border-radius: 4px;
+                    z-index: 9999;
+                    animation: slideIn 0.3s ease-out;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        }
+        
+        function removeCustomer(customerId) {
+            if (confirm('Are you sure you want to remove this customer from the queue?')) {
+                fetch(`/api/customers/${customerId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'CSRF-Token': '<%= locals.csrfToken %>'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Customer removed', 'info');
+                    } else {
+                        showNotification(data.message || 'Failed to remove customer', 'error');
+                    }
+                })
+                .catch(error => {
+                    showNotification('Error removing customer', 'error');
+                });
+            }
+        }
+        
+        function loadTabData(tabName) {
+            // Load data for specific tab
+            // This would fetch data from the server based on the tab
+        }
+        
+        function updateQueueDisplay(data) {
+            // Update queue counts
+            document.getElementById('waitingCount').textContent = data.waitingCount || 0;
+            document.getElementById('servingCount').textContent = data.servingCount || 0;
+            document.getElementById('completedCount').textContent = data.completedCount || 0;
+            
+            // Update active tab content
+            const activeTab = document.querySelector('.tab-link.active').getAttribute('data-tab');
+            loadTabData(activeTab);
+        }
+        
+        function addCustomerToDisplay(customer) {
+            const waitingQueue = document.getElementById('waitingQueue');
+            const emptyState = waitingQueue.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const customerCard = createCustomerCard(customer);
+            waitingQueue.insertBefore(customerCard, waitingQueue.firstChild);
+            
+            // Animate in
+            customerCard.classList.add('fade-in');
+        }
+        
+        function createCustomerCard(customer) {
+            const card = document.createElement('div');
+            card.className = 'queue-card';
+            card.setAttribute('data-customer-id', customer.id);
+            card.innerHTML = `
+                <div class="queue-number">#${customer.queueNumber}</div>
+                <div class="queue-info">
+                    <div class="queue-name">${customer.customerName || customer.name || 'Guest'}</div>
+                    <div class="queue-details">
+                        <div class="queue-detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            ${customer.partySize || 1} ${customer.partySize === 1 ? 'person' : 'people'}
+                        </div>
+                        <div class="queue-detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Just now
+                        </div>
+                        ${customer.phone ? `
+                        <div class="queue-detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            </svg>
+                            ${customer.phone}
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="queue-actions">
+                    <button class="btn btn-primary btn-sm" onclick="callCustomer('${queueId || customer.queueId || ""}', '${customer.id}', event)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-right: 4px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                        </svg>
+                        Call
+                    </button>
+                    <button class="btn btn-text btn-sm" onclick="removeCustomer('${customer.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+        
+        function moveCustomerToCompleted(customer) {
+            const card = document.querySelector(`[data-customer-id="${customer.id}"]`);
+            if (card) {
+                card.classList.add('scale-out');
+                setTimeout(() => {
+                    card.remove();
+                    // Update completed tab if active
+                    if (document.querySelector('.tab-link[data-tab="completed"]').classList.contains('active')) {
+                        loadTabData('completed');
+                    }
+                    // Update counts
+                    updateCounts();
+                }, 300);
+            }
+        }
+        
+        // Quick actions
+        function callNext() {
+            fetch(`/api/queues/${queueId}/call-next`, {
+                method: 'POST',
+                headers: {
+                    'CSRF-Token': '<%= locals.csrfToken %>'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Called next customer', 'success');
+                } else {
+                    showNotification(data.message || 'No customers waiting', 'info');
+                }
+            });
+        }
+        
+        function pauseQueue() {
+            // Implement pause queue functionality
+            showNotification('Queue paused', 'info');
+        }
+        
+        function clearQueue() {
+            if (confirm('Clear all completed customers from history?')) {
+                // Implement clear queue functionality
+                showNotification('Completed queue cleared', 'success');
+            }
+        }
+        
+        function exportData() {
+            window.location.href = `/api/queues/${queueId}/export`;
+        }
+        
+        // Queue Control Functions
+        async function toggleQueueAccepting(queueId) {
+            const button = event.target.closest('button');
+            const isCurrentlyAccepting = button.classList.contains('btn-danger');
+            const action = isCurrentlyAccepting ? 'stop' : 'start';
+            
+            if (action === 'stop') {
+                // Show confirmation modal
+                showStopQueueModal(queueId);
+            } else {
+                // Start queue directly
+                try {
+                    const response = await fetch(`/api/queue/${queueId}/toggle-accepting`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        showNotification(result.message || 'Queue started successfully', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        const error = await response.json();
+                        showNotification(error.error || 'Failed to start queue', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error starting queue:', error);
+                    showNotification('Failed to start queue', 'error');
+                }
+            }
+        }
+        
+        function showStopQueueModal(queueId) {
+            // Create backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop stop-queue-modal';
+            backdrop.id = 'stopQueueBackdrop';
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-header">
+                    <h3>Stop Queue</h3>
+                    <button class="modal-close" onclick="closeModal('stopQueueModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <div>
+                            <strong>Are you sure you want to stop the queue?</strong>
+                            <p>This will prevent new customers from joining. Existing customers will remain in the queue.</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>To confirm, please type: <strong>Yes I want to stop queue</strong></label>
+                        <input type="text" id="stopQueueConfirmInput" class="form-control" placeholder="Type confirmation text here" autocomplete="off">
+                        <div id="stopQueueError" class="error-message" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('stopQueueModal')">Cancel</button>
+                    <button class="btn btn-danger" onclick="confirmStopQueue('${queueId}')">Stop Queue</button>
+                </div>
+            `;
+            modal.id = 'stopQueueModal';
+            
+            // Append backdrop first, then modal
+            backdrop.appendChild(modal);
+            document.body.appendChild(backdrop);
+            
+            // Add click handler to backdrop to close modal
+            backdrop.addEventListener('click', function(e) {
+                if (e.target === backdrop) {
+                    closeModal('stopQueueModal');
+                }
+            });
+            
+            openModal('stopQueueModal');
+            
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('stopQueueConfirmInput').focus();
+            }, 100);
+            
+            // Handle Enter key
+            document.getElementById('stopQueueConfirmInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    confirmStopQueue(queueId);
+                }
+            });
+        }
+        
+        async function confirmStopQueue(queueId) {
+            const input = document.getElementById('stopQueueConfirmInput');
+            const confirmText = input.value.trim();
+            const expectedText = "Yes I want to stop queue";
+            
+            if (confirmText.toLowerCase() !== expectedText.toLowerCase()) {
+                const errorDiv = document.getElementById('stopQueueError');
+                errorDiv.textContent = `Please type exactly: "${expectedText}"`;
+                errorDiv.style.display = 'block';
+                input.classList.add('error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/queue/${queueId}/toggle-accepting`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    closeModal('stopQueueModal');
+                    showNotification(result.message || 'Queue stopped successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error || 'Failed to stop queue', 'error');
+                }
+            } catch (error) {
+                console.error('Error stopping queue:', error);
+                showNotification('Failed to stop queue', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

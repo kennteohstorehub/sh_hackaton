@@ -1,0 +1,439 @@
+/* Enhanced Authentication UI Components */
+
+/* Improved Alert Styles with Better UX */
+.alert {
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid;
+  animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.alert-message {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/* Enhanced Error Styles */
+.alert-error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.alert-error .alert-icon {
+  color: #ef4444;
+}
+
+/* Enhanced Success Styles */
+.alert-success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.alert-success .alert-icon {
+  color: #22c55e;
+}
+
+/* Warning Styles */
+.alert-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.alert-warning .alert-icon {
+  color: #f59e0b;
+}
+
+/* Info Styles */
+.alert-info {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.alert-info .alert-icon {
+  color: #3b82f6;
+}
+
+/* Form Validation Styles */
+.form-group {
+  position: relative;
+  margin-bottom: 1.75rem;
+}
+
+.form-group.has-error input {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.form-group.has-error input:focus {
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.form-group.has-success input {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.form-group.has-success input:focus {
+  border-color: rgba(34, 197, 94, 0.7);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+}
+
+.field-feedback {
+  position: absolute;
+  bottom: -1.25rem;
+  left: 0;
+  font-size: 0.8rem;
+  color: #ef4444;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+.field-feedback.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.field-feedback.success {
+  color: #22c55e;
+}
+
+/* Loading States */
+.btn-login {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-login.loading {
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn-login.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Enhanced Input Focus States */
+.form-group input {
+  position: relative;
+  z-index: 1;
+}
+
+.form-group input:focus + .input-focus-indicator {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.input-focus-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ff8c00, #ff6b35);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: all 0.3s ease;
+  border-radius: 1px;
+}
+
+/* BackOffice specific focus indicator */
+.backoffice .input-focus-indicator {
+  background: linear-gradient(90deg, #4a90e2, #7b68ee);
+}
+
+/* Enhanced Password Field */
+.password-field {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.password-toggle:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Forgot Password Link */
+.forgot-password {
+  text-align: right;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.forgot-password a {
+  color: rgba(255, 140, 0, 0.8);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.forgot-password a:hover {
+  color: #ff8c00;
+  text-decoration: underline;
+}
+
+.backoffice .forgot-password a {
+  color: rgba(74, 144, 226, 0.8);
+}
+
+.backoffice .forgot-password a:hover {
+  color: #4a90e2;
+}
+
+/* Portal Identity Enhancements */
+.portal-identifier {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.portal-identifier.tenant {
+  color: #ff8c00;
+  border-color: rgba(255, 140, 0, 0.3);
+}
+
+.portal-identifier.backoffice {
+  color: #4a90e2;
+  border-color: rgba(74, 144, 226, 0.3);
+}
+
+/* Session Timeout Notification */
+.session-timeout-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.session-timeout-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.session-timeout-content {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  color: white;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.session-timeout-modal.show .session-timeout-content {
+  transform: scale(1);
+}
+
+.session-timeout-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #f59e0b;
+}
+
+.session-timeout-message {
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+}
+
+.session-timeout-timer {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ef4444;
+  margin-bottom: 1.5rem;
+}
+
+.session-timeout-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn-extend-session {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-extend-session:hover {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  transform: translateY(-2px);
+}
+
+.btn-logout-now {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-logout-now:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+}
+
+/* Accessibility Improvements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus visible for keyboard navigation */
+.btn-login:focus-visible,
+.user-button:focus-visible,
+.nav a:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .login-container {
+    border: 2px solid #ffffff;
+  }
+  
+  .form-group input {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+  }
+  
+  .btn-login {
+    border: 2px solid #ffffff;
+  }
+}
+
+/* Dark theme preference */
+@media (prefers-color-scheme: light) {
+  /* Adjust for users who prefer light mode */
+  .login-container {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
+  }
+  
+  .login-container .form-group input {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1e293b;
+  }
+  
+  .login-container .form-group input::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+  }
+}

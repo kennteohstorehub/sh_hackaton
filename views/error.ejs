@@ -132,7 +132,11 @@
         <div class="error-message">
             <%= message || 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.' %>
         </div>
-        <a href="/dashboard" class="back-button">Back to Dashboard</a>
+        <% if (typeof req !== 'undefined' && req.originalUrl && req.originalUrl.includes('/backoffice')) { %>
+            <a href="/backoffice/dashboard" class="back-button">Back to BackOffice</a>
+        <% } else { %>
+            <a href="/dashboard" class="back-button">Back to Dashboard</a>
+        <% } %>
     </div>
 </body>
 </html> 

@@ -772,6 +772,12 @@ body {
     background: rgba(37, 211, 102, 0.1);
 }
 
+/* Mobile Customer List Container */
+.customer-list-mobile {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 /* Mobile Customer Card Layout */
 .customer-card {
     display: none;
@@ -784,6 +790,8 @@ body {
     margin-bottom: var(--spacing-md);
     position: relative;
     transition: all var(--transition-fast);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .customer-card-header {

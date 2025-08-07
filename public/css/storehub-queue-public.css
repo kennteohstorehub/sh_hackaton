@@ -1,0 +1,408 @@
+/* StoreHub Design System - Public Queue Page
+   Customer-facing interface with modern, clean design
+*/
+
+/* ========================================
+   Public Queue Layout
+   ======================================== */
+.storehub-public-page {
+  min-height: 100vh;
+  background-color: var(--gray-100);
+  padding-bottom: var(--space-12);
+}
+
+/* Public Header */
+.storehub-public-header {
+  background-color: white;
+  border-bottom: 1px solid var(--gray-300);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5) 0;
+  margin-bottom: var(--space-8);
+}
+
+.storehub-public-header-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  text-align: center;
+}
+
+.storehub-business-logo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.storehub-business-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.storehub-business-name {
+  font-size: var(--heading-1);
+  font-weight: var(--weight-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.storehub-queue-description {
+  font-size: var(--body-large);
+  color: var(--gray-600);
+  margin: 0;
+}
+
+/* Join Queue Section */
+.storehub-join-section {
+  max-width: 600px;
+  margin: 0 auto var(--space-8);
+  padding: 0 var(--space-6);
+}
+
+.storehub-join-card {
+  background-color: white;
+  border: 2px solid var(--primary-orange);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.storehub-join-title {
+  font-size: var(--heading-2);
+  font-weight: var(--weight-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-4);
+}
+
+.storehub-current-wait {
+  background-color: var(--gray-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.storehub-wait-time {
+  font-size: var(--heading-1);
+  font-weight: var(--weight-bold);
+  color: var(--primary-orange);
+  margin-bottom: var(--space-2);
+}
+
+.storehub-wait-label {
+  font-size: var(--body);
+  color: var(--gray-600);
+}
+
+.storehub-join-form {
+  text-align: left;
+}
+
+.storehub-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+/* Queue Status Card */
+.storehub-status-card {
+  background-color: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-lg);
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.storehub-queue-number-display {
+  background-color: var(--primary-orange);
+  color: white;
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-6);
+  font-size: var(--heading-1);
+  font-weight: var(--weight-bold);
+  box-shadow: var(--shadow-md);
+}
+
+.storehub-status-info {
+  margin-bottom: var(--space-6);
+}
+
+.storehub-status-label {
+  font-size: var(--body);
+  color: var(--gray-600);
+  margin-bottom: var(--space-2);
+}
+
+.storehub-status-value {
+  font-size: var(--heading-2);
+  font-weight: var(--weight-semibold);
+  color: var(--gray-900);
+}
+
+.storehub-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background-color: var(--gray-100);
+  border-radius: var(--radius-md);
+}
+
+.storehub-status-item {
+  text-align: center;
+}
+
+/* Progress Indicator */
+.storehub-progress {
+  margin-bottom: var(--space-6);
+}
+
+.storehub-progress-bar {
+  height: 8px;
+  background-color: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+}
+
+.storehub-progress-fill {
+  height: 100%;
+  background-color: var(--primary-orange);
+  transition: width var(--transition-slow);
+}
+
+.storehub-progress-label {
+  font-size: var(--small);
+  color: var(--gray-600);
+  text-align: center;
+}
+
+/* Notification Banner */
+.storehub-notification {
+  background-color: var(--info-blue);
+  color: white;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  animation: slideDown var(--transition-normal) ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.storehub-notification-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.storehub-notification-text {
+  flex: 1;
+  font-weight: var(--weight-medium);
+}
+
+/* WebChat Widget */
+.storehub-webchat-widget {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: 100;
+}
+
+.storehub-webchat-button {
+  width: 60px;
+  height: 60px;
+  background-color: var(--primary-orange);
+  color: white;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: none;
+}
+
+.storehub-webchat-button:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-xl);
+}
+
+.storehub-webchat-button svg {
+  width: 28px;
+  height: 28px;
+}
+
+.storehub-webchat-panel {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  width: 360px;
+  height: 500px;
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.storehub-webchat-panel.active {
+  display: flex;
+}
+
+.storehub-webchat-header {
+  background-color: var(--primary-orange);
+  color: white;
+  padding: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.storehub-webchat-title {
+  font-weight: var(--weight-semibold);
+}
+
+.storehub-webchat-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: var(--space-1);
+}
+
+.storehub-webchat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  background-color: var(--gray-50);
+}
+
+.storehub-webchat-input {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-top: 1px solid var(--gray-300);
+}
+
+.storehub-webchat-input input {
+  flex: 1;
+}
+
+/* Info Cards */
+.storehub-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.storehub-info-card {
+  background-color: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.storehub-info-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--primary-orange);
+  margin: 0 auto var(--space-3);
+}
+
+.storehub-info-title {
+  font-size: var(--heading-4);
+  font-weight: var(--weight-semibold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.storehub-info-text {
+  font-size: var(--body);
+  color: var(--gray-600);
+  margin: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .storehub-public-header-content {
+    padding: 0 var(--space-4);
+  }
+  
+  .storehub-business-name {
+    font-size: var(--heading-2);
+  }
+  
+  .storehub-join-section {
+    padding: 0 var(--space-4);
+  }
+  
+  .storehub-join-card {
+    padding: var(--space-6);
+  }
+  
+  .storehub-form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .storehub-status-card {
+    margin: 0 var(--space-4);
+    padding: var(--space-6);
+  }
+  
+  .storehub-queue-number-display {
+    width: 100px;
+    height: 100px;
+    font-size: var(--heading-2);
+  }
+  
+  .storehub-webchat-widget {
+    bottom: var(--space-4);
+    right: var(--space-4);
+  }
+  
+  .storehub-webchat-panel {
+    width: calc(100vw - var(--space-8));
+    right: var(--space-4);
+    height: 400px;
+  }
+  
+  .storehub-info-grid {
+    grid-template-columns: 1fr;
+    padding: 0 var(--space-4);
+  }
+}

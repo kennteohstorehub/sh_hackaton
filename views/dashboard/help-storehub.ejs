@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & FAQ - <%= merchant?.businessName || 'StoreHub QMS' %></title>
+    
+    <!-- StoreHub Design System -->
+    <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+    <link rel="stylesheet" href="/css/storehub-help.css?v=<%= Date.now() %>">
+    
+    <style>
+        /* Additional page-specific styles */
+        .help-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: var(--space-6);
+            background-color: var(--gray-100);
+            min-height: calc(100vh - 70px);
+        }
+        
+        @media (max-width: 768px) {
+            .help-container {
+                padding: var(--space-4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <%- include('../partials/header-storehub', { 
+        title: 'Help & FAQ',
+        merchant: locals.merchant,
+        queues: locals.queues || [],
+        user: locals.user
+    }) %>
+    
+    <!-- Main Content -->
+    <div class="help-container">
+        <!-- Help Header -->
+        <div class="help-header">
+            <h1>Help & FAQ</h1>
+            <p>Everything you need to know about StoreHub QMS</p>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="search-box">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search for help..." class="search-input">
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <a href="#getting-started" class="quick-link-card">
+                <div class="quick-link-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h3>Getting Started</h3>
+                <p>Learn the basics</p>
+            </a>
+            
+            <a href="#managing-queue" class="quick-link-card">
+                <div class="quick-link-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <h3>Managing Queue</h3>
+                <p>Queue operations</p>
+            </a>
+            
+            <a href="#analytics" class="quick-link-card">
+                <div class="quick-link-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zM13 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"></path>
+                    </svg>
+                </div>
+                <h3>Analytics</h3>
+                <p>Understanding data</p>
+            </a>
+            
+            <a href="#troubleshooting" class="quick-link-card">
+                <div class="quick-link-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                    </svg>
+                </div>
+                <h3>Troubleshooting</h3>
+                <p>Fix common issues</p>
+            </a>
+        </div>
+
+        <!-- Getting Started Section -->
+        <div class="help-section" id="getting-started">
+            <h2>
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Getting Started
+            </h2>
+            
+            <div class="help-card">
+                <h3>How to Set Up Your First Queue</h3>
+                <ol class="step-list">
+                    <li>From your dashboard, click "Create New Queue" to create your first queue</li>
+                    <li>Enter a name for your queue (e.g., "Main Dining", "Takeout", "Bar Service")</li>
+                    <li>Set your average service time per customer</li>
+                    <li>Configure your maximum queue size if needed</li>
+                    <li>Save your queue and it will appear on your dashboard</li>
+                </ol>
+            </div>
+            
+            <div class="help-card">
+                <h3>Share Your Queue with Customers</h3>
+                <ol class="step-list">
+                    <li>Go to Settings → QR Code tab</li>
+                    <li>Download the QR code poster (PDF)</li>
+                    <li>Print and display it at your business location</li>
+                    <li>Customers can scan to join your queue instantly</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Customer Experience Section -->
+        <div class="help-section" id="customer-experience">
+            <h2>
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                Customer Experience
+            </h2>
+            
+            <div class="help-card">
+                <h3>How Customers Join Your Queue</h3>
+                <p>Customers have multiple ways to join your queue:</p>
+                <ul class="feature-list">
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span><strong>QR Code:</strong> Scan the QR code at your location</span>
+                    </li>
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span><strong>Web Link:</strong> Visit your queue URL directly</span>
+                    </li>
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span><strong>Walk-in:</strong> Add manually through dashboard</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="help-card">
+                <h3>What Customers See</h3>
+                <p>When customers join your queue, they receive:</p>
+                <ul class="feature-list">
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Queue position number</span>
+                    </li>
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Estimated wait time</span>
+                    </li>
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Real-time updates on their position</span>
+                    </li>
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Notification when it's their turn</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Managing Your Queue Section -->
+        <div class="help-section" id="managing-queue">
+            <h2>
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                Managing Your Queue
+            </h2>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h4>Call Next Customer</h4>
+                    <p>Click the "Call" button to notify the next customer in line. They'll receive an instant notification via their chosen platform.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Mark as Completed</h4>
+                    <p>After serving a customer, their entry automatically moves to the completed tab for your records.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Remove from Queue</h4>
+                    <p>If a customer doesn't show up or cancels, click the X button to remove them from the queue.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Start/Stop Queue</h4>
+                    <p>Use the toggle button to start accepting customers or stop the queue when you're at capacity or closing.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Add Walk-in Customer</h4>
+                    <p>Click "Add Customer" to manually add walk-in customers who don't have a smartphone.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>View Queue Status</h4>
+                    <p>The dashboard shows real-time statistics including waiting customers, average wait time, and daily served count.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="help-section" id="analytics">
+            <h2>
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zM13 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"></path>
+                </svg>
+                Understanding Analytics
+            </h2>
+            
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h4>Peak Hours</h4>
+                    <p>Shows your busiest times of day and days of week, helping you staff appropriately.</p>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                    <h4>Average Wait Time</h4>
+                    <p>Tracks how long customers typically wait, helping you optimize your service speed.</p>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h4>Customer Satisfaction</h4>
+                    <p>AI-powered sentiment analysis of customer messages shows satisfaction trends.</p>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    <h4>Queue Performance</h4>
+                    <p>Compare performance across different queues and time periods to identify trends.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Frequently Asked Questions -->
+        <div class="help-section" id="faq">
+            <h2>
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Frequently Asked Questions
+            </h2>
+            
+            <div class="faq-accordion">
+                <div class="faq-accordion-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>How many queues can I create?</span>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>You can create unlimited queues. Many businesses use separate queues for different services (e.g., dine-in, takeout, bar service).</p>
+                    </div>
+                </div>
+                
+                <div class="faq-accordion-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>What happens if I lose internet connection?</span>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Your queue data is saved continuously. When you reconnect, you'll see all updates. Customers already in queue can still view their status.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-accordion-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>Can customers join without a smartphone?</span>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! You can manually add walk-in customers through your dashboard by clicking "Add Customer".</p>
+                    </div>
+                </div>
+                
+                <div class="faq-accordion-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>How do I handle multiple locations?</span>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Create separate merchant accounts for each location, or use different queues with location-specific names.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-accordion-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>Is customer data secure?</span>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, we use enterprise-grade security with encrypted connections and secure data storage. Customer data is only accessible by you.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-accordion-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>How do I export my data?</span>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Go to Analytics and click the Export button. You can download your data in CSV or JSON format for further analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Section -->
+        <div class="support-section">
+            <h2>Need More Help?</h2>
+            <p>Our support team is here to help you get the most out of StoreHub QMS.</p>
+            
+            <div class="support-buttons">
+                <a href="mailto:support@storehub.com" class="support-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Email Support
+                </a>
+                <a href="/dashboard" class="support-btn secondary">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/storehub-design-system.js?v=<%= Date.now() %>"></script>
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const sections = document.querySelectorAll('.help-section, .faq-accordion-item');
+            
+            sections.forEach(section => {
+                const content = section.textContent.toLowerCase();
+                if (content.includes(searchTerm)) {
+                    section.style.display = '';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+            
+            // Show all sections if search is empty
+            if (!searchTerm) {
+                sections.forEach(section => {
+                    section.style.display = '';
+                });
+            }
+        });
+        
+        // FAQ accordion
+        function toggleFaq(button) {
+            const item = button.parentElement;
+            const answer = item.querySelector('.faq-answer');
+            const icon = button.querySelector('svg');
+            
+            // Toggle active state
+            item.classList.toggle('active');
+            
+            // Rotate icon
+            if (item.classList.contains('active')) {
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Highlight active section based on scroll
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.help-section');
+            const quickLinks = document.querySelectorAll('.quick-link-card');
+            
+            sections.forEach((section, index) => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    // Remove active from all quick links
+                    quickLinks.forEach(link => link.classList.remove('active'));
+                    // Add active to corresponding quick link
+                    const href = '#' + section.id;
+                    const activeLink = document.querySelector(`.quick-link-card[href="${href}"]`);
+                    if (activeLink) {
+                        activeLink.classList.add('active');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

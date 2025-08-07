@@ -1,0 +1,258 @@
+{
+  "timestamp": "2025-08-05T01:17:41.289Z",
+  "analysis": "StoreHub Queue Management - Settings Page Issues",
+  "summary": {
+    "totalIssues": 16,
+    "highSeverity": 2,
+    "mediumSeverity": 14,
+    "lowSeverity": 0
+  },
+  "issues": [
+    {
+      "line": 1518,
+      "category": "JavaScript Error",
+      "description": "Line 1518: checkbox.closest('.day-hours') will fail because the HTML structure uses different class names",
+      "severity": "high",
+      "fix": "Change '.day-hours' to '.hours-row' or update HTML structure to include .day-hours class",
+      "timestamp": "2025-08-05T01:17:41.287Z"
+    },
+    {
+      "line": null,
+      "category": "CSS Class Mismatch",
+      "description": "JavaScript references .day-hours class but HTML uses .hours-row",
+      "severity": "high",
+      "fix": "Either add day-hours class to HTML or update JavaScript to use .hours-row",
+      "timestamp": "2025-08-05T01:17:41.289Z"
+    },
+    {
+      "line": 1542,
+      "category": "Security Issue",
+      "description": "API call to merchant/profile without CSRF token protection",
+      "severity": "medium",
+      "fix": "Add CSRF token to request headers using createFetchOptions() function",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1549,
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantName.value without null check - could throw error if element missing",
+      "severity": "medium",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantName\"); if (element) { ... }",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1550,
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantPhone.value without null check - could throw error if element missing",
+      "severity": "medium",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantPhone\"); if (element) { ... }",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1561,
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantAddress.value without null check - could throw error if element missing",
+      "severity": "medium",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantAddress\"); if (element) { ... }",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1605,
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantName.value without null check - could throw error if element missing",
+      "severity": "medium",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantName\"); if (element) { ... }",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1606,
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantPhone.value without null check - could throw error if element missing",
+      "severity": "medium",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantPhone\"); if (element) { ... }",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1607,
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantAddress.value without null check - could throw error if element missing",
+      "severity": "medium",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantAddress\"); if (element) { ... }",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1614,
+      "category": "Form Data Issue",
+      "description": "Business hours form data collection using mixed ID patterns",
+      "severity": "medium",
+      "fix": "Standardize on either hyphenated IDs or camelCase consistently",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1615,
+      "category": "Form Data Issue",
+      "description": "Business hours form data collection using mixed ID patterns",
+      "severity": "medium",
+      "fix": "Standardize on either hyphenated IDs or camelCase consistently",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1631,
+      "category": "Security Issue",
+      "description": "API call to merchant/profile without CSRF token protection",
+      "severity": "medium",
+      "fix": "Add CSRF token to request headers using createFetchOptions() function",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1676,
+      "category": "Security Issue",
+      "description": "API call to merchant/profile without CSRF token protection",
+      "severity": "medium",
+      "fix": "Add CSRF token to request headers using createFetchOptions() function",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1757,
+      "category": "Security Issue",
+      "description": "API call to merchant/profile without CSRF token protection",
+      "severity": "medium",
+      "fix": "Add CSRF token to request headers using createFetchOptions() function",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1780,
+      "category": "Form Data Issue",
+      "description": "Business hours form data collection using mixed ID patterns",
+      "severity": "medium",
+      "fix": "Standardize on either hyphenated IDs or camelCase consistently",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    },
+    {
+      "line": 1781,
+      "category": "Form Data Issue",
+      "description": "Business hours form data collection using mixed ID patterns",
+      "severity": "medium",
+      "fix": "Standardize on either hyphenated IDs or camelCase consistently",
+      "timestamp": "2025-08-05T01:17:41.288Z"
+    }
+  ],
+  "rootCauses": [
+    {
+      "issue": "JavaScript Element Selection Mismatch",
+      "description": "The JavaScript code uses different ID patterns than the HTML elements",
+      "impact": "TypeError: Cannot read properties of null (reading 'closest')",
+      "solution": "Standardize ID patterns between HTML and JavaScript"
+    },
+    {
+      "issue": "Missing CSS Classes",
+      "description": "JavaScript looks for .day-hours class but HTML uses .hours-row",
+      "impact": "DOM element selection failures",
+      "solution": "Update either HTML classes or JavaScript selectors to match"
+    },
+    {
+      "issue": "API Authentication Issues",
+      "description": "Settings form submissions may fail due to auth/tenant isolation problems",
+      "impact": "500 Internal Server Error on form submission",
+      "solution": "Verify authentication middleware and tenant context"
+    }
+  ],
+  "fixes": [
+    {
+      "category": "JavaScript Error",
+      "description": "Line 1518: checkbox.closest('.day-hours') will fail because the HTML structure uses different class names",
+      "fix": "Change '.day-hours' to '.hours-row' or update HTML structure to include .day-hours class",
+      "priority": "high"
+    },
+    {
+      "category": "CSS Class Mismatch",
+      "description": "JavaScript references .day-hours class but HTML uses .hours-row",
+      "fix": "Either add day-hours class to HTML or update JavaScript to use .hours-row",
+      "priority": "high"
+    },
+    {
+      "category": "Security Issue",
+      "description": "API call to merchant/profile without CSRF token protection",
+      "fix": "Add CSRF token to request headers using createFetchOptions() function",
+      "priority": "medium"
+    },
+    {
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantName.value without null check - could throw error if element missing",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantName\"); if (element) { ... }",
+      "priority": "medium"
+    },
+    {
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantPhone.value without null check - could throw error if element missing",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantPhone\"); if (element) { ... }",
+      "priority": "medium"
+    },
+    {
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantAddress.value without null check - could throw error if element missing",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantAddress\"); if (element) { ... }",
+      "priority": "medium"
+    },
+    {
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantName.value without null check - could throw error if element missing",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantName\"); if (element) { ... }",
+      "priority": "medium"
+    },
+    {
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantPhone.value without null check - could throw error if element missing",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantPhone\"); if (element) { ... }",
+      "priority": "medium"
+    },
+    {
+      "category": "Potential Runtime Error",
+      "description": "Accessing restaurantAddress.value without null check - could throw error if element missing",
+      "fix": "Add null check: const element = document.getElementById(\"restaurantAddress\"); if (element) { ... }",
+      "priority": "medium"
+    },
+    {
+      "category": "Form Data Issue",
+      "description": "Business hours form data collection using mixed ID patterns",
+      "fix": "Standardize on either hyphenated IDs or camelCase consistently",
+      "priority": "medium"
+    },
+    {
+      "category": "Form Data Issue",
+      "description": "Business hours form data collection using mixed ID patterns",
+      "fix": "Standardize on either hyphenated IDs or camelCase consistently",
+      "priority": "medium"
+    },
+    {
+      "category": "Security Issue",
+      "description": "API call to merchant/profile without CSRF token protection",
+      "fix": "Add CSRF token to request headers using createFetchOptions() function",
+      "priority": "medium"
+    },
+    {
+      "category": "Security Issue",
+      "description": "API call to merchant/profile without CSRF token protection",
+      "fix": "Add CSRF token to request headers using createFetchOptions() function",
+      "priority": "medium"
+    },
+    {
+      "category": "Security Issue",
+      "description": "API call to merchant/profile without CSRF token protection",
+      "fix": "Add CSRF token to request headers using createFetchOptions() function",
+      "priority": "medium"
+    },
+    {
+      "category": "Form Data Issue",
+      "description": "Business hours form data collection using mixed ID patterns",
+      "fix": "Standardize on either hyphenated IDs or camelCase consistently",
+      "priority": "medium"
+    },
+    {
+      "category": "Form Data Issue",
+      "description": "Business hours form data collection using mixed ID patterns",
+      "fix": "Standardize on either hyphenated IDs or camelCase consistently",
+      "priority": "medium"
+    }
+  ]
+}

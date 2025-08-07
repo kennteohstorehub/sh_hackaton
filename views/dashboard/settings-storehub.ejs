@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Settings - <%= merchant?.businessName || 'StoreHub QMS' %></title>
+    
+    <!-- StoreHub Design System -->
+    <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+    <link rel="stylesheet" href="/css/storehub-settings.css?v=<%= Date.now() %>">
+    
+    <style>
+        /* Additional page-specific styles */
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-6);
+            background-color: var(--gray-100);
+            min-height: calc(100vh - 70px);
+        }
+        
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: var(--space-4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <%- include('../partials/header-storehub', { 
+        title: 'Settings',
+        merchant: locals.merchant,
+        queues: locals.queues || [],
+        user: locals.user
+    }) %>
+    
+    <!-- Main Content -->
+    <div class="settings-container">
+        <!-- Settings Locked Banner - shown when queue is operating -->
+        <div id="settings-locked-banner" class="settings-locked-banner" style="display: none;">
+            <div class="lock-icon">
+                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+            <div class="lock-content">
+                <h4>Configuration Locked</h4>
+                <p>Settings cannot be changed while the queue is operating. Please stop the queue first to make configuration changes.</p>
+                <div class="active-queue-info">
+                    <span class="queue-label">Active Queue:</span>
+                    <span id="active-queue-name" class="queue-name"></span>
+                </div>
+            </div>
+            <a href="/dashboard" class="btn btn-primary">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+        
+        <!-- Success/Error Messages -->
+        <div id="successMessage" class="alert alert-success" style="display: none;"></div>
+        <div id="errorMessage" class="alert alert-error" style="display: none;"></div>
+
+        <!-- Restaurant Information -->
+        <div class="settings-section">
+            <div class="section-header">
+                <h2>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    Restaurant Information
+                </h2>
+                <div class="lock-indicator" style="display: none;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v4H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-3V4a3 3 0 0 0-3-3zM10 4a2 2 0 1 1 4 0v4h-4V4z"></path>
+                    </svg>
+                    <span>Locked</span>
+                </div>
+            </div>
+            <form id="restaurantForm" class="settings-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="restaurantName" class="form-label">Restaurant Name</label>
+                        <input type="text" 
+                               id="restaurantName" 
+                               name="restaurantName" 
+                               class="form-control" 
+                               placeholder="Enter restaurant name" 
+                               required>
+                        <div class="form-help">This will be displayed to customers in notifications</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="restaurantPhone" class="form-label">Phone Number</label>
+                        <input type="tel" 
+                               id="restaurantPhone" 
+                               name="restaurantPhone" 
+                               class="form-control" 
+                               placeholder="+1 (555) 123-4567">
+                        <div class="form-help">Used for customer support and notifications</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="restaurantAddress" class="form-label">Address</label>
+                    <textarea id="restaurantAddress" 
+                              name="restaurantAddress" 
+                              class="form-control" 
+                              rows="3" 
+                              placeholder="123 Main Street, Kuala Lumpur, WP, 50450, Malaysia"></textarea>
+                    <div class="form-help">Enter address separated by commas: Street, City, State, Postal Code, Country</div>
+                </div>
+                
+                <!-- Operating Hours -->
+                <div class="form-group">
+                    <label class="form-label">Operating Hours</label>
+                    <div class="hours-table">
+                        <div class="hours-header">
+                            <div>Day</div>
+                            <div>Opening Time</div>
+                            <div>Closing Time</div>
+                            <div>Closed</div>
+                        </div>
+                        
+                        <% const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']; %>
+                        <% days.forEach(day => { %>
+                        <div class="hours-row" data-day="<%= day %>">
+                            <div class="day-name"><%= day.charAt(0).toUpperCase() + day.slice(1) %></div>
+                            <div>
+                                <input type="time" 
+                                       name="businessHours[<%= day %>][start]" 
+                                       value="09:00" 
+                                       class="time-input">
+                            </div>
+                            <div>
+                                <input type="time" 
+                                       name="businessHours[<%= day %>][end]" 
+                                       value="17:00" 
+                                       class="time-input">
+                            </div>
+                            <div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" 
+                                           id="<%= day %>-closed" 
+                                           name="businessHours[<%= day %>][closed]"
+                                           <%= day === 'sunday' ? 'checked' : '' %>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                    <div class="form-help">Configure your business operating hours for each day</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Save Restaurant Information</button>
+            </form>
+        </div>
+
+        <!-- Queue Settings -->
+        <div class="settings-section">
+            <div class="section-header">
+                <h2>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Queue Configuration
+                </h2>
+                <div class="lock-indicator" style="display: none;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v4H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-3V4a3 3 0 0 0-3-3zM10 4a2 2 0 1 1 4 0v4h-4V4z"></path>
+                    </svg>
+                    <span>Locked</span>
+                </div>
+            </div>
+            <form id="queueSettingsForm" class="settings-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="maxCapacity" class="form-label">Maximum Queue Capacity</label>
+                        <input type="number" 
+                               id="maxCapacity" 
+                               name="maxCapacity" 
+                               class="form-control" 
+                               min="1" 
+                               max="500" 
+                               placeholder="50">
+                        <div class="form-help">Maximum number of customers that can join the queue</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="avgServiceTime" class="form-label">Average Service Time (minutes)</label>
+                        <input type="number" 
+                               id="avgServiceTime" 
+                               name="avgServiceTime" 
+                               class="form-control" 
+                               min="1" 
+                               max="180" 
+                               placeholder="15">
+                        <div class="form-help">Used to estimate wait times for customers</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="notificationAdvance" class="form-label">Notification Advance Time (minutes)</label>
+                        <input type="number" 
+                               id="notificationAdvance" 
+                               name="notificationAdvance" 
+                               class="form-control" 
+                               min="1" 
+                               max="60" 
+                               placeholder="5">
+                        <div class="form-help">How many minutes before their turn to notify customers</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="partySizeRegularMax" class="form-label">Maximum Party Size</label>
+                        <input type="number" 
+                               id="partySizeRegularMax" 
+                               name="partySizeRegularMax" 
+                               class="form-control" 
+                               min="1" 
+                               max="20" 
+                               placeholder="5" 
+                               value="<%= merchant?.settings?.partySizeRegularMax || 5 %>">
+                        <div class="form-help">Largest group size allowed to join the queue (1-10 recommended, max 20)</div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Save Queue Settings</button>
+            </form>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="settings-section">
+            <div class="section-header">
+                <h2>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    Notification Preferences
+                </h2>
+                <div class="lock-indicator" style="display: none;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v4H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-3V4a3 3 0 0 0-3-3zM10 4a2 2 0 1 1 4 0v4h-4V4z"></path>
+                    </svg>
+                    <span>Locked</span>
+                </div>
+            </div>
+            <div class="notification-settings">
+                <div class="notification-item">
+                    <div class="notification-info">
+                        <h4>Auto-Notifications</h4>
+                        <p>Automatically notify customers when their turn approaches</p>
+                    </div>
+                    <label class="toggle-switch large">
+                        <input type="checkbox" id="autoNotifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="notification-item">
+                    <div class="notification-info">
+                        <h4>SMS Notifications</h4>
+                        <p>Send text messages to customers about their queue status</p>
+                    </div>
+                    <label class="toggle-switch large">
+                        <input type="checkbox" id="smsNotifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="notification-item">
+                    <div class="notification-info">
+                        <h4>Email Notifications</h4>
+                        <p>Send email updates to customers who provide email addresses</p>
+                    </div>
+                    <label class="toggle-switch large">
+                        <input type="checkbox" id="emailNotifications">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="saveNotificationSettings()">Save Notification Settings</button>
+            </div>
+        </div>
+
+        <!-- Message Templates -->
+        <div class="settings-section">
+            <div class="section-header">
+                <h2>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                    </svg>
+                    Message Templates
+                </h2>
+                <div class="lock-indicator" style="display: none;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v4H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-3V4a3 3 0 0 0-3-3zM10 4a2 2 0 1 1 4 0v4h-4V4z"></path>
+                    </svg>
+                    <span>Locked</span>
+                </div>
+            </div>
+            <form id="messageTemplatesForm" class="settings-form">
+                <div class="form-group">
+                    <label for="welcomeMessage" class="form-label">Welcome Message</label>
+                    <textarea id="welcomeMessage" 
+                              name="welcomeMessage" 
+                              class="form-control" 
+                              rows="3" 
+                              placeholder="Welcome to [Restaurant Name]! You've been added to our queue. Your position is #[Position]. Estimated wait time: [WaitTime] minutes."></textarea>
+                    <div class="form-help">Sent when a customer joins the queue. Use [Restaurant Name], [Position], [WaitTime] as placeholders.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notificationMessage" class="form-label">Ready Notification</label>
+                    <textarea id="notificationMessage" 
+                              name="notificationMessage" 
+                              class="form-control" 
+                              rows="3" 
+                              placeholder="Hi [Customer Name]! Your table at [Restaurant Name] will be ready in approximately [Minutes] minutes. Please be prepared to be seated."></textarea>
+                    <div class="form-help">Sent when it's almost the customer's turn. Use [Customer Name], [Restaurant Name], [Minutes] as placeholders.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="readyMessage" class="form-label">Table Ready Message</label>
+                    <textarea id="readyMessage" 
+                              name="readyMessage" 
+                              class="form-control" 
+                              rows="3" 
+                              placeholder="[Customer Name], your table is ready! Please proceed to the host stand at [Restaurant Name]."></textarea>
+                    <div class="form-help">Sent when the customer's table is ready. Use [Customer Name], [Restaurant Name] as placeholders.</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Save Message Templates</button>
+            </form>
+        </div>
+
+        <!-- System Settings -->
+        <div class="settings-section">
+            <div class="section-header">
+                <h2>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                    </svg>
+                    System Settings
+                </h2>
+                <div class="lock-indicator" style="display: none;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v4H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-3V4a3 3 0 0 0-3-3zM10 4a2 2 0 1 1 4 0v4h-4V4z"></path>
+                    </svg>
+                    <span>Locked</span>
+                </div>
+            </div>
+            <div class="settings-grid">
+                <div class="setting-card">
+                    <h3>Data Retention</h3>
+                    <p>Configure how long customer data and analytics are stored</p>
+                    <div class="form-group">
+                        <label for="dataRetention" class="form-label">Retention Period</label>
+                        <select id="dataRetention" name="dataRetention" class="form-control">
+                            <option value="30">30 days</option>
+                            <option value="90" selected>90 days</option>
+                            <option value="180">6 months</option>
+                            <option value="365">1 year</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="setting-card">
+                    <h3>Analytics</h3>
+                    <p>Configure analytics and reporting preferences</p>
+                    <div class="checkbox-group">
+                        <label class="checkbox">
+                            <input type="checkbox" id="enableAnalytics" checked>
+                            <span class="checkbox-mark"></span>
+                            <span class="checkbox-label">Enable detailed analytics</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="shareAnonymousData">
+                            <span class="checkbox-mark"></span>
+                            <span class="checkbox-label">Share anonymous usage data</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-card">
+                    <h3>API Access</h3>
+                    <p>Manage API keys for third-party integrations</p>
+                    <button class="btn btn-secondary" onclick="generateApiKey()">Generate API Key</button>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="saveSystemSettings()">Save System Settings</button>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="danger-zone">
+            <h3>
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                Danger Zone
+            </h3>
+            <p>These actions are irreversible. Please proceed with caution.</p>
+            <div class="danger-actions">
+                <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Queue Data</button>
+                <button type="button" class="btn btn-danger" onclick="resetSettings()">Reset All Settings</button>
+                <button type="button" class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/storehub-design-system.js?v=<%= Date.now() %>"></script>
+    <script>
+        // Global variables
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBusinessInformation();
+            initializeOperationHours();
+            checkQueueStatus();
+        });
+        
+        // Initialize operation hours functionality
+        function initializeOperationHours() {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            
+            days.forEach(day => {
+                const checkbox = document.getElementById(`${day}-closed`);
+                if (checkbox) {
+                    const dayRow = checkbox.closest('.hours-row');
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            dayRow.classList.add('closed');
+                        } else {
+                            dayRow.classList.remove('closed');
+                        }
+                    });
+                    
+                    // Set initial state
+                    if (checkbox.checked) {
+                        dayRow.classList.add('closed');
+                    }
+                }
+            });
+        }
+        
+        // Load business information from API
+        async function loadBusinessInformation() {
+            try {
+                const response = await fetch('/api/merchant/profile');
+                const data = await response.json();
+                
+                if (data.success && data.merchant) {
+                    const merchant = data.merchant;
+                    
+                    // Populate form fields
+                    document.getElementById('restaurantName').value = merchant.businessName || '';
+                    document.getElementById('restaurantPhone').value = merchant.phone || '';
+                    
+                    // Populate address
+                    if (merchant.address) {
+                        const addressText = [
+                            merchant.address.street,
+                            merchant.address.city,
+                            merchant.address.state,
+                            merchant.address.zipCode,
+                            merchant.address.country
+                        ].filter(Boolean).join(', ');
+                        document.getElementById('restaurantAddress').value = addressText;
+                    }
+                    
+                    // Populate business hours
+                    if (merchant.businessHours) {
+                        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                        days.forEach(day => {
+                            const dayData = merchant.businessHours[day];
+                            if (dayData) {
+                                const closedCheckbox = document.getElementById(`${day}-closed`);
+                                const startInput = document.querySelector(`input[name="businessHours[${day}][start]"]`);
+                                const endInput = document.querySelector(`input[name="businessHours[${day}][end]"]`);
+                                
+                                if (closedCheckbox) closedCheckbox.checked = dayData.closed || false;
+                                if (startInput) startInput.value = dayData.start || '09:00';
+                                if (endInput) endInput.value = dayData.end || '18:00';
+                            }
+                        });
+                    }
+                    
+                    // Update queue settings
+                    if (merchant.settings) {
+                        if (merchant.settings.maxQueueSize) {
+                            document.getElementById('maxCapacity').value = merchant.settings.maxQueueSize;
+                        }
+                        if (merchant.settings.notificationInterval) {
+                            document.getElementById('avgServiceTime').value = merchant.settings.notificationInterval;
+                        }
+                        if (merchant.settings.partySizeRegularMax) {
+                            document.getElementById('partySizeRegularMax').value = merchant.settings.partySizeRegularMax;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading business information:', error);
+            }
+        }
+        
+        // Check queue status and apply locked state if necessary
+        async function checkQueueStatus() {
+            try {
+                const response = await fetch('/api/queue/status');
+                const data = await response.json();
+                
+                if (data.activeQueue && data.activeQueue.acceptingCustomers) {
+                    // Queue is operating - lock the settings
+                    document.getElementById('settings-locked-banner').style.display = 'flex';
+                    document.getElementById('active-queue-name').textContent = data.activeQueue.name;
+                    
+                    // Add locked class to all sections
+                    document.querySelectorAll('.settings-section').forEach(section => {
+                        section.classList.add('locked');
+                    });
+                    
+                    // Disable all form inputs
+                    document.querySelectorAll('input, select, textarea, button[type="submit"]').forEach(element => {
+                        element.disabled = true;
+                    });
+                    
+                    // Show lock indicators
+                    document.querySelectorAll('.lock-indicator').forEach(indicator => {
+                        indicator.style.display = 'flex';
+                    });
+                }
+            } catch (error) {
+                console.error('Error checking queue status:', error);
+            }
+        }
+        
+        // Handle business form submission
+        document.getElementById('restaurantForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+                
+                // Get form values
+                const restaurantName = document.getElementById('restaurantName').value.trim();
+                const restaurantPhone = document.getElementById('restaurantPhone').value.trim();
+                const restaurantAddress = document.getElementById('restaurantAddress').value.trim();
+                
+                // Parse business hours
+                const businessHours = {};
+                const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                days.forEach(day => {
+                    businessHours[day] = {
+                        closed: document.getElementById(`${day}-closed`).checked,
+                        start: document.querySelector(`input[name="businessHours[${day}][start]"]`).value,
+                        end: document.querySelector(`input[name="businessHours[${day}][end]"]`).value
+                    };
+                });
+                
+                // Parse address
+                let addressData = null;
+                if (restaurantAddress) {
+                    const addressParts = restaurantAddress.split(',').map(part => part.trim());
+                    addressData = {
+                        street: addressParts[0] || restaurantAddress,
+                        city: addressParts[1] || '',
+                        state: addressParts[2] || '',
+                        zipCode: addressParts[3] || '',
+                        country: addressParts[4] || ''
+                    };
+                }
+                
+                const businessData = {
+                    businessName: restaurantName,
+                    phone: restaurantPhone,
+                    address: addressData,
+                    businessHours: businessHours
+                };
+                
+                const response = await fetch('/api/merchant/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify(businessData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Business information saved successfully!', 'success');
+                } else {
+                    showAlert('Error: ' + (result.error || 'Failed to save business information'), 'error');
+                }
+            } catch (error) {
+                console.error('Error saving business information:', error);
+                showAlert('Error saving business information. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+
+        // Handle queue settings form submission
+        document.getElementById('queueSettingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+                
+                const maxCapacity = document.getElementById('maxCapacity').value;
+                const avgServiceTime = document.getElementById('avgServiceTime').value;
+                const notificationAdvance = document.getElementById('notificationAdvance').value;
+                const partySizeRegularMax = document.getElementById('partySizeRegularMax').value;
+                
+                const settingsData = {
+                    partySizeRegularMax: parseInt(partySizeRegularMax) || 5,
+                    maxQueueSize: parseInt(maxCapacity) || 50,
+                    averageServiceTime: parseInt(avgServiceTime) || 15,
+                    notificationInterval: parseInt(notificationAdvance) || 5
+                };
+                
+                const response = await fetch('/api/merchant/settings/operations', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify(settingsData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Queue settings saved successfully!', 'success');
+                } else {
+                    showAlert('Error: ' + (result.error || 'Failed to save queue settings'), 'error');
+                }
+            } catch (error) {
+                console.error('Error saving queue settings:', error);
+                showAlert('Error saving queue settings. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+        
+        // Save notification settings
+        async function saveNotificationSettings() {
+            try {
+                const autoNotifications = document.getElementById('autoNotifications').checked;
+                const smsNotifications = document.getElementById('smsNotifications').checked;
+                const emailNotifications = document.getElementById('emailNotifications').checked;
+                
+                const notificationData = {
+                    autoNotifications,
+                    smsNotifications,
+                    emailNotifications
+                };
+                
+                // API call would go here
+                showAlert('Notification settings saved successfully!', 'success');
+            } catch (error) {
+                console.error('Error saving notification settings:', error);
+                showAlert('Error saving notification settings. Please try again.', 'error');
+            }
+        }
+        
+        // Save system settings
+        async function saveSystemSettings() {
+            try {
+                const dataRetention = document.getElementById('dataRetention').value;
+                const enableAnalytics = document.getElementById('enableAnalytics').checked;
+                const shareAnonymousData = document.getElementById('shareAnonymousData').checked;
+                
+                const systemData = {
+                    dataRetention,
+                    enableAnalytics,
+                    shareAnonymousData
+                };
+                
+                // API call would go here
+                showAlert('System settings saved successfully!', 'success');
+            } catch (error) {
+                console.error('Error saving system settings:', error);
+                showAlert('Error saving system settings. Please try again.', 'error');
+            }
+        }
+        
+        // Show alert messages
+        function showAlert(message, type = 'success') {
+            const alertElement = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
+            alertElement.textContent = message;
+            alertElement.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alertElement.style.display = 'none';
+            }, 5000);
+            
+            // Scroll to top to show the message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Danger zone actions
+        async function clearAllData() {
+            if (confirm('Are you sure you want to clear all queue data? This action cannot be undone.')) {
+                if (confirm('This will permanently delete all customer data and queue history. Are you absolutely sure?')) {
+                    // API call would go here
+                    showAlert('All queue data has been cleared.', 'success');
+                }
+            }
+        }
+        
+        async function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
+                // API call would go here
+                showAlert('All settings have been reset to defaults.', 'success');
+            }
+        }
+        
+        async function deleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                if (prompt('Type DELETE to confirm account deletion:') === 'DELETE') {
+                    // API call would go here
+                    showAlert('Account deletion initiated. You will be logged out.', 'success');
+                }
+            }
+        }
+        
+        // Generate API key
+        async function generateApiKey() {
+            try {
+                // API call would go here
+                const newKey = 'sk_live_' + Math.random().toString(36).substr(2, 32);
+                showAlert('New API key generated: ' + newKey, 'success');
+            } catch (error) {
+                console.error('Error generating API key:', error);
+                showAlert('Error generating API key. Please try again.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

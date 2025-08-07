@@ -1,0 +1,498 @@
+<%- include('../layout') %>
+
+<style>
+  /* Additional modern styles for tenants page */
+  .search-container {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+  
+  .search-input-modern {
+    width: 100%;
+    padding: 15px 50px 15px 60px;
+    background: var(--glass-white);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    font-size: 1rem;
+    color: var(--text-primary);
+    transition: all var(--transition-medium);
+  }
+  
+  .search-input-modern:focus {
+    outline: none;
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  }
+  
+  .search-icon-left {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+  }
+  
+  .filter-chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  
+  .filter-chip {
+    background: var(--glass-white);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  
+  .filter-chip:hover {
+    background: var(--glass-white-heavy);
+    transform: translateY(-2px);
+  }
+  
+  .filter-chip.active {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+  }
+  
+  .tenant-card {
+    background: var(--glass-white);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: all var(--transition-medium);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .tenant-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+  }
+  
+  .tenant-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: var(--shadow-large), var(--shadow-glow);
+  }
+  
+  .tenant-card:hover::before {
+    left: 100%;
+  }
+  
+  .tenant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  
+  .tenant-info {
+    flex: 1;
+  }
+  
+  .tenant-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+  }
+  
+  .tenant-details {
+    display: flex;
+    gap: 20px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+  
+  .tenant-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .metric-box {
+    background: var(--glass-white);
+    padding: 15px;
+    border-radius: 15px;
+    text-align: center;
+    border: 1px solid var(--glass-border);
+    transition: all var(--transition-fast);
+  }
+  
+  .metric-box:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .metric-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: var(--secondary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .metric-label {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .action-menu {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+  
+  .action-trigger {
+    width: 40px;
+    height: 40px;
+    background: var(--glass-white);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  
+  .action-trigger:hover {
+    background: var(--primary-gradient);
+    color: white;
+    transform: rotate(90deg);
+  }
+  
+  .status-indicator-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .status-indicator-modern.active {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.2));
+    color: #0ea5e9;
+    border: 1px solid rgba(79, 172, 254, 0.3);
+  }
+  
+  .status-indicator-modern.inactive {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.2), rgba(254, 81, 150, 0.2));
+    color: #ef4444;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+  }
+  
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  
+  .status-indicator-modern.active .status-dot {
+    background: #0ea5e9;
+    box-shadow: 0 0 10px #0ea5e9;
+  }
+  
+  .status-indicator-modern.inactive .status-dot {
+    background: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
+  }
+  
+  .usage-chart {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .usage-fill-modern {
+    height: 100%;
+    border-radius: 4px;
+    position: relative;
+    transition: width var(--transition-medium);
+  }
+  
+  .usage-fill-modern::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
+  }
+  
+  .floating-add-btn {
+    position: fixed;
+    bottom: 100px;
+    right: 40px;
+    width: 60px;
+    height: 60px;
+    background: var(--secondary-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: var(--shadow-large);
+    transition: all var(--transition-bounce);
+    z-index: 100;
+  }
+  
+  .floating-add-btn:hover {
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: var(--shadow-large), 0 0 30px rgba(240, 147, 251, 0.5);
+  }
+</style>
+
+<!-- Page Header with Parallax -->
+<div class="page-header glass-card parallax-element" data-speed="0.5" style="margin-bottom: 2rem; padding: 30px;">
+  <h1 class="gradient-text" style="font-size: 2.5rem; margin-bottom: 10px;">Tenant Management</h1>
+  <p style="color: var(--text-secondary); font-size: 1.1rem;">Manage all tenants and their subscriptions</p>
+</div>
+
+<!-- Advanced Search -->
+<div class="search-container">
+  <span class="search-icon-left">🔍</span>
+  <input 
+    type="text" 
+    class="search-input-modern" 
+    placeholder="Search tenants by name, domain, or subdomain..."
+    id="tenantSearch"
+  >
+  <button class="liquid-button" style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); padding: 10px 20px;">
+    Search
+  </button>
+</div>
+
+<!-- Filter Chips -->
+<div class="filter-chips">
+  <div class="filter-chip active" data-filter="all">All Tenants</div>
+  <div class="filter-chip" data-filter="active">Active</div>
+  <div class="filter-chip" data-filter="inactive">Inactive</div>
+  <div class="filter-chip" data-filter="enterprise">Enterprise</div>
+  <div class="filter-chip" data-filter="standard">Standard</div>
+</div>
+
+<!-- Stats Overview -->
+<div class="dashboard-grid" style="margin-bottom: 2rem;">
+  <div class="stat-card glass-card">
+    <div class="widget-icon" style="background: var(--primary-gradient);">🏢</div>
+    <div class="stat-number" data-value="<%= pagination.totalCount %>">0</div>
+    <div class="stats-label gradient-text">Total Tenants</div>
+  </div>
+  
+  <div class="stat-card glass-card">
+    <div class="widget-icon" style="background: var(--success-gradient);">✓</div>
+    <div class="stat-number" data-value="<%= tenants.filter(t => t.isActive).length %>">0</div>
+    <div class="stats-label">Active Tenants</div>
+  </div>
+  
+  <div class="stat-card glass-card">
+    <div class="widget-icon" style="background: var(--warning-gradient);">⭐</div>
+    <div class="stat-number" data-value="<%= tenants.filter(t => t.subscription?.priority === 'ENTERPRISE').length %>">0</div>
+    <div class="stats-label">Enterprise</div>
+  </div>
+  
+  <div class="stat-card glass-card">
+    <div class="widget-icon" style="background: var(--secondary-gradient);">👥</div>
+    <div class="stat-number" data-value="<%= tenants.reduce((sum, t) => sum + (t._count?.merchants || 0), 0) %>">0</div>
+    <div class="stats-label">Total Merchants</div>
+  </div>
+</div>
+
+<!-- Tenants List -->
+<div class="tenants-container">
+  <% if (tenants && tenants.length > 0) { %>
+    <% tenants.forEach((tenant, index) => { %>
+      <div class="tenant-card dashboard-animate" style="animation-delay: <%= index * 0.1 %>s;">
+        <div class="action-menu">
+          <div class="action-trigger sound-enabled">⋯</div>
+        </div>
+        
+        <div class="tenant-header">
+          <div class="tenant-info">
+            <h2 class="tenant-name"><%= tenant.name %></h2>
+            <div class="tenant-details">
+              <span>📍 <%= tenant.slug %></span>
+              <% if (tenant.domain) { %>
+                <span>🌐 <%= tenant.domain %></span>
+              <% } %>
+              <span>📅 Created <%= new Date(tenant.createdAt).toLocaleDateString() %></span>
+            </div>
+          </div>
+          
+          <div class="status-indicator-modern <%= tenant.isActive ? 'active' : 'inactive' %>">
+            <span class="status-dot"></span>
+            <%= tenant.isActive ? 'Active' : 'Inactive' %>
+          </div>
+        </div>
+        
+        <div class="tenant-metrics">
+          <div class="metric-box">
+            <div class="metric-value"><%= tenant._count?.merchants || 0 %></div>
+            <div class="metric-label">Merchants</div>
+          </div>
+          
+          <div class="metric-box">
+            <div class="metric-value"><%= tenant._count?.users || 0 %></div>
+            <div class="metric-label">Users</div>
+          </div>
+          
+          <div class="metric-box">
+            <div class="metric-value">
+              <%= tenant.subscription?.priority || 'None' %>
+            </div>
+            <div class="metric-label">Plan</div>
+          </div>
+          
+          <div class="metric-box">
+            <% if (tenant.subscription) { %>
+              <div style="margin-bottom: 5px;">
+                <span class="metric-value" style="font-size: 1.2rem;">
+                  <%= Math.round((tenant._count?.merchants || 0) / (tenant.subscription.maxMerchants || 1) * 100) %>%
+                </span>
+              </div>
+              <div class="usage-chart">
+                <div class="usage-fill-modern" style="width: <%= Math.min(100, Math.round((tenant._count?.merchants || 0) / (tenant.subscription.maxMerchants || 1) * 100)) %>%; background: <%= ((tenant._count?.merchants || 0) / (tenant.subscription.maxMerchants || 1) * 100) >= 90 ? 'var(--danger-gradient)' : ((tenant._count?.merchants || 0) / (tenant.subscription.maxMerchants || 1) * 100) >= 70 ? 'var(--warning-gradient)' : 'var(--success-gradient)' %>;"></div>
+              </div>
+            <% } else { %>
+              <span style="color: var(--text-tertiary);">N/A</span>
+            <% } %>
+            <div class="metric-label">Usage</div>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <a href="/backoffice/tenants/<%= tenant.id %>" class="liquid-button sound-enabled" style="flex: 1; text-align: center; text-decoration: none; padding: 12px;">
+            View Details
+          </a>
+          <button class="neu-button sound-enabled" style="padding: 12px 20px;">
+            Edit
+          </button>
+          <% if (tenant.isActive) { %>
+            <button class="neu-button sound-enabled" style="padding: 12px 20px; background: var(--warning-gradient); color: white;">
+              Suspend
+            </button>
+          <% } else { %>
+            <button class="neu-button sound-enabled" style="padding: 12px 20px; background: var(--success-gradient); color: white;">
+              Activate
+            </button>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <div class="empty-state glass-card" style="padding: 100px 20px; text-align: center;">
+      <div class="empty-state-icon parallax-element" data-speed-x="0.05" data-speed-y="0.05" style="font-size: 120px; margin-bottom: 30px;">🏢</div>
+      <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">No Tenants Found</h2>
+      <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 30px;">Start by creating your first tenant</p>
+      <a href="/backoffice/tenants/create" class="liquid-button" style="display: inline-block; font-size: 1.1rem; padding: 15px 40px;">
+        Create First Tenant
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<!-- Floating Add Button -->
+<a href="/backoffice/tenants/create" class="floating-add-btn sound-enabled">
+  +
+</a>
+
+<!-- Pagination -->
+<% if (pagination.totalPages > 1) { %>
+  <div class="pagination" style="display: flex; justify-content: center; gap: 10px; margin-top: 3rem;">
+    <% if (pagination.currentPage > 1) { %>
+      <a href="?page=<%= pagination.currentPage - 1 %>" class="neu-button sound-enabled">← Previous</a>
+    <% } %>
+    
+    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+      <% if (i === pagination.currentPage) { %>
+        <button class="liquid-button" style="min-width: 40px;"><%= i %></button>
+      <% } else if (i === 1 || i === pagination.totalPages || Math.abs(i - pagination.currentPage) <= 2) { %>
+        <a href="?page=<%= i %>" class="neu-button sound-enabled" style="min-width: 40px; text-align: center;"><%= i %></a>
+      <% } %>
+    <% } %>
+    
+    <% if (pagination.currentPage < pagination.totalPages) { %>
+      <a href="?page=<%= pagination.currentPage + 1 %>" class="neu-button sound-enabled">Next →</a>
+    <% } %>
+  </div>
+<% } %>
+
+<script>
+  // Interactive filter chips
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      // Remove active from all chips
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      // Add active to clicked chip
+      this.classList.add('active');
+      
+      // Play sound effect
+      if (typeof playSound !== 'undefined') {
+        playSound('click');
+      }
+      
+      // Filter logic would go here
+      const filter = this.dataset.filter;
+      console.log('Filter by:', filter);
+    });
+  });
+  
+  // Search functionality
+  const searchInput = document.getElementById('tenantSearch');
+  let searchTimeout;
+  
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      console.log('Search for:', this.value);
+      // Implement search logic here
+    }, 500);
+  });
+  
+  // Action menu interactions
+  document.querySelectorAll('.action-trigger').forEach(trigger => {
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      this.style.transform = 'rotate(90deg)';
+      // Show action menu
+      setTimeout(() => {
+        this.style.transform = 'rotate(0deg)';
+      }, 300);
+    });
+  });
+</script>

@@ -1,0 +1,327 @@
+<%- include('../layout', { title: title }) %>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i class="fas fa-users me-2"></i>User Management
+        </h2>
+        <a href="/superadmin/users/create" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i>Create User
+        </a>
+      </div>
+
+      <!-- Filters -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="GET" action="/superadmin/users" class="row g-3">
+            <div class="col-md-3">
+              <input type="text" 
+                     class="form-control" 
+                     name="search" 
+                     placeholder="Search by name or email..."
+                     value="<%= filters.search %>">
+            </div>
+            
+            <div class="col-md-2">
+              <select class="form-control" name="tenantId">
+                <option value="all">All Tenants</option>
+                <% tenants.forEach(tenant => { %>
+                  <option value="<%= tenant.id %>" <%= filters.tenantId === tenant.id ? 'selected' : '' %>>
+                    <%= tenant.name %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+            
+            <div class="col-md-2">
+              <select class="form-control" name="role">
+                <option value="all">All Roles</option>
+                <option value="SUPER_ADMIN" <%= filters.role === 'SUPER_ADMIN' ? 'selected' : '' %>>Super Admin</option>
+                <option value="ADMIN" <%= filters.role === 'ADMIN' ? 'selected' : '' %>>Admin</option>
+                <option value="USER" <%= filters.role === 'USER' ? 'selected' : '' %>>User</option>
+              </select>
+            </div>
+            
+            <div class="col-md-2">
+              <select class="form-control" name="status">
+                <option value="all">All Status</option>
+                <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+                <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+              </select>
+            </div>
+            
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-secondary w-100">
+                <i class="fas fa-filter me-2"></i>Apply Filters
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div class="card">
+        <div class="card-body">
+          <% if (users.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover" id="usersTable">
+                <thead>
+                  <tr>
+                    <th>
+                      <input type="checkbox" id="selectAll" class="form-check-input">
+                    </th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Tenant</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% users.forEach(user => { %>
+                    <tr>
+                      <td>
+                        <input type="checkbox" 
+                               class="form-check-input user-checkbox" 
+                               value="<%= user.id %>">
+                      </td>
+                      <td>
+                        <a href="/superadmin/users/<%= user.id %>">
+                          <%= user.name %>
+                        </a>
+                      </td>
+                      <td><%= user.email %></td>
+                      <td>
+                        <% if (user.tenant) { %>
+                          <a href="/superadmin/tenants/<%= user.tenant.id %>" class="text-decoration-none">
+                            <%= user.tenant.name %>
+                            <small class="text-muted">(<%= user.tenant.slug %>)</small>
+                          </a>
+                        <% } else { %>
+                          <span class="text-muted">N/A</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <span class="badge bg-<%= user.role === 'SUPER_ADMIN' ? 'danger' : user.role === 'ADMIN' ? 'primary' : 'secondary' %>">
+                          <%= user.role %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if (user.isActive) { %>
+                          <span class="badge bg-success">Active</span>
+                        <% } else { %>
+                          <span class="badge bg-danger">Inactive</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (user.lastLoginAt) { %>
+                          <%= new Date(user.lastLoginAt).toLocaleDateString() %>
+                        <% } else { %>
+                          <span class="text-muted">Never</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <a href="/superadmin/users/<%= user.id %>/edit" 
+                             class="btn btn-sm btn-outline-primary"
+                             title="Edit">
+                            <i class="fas fa-edit"></i>
+                          </a>
+                          <button class="btn btn-sm btn-outline-<%= user.isActive ? 'warning' : 'success' %>"
+                                  onclick="toggleUserStatus('<%= user.id %>', <%= user.isActive %>)"
+                                  title="<%= user.isActive ? 'Deactivate' : 'Activate' %>">
+                            <i class="fas fa-<%= user.isActive ? 'pause' : 'play' %>"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-info"
+                                  onclick="resetPassword('<%= user.id %>', '<%= user.email %>')"
+                                  title="Reset Password">
+                            <i class="fas fa-key"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="mt-3">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <div class="d-flex gap-2">
+                    <select class="form-control" id="bulkAction" style="width: 200px;">
+                      <option value="">Bulk Actions</option>
+                      <option value="activate">Activate Selected</option>
+                      <option value="deactivate">Deactivate Selected</option>
+                      <option value="delete">Delete Selected</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="performBulkAction()">
+                      Apply
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-6 text-end">
+                  <small class="text-muted">
+                    Showing <%= users.length %> of <%= pagination.totalCount %> users
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <% if (pagination.totalPages > 1) { %>
+              <nav aria-label="User pagination" class="mt-3">
+                <ul class="pagination justify-content-center">
+                  <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                    <a class="page-link" 
+                       href="?page=<%= pagination.page - 1 %>&search=<%= filters.search %>&tenantId=<%= filters.tenantId %>&role=<%= filters.role %>&status=<%= filters.status %>">
+                      Previous
+                    </a>
+                  </li>
+                  
+                  <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                    <% if (i === 1 || i === pagination.totalPages || (i >= pagination.page - 2 && i <= pagination.page + 2)) { %>
+                      <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                        <a class="page-link" 
+                           href="?page=<%= i %>&search=<%= filters.search %>&tenantId=<%= filters.tenantId %>&role=<%= filters.role %>&status=<%= filters.status %>">
+                          <%= i %>
+                        </a>
+                      </li>
+                    <% } else if (i === pagination.page - 3 || i === pagination.page + 3) { %>
+                      <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                      </li>
+                    <% } %>
+                  <% } %>
+                  
+                  <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                    <a class="page-link" 
+                       href="?page=<%= pagination.page + 1 %>&search=<%= filters.search %>&tenantId=<%= filters.tenantId %>&role=<%= filters.role %>&status=<%= filters.status %>">
+                      Next
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            <% } %>
+          <% } else { %>
+            <p class="text-center text-muted py-5">
+              <i class="fas fa-users fa-3x mb-3 d-block"></i>
+              No users found matching your criteria.
+            </p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Select all checkbox
+document.getElementById('selectAll')?.addEventListener('change', function() {
+  const checkboxes = document.querySelectorAll('.user-checkbox');
+  checkboxes.forEach(cb => cb.checked = this.checked);
+});
+
+// Toggle user status
+function toggleUserStatus(userId, currentStatus) {
+  const action = currentStatus ? 'deactivate' : 'activate';
+  
+  if (confirm(`Are you sure you want to ${action} this user?`)) {
+    fetch(`/superadmin/users/${userId}/toggle-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= csrfToken %>'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Error: ' + (data.error || 'Failed to update user status'));
+      }
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+}
+
+// Reset password
+function resetPassword(userId, userEmail) {
+  if (confirm(`Reset password for ${userEmail}?\n\nA temporary password will be sent to their email.`)) {
+    fetch(`/superadmin/users/${userId}/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= csrfToken %>'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+      } else {
+        alert('Error: ' + (data.error || 'Failed to reset password'));
+      }
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+}
+
+// Bulk actions
+function performBulkAction() {
+  const action = document.getElementById('bulkAction').value;
+  if (!action) {
+    alert('Please select a bulk action');
+    return;
+  }
+  
+  const selectedIds = [];
+  document.querySelectorAll('.user-checkbox:checked').forEach(cb => {
+    selectedIds.push(cb.value);
+  });
+  
+  if (selectedIds.length === 0) {
+    alert('Please select at least one user');
+    return;
+  }
+  
+  const confirmMsg = `Are you sure you want to ${action} ${selectedIds.length} user(s)?`;
+  if (!confirm(confirmMsg)) {
+    return;
+  }
+  
+  fetch('/superadmin/users/bulk', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': '<%= csrfToken %>'
+    },
+    body: JSON.stringify({
+      action: action,
+      userIds: selectedIds
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Failed to perform bulk action'));
+    }
+  })
+  .catch(error => {
+    alert('Error: ' + error.message);
+  });
+}
+</script>

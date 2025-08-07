@@ -1,0 +1,845 @@
+/* StoreHub Dashboard Styles
+   Purpose: Dashboard-specific styles using the design system
+*/
+
+/* ========================================
+   1. Dashboard Layout
+   ======================================== */
+.dashboard-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--space-6);
+  background-color: var(--gray-100);
+  min-height: calc(100vh - 70px);
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: var(--space-4);
+  }
+}
+
+/* ========================================
+   2. Stats Grid
+   ======================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.stats-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.stats-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.stats-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-orange);
+}
+
+.stats-content {
+  flex: 1;
+}
+
+.stats-value {
+  font-size: var(--heading-1);
+  font-weight: var(--weight-bold);
+  color: var(--gray-900);
+  line-height: 1;
+  margin-bottom: var(--space-2);
+}
+
+.stats-label {
+  font-size: var(--small);
+  color: var(--gray-600);
+  font-weight: var(--weight-medium);
+}
+
+.stats-trend {
+  font-size: var(--tiny);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.trend-positive {
+  background: rgba(82, 196, 26, 0.1);
+  color: var(--success-green);
+}
+
+.trend-negative {
+  background: rgba(207, 19, 34, 0.1);
+  color: var(--error-red);
+}
+
+.trend-neutral {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+/* ========================================
+   3. Queue Section
+   ======================================== */
+.queue-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6);
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.section-title {
+  font-size: var(--heading-3);
+  font-weight: var(--weight-semibold);
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.section-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  
+  .section-actions {
+    width: 100%;
+  }
+  
+  .section-actions .btn {
+    flex: 1;
+  }
+}
+
+/* ========================================
+   4. Tab Navigation
+   ======================================== */
+.tab-navigation {
+  display: flex;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-100);
+}
+
+.tab-link {
+  flex: 1;
+  padding: var(--space-4);
+  background: none;
+  border: none;
+  font-size: var(--body);
+  font-weight: var(--weight-medium);
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  text-align: center;
+}
+
+.tab-link:hover {
+  color: var(--gray-900);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.tab-link.active {
+  color: var(--primary-orange);
+  background: white;
+}
+
+.tab-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-orange);
+}
+
+.tab-content {
+  padding: var(--space-5);
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+  animation: fadeIn var(--transition-normal);
+}
+
+/* ========================================
+   5. Queue Grid & Cards
+   ======================================== */
+.queue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .queue-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.queue-card {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: 80px;
+  position: relative;
+}
+
+.queue-card:hover {
+  border-color: var(--primary-orange);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.queue-number {
+  font-size: var(--heading-2);
+  font-weight: var(--weight-bold);
+  color: var(--primary-orange);
+  min-width: 60px;
+  text-align: left;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.queue-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: 2px;
+}
+
+.queue-name {
+  font-size: var(--body);
+  font-weight: var(--weight-semibold);
+  color: var(--gray-900);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.queue-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-1);
+}
+
+.queue-detail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--tiny);
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+.queue-detail-item svg {
+  width: 14px;
+  height: 14px;
+  color: var(--gray-400);
+}
+
+.queue-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+}
+
+/* X button positioning */
+.queue-actions .btn-text {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  padding: var(--space-1);
+  min-width: auto;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: white;
+  border: 1px solid var(--gray-300);
+  color: var(--gray-600);
+  transition: all var(--transition-fast);
+}
+
+.queue-actions .btn-text:hover {
+  background: var(--error-red);
+  border-color: var(--error-red);
+  color: white;
+}
+
+/* Call button styling */
+.queue-actions .btn-primary {
+  position: static;
+}
+
+@media (max-width: 480px) {
+  .queue-card {
+    padding: var(--space-3);
+    min-height: 70px;
+  }
+  
+  .queue-number {
+    font-size: var(--heading-3);
+    min-width: 50px;
+  }
+  
+  .queue-actions {
+    position: static;
+    margin-top: var(--space-2);
+    width: 100%;
+  }
+  
+  .queue-actions .btn-text {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+  }
+}
+
+/* ========================================
+   6. Queue List (Completed View)
+   ======================================== */
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.queue-list-item {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.queue-list-item:hover {
+  background: var(--gray-100);
+}
+
+/* ========================================
+   7. Empty States
+   ======================================== */
+.empty-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--gray-600);
+}
+
+.empty-state svg {
+  color: var(--gray-400);
+  margin-bottom: var(--space-4);
+}
+
+.empty-state h3 {
+  font-size: var(--heading-4);
+  font-weight: var(--weight-semibold);
+  color: var(--gray-700);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state p {
+  font-size: var(--body);
+  color: var(--gray-600);
+  margin: 0;
+}
+
+/* ========================================
+   8. Quick Actions
+   ======================================== */
+.quick-actions-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-actions-section h3 {
+  font-size: var(--heading-4);
+  font-weight: var(--weight-semibold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-4);
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+
+.quick-action-btn {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--small);
+  font-weight: var(--weight-medium);
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-action-btn:hover {
+  background: white;
+  border-color: var(--primary-orange);
+  color: var(--primary-orange);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-action-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 768px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ========================================
+   9. Modal Styles
+   ======================================== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalIn var(--transition-normal);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.modal-header h3 {
+  font-size: var(--heading-4);
+  font-weight: var(--weight-semibold);
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: var(--heading-3);
+  color: var(--gray-600);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.modal-body {
+  padding: var(--space-5);
+  max-height: calc(90vh - 180px);
+  overflow-y: auto;
+}
+
+.modal-footer {
+  padding: var(--space-5);
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========================================
+   10. Animations
+   ======================================== */
+.fade-in {
+  animation: fadeIn var(--transition-normal);
+}
+
+.scale-out {
+  animation: scaleOut var(--transition-normal);
+}
+
+@keyframes scaleOut {
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* ========================================
+   11. Responsive Adjustments
+   ======================================== */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-card {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .stats-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .stats-value {
+    font-size: var(--heading-2);
+  }
+}
+
+/* ========================================
+   12. Form Layout Styles
+   ======================================== */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   13. Stop Queue Modal Styles
+   ======================================== */
+.stop-queue-modal .modal {
+  max-width: 400px;
+  width: 90%;
+  background-color: white;
+  border: 2px solid var(--error-red);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+.stop-queue-modal .modal-header {
+  background-color: var(--error-red);
+  color: white;
+  padding: var(--space-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stop-queue-modal .modal-header h3 {
+  color: white;
+  font-size: var(--heading-4);
+  font-weight: var(--weight-bold);
+  margin: 0;
+}
+
+.stop-queue-modal .modal-close {
+  color: white;
+  opacity: 0.9;
+  font-size: 24px;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.stop-queue-modal .modal-close:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.stop-queue-modal .modal-body {
+  padding: var(--space-5);
+  background-color: white;
+  overflow-y: auto;
+  flex: 0 1 auto;
+}
+
+.stop-queue-modal .alert {
+  background-color: #fff5f5;
+  border: 2px solid var(--error-red);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.stop-queue-modal .alert svg {
+  color: var(--error-red);
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.stop-queue-modal .alert > div {
+  flex: 1;
+}
+
+.stop-queue-modal .alert strong {
+  color: var(--gray-900);
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--body);
+}
+
+.stop-queue-modal .alert p {
+  color: var(--gray-700);
+  margin: 0;
+  font-size: var(--body);
+  line-height: 1.5;
+}
+
+.stop-queue-modal .form-group {
+  margin-bottom: 0;
+}
+
+.stop-queue-modal .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.stop-queue-modal .form-label {
+  color: var(--gray-700);
+  font-size: var(--body);
+  margin-bottom: var(--space-3);
+  display: block;
+}
+
+.stop-queue-modal .form-control {
+  background-color: white;
+  border: 2px solid var(--gray-300);
+  color: var(--gray-900);
+  font-size: var(--body);
+  padding: var(--space-3) var(--space-4);
+  width: 100%;
+}
+
+.stop-queue-modal .form-control:focus {
+  border-color: var(--error-red);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--error-rgb), 0.1);
+}
+
+.stop-queue-modal .form-control::placeholder {
+  color: var(--gray-500);
+}
+
+.stop-queue-modal .error-message {
+  color: var(--error-red);
+  font-size: var(--small);
+  margin-top: var(--space-2);
+}
+
+.stop-queue-modal .modal-footer {
+  background-color: var(--gray-100);
+  border-top: 1px solid var(--gray-300);
+  padding: var(--space-5);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.stop-queue-modal .btn-secondary {
+  background-color: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  padding: var(--space-3) var(--space-5);
+  font-weight: var(--weight-medium);
+}
+
+.stop-queue-modal .btn-secondary:hover {
+  background-color: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
+.stop-queue-modal .btn-danger {
+  background-color: var(--error-red);
+  color: white;
+  border: 1px solid var(--error-red);
+  padding: var(--space-3) var(--space-5);
+  font-weight: var(--weight-semibold);
+}
+
+.stop-queue-modal .btn-danger:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Darker backdrop for better visibility */
+.modal-backdrop.stop-queue-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1040;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mobile adjustments for stop queue modal */
+@media (max-width: 768px) {
+  .stop-queue-modal .modal {
+    max-width: 95%;
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .stop-queue-modal .modal-body {
+    padding: var(--space-4);
+  }
+  
+  .stop-queue-modal .modal-header,
+  .stop-queue-modal .modal-footer {
+    padding: var(--space-4);
+  }
+}
+
+
+/* ========================================
+   14. Print Styles
+   ======================================== */
+@media print {
+  .section-actions,
+  .queue-actions,
+  .quick-actions-section,
+  .tab-navigation {
+    display: none !important;
+  }
+  
+  .queue-section {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+  
+  .tab-pane {
+    display: block !important;
+    page-break-inside: avoid;
+  }
+}

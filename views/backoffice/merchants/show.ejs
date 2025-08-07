@@ -1,0 +1,307 @@
+<%- include('../layout', { title: title }) %>
+
+<div class="container-fluid mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/backoffice/merchants">Merchants</a></li>
+              <li class="breadcrumb-item active"><%= merchant.businessName %></li>
+            </ol>
+          </nav>
+          <h2 class="mb-1"><%= contentTitle %></h2>
+          <p class="text-muted mb-0"><%= contentSubtitle %></p>
+        </div>
+        <div>
+          <span class="badge bg-<%= merchant.isActive ? 'success' : 'danger' %> fs-6 me-3">
+            <%= merchant.isActive ? 'Active' : 'Inactive' %>
+          </span>
+          <button class="btn btn-outline-<%= merchant.isActive ? 'warning' : 'success' %>" 
+                  onclick="toggleMerchantStatus('<%= merchant.id %>')">
+            <i class="fas fa-<%= merchant.isActive ? 'pause' : 'play' %> me-2"></i>
+            <%= merchant.isActive ? 'Deactivate' : 'Activate' %>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Basic Information -->
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Merchant Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <table class="table table-borderless">
+                <tr>
+                  <td class="fw-medium">Business Name:</td>
+                  <td><%= merchant.businessName %></td>
+                </tr>
+                <tr>
+                  <td class="fw-medium">Email:</td>
+                  <td><%= merchant.email %></td>
+                </tr>
+                <tr>
+                  <td class="fw-medium">Tenant:</td>
+                  <td>
+                    <% if (merchant.tenant) { %>
+                      <a href="/backoffice/tenants/<%= merchant.tenant.id %>" class="text-decoration-none">
+                        <%= merchant.tenant.name %>
+                      </a>
+                      <br>
+                      <small class="text-muted"><%= merchant.tenant.slug %>.storehubqms.com</small>
+                    <% } else { %>
+                      <span class="text-muted">No tenant</span>
+                    <% } %>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-medium">Phone:</td>
+                  <td><%= merchant.phone || 'Not provided' %></td>
+                </tr>
+                <tr>
+                  <td class="fw-medium">Address:</td>
+                  <td><%= merchant.address || 'Not provided' %></td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <table class="table table-borderless">
+                <tr>
+                  <td class="fw-medium">Business Type:</td>
+                  <td><%= merchant.businessType || 'Not specified' %></td>
+                </tr>
+                <tr>
+                  <td class="fw-medium">Timezone:</td>
+                  <td><%= merchant.timezone || 'Asia/Kuala_Lumpur' %></td>
+                </tr>
+                <tr>
+                  <td class="fw-medium">Created:</td>
+                  <td><%= new Date(merchant.createdAt).toLocaleString() %></td>
+                </tr>
+                <tr>
+                  <td class="fw-medium">Last Updated:</td>
+                  <td><%= new Date(merchant.updatedAt).toLocaleString() %></td>
+                </tr>
+                <tr>
+                  <td class="fw-medium">Status:</td>
+                  <td>
+                    <span class="badge bg-<%= merchant.isActive ? 'success' : 'danger' %>">
+                      <%= merchant.isActive ? 'Active' : 'Inactive' %>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subscription Information -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Subscription Details</h5>
+        </div>
+        <div class="card-body">
+          <% if (merchant.subscription) { %>
+            <div class="row">
+              <div class="col-md-6">
+                <table class="table table-borderless">
+                  <tr>
+                    <td class="fw-medium">Plan:</td>
+                    <td>
+                      <span class="badge bg-<%= 
+                        merchant.subscription.plan === 'enterprise' ? 'dark' :
+                        merchant.subscription.plan === 'premium' ? 'warning' :
+                        merchant.subscription.plan === 'basic' ? 'info' : 'secondary'
+                      %>">
+                        <%= merchant.subscription.plan.charAt(0).toUpperCase() + merchant.subscription.plan.slice(1) %>
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="fw-medium">Status:</td>
+                    <td>
+                      <span class="badge bg-<%= merchant.subscription.isActive ? 'success' : 'danger' %>">
+                        <%= merchant.subscription.isActive ? 'Active' : 'Inactive' %>
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="fw-medium">Billing Cycle:</td>
+                    <td><%= merchant.subscription.billingCycle || 'monthly' %></td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <table class="table table-borderless">
+                  <tr>
+                    <td class="fw-medium">Started:</td>
+                    <td><%= new Date(merchant.subscription.createdAt).toLocaleDateString() %></td>
+                  </tr>
+                  <% if (merchant.subscription.trialEndsAt) { %>
+                    <tr>
+                      <td class="fw-medium">Trial Ends:</td>
+                      <td>
+                        <%= new Date(merchant.subscription.trialEndsAt).toLocaleDateString() %>
+                        <% if (new Date(merchant.subscription.trialEndsAt) > new Date()) { %>
+                          <small class="text-success">(Active)</small>
+                        <% } else { %>
+                          <small class="text-danger">(Expired)</small>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% } %>
+                </table>
+              </div>
+            </div>
+          <% } else { %>
+            <div class="text-center py-3">
+              <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2"></i>
+              <p class="text-muted">No subscription information available</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Queues -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-list me-2"></i>Queues (<%= merchant.queues.length %>)</h5>
+        </div>
+        <div class="card-body">
+          <% if (merchant.queues.length === 0) { %>
+            <div class="text-center py-3">
+              <i class="fas fa-list text-muted fa-2x mb-2"></i>
+              <p class="text-muted">No queues created yet</p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Capacity</th>
+                    <th>Current Entries</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% merchant.queues.forEach(queue => { %>
+                    <tr>
+                      <td><%= queue.name %></td>
+                      <td>
+                        <span class="badge bg-info">
+                          <%= queue.type || 'standard' %>
+                        </span>
+                      </td>
+                      <td><%= queue.maxCapacity %></td>
+                      <td><%= queue._count.entries %></td>
+                      <td>
+                        <span class="badge bg-<%= queue.isActive ? 'success' : 'danger' %>">
+                          <%= queue.isActive ? 'Active' : 'Inactive' %>
+                        </span>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Sidebar -->
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Usage Statistics</h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="border-end">
+                <h4 class="text-primary mb-1"><%= usage.totalQueues %></h4>
+                <small class="text-muted">Total Queues</small>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <h4 class="text-success mb-1"><%= usage.activeQueues %></h4>
+              <small class="text-muted">Active Queues</small>
+            </div>
+            <div class="col-12">
+              <h4 class="text-warning mb-1"><%= usage.queueEntriesLast30Days %></h4>
+              <small class="text-muted">Entries (30d)</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-<%= merchant.isActive ? 'warning' : 'success' %>" 
+                    onclick="toggleMerchantStatus('<%= merchant.id %>')">
+              <i class="fas fa-<%= merchant.isActive ? 'pause' : 'play' %> me-2"></i>
+              <%= merchant.isActive ? 'Deactivate' : 'Activate' %> Merchant
+            </button>
+            <% if (merchant.tenant) { %>
+              <a href="/backoffice/tenants/<%= merchant.tenant.id %>" class="btn btn-outline-primary">
+                <i class="fas fa-building me-2"></i>View Tenant
+              </a>
+              <% if (merchant.tenant.slug) { %>
+                <a href="https://<%= merchant.tenant.slug %>.storehubqms.com" 
+                   target="_blank" 
+                   class="btn btn-outline-info">
+                  <i class="fas fa-external-link-alt me-2"></i>Visit Site
+                </a>
+              <% } %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function toggleMerchantStatus(merchantId) {
+  if (!confirm('Are you sure you want to toggle this merchant\'s status?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/backoffice/merchants/${merchantId}/toggle-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= csrfToken %>'
+      }
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      location.reload();
+    } else {
+      alert('Failed to update merchant status');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred while updating merchant status');
+  }
+}
+</script>

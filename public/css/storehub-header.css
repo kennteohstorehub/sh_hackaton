@@ -1,0 +1,313 @@
+/* StoreHub Design System - Header Component
+   Following the design principles of modern minimalism with sophisticated restraint
+*/
+
+/* ========================================
+   Header Component
+   ======================================== */
+.storehub-header {
+  background-color: var(--base-white);
+  border-bottom: 1px solid var(--gray-300);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0;
+}
+
+.storehub-header-content {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+/* Brand Section */
+.storehub-brand-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.storehub-logo {
+  font-size: var(--heading-3);
+  font-weight: var(--weight-bold);
+  color: var(--primary-orange);
+  text-decoration: none;
+  letter-spacing: -0.5px;
+  transition: color var(--transition-fast);
+}
+
+.storehub-logo:hover {
+  color: var(--primary-hover);
+  text-decoration: none;
+}
+
+/* Tenant Badge */
+.storehub-tenant-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--gray-100);
+  border-radius: var(--radius-full);
+  font-size: var(--small);
+}
+
+.storehub-tenant-label {
+  color: var(--gray-600);
+  font-weight: var(--weight-medium);
+}
+
+.storehub-tenant-name {
+  color: var(--gray-900);
+  font-weight: var(--weight-semibold);
+}
+
+/* Navigation */
+.storehub-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.storehub-nav-link {
+  position: relative;
+  padding: var(--space-2) var(--space-4);
+  color: var(--gray-700);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  font-size: var(--body);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.storehub-nav-link:hover {
+  color: var(--gray-900);
+  background-color: var(--gray-100);
+}
+
+.storehub-nav-link.active {
+  color: var(--primary-orange);
+  background-color: rgba(250, 140, 22, 0.1);
+}
+
+.storehub-nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: var(--space-4);
+  right: var(--space-4);
+  height: 2px;
+  background-color: var(--primary-orange);
+  border-radius: var(--radius-sm);
+}
+
+/* User Section */
+.storehub-user-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.storehub-view-public-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  color: var(--primary-orange);
+  background-color: rgba(250, 140, 22, 0.1);
+  border: 1px solid var(--primary-orange);
+  border-radius: var(--radius-md);
+  font-size: var(--small);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition: all var(--transition-normal);
+}
+
+.storehub-view-public-btn:hover {
+  background-color: var(--primary-orange);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.storehub-user-dropdown {
+  position: relative;
+}
+
+.storehub-user-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  color: var(--gray-900);
+  font-size: var(--body);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.storehub-user-button:hover {
+  background-color: var(--gray-200);
+  border-color: var(--gray-400);
+}
+
+.storehub-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-orange);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-semibold);
+  font-size: var(--small);
+}
+
+.storehub-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--space-2);
+  min-width: 200px;
+  background-color: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all var(--transition-fast);
+}
+
+.storehub-user-dropdown:hover .storehub-dropdown-menu,
+.storehub-dropdown-menu:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.storehub-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  color: var(--gray-900);
+  text-decoration: none;
+  font-size: var(--body);
+  transition: all var(--transition-fast);
+}
+
+.storehub-dropdown-item:hover {
+  background-color: var(--gray-100);
+  color: var(--primary-orange);
+}
+
+.storehub-dropdown-divider {
+  height: 1px;
+  background-color: var(--gray-300);
+  margin: var(--space-2) 0;
+}
+
+/* Mobile Menu Toggle */
+.storehub-mobile-toggle {
+  display: none;
+  padding: var(--space-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-900);
+}
+
+.storehub-mobile-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .storehub-header-content {
+    padding: 0 var(--space-6);
+  }
+  
+  .storehub-nav {
+    display: none;
+  }
+  
+  .storehub-mobile-toggle {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .storehub-header-content {
+    padding: 0 var(--space-4);
+    height: 56px;
+  }
+  
+  .storehub-logo {
+    font-size: var(--heading-4);
+  }
+  
+  .storehub-tenant-badge {
+    display: none;
+  }
+  
+  .storehub-view-public-btn {
+    display: none;
+  }
+}
+
+/* Mobile Navigation */
+.storehub-mobile-nav {
+  display: none;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-bottom: 1px solid var(--gray-300);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4);
+  z-index: 99;
+}
+
+.storehub-mobile-nav.active {
+  display: block;
+}
+
+.storehub-mobile-nav-link {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  color: var(--gray-900);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  font-size: var(--body);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.storehub-mobile-nav-link:hover {
+  background-color: var(--gray-100);
+  color: var(--primary-orange);
+}
+
+.storehub-mobile-nav-link.active {
+  background-color: rgba(250, 140, 22, 0.1);
+  color: var(--primary-orange);
+}
+
+/* Icon Styles */
+.storehub-icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}

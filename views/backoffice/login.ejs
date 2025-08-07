@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/main.css?v=<%= Date.now() %>">
+  <link rel="stylesheet" href="/css/storehub-backoffice.css?v=<%= Date.now() %>">
+  <% if (typeof csrfMeta === 'function') { %>
+    <%- csrfMeta() %>
+  <% } %>
+  <style>
+    body {
+      font-family: var(--sh-font-family);
+      background: var(--sh-gray-50);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--sh-primary-orange-light) 0%, transparent 70%);
+      opacity: 0.3;
+      animation: pulse 20s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1) translate(0, 0); }
+      50% { transform: scale(1.1) translate(-10%, -10%); }
+    }
+    
+    .login-container {
+      background: white;
+      padding: var(--sh-spacing-12);
+      border-radius: var(--sh-border-radius-xl);
+      box-shadow: var(--sh-shadow-xl);
+      width: 100%;
+      max-width: 440px;
+      margin: var(--sh-spacing-4);
+      position: relative;
+      border: 1px solid var(--sh-gray-200);
+    }
+    
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--sh-primary-orange);
+      border-radius: var(--sh-border-radius-xl) var(--sh-border-radius-xl) 0 0;
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: var(--sh-spacing-10);
+    }
+    
+    .admin-badge {
+      display: inline-block;
+      background: var(--sh-primary-orange-light);
+      color: var(--sh-primary-orange);
+      padding: var(--sh-spacing-2) var(--sh-spacing-4);
+      border-radius: var(--sh-border-radius-full);
+      font-size: var(--sh-font-size-xs);
+      font-weight: var(--sh-font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--sh-spacing-4);
+    }
+    
+    .login-header h1 {
+      color: var(--sh-gray-900);
+      font-size: var(--sh-font-size-3xl);
+      font-weight: var(--sh-font-weight-bold);
+      margin-bottom: var(--sh-spacing-2);
+      letter-spacing: -0.5px;
+    }
+    
+    .login-header p {
+      color: var(--sh-gray-600);
+      font-size: var(--sh-font-size-base);
+      font-weight: var(--sh-font-weight-regular);
+    }
+    
+    .form-group {
+      margin-bottom: var(--sh-spacing-6);
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: var(--sh-spacing-2);
+      font-weight: var(--sh-font-weight-medium);
+      color: var(--sh-gray-700);
+      font-size: var(--sh-font-size-sm);
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 0 var(--sh-spacing-4);
+      height: 44px;
+      background: white;
+      border: 1px solid var(--sh-gray-300);
+      border-radius: var(--sh-border-radius-base);
+      font-size: var(--sh-font-size-base);
+      color: var(--sh-gray-800);
+      transition: all var(--sh-transition-fast) ease;
+    }
+    
+    .form-group input::placeholder {
+      color: var(--sh-gray-400);
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--sh-primary-orange);
+      box-shadow: 0 0 0 3px rgba(250, 140, 22, 0.1);
+    }
+    
+    .btn-login {
+      width: 100%;
+      height: 44px;
+      background: var(--sh-primary-orange);
+      color: white;
+      border: none;
+      border-radius: var(--sh-border-radius-base);
+      font-size: var(--sh-font-size-base);
+      font-weight: var(--sh-font-weight-semibold);
+      cursor: pointer;
+      transition: all var(--sh-transition-fast) ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-login:hover {
+      background: var(--sh-primary-orange-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--sh-shadow-md);
+    }
+    
+    .btn-login:active {
+      transform: translateY(0);
+    }
+    
+    .auth-links {
+      text-align: center;
+      margin-top: var(--sh-spacing-8);
+      padding-top: var(--sh-spacing-8);
+      border-top: 1px solid var(--sh-gray-200);
+    }
+    
+    .auth-links a {
+      color: var(--sh-primary-orange);
+      text-decoration: none;
+      font-size: var(--sh-font-size-sm);
+      transition: all var(--sh-transition-fast);
+      font-weight: var(--sh-font-weight-medium);
+    }
+    
+    .auth-links a:hover {
+      color: var(--sh-primary-orange-hover);
+      text-decoration: underline;
+    }
+    
+    .auth-links p {
+      color: var(--sh-gray-600);
+      margin-bottom: var(--sh-spacing-3);
+    }
+    
+    .alert {
+      padding: var(--sh-spacing-4);
+      border-radius: var(--sh-border-radius-base);
+      margin-bottom: var(--sh-spacing-6);
+      font-size: var(--sh-font-size-sm);
+      font-weight: var(--sh-font-weight-medium);
+      border: 1px solid;
+    }
+    
+    .alert-error {
+      background: var(--sh-error-bg);
+      color: var(--sh-error);
+      border-color: var(--sh-error-border);
+    }
+    
+    .alert-success {
+      background: var(--sh-success-bg);
+      color: var(--sh-success);
+      border-color: var(--sh-success-border);
+    }
+    
+    .logo {
+      display: flex;
+      margin: 0 auto var(--sh-spacing-6);
+      width: 80px;
+      height: 80px;
+      background: var(--sh-primary-orange);
+      border-radius: var(--sh-border-radius-lg);
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: var(--sh-font-size-3xl);
+      font-weight: var(--sh-font-weight-bold);
+      box-shadow: var(--sh-shadow-md);
+      position: relative;
+    }
+    
+    .logo::after {
+      content: '✨';
+      position: absolute;
+      font-size: var(--sh-font-size-base);
+      top: -8px;
+      right: -8px;
+      background: var(--sh-primary-orange);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--sh-shadow-sm);
+    }
+    
+    .security-notice {
+      background: var(--sh-info-bg);
+      border: 1px solid var(--sh-info-border);
+      border-radius: var(--sh-border-radius-base);
+      padding: var(--sh-spacing-4);
+      margin-bottom: var(--sh-spacing-6);
+      font-size: var(--sh-font-size-sm);
+      color: var(--sh-info);
+      text-align: center;
+    }
+    
+    .security-notice strong {
+      color: var(--sh-info);
+      font-weight: var(--sh-font-weight-semibold);
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 480px) {
+      .login-container {
+        padding: var(--sh-spacing-8) var(--sh-spacing-6);
+        margin: var(--sh-spacing-2);
+      }
+      
+      .login-header h1 {
+        font-size: var(--sh-font-size-2xl);
+      }
+      
+      .logo {
+        width: 64px;
+        height: 64px;
+        font-size: var(--sh-font-size-2xl);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <div class="logo">SH</div>
+      <div class="admin-badge">BackOffice Portal</div>
+      <h1>StoreHub QMS</h1>
+      <p>Secure access to system management</p>
+    </div>
+    
+    <div class="security-notice">
+      <strong>Secure Zone:</strong> This area is restricted to authorized system administrators only.
+    </div>
+    
+    <% if (messages.error) { %>
+      <div class="alert alert-error">
+        <%= messages.error %>
+      </div>
+    <% } %>
+    
+    <% if (messages.success) { %>
+      <div class="alert alert-success">
+        <%= messages.success %>
+      </div>
+    <% } %>
+    
+    <form action="/backoffice/auth/login" method="POST">
+      <% if (typeof csrfInput === 'function') { %>
+        <%- csrfInput() %>
+      <% } else if (locals.csrfToken) { %>
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+      <% } %>
+      <% if (locals.redirect) { %>
+        <input type="hidden" name="redirect" value="<%= redirect %>">
+      <% } %>
+      
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          required 
+          placeholder="admin@company.com"
+          autocomplete="email"
+        >
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          required 
+          placeholder="Enter your secure password"
+          autocomplete="current-password"
+        >
+      </div>
+      
+      <button type="submit" class="btn-login">Access System</button>
+    </form>
+    
+    <div class="auth-links">
+      <% if (locals.isFirstBackOfficeUser === undefined) { %>
+        <p><a href="/backoffice/auth/setup-check">Check System Setup</a></p>
+      <% } %>
+      <p style="margin-top: 1rem;"><a href="/">← Back to Main Site</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Add some subtle interactivity
+    document.querySelector('.btn-login').addEventListener('click', function(e) {
+      this.style.transform = 'scale(0.98)';
+      setTimeout(() => {
+        this.style.transform = '';
+      }, 150);
+    });
+
+    // Auto-focus first input
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('email').focus();
+    });
+  </script>
+</body>
+</html>

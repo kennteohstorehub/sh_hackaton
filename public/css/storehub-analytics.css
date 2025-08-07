@@ -1,0 +1,447 @@
+/* StoreHub Analytics Styles
+   Purpose: Analytics page specific styles using the design system
+*/
+
+/* ========================================
+   1. Period Selector
+   ======================================== */
+.period-selector-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-6);
+}
+
+.period-selector-card h3 {
+    font-size: var(--heading-4);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-4);
+}
+
+.period-buttons {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.btn-period {
+    background: white;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--small);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.btn-period:hover {
+    border-color: var(--primary-orange);
+    color: var(--primary-orange);
+    background: rgba(250, 140, 22, 0.05);
+}
+
+.btn-period.active {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .period-buttons {
+        justify-content: space-between;
+    }
+    
+    .btn-period {
+        flex: 1;
+        min-width: 80px;
+        text-align: center;
+    }
+}
+
+/* ========================================
+   2. Stats Grid
+   ======================================== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+    display: flex;
+    gap: var(--space-4);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--gray-100);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-orange);
+    flex-shrink: 0;
+}
+
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-label {
+    font-size: var(--small);
+    font-weight: var(--weight-medium);
+    color: var(--gray-600);
+    margin: 0 0 var(--space-2) 0;
+}
+
+.stat-value {
+    font-size: var(--heading-2);
+    font-weight: var(--weight-bold);
+    color: var(--gray-900);
+    margin: 0 0 var(--space-2) 0;
+    line-height: 1;
+}
+
+.stat-change {
+    font-size: var(--tiny);
+    color: var(--gray-600);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.stat-change.positive span {
+    color: var(--success-green);
+    font-weight: var(--weight-semibold);
+}
+
+.stat-change.negative span {
+    color: var(--error-red);
+    font-weight: var(--weight-semibold);
+}
+
+.stat-change.neutral span {
+    color: var(--gray-600);
+    font-weight: var(--weight-semibold);
+}
+
+/* ========================================
+   3. Charts Section
+   ======================================== */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+}
+
+.chart-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-5);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.chart-header h3 {
+    font-size: var(--heading-4);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--gray-600);
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+    background: var(--gray-100);
+    color: var(--gray-900);
+}
+
+.chart-body {
+    padding: var(--space-5);
+    height: 300px;
+}
+
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-body {
+        height: 250px;
+    }
+}
+
+/* ========================================
+   4. Data Table
+   ======================================== */
+.table-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: var(--space-6);
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-5);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.table-header h3 {
+    font-size: var(--heading-4);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.table-actions {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.table-body {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    background: var(--gray-100);
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-size: var(--small);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-700);
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--gray-200);
+    font-size: var(--body);
+    color: var(--gray-900);
+}
+
+.data-table tbody tr:hover {
+    background: var(--gray-50);
+}
+
+.badge {
+    display: inline-block;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-full);
+    font-size: var(--tiny);
+    font-weight: var(--weight-medium);
+}
+
+.badge-success {
+    background: rgba(82, 196, 26, 0.1);
+    color: var(--success-green);
+}
+
+.badge-warning {
+    background: rgba(250, 173, 20, 0.1);
+    color: var(--warning-yellow);
+}
+
+.badge-error {
+    background: rgba(255, 77, 79, 0.1);
+    color: var(--error-red);
+}
+
+.badge-secondary {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+@media (max-width: 768px) {
+    .table-header {
+        flex-direction: column;
+        gap: var(--space-3);
+        align-items: flex-start;
+    }
+    
+    .table-actions {
+        width: 100%;
+    }
+    
+    .table-actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+/* ========================================
+   5. Insights Section
+   ======================================== */
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-4);
+}
+
+.insight-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    gap: var(--space-4);
+    transition: all var(--transition-normal);
+}
+
+.insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.insight-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.insight-icon.success {
+    background: rgba(82, 196, 26, 0.1);
+    color: var(--success-green);
+}
+
+.insight-icon.warning {
+    background: rgba(250, 219, 20, 0.1);
+    color: var(--warning-yellow);
+}
+
+.insight-icon.info {
+    background: rgba(24, 144, 255, 0.1);
+    color: var(--info-blue);
+}
+
+.insight-content h4 {
+    font-size: var(--body);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin: 0 0 var(--space-2) 0;
+}
+
+.insight-content p {
+    font-size: var(--small);
+    color: var(--gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ========================================
+   6. Loading States
+   ======================================== */
+.skeleton {
+    background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ========================================
+   7. Empty States
+   ======================================== */
+.empty-state {
+    text-align: center;
+    padding: var(--space-12) var(--space-6);
+    color: var(--gray-600);
+}
+
+.empty-state svg {
+    width: 64px;
+    height: 64px;
+    color: var(--gray-400);
+    margin: 0 auto var(--space-4);
+}
+
+.empty-state h3 {
+    font-size: var(--heading-4);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
+}
+
+.empty-state p {
+    font-size: var(--body);
+    color: var(--gray-600);
+    margin: 0;
+}
+
+/* ========================================
+   8. Print Styles
+   ======================================== */
+@media print {
+    .period-selector-card,
+    .table-actions,
+    .btn-icon {
+        display: none !important;
+    }
+    
+    .analytics-container {
+        padding: 0;
+        background: white;
+    }
+    
+    .stat-card,
+    .chart-card,
+    .table-card,
+    .insight-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+    }
+}

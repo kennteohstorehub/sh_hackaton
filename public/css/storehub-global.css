@@ -1,0 +1,394 @@
+/* StoreHub Global Styles
+   Purpose: Override and unify all styles to use the StoreHub Design System
+   This file should be loaded after storehub-design-system.css
+*/
+
+/* ========================================
+   1. Global Overrides
+   ======================================== */
+/* Import Open Sans font */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+
+/* Reset any conflicting styles */
+body {
+  font-family: var(--font-primary) !important;
+  background-color: var(--base-white) !important;
+  color: var(--gray-900) !important;
+}
+
+/* Override Bootstrap and other framework colors */
+.btn-primary {
+  background-color: var(--primary-orange) !important;
+  border-color: var(--primary-orange) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+.btn-success {
+  background-color: var(--success-green) !important;
+  border-color: var(--success-green) !important;
+}
+
+.text-primary {
+  color: var(--primary-orange) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary-orange) !important;
+}
+
+/* ========================================
+   2. Header Improvements
+   ======================================== */
+.common-header,
+.storehub-header {
+  background-color: white !important;
+  border-bottom: 1px solid var(--gray-300) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.common-header .navbar-brand,
+.storehub-logo {
+  color: var(--gray-900) !important;
+  font-weight: var(--weight-bold) !important;
+  font-size: var(--heading-4) !important;
+}
+
+.common-header .nav-link,
+.storehub-nav-link {
+  color: var(--gray-700) !important;
+  font-weight: var(--weight-medium) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.common-header .nav-link:hover,
+.storehub-nav-link:hover {
+  color: var(--primary-orange) !important;
+}
+
+.common-header .nav-link.active,
+.storehub-nav-link.active {
+  color: var(--primary-orange) !important;
+  border-bottom: 2px solid var(--primary-orange);
+}
+
+/* ========================================
+   3. Dashboard Improvements
+   ======================================== */
+/* Stats Cards - StoreHub Style */
+.stat-card,
+.stats-card {
+  background: white !important;
+  border: 1px solid var(--gray-300) !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--space-6) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all var(--transition-normal) !important;
+}
+
+.stat-card:hover,
+.stats-card:hover {
+  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-2px);
+}
+
+.stat-value,
+.stats-value {
+  font-size: var(--heading-1) !important;
+  font-weight: var(--weight-bold) !important;
+  color: var(--gray-900) !important;
+}
+
+.stat-label,
+.stats-label {
+  font-size: var(--small) !important;
+  color: var(--gray-600) !important;
+  font-weight: var(--weight-medium) !important;
+}
+
+/* Queue Cards - StoreHub Style */
+.queue-card,
+.customer-card {
+  background: white !important;
+  border: 1px solid var(--gray-300) !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--space-4) !important;
+  margin-bottom: var(--space-3) !important;
+  transition: all var(--transition-normal) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.queue-card:hover,
+.customer-card:hover {
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--primary-orange) !important;
+}
+
+/* Status Badges - Consistent Style */
+.status-badge,
+.badge {
+  padding: var(--space-1) var(--space-2) !important;
+  border-radius: var(--radius-full) !important;
+  font-size: var(--tiny) !important;
+  font-weight: var(--weight-medium) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.status-waiting,
+.badge-warning {
+  background-color: rgba(250, 219, 20, 0.2) !important;
+  color: #D4B106 !important;
+}
+
+.status-serving,
+.status-active,
+.badge-success {
+  background-color: rgba(82, 196, 26, 0.2) !important;
+  color: var(--success-green) !important;
+}
+
+.status-completed {
+  background-color: rgba(24, 144, 255, 0.2) !important;
+  color: var(--info-blue) !important;
+}
+
+/* ========================================
+   4. Form Improvements
+   ======================================== */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+textarea,
+select {
+  height: 44px !important;
+  padding: var(--space-3) !important;
+  font-size: var(--body) !important;
+  border: 1px solid var(--gray-400) !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.form-control:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary-orange) !important;
+  box-shadow: 0 0 0 3px rgba(250, 140, 22, 0.1) !important;
+  outline: none !important;
+}
+
+/* ========================================
+   5. Table Improvements
+   ======================================== */
+table,
+.table {
+  background: white !important;
+  border-collapse: collapse !important;
+}
+
+table th,
+.table th {
+  background-color: var(--gray-200) !important;
+  font-weight: var(--weight-semibold) !important;
+  color: var(--gray-800) !important;
+  padding: var(--space-3) !important;
+  border-bottom: 2px solid var(--gray-300) !important;
+}
+
+table td,
+.table td {
+  padding: var(--space-3) !important;
+  border-bottom: 1px solid var(--gray-300) !important;
+}
+
+table tbody tr:hover,
+.table tbody tr:hover {
+  background-color: var(--gray-100) !important;
+}
+
+/* ========================================
+   6. Backoffice Specific
+   ======================================== */
+/* Sidebar - StoreHub Dark Theme */
+.sidebar,
+.admin-sidebar {
+  background-color: var(--base-black) !important;
+  color: white !important;
+}
+
+.sidebar-item,
+.nav-item {
+  color: rgba(255, 255, 255, 0.8) !important;
+  padding: var(--space-3) var(--space-4) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.sidebar-item:hover,
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.sidebar-item.active,
+.nav-item.active {
+  background-color: var(--primary-orange) !important;
+  color: white !important;
+}
+
+/* Content Area */
+.content-area,
+.main-content {
+  background-color: var(--gray-100) !important;
+  min-height: 100vh;
+}
+
+.content-header {
+  margin-bottom: var(--space-6) !important;
+}
+
+.content-title {
+  font-size: var(--heading-2) !important;
+  font-weight: var(--weight-semibold) !important;
+  color: var(--gray-900) !important;
+  margin-bottom: var(--space-2) !important;
+}
+
+.content-subtitle {
+  font-size: var(--body) !important;
+  color: var(--gray-600) !important;
+}
+
+/* ========================================
+   7. Responsive Improvements
+   ======================================== */
+@media (max-width: 768px) {
+  /* Mobile Navigation */
+  .mobile-nav,
+  .storehub-mobile-nav {
+    background-color: white !important;
+    border-top: 1px solid var(--gray-300) !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+  
+  /* Mobile Cards */
+  .card,
+  .queue-card {
+    border-radius: var(--radius-md) !important;
+    margin-bottom: var(--space-3) !important;
+  }
+  
+  /* Mobile Tables */
+  .table-responsive {
+    border: 1px solid var(--gray-300) !important;
+    border-radius: var(--radius-md) !important;
+  }
+}
+
+/* ========================================
+   8. Animation Classes
+   ======================================== */
+.fade-in {
+  animation: fadeIn var(--transition-normal) ease-out;
+}
+
+.slide-up {
+  animation: slideUp var(--transition-normal) ease-out;
+}
+
+.scale-in {
+  animation: scaleIn var(--transition-normal) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   9. Utility Overrides
+   ======================================== */
+/* Ensure consistent spacing */
+.mb-2 { margin-bottom: var(--space-2) !important; }
+.mb-3 { margin-bottom: var(--space-3) !important; }
+.mb-4 { margin-bottom: var(--space-4) !important; }
+.mb-5 { margin-bottom: var(--space-5) !important; }
+
+.mt-2 { margin-top: var(--space-2) !important; }
+.mt-3 { margin-top: var(--space-3) !important; }
+.mt-4 { margin-top: var(--space-4) !important; }
+.mt-5 { margin-top: var(--space-5) !important; }
+
+.p-2 { padding: var(--space-2) !important; }
+.p-3 { padding: var(--space-3) !important; }
+.p-4 { padding: var(--space-4) !important; }
+.p-5 { padding: var(--space-5) !important; }
+
+/* Ensure consistent colors */
+.text-muted { color: var(--gray-600) !important; }
+.text-secondary { color: var(--gray-700) !important; }
+.text-danger { color: var(--error-red) !important; }
+.text-success { color: var(--success-green) !important; }
+.text-warning { color: var(--warning-yellow) !important; }
+.text-info { color: var(--info-blue) !important; }
+
+/* Background colors */
+.bg-light { background-color: var(--gray-100) !important; }
+.bg-white { background-color: white !important; }
+.bg-dark { background-color: var(--base-black) !important; }
+
+/* ========================================
+   10. Print Styles
+   ======================================== */
+@media print {
+  .sidebar,
+  .header,
+  .navbar,
+  .btn,
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+  }
+}

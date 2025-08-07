@@ -1,0 +1,259 @@
+<%- include('../layout', { title: title }) %>
+
+<div class="container-fluid mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="mb-1"><%= contentTitle %></h2>
+          <p class="text-muted mb-0"><%= contentSubtitle %></p>
+        </div>
+        <div>
+          <button class="btn btn-outline-primary me-2" onclick="exportMerchants()">
+            <i class="fas fa-download me-2"></i>Export
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <form method="GET" class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Search</label>
+              <input type="text" 
+                     class="form-control" 
+                     name="search" 
+                     value="<%= filters.search %>" 
+                     placeholder="Name, email, or tenant...">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Status</label>
+              <select class="form-select" name="status">
+                <option value="all" <%= filters.status === 'all' ? 'selected' : '' %>>All</option>
+                <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+                <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Plan</label>
+              <select class="form-select" name="plan">
+                <option value="all" <%= filters.plan === 'all' ? 'selected' : '' %>>All Plans</option>
+                <option value="free" <%= filters.plan === 'free' ? 'selected' : '' %>>Free</option>
+                <option value="basic" <%= filters.plan === 'basic' ? 'selected' : '' %>>Basic</option>
+                <option value="premium" <%= filters.plan === 'premium' ? 'selected' : '' %>>Premium</option>
+                <option value="enterprise" <%= filters.plan === 'enterprise' ? 'selected' : '' %>>Enterprise</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Tenant</label>
+              <select class="form-select" name="tenant">
+                <option value="all" <%= filters.tenant === 'all' ? 'selected' : '' %>>All Tenants</option>
+                <% tenants.forEach(tenant => { %>
+                  <option value="<%= tenant.id %>" <%= filters.tenant === tenant.id ? 'selected' : '' %>>
+                    <%= tenant.name %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">&nbsp;</label>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-search"></i>
+                </button>
+                <a href="/backoffice/merchants" class="btn btn-outline-secondary">
+                  <i class="fas fa-times"></i>
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Merchants Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <% if (merchants.length === 0) { %>
+            <div class="text-center py-5">
+              <i class="fas fa-store fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No merchants found</h5>
+              <p class="text-muted">
+                <% if (filters.search || filters.status !== 'all' || filters.plan !== 'all' || filters.tenant !== 'all') { %>
+                  Try adjusting your filters
+                <% } else { %>
+                  No merchants have been created yet
+                <% } %>
+              </p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Merchant</th>
+                    <th>Tenant</th>
+                    <th>Plan</th>
+                    <th>Queues</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% merchants.forEach(merchant => { %>
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="avatar-sm bg-primary-soft rounded-circle me-3 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-store text-primary"></i>
+                          </div>
+                          <div>
+                            <h6 class="mb-0">
+                              <a href="/backoffice/merchants/<%= merchant.id %>" class="text-decoration-none">
+                                <%= merchant.businessName %>
+                              </a>
+                            </h6>
+                            <small class="text-muted"><%= merchant.email %></small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <% if (merchant.tenant) { %>
+                          <div>
+                            <div class="fw-medium"><%= merchant.tenant.name %></div>
+                            <small class="text-muted"><%= merchant.tenant.slug %>.storehubqms.com</small>
+                          </div>
+                        <% } else { %>
+                          <span class="text-muted">No tenant</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <span class="badge bg-<%= 
+                          merchant.subscription?.plan === 'enterprise' ? 'dark' :
+                          merchant.subscription?.plan === 'premium' ? 'warning' :
+                          merchant.subscription?.plan === 'basic' ? 'info' : 'secondary'
+                        %>">
+                          <%= (merchant.subscription?.plan || 'free').charAt(0).toUpperCase() + (merchant.subscription?.plan || 'free').slice(1) %>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="fw-medium"><%= merchant._count.queues %></span>
+                        <small class="text-muted">queues</small>
+                      </td>
+                      <td>
+                        <span class="badge bg-<%= merchant.isActive ? 'success' : 'danger' %>">
+                          <%= merchant.isActive ? 'Active' : 'Inactive' %>
+                        </span>
+                      </td>
+                      <td>
+                        <small class="text-muted">
+                          <%= new Date(merchant.createdAt).toLocaleDateString() %>
+                        </small>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <a href="/backoffice/merchants/<%= merchant.id %>" 
+                             class="btn btn-sm btn-outline-primary"
+                             title="View Details">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <button type="button" 
+                                  class="btn btn-sm btn-outline-<%= merchant.isActive ? 'warning' : 'success' %>"
+                                  onclick="toggleMerchantStatus('<%= merchant.id %>')"
+                                  title="<%= merchant.isActive ? 'Deactivate' : 'Activate' %>">
+                            <i class="fas fa-<%= merchant.isActive ? 'pause' : 'play' %>"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (pagination.pages > 1) { %>
+              <nav aria-label="Merchants pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                  <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                    <a class="page-link" href="?page=<%= pagination.page - 1 %>&search=<%= filters.search %>&status=<%= filters.status %>&plan=<%= filters.plan %>&tenant=<%= filters.tenant %>">
+                      Previous
+                    </a>
+                  </li>
+                  <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) { %>
+                    <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                      <a class="page-link" href="?page=<%= i %>&search=<%= filters.search %>&status=<%= filters.status %>&plan=<%= filters.plan %>&tenant=<%= filters.tenant %>">
+                        <%= i %>
+                      </a>
+                    </li>
+                  <% } %>
+                  <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                    <a class="page-link" href="?page=<%= pagination.page + 1 %>&search=<%= filters.search %>&status=<%= filters.status %>&plan=<%= filters.plan %>&tenant=<%= filters.tenant %>">
+                      Next
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function toggleMerchantStatus(merchantId) {
+  if (!confirm('Are you sure you want to toggle this merchant\'s status?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/backoffice/merchants/${merchantId}/toggle-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= csrfToken %>'
+      }
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      location.reload();
+    } else {
+      alert('Failed to update merchant status');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred while updating merchant status');
+  }
+}
+
+function exportMerchants() {
+  const params = new URLSearchParams(window.location.search);
+  params.set('export', 'csv');
+  window.location.href = '/backoffice/merchants/export/csv?' + params.toString();
+}
+</script>
+
+<style>
+.avatar-sm {
+  width: 40px;
+  height: 40px;
+}
+
+.bg-primary-soft {
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+</style>

@@ -6,12 +6,13 @@
     <title><%= title %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="/css/common-header.css" rel="stylesheet">
+    <!-- StoreHub Design System -->
+    <link href="/css/storehub-design-system.css?v=<%= Date.now() %>" rel="stylesheet">
+    <link href="/css/storehub-global.css?v=<%= Date.now() %>" rel="stylesheet">
     <link href="/css/dashboard.css" rel="stylesheet">
-    <link href="/css/design-tokens.css" rel="stylesheet">
-    <link href="/css/minimalist-framework.css" rel="stylesheet">
     <link href="/css/queue-drag-drop.css" rel="stylesheet">
     <link href="/css/accessibility.css" rel="stylesheet">
+    <script src="/js/storehub-design-system.js?v=<%= Date.now() %>" defer></script>
     <!-- Preload critical resources for faster navigation -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -1098,10 +1099,10 @@
     <div class="header">
         <div class="header-content">
             <h1>StoreHub QMS</h1>
-            <% if (typeof user !== 'undefined' && user && user.businessName) { %>
+            <% if (typeof tenant !== 'undefined' && tenant && tenant.name) { %>
             <div class="tenant-badge" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255, 140, 0, 0.1); border: 1px solid rgba(255, 140, 0, 0.3); padding: 0.4rem 0.8rem; border-radius: 8px; margin-left: 1rem;">
                 <span style="color: rgba(255, 255, 255, 0.7); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Account:</span>
-                <span style="color: #ff8c00; font-weight: 600; font-size: 0.9rem;"><%= user.businessName %></span>
+                <span style="color: #ff8c00; font-weight: 600; font-size: 0.9rem;"><%= tenant.name %></span>
             </div>
             <% } %>
             
@@ -1146,7 +1147,7 @@
     <div class="mobile-nav-overlay">
         <div class="mobile-nav-menu">
             <div class="mobile-nav-header">
-                <h2><%= user.businessName %></h2>
+                <h2><%= tenant && tenant.name ? tenant.name : 'StoreHub QMS' %></h2>
                 <button class="mobile-nav-close" aria-label="Close navigation">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -1192,18 +1193,18 @@
 
     <main id="main-content" class="container" role="main" aria-label="Queue Management Dashboard">
         <!-- Tenant Context Banner -->
-        <% if (typeof user !== 'undefined' && user && user.businessName) { %>
+        <% if (typeof tenant !== 'undefined' && tenant && tenant.name) { %>
         <div class="tenant-context-banner" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.05), rgba(255, 107, 53, 0.05)); border: 1px solid rgba(255, 140, 0, 0.2); padding: 1rem 2rem; margin-bottom: 2rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div class="tenant-info" style="display: flex; align-items: center; gap: 1rem;">
                 <div class="tenant-icon" style="width: 48px; height: 48px; background: linear-gradient(135deg, #ff8c00, #ff6b35); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; font-weight: bold;">
-                    <%= user.businessName.charAt(0).toUpperCase() %>
+                    <%= tenant.name.charAt(0).toUpperCase() %>
                 </div>
                 <div class="tenant-details">
-                    <h3 style="color: white; font-size: 1.25rem; margin: 0 0 0.25rem 0;"><%= user.businessName %></h3>
+                    <h3 style="color: white; font-size: 1.25rem; margin: 0 0 0.25rem 0;"><%= tenant.name %></h3>
                     <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin: 0;">Business Account Dashboard</p>
                 </div>
             </div>
-            <% if (user.email) { %>
+            <% if (user && user.email) { %>
             <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">
                 <i class="bi bi-envelope"></i> <%= user.email %>
             </div>
@@ -1415,7 +1416,7 @@
                                                         <i class="bi bi-x-circle"></i> Revoke
                                                     </button>
                                                 <% } else if (customer.status === 'waiting') { %>
-                                                    <button onclick="callCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')" class="action-button call-button">
+                                                    <button onclick="callCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>', event)" class="action-button call-button">
                                                         <i class="bi bi-megaphone"></i> Call
                                                     </button>
                                                 <% } %>
@@ -1546,6 +1547,9 @@
         <%- csrfAjaxSetup %>
     </script>
     <script>
+        // Store active queue ID for use in dynamic content
+        const activeQueueId = '<%= activeQueue ? (activeQueue.id || activeQueue._id) : "" %>';
+        
         // Mobile Navigation Toggle
         const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
         const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
@@ -2142,17 +2146,17 @@
             if (entry.status === 'called') {
                 // Show notified state buttons
                 actionsCell.innerHTML = `
-                    <button onclick="assignTable('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button assign-button">
+                    <button onclick="assignTable('${entry.queueId || activeQueueId}', '${entry._id || entry.id}')" class="action-button assign-button">
                         <i class="bi bi-person-check"></i> Assign Table
                     </button>
-                    <button onclick="revokeNotification('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button btn-revoke">
+                    <button onclick="revokeNotification('${entry.queueId || activeQueueId}', '${entry._id || entry.id}')" class="action-button btn-revoke">
                         <i class="bi bi-x-circle"></i> Revoke
                     </button>
                 `;
             } else {
                 // Show call button
                 actionsCell.innerHTML = `
-                    <button onclick="callCustomer('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button call-button">
+                    <button onclick="callCustomer('${entry.queueId || activeQueueId}', '${entry._id || entry.id}', event)" class="action-button call-button">
                         <i class="bi bi-megaphone"></i> Call
                     </button>
                 `;
@@ -2166,17 +2170,17 @@
             if (entry.status === 'called') {
                 // Show notified state buttons
                 actionsDiv.innerHTML = `
-                    <button onclick="assignTable('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button assign-button">
+                    <button onclick="assignTable('${entry.queueId || activeQueueId}', '${entry._id || entry.id}')" class="action-button assign-button">
                         <i class="bi bi-person-check"></i> Assign Table
                     </button>
-                    <button onclick="revokeNotification('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button btn-revoke">
+                    <button onclick="revokeNotification('${entry.queueId || activeQueueId}', '${entry._id || entry.id}')" class="action-button btn-revoke">
                         <i class="bi bi-x-circle"></i> Revoke
                     </button>
                 `;
             } else {
                 // Show call button
                 actionsDiv.innerHTML = `
-                    <button onclick="callCustomer('${entry.queueId || '<%= activeQueue.id || activeQueue._id %>'}', '${entry._id || entry.id}')" class="action-button call-button">
+                    <button onclick="callCustomer('${entry.queueId || activeQueueId}', '${entry._id || entry.id}', event)" class="action-button call-button">
                         <i class="bi bi-megaphone"></i> Call
                     </button>
                 `;
@@ -2349,7 +2353,7 @@
                     credentials: 'same-origin',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     }
                 });
                 
@@ -2519,7 +2523,7 @@
                     credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     },
                     body: JSON.stringify({ tableNumber })
                 });
@@ -2610,7 +2614,7 @@
                     credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     }
                 });
                 
@@ -2739,7 +2743,7 @@
                     credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     }
                 });
                 
@@ -2796,7 +2800,7 @@
                     credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     }
                 });
                 
@@ -2846,7 +2850,7 @@
                     credentials: 'same-origin',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     },
                     body: JSON.stringify({ customerId })
                 });
@@ -3042,7 +3046,7 @@
                 const actionsCell = row.querySelector('.actions');
                 if (actionsCell) {
                     actionsCell.innerHTML = `
-                        <button onclick="callCustomer('${customerData.queueId || customerData.queue}', '${customerId}')" class="action-button call-button">
+                        <button onclick="callCustomer('${customerData.queueId || customerData.queue}', '${customerId}', event)" class="action-button call-button">
                             <i class="bi bi-megaphone"></i> Call
                         </button>
                     `;
@@ -3064,7 +3068,7 @@
                 const actionsDiv = card.querySelector('.customer-card-actions');
                 if (actionsDiv) {
                     actionsDiv.innerHTML = `
-                        <button onclick="callCustomer('${customerData.queueId || customerData.queue}', '${customerId}')" class="action-button call-button">
+                        <button onclick="callCustomer('${customerData.queueId || customerData.queue}', '${customerId}', event)" class="action-button call-button">
                             <i class="bi bi-megaphone"></i> Call
                         </button>
                     `;
@@ -3072,8 +3076,11 @@
             }
         }
 
-        async function callCustomer(queueId, customerId) {
+        // Make callCustomer globally accessible
+        window.callCustomer = async function(queueId, customerId, event) {
             console.log('🔔 [DASHBOARD] callCustomer initiated:', { queueId, customerId });
+            console.log('🔔 [DASHBOARD] CSRF token available:', !!csrfToken);
+            console.log('🔔 [DASHBOARD] CSRF token value:', csrfToken?.substring(0, 10) + '...');
             
             if (!confirm('Are you sure you want to notify this customer?')) {
                 console.log('🔔 [DASHBOARD] Call cancelled by user');
@@ -3082,22 +3089,52 @@
             
             console.log('🔔 [DASHBOARD] Sending call request to backend...');
             
-            try {
-                // Show loading state
-                const button = event.target.closest('button');
-                const originalHTML = button.innerHTML;
+            // Get the button element - check if event exists, otherwise try to get from global event
+            const button = event ? event.target.closest('button') : (window.event ? window.event.target.closest('button') : null);
+            let originalHTML = '';
+            
+            if (button) {
+                originalHTML = button.innerHTML;
                 button.disabled = true;
                 button.innerHTML = '<i class="bi bi-hourglass-split"></i> Calling...';
-                
+            }
+            
+            try {
+                const requestBody = JSON.stringify({ customerId });
+                console.log('🔔 [DASHBOARD] Request details:', {
+                    url: `/api/queue/${queueId}/call-specific`,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken?.substring(0, 10) + '...'
+                    },
+                    body: requestBody
+                });
+
                 const response = await fetch(`/api/queue/${queueId}/call-specific`, {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     },
-                    body: JSON.stringify({ customerId })
+                    body: requestBody
                 });
+                
+                console.log('🔔 [DASHBOARD] Response status:', response.status);
+                console.log('🔔 [DASHBOARD] Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                if (response.status === 403) {
+                    console.error('🔔 [DASHBOARD] 403 Forbidden - CSRF token issue or authentication failure');
+                    const errorText = await response.text();
+                    console.error('🔔 [DASHBOARD] 403 Error response:', errorText);
+                    alert('Authentication error. Please refresh the page and try again.');
+                    if (button) {
+                        button.disabled = false;
+                        button.innerHTML = originalHTML;
+                    }
+                    return;
+                }
                 
                 const result = await response.json();
                 console.log('🔔 [DASHBOARD] Call response received:', {
@@ -3118,18 +3155,22 @@
                     
                     // The WebSocket event will also update the UI, but this provides immediate feedback
                 } else {
+                    console.error('🔔 [DASHBOARD] Call failed:', result.error);
                     alert(result.error || 'Failed to notify customer');
                     // Restore button state on error
-                    button.disabled = false;
-                    button.innerHTML = originalHTML;
+                    if (button) {
+                        button.disabled = false;
+                        button.innerHTML = originalHTML;
+                    }
                 }
             } catch (error) {
-                console.error('Error notifying customer:', error);
-                alert('Error notifying customer');
+                console.error('🔔 [DASHBOARD] Exception in callCustomer:', error);
+                alert('Error notifying customer: ' + error.message);
                 // Restore button state on error
-                const button = event.target.closest('button');
-                button.disabled = false;
-                button.innerHTML = '<i class="bi bi-megaphone"></i> Call';
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalHTML || '<i class="bi bi-megaphone"></i> Call';
+                }
             }
         }
 
@@ -3147,7 +3188,7 @@
                     credentials: 'same-origin',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     }
                 });
                 
@@ -3188,7 +3229,7 @@
                     credentials: 'same-origin',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     }
                 });
                 
@@ -3217,7 +3258,7 @@
                     credentials: 'same-origin',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'x-csrf-token': csrfToken
                     }
                 });
                 
@@ -3423,7 +3464,7 @@
                     ` : ''}
                 </div>
                 <div class="customer-card-actions">
-                    <button onclick="callCustomer('${customer.queueId || customer.queue}', '${customer._id || customer.id}')" class="action-button call-button">
+                    <button onclick="callCustomer('${customer.queueId || customer.queue}', '${customer._id || customer.id}', event)" class="action-button call-button">
                         <i class="bi bi-megaphone"></i> Call
                     </button>
                 </div>

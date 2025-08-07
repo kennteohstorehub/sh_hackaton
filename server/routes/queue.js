@@ -1457,6 +1457,132 @@ router.get('/debug/rooms/:customerId', async (req, res) => {
   }
 });
 
+// POST /api/queues/:id/customers - Add customer to queue (merchant dashboard)
+router.post('/:id/customers', [requireAuth, loadUser], [
+  body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required'),
+  body('phone').matches(/^\+?[1-9]\d{1,14}$/).withMessage('Valid phone number is required'),
+  body('partySize').isInt({ min: 1, max: 20 }).withMessage('Party size must be between 1 and 20'),
+  body('specialRequests').optional().isLength({ max: 500 }).withMessage('Special requests too long')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        error: 'Validation failed', 
+        message: errors.array()[0].msg,
+        details: errors.array() 
+      });
+    }
+
+    const merchantId = req.user.id || req.user._id;
+    const { name, phone, partySize, specialRequests } = req.body;
+
+    // Find the queue and verify it belongs to this merchant
+    const queue = await prisma.queue.findFirst({
+      where: {
+        id: req.params.id,
+        merchantId: merchantId
+      },
+      include: {
+        merchant: {
+          include: {
+            settings: true
+          }
+        }
+      }
+    });
+
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+
+    if (!queue.acceptingCustomers) {
+      return res.status(400).json({ error: 'Queue is not accepting new customers' });
+    }
+
+    // Check party size against merchant settings
+    const maxPartySize = queue.merchant?.settings?.partySizeRegularMax || 8;
+    if (partySize > maxPartySize) {
+      return res.status(400).json({ 
+        error: `Party size exceeds maximum allowed (${maxPartySize})`,
+        maxAllowed: maxPartySize
+      });
+    }
+
+    // Check if queue is at capacity
+    const stats = await queueService.getQueueStats(queue.id);
+    if (queue.maxCapacity && stats.waitingCount >= queue.maxCapacity) {
+      return res.status(400).json({ error: 'Queue is at full capacity' });
+    }
+
+    // Generate unique customer ID and verification code
+    const webChatService = require('../services/webChatService');
+    const customerId = `merchant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const verificationCode = webChatService.generateVerificationCode();
+
+    // Get next position
+    const lastEntry = await prisma.queueEntry.findFirst({
+      where: { queueId: queue.id },
+      orderBy: { position: 'desc' }
+    });
+    const nextPosition = (lastEntry?.position || 0) + 1;
+
+    // Create queue entry
+    const entry = await prisma.queueEntry.create({
+      data: {
+        queueId: queue.id,
+        customerId: customerId,
+        customerName: name,
+        customerPhone: phone,
+        platform: 'web',
+        position: nextPosition,
+        status: 'waiting',
+        partySize: parseInt(partySize),
+        specialRequests: specialRequests || null,
+        verificationCode: verificationCode,
+        estimatedWaitTime: Math.round(stats.waitingCount * (queue.averageServiceTime || 15))
+      }
+    });
+
+    // Generate queue number
+    const queueNumber = `${nextPosition}`;
+
+    // Emit socket event for real-time update
+    req.io.to(`merchant-${merchantId}`).emit('customer-added', {
+      ...entry,
+      queueNumber,
+      waitTime: '0 min'
+    });
+
+    // Update queue statistics
+    const updatedStats = await queueService.getQueueStats(queue.id);
+    req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
+      queueId: queue.id,
+      waitingCount: updatedStats.waitingCount,
+      servingCount: updatedStats.servingCount,
+      completedCount: updatedStats.completedCount
+    });
+
+    logger.info(`Customer ${name} added to queue ${queue.name} by merchant`);
+
+    res.json({
+      success: true,
+      customer: {
+        ...entry,
+        queueNumber,
+        merchantName: queue.merchant.businessName
+      }
+    });
+
+  } catch (error) {
+    logger.error('Error adding customer to queue:', error);
+    res.status(500).json({ 
+      error: 'Failed to add customer',
+      message: error.message 
+    });
+  }
+});
+
 // POST /api/queue/acknowledge - Customer acknowledges notification
 router.post('/acknowledge', async (req, res) => {
   try {

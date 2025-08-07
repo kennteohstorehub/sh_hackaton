@@ -626,7 +626,7 @@ class QueueDragDropManager {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                'x-csrf-token': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({
                 queueId: queueId,
@@ -656,7 +656,7 @@ class QueueDragDropManager {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                'x-csrf-token': document.querySelector('meta[name="csrf-token"]').content
             }
         })
         .then(response => response.json())
@@ -697,7 +697,7 @@ class QueueDragDropManager {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                'x-csrf-token': document.querySelector('meta[name="csrf-token"]').content
             }
         })
         .then(response => response.json())
@@ -729,7 +729,7 @@ class QueueDragDropManager {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                'x-csrf-token': document.querySelector('meta[name="csrf-token"]').content
             }
         })
         .then(response => response.json())

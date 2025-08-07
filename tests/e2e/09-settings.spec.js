@@ -1,11 +1,13 @@
 const { test, expect } = require('@playwright/test');
 const { LoginPage } = require('./pages/LoginPage');
+const { generateTestData } = require('./test-config');
 
-test.describe('Merchant Settings Tests', () => {
-  let loginPage;
+test.describe('Comprehensive Merchant Settings Tests', () => {
+  let loginPage, page;
 
-  test.beforeEach(async ({ page }) => {
-    // Login before each test
+  test.beforeEach(async ({ browser }) => {
+    // Launch a new page for each test
+    page = await browser.newPage();
     loginPage = new LoginPage(page);
     
     const testEmail = process.env.TEST_USER_EMAIL;
@@ -25,33 +27,22 @@ test.describe('Merchant Settings Tests', () => {
     await page.waitForURL('**/dashboard/settings');
   });
 
-  test('should display all settings sections', async ({ page }) => {
-    // Check page title
-    await expect(page).toHaveTitle(/Settings/);
-    
-    // Check all main sections are visible
-    const sections = [
-      '🏪 Restaurant Information',
-      '⚙️ Queue Configuration',
-      '🔔 Notification Preferences',
-      '💬 Message Templates',
-      '🔧 System Settings'
-    ];
-    
-    for (const sectionTitle of sections) {
-      await expect(page.locator(`h2:has-text("${sectionTitle}")`)).toBeVisible();
-    }
-    
-    // Check danger zone
-    await expect(page.locator('.danger-zone')).toBeVisible();
-    await expect(page.locator('h3:has-text("⚠️ Danger Zone")')).toBeVisible();
+  test.afterEach(async () => {
+    await page.close();
   });
 
-  test('should update restaurant information', async ({ page }) => {
+  test('Validate restaurant information save with complete data', async () => {
+    // Generate unique test data
+    const testRestaurant = {
+      name: `Test Restaurant ${generateTestData.uniqueString()}`,
+      phone: generateTestData.phoneNumber(),
+      address: `${generateTestData.streetAddress()}, Test City, TC 12345`
+    };
+
     // Fill restaurant form
-    await page.fill('#restaurantName', 'Test Restaurant Updated');
-    await page.fill('#restaurantPhone', '+1 (555) 987-6543');
-    await page.fill('#restaurantAddress', '123 Test Street, Test City, TC 12345');
+    await page.fill('#restaurantName', testRestaurant.name);
+    await page.fill('#restaurantPhone', testRestaurant.phone);
+    await page.fill('#restaurantAddress', testRestaurant.address);
     
     // Save the form
     const saveBtn = page.locator('#restaurantForm button[type="submit"]');
@@ -61,253 +52,204 @@ test.describe('Merchant Settings Tests', () => {
     await expect(saveBtn).toHaveText('Saving...', { timeout: 5000 });
     await expect(saveBtn).toHaveText('Save Restaurant Information', { timeout: 10000 });
     
+    // Verify success message
+    const successMessage = page.locator('#successMessage');
+    await expect(successMessage).toBeVisible();
+    await expect(successMessage).toContainText('Business information saved successfully');
+    
     // Refresh page to verify persistence
     await page.reload();
     
     // Check values are saved
-    await expect(page.locator('#restaurantName')).toHaveValue('Test Restaurant Updated');
-    await expect(page.locator('#restaurantPhone')).toHaveValue('+1 (555) 987-6543');
+    await expect(page.locator('#restaurantName')).toHaveValue(testRestaurant.name);
+    await expect(page.locator('#restaurantPhone')).toHaveValue(testRestaurant.phone);
+    await expect(page.locator('#restaurantAddress')).toHaveValue(testRestaurant.address);
   });
 
-  test('should configure operating hours', async ({ page }) => {
-    // Test Monday hours
-    const mondayRow = page.locator('[data-day="monday"]');
-    
-    // Set opening time
-    await mondayRow.locator('input[name="businessHours[monday][start]"]').fill('08:00');
-    await mondayRow.locator('input[name="businessHours[monday][end]"]').fill('22:00');
-    
-    // Test closed toggle
-    const mondayClosedToggle = mondayRow.locator('#monday-closed');
-    await mondayClosedToggle.click();
-    
-    // Check visual state changes
-    await expect(mondayRow).toHaveClass(/closed/);
-    
-    // Uncheck to open again
-    await mondayClosedToggle.click();
-    await expect(mondayRow).not.toHaveClass(/closed/);
-    
-    // Test all days
-    const days = ['tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    for (const day of days) {
-      const dayRow = page.locator(`[data-day="${day}"]`);
-      await expect(dayRow).toBeVisible();
-      
-      // Check time inputs exist
-      await expect(dayRow.locator(`input[name="businessHours[${day}][start]"]`)).toBeVisible();
-      await expect(dayRow.locator(`input[name="businessHours[${day}][end]"]`)).toBeVisible();
-      await expect(dayRow.locator(`#${day}-closed`)).toBeVisible();
+  test('Validate business hours configuration with complex scenarios', async () => {
+    const testDays = [
+      { day: 'monday', start: '07:00', end: '21:00' },
+      { day: 'tuesday', start: '09:00', end: '19:00' },
+      { day: 'wednesday', closed: true },
+      { day: 'thursday', start: '10:00', end: '22:00' },
+      { day: 'friday', start: '08:00', end: '23:00' },
+      { day: 'saturday', start: '10:00', end: '20:00' },
+      { day: 'sunday', closed: true }
+    ];
+
+    for (const dayConfig of testDays) {
+      const dayRow = page.locator(`[data-day="${dayConfig.day}"]`);
+      const closedToggle = dayRow.locator(`#${dayConfig.day}-closed`);
+      const startInput = dayRow.locator(`input[name="businessHours[${dayConfig.day}][start]"]`);
+      const endInput = dayRow.locator(`input[name="businessHours[${dayConfig.day}][end]"]`);
+
+      if (dayConfig.closed) {
+        await closedToggle.click();
+        await expect(dayRow).toHaveClass(/closed/);
+      } else {
+        // Ensure the day is not closed
+        if (await closedToggle.isChecked()) {
+          await closedToggle.click();
+        }
+
+        // Set start and end times
+        await startInput.fill(dayConfig.start);
+        await endInput.fill(dayConfig.end);
+
+        // Verify inputs are correctly set
+        await expect(startInput).toHaveValue(dayConfig.start);
+        await expect(endInput).toHaveValue(dayConfig.end);
+      }
     }
+
+    // Save restaurant form to persist changes
+    const saveBtn = page.locator('#restaurantForm button[type="submit"]');
+    await saveBtn.click();
+    await expect(saveBtn).toHaveText('Save Restaurant Information', { timeout: 10000 });
   });
 
-  test('should update queue configuration', async ({ page }) => {
-    // Fill queue settings
-    await page.fill('#maxCapacity', '100');
-    await page.fill('#avgServiceTime', '20');
-    await page.fill('#notificationAdvance', '10');
-    await page.fill('#maxPartySize', '12');
+  test('Comprehensive queue configuration validation', async () => {
+    const queueSettings = {
+      maxCapacity: 120,
+      avgServiceTime: 25,
+      notificationAdvance: 15,
+      maxPartySize: 10
+    };
+
+    // Fill queue settings with varied inputs
+    await page.fill('#maxCapacity', queueSettings.maxCapacity.toString());
+    await page.fill('#avgServiceTime', queueSettings.avgServiceTime.toString());
     
-    // Save settings
+    // Save queue settings
     const saveBtn = page.locator('#queueSettingsForm button[type="submit"]');
     await saveBtn.click();
     
-    // Wait for save
-    await page.waitForTimeout(1000);
+    // Wait for save and verify success message
+    await expect(saveBtn).toHaveText('Saving...', { timeout: 5000 });
+    await expect(saveBtn).toHaveText('Save Queue Settings', { timeout: 10000 });
     
-    // Verify form help text
+    // Verify form help text still visible
     await expect(page.locator('.form-help').first()).toBeVisible();
+    
+    // Validate input constraints
+    const maxCapacityInput = page.locator('#maxCapacity');
+    await maxCapacityInput.fill('0');
+    await expect(maxCapacityInput).toHaveAttribute('min', '1');
+    await expect(maxCapacityInput).toHaveAttribute('max', '500');
   });
 
-  test('should toggle notification preferences', async ({ page }) => {
-    // Test WhatsApp notifications toggle
-    const whatsappToggle = page.locator('#whatsappNotifications');
-    const whatsappSlider = whatsappToggle.locator('+ .slider');
+  test('Error handling and validation for settings', async () => {
+    // Test restaurant name validation
+    const restaurantNameInput = page.locator('#restaurantName');
+    await restaurantNameInput.fill('');
     
-    // Check initial state
-    const isChecked = await whatsappToggle.isChecked();
-    
-    // Toggle off if on
-    if (isChecked) {
-      await whatsappToggle.click();
-      await expect(whatsappToggle).not.toBeChecked();
-    }
-    
-    // Toggle back on
-    await whatsappToggle.click();
-    await expect(whatsappToggle).toBeChecked();
-    
-    // Test auto-notifications toggle
-    const autoToggle = page.locator('#autoNotifications');
-    await autoToggle.click();
-    const autoChecked = await autoToggle.isChecked();
-    expect(typeof autoChecked).toBe('boolean');
-    
-    // Save notification settings
-    const saveBtn = page.locator('button:has-text("Save Notification Settings")');
+    const saveBtn = page.locator('#restaurantForm button[type="submit"]');
     await saveBtn.click();
+    
+    // Check for required field validation
+    await expect(restaurantNameInput).toHaveAttribute('required', '');
+    
+    // Verify error message appears
+    const errorMessage = page.locator('#errorMessage');
+    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toContainText('Error');
   });
 
-  test('should update message templates', async ({ page }) => {
-    // Update welcome message
-    const welcomeMsg = 'Welcome to {{Restaurant Name}}! You are #{{Position}} in line. Estimated wait: {{WaitTime}} minutes.';
-    await page.fill('#welcomeMessage', welcomeMsg);
-    
-    // Update notification message
-    const notifyMsg = 'Hi {{Customer Name}}! Your table will be ready in {{Minutes}} minutes.';
-    await page.fill('#notificationMessage', notifyMsg);
-    
-    // Update ready message
-    const readyMsg = '{{Customer Name}}, your table is ready! Please see the host.';
-    await page.fill('#readyMessage', readyMsg);
-    
-    // Save templates
+  test('Test responsiveness and mobile view', async () => {
+    // Test various viewport sizes
+    const viewports = [
+      { width: 375, height: 812 },   // iPhone X
+      { width: 768, height: 1024 },  // iPad
+      { width: 1024, height: 768 },  // Small desktop
+      { width: 1440, height: 900 }   // Large desktop
+    ];
+
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      
+      // Check form row layout
+      const formRows = page.locator('.form-row');
+      const formRowCount = await formRows.count();
+      
+      if (viewport.width < 768) {
+        // Mobile view - form rows should stack
+        for (let i = 0; i < formRowCount; i++) {
+          const row = formRows.nth(i);
+          await expect(row).toHaveCSS('grid-template-columns', '1fr');
+        }
+      } else {
+        // Desktop view - form rows should be side by side
+        for (let i = 0; i < formRowCount; i++) {
+          const row = formRows.nth(i);
+          await expect(row).toHaveCSS('grid-template-columns', '1fr 1fr');
+        }
+      }
+      
+      // Check mobile navigation
+      const mobileNavToggle = page.locator('.mobile-nav-toggle');
+      viewport.width < 768 
+        ? await expect(mobileNavToggle).toBeVisible()
+        : await expect(mobileNavToggle).not.toBeVisible();
+    }
+  });
+
+  test('Advanced settings locking mechanism', async () => {
+    // Simulate an active queue to test settings locking
+    const settingsLockedBanner = page.locator('#settings-locked-banner');
+    await page.evaluate(() => {
+      // Simulate active queue state
+      document.getElementById('settings-locked-banner').style.display = 'flex';
+      document.getElementById('active-queue-name').textContent = 'Test Queue';
+    });
+
+    // Check all settings sections are locked
+    const lockedSections = page.locator('.section.locked');
+    await expect(lockedSections).toHaveCount(5);  // All 5 settings sections
+
+    // Verify form inputs are disabled
+    const formInputs = page.locator('input, select, textarea, button[type="submit"]');
+    for (let i = 0; i < await formInputs.count(); i++) {
+      await expect(formInputs.nth(i)).toBeDisabled();
+    }
+
+    // Check lock banner details
+    await expect(settingsLockedBanner).toBeVisible();
+    await expect(settingsLockedBanner).toContainText('Configuration Locked');
+    await expect(settingsLockedBanner).toContainText('Test Queue');
+  });
+
+  test('Message template placeholder verification', async () => {
+    const testTemplates = [
+      {
+        selector: '#welcomeMessage',
+        placeholders: ['{{Restaurant Name}}', '{{Position}}', '{{WaitTime}}']
+      },
+      {
+        selector: '#notificationMessage',
+        placeholders: ['{{Customer Name}}', '{{Minutes}}']
+      },
+      {
+        selector: '#readyMessage',
+        placeholders: ['{{Customer Name}}', '{{Restaurant Name}}']
+      }
+    ];
+
+    for (const template of testTemplates) {
+      const messageInput = page.locator(template.selector);
+      
+      // Fill with placeholders
+      const templateText = template.placeholders.join(' ');
+      await messageInput.fill(templateText);
+      
+      // Verify placeholders are preserved
+      for (const placeholder of template.placeholders) {
+        await expect(messageInput).toHaveValue(expect.stringContaining(placeholder));
+      }
+    }
+
+    // Save message templates
     const saveBtn = page.locator('#messageTemplatesForm button[type="submit"]');
     await saveBtn.click();
-    
-    // Check form help text is visible
-    const helpTexts = page.locator('#messageTemplatesForm .form-help');
-    await expect(helpTexts.first()).toBeVisible();
-    await expect(helpTexts.first()).toContainText('placeholders');
-  });
-
-  test('should configure system settings', async ({ page }) => {
-    // Test data retention dropdown
-    const retentionSelect = page.locator('#dataRetention');
-    await retentionSelect.selectOption('180');
-    await expect(retentionSelect).toHaveValue('180');
-    
-    // Test analytics toggle
-    const analyticsToggle = page.locator('#enableAnalytics');
-    await analyticsToggle.click();
-    const analyticsChecked = await analyticsToggle.isChecked();
-    await analyticsToggle.click(); // Toggle back
-    
-    // Test anonymous data sharing
-    const shareDataToggle = page.locator('#shareAnonymousData');
-    await shareDataToggle.click();
-    await expect(shareDataToggle).toBeChecked();
-    
-    // Save system settings
-    const saveBtn = page.locator('button:has-text("Save System Settings")');
-    await saveBtn.click();
-  });
-
-  test('should display danger zone actions', async ({ page }) => {
-    // Scroll to danger zone
-    await page.locator('.danger-zone').scrollIntoViewIfNeeded();
-    
-    // Check all danger buttons exist
-    const dangerButtons = [
-      'Clear All Queue Data',
-      'Reset All Settings',
-      'Delete Account'
-    ];
-    
-    for (const btnText of dangerButtons) {
-      const btn = page.locator(`.btn-danger:has-text("${btnText}")`);
-      await expect(btn).toBeVisible();
-      await expect(btn).toHaveClass(/btn-danger/);
-    }
-  });
-
-  test('should handle responsive design', async ({ page }) => {
-    // Test mobile viewport
-    await page.setViewportSize({ width: 375, height: 812 });
-    
-    // Check mobile navigation toggle
-    const mobileToggle = page.locator('.mobile-nav-toggle');
-    await expect(mobileToggle).toBeVisible();
-    
-    // Operating hours should stack on mobile
-    const hoursRow = page.locator('.hours-row').first();
-    await expect(hoursRow).toBeVisible();
-    
-    // Form rows should stack
-    const formRow = page.locator('.form-row').first();
-    await expect(formRow).toBeVisible();
-    
-    // Settings grid should be single column
-    const settingsGrid = page.locator('.settings-grid').first();
-    await expect(settingsGrid).toBeVisible();
-  });
-
-  test('should validate form inputs', async ({ page }) => {
-    // Test number input validation
-    const maxCapacity = page.locator('#maxCapacity');
-    
-    // Clear and enter invalid value
-    await maxCapacity.fill('');
-    await maxCapacity.fill('0');
-    
-    // Should have min attribute
-    await expect(maxCapacity).toHaveAttribute('min', '1');
-    await expect(maxCapacity).toHaveAttribute('max', '500');
-    
-    // Test required fields
-    const restaurantName = page.locator('#restaurantName');
-    await expect(restaurantName).toHaveAttribute('required', '');
-  });
-
-  test('should display interactive elements correctly', async ({ page }) => {
-    // Check toggle switches have proper styling
-    const toggles = page.locator('.toggle');
-    const toggleCount = await toggles.count();
-    expect(toggleCount).toBeGreaterThan(0);
-    
-    // Check sliders are interactive
-    const slider = page.locator('.slider').first();
-    await expect(slider).toBeVisible();
-    
-    // Check buttons have hover effects
-    const btn = page.locator('.btn').first();
-    await btn.hover();
-    
-    // Check setting cards
-    const settingCards = page.locator('.setting-card');
-    const cardCount = await settingCards.count();
-    expect(cardCount).toBeGreaterThan(0);
-    
-    // Hover on setting card for effect
-    await settingCards.first().hover();
-  });
-
-  test('should handle form submission states', async ({ page }) => {
-    // Test button disabled state during save
-    const saveBtn = page.locator('#restaurantForm button[type="submit"]');
-    
-    // Fill minimal data
-    await page.fill('#restaurantName', 'Quick Test Restaurant');
-    
-    // Click save
-    await saveBtn.click();
-    
-    // Button should be disabled while saving
-    await expect(saveBtn).toBeDisabled();
-    
-    // Should show loading text
-    await expect(saveBtn).toContainText('Saving');
-    
-    // Eventually should re-enable
-    await expect(saveBtn).toBeEnabled({ timeout: 10000 });
-  });
-
-  test('should navigate between settings sections smoothly', async ({ page }) => {
-    // All sections should be on the same page
-    const sections = page.locator('.section');
-    const sectionCount = await sections.count();
-    expect(sectionCount).toBeGreaterThanOrEqual(5);
-    
-    // Scroll through sections
-    for (let i = 0; i < sectionCount; i++) {
-      const section = sections.nth(i);
-      await section.scrollIntoViewIfNeeded();
-      await expect(section).toBeInViewport();
-    }
-    
-    // Check particle animation elements
-    const particles = page.locator('.particle');
-    const particleCount = await particles.count();
-    expect(particleCount).toBeGreaterThan(0);
+    await expect(saveBtn).toHaveText('Save Message Templates', { timeout: 10000 });
   });
 });

@@ -1,0 +1,1348 @@
+<%- include('../layout', { title: title }) %>
+
+<% if (action === 'create') { %>
+<style>
+  /* Modern SaaS-style form design */
+  .wizard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .wizard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .wizard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+
+  .wizard-subtitle {
+    font-size: 1.125rem;
+    color: #64748b;
+  }
+
+  /* Progress Steps */
+  .progress-steps {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 25%;
+    right: 25%;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 0;
+  }
+
+  .step {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    flex: 1;
+    max-width: 200px;
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 1px #e2e8f0;
+  }
+
+  .step.active .step-number {
+    background: #4a90e2;
+    color: white;
+    box-shadow: 0 0 0 1px #4a90e2, 0 4px 12px rgba(74, 144, 226, 0.3);
+  }
+
+  .step.completed .step-number {
+    background: #10b981;
+    color: white;
+    box-shadow: 0 0 0 1px #10b981;
+  }
+
+  .step-label {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .step.active .step-label {
+    color: #1e293b;
+    font-weight: 600;
+  }
+
+  .step.completed .step-label {
+    color: #10b981;
+  }
+
+  /* Form Steps */
+  .form-step {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .form-step.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Card Styles */
+  .form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Pricing Cards */
+  .pricing-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .pricing-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    background: white;
+  }
+
+  .pricing-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+  }
+
+  .pricing-card.selected {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .pricing-card.recommended {
+    border-color: #4a90e2;
+  }
+
+  .recommended-badge {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: #4a90e2;
+    color: white;
+    padding: 0.25rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .plan-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+
+  .plan-price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .plan-price .currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  .plan-price .period {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #64748b;
+  }
+
+  .plan-description {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .plan-features li {
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #475569;
+  }
+
+  .plan-features li::before {
+    content: '✓';
+    color: #10b981;
+    font-weight: 600;
+    margin-right: 0.75rem;
+    font-size: 1rem;
+  }
+
+  /* Form Controls */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: #fff;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  }
+
+  .form-input.error {
+    border-color: #ef4444;
+  }
+
+  .form-helper {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+  }
+
+  .form-error {
+    font-size: 0.75rem;
+    color: #ef4444;
+    margin-top: 0.25rem;
+  }
+
+  /* Input Groups */
+  .input-group {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .input-group-text {
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  .input-group .form-input {
+    border-radius: 8px 0 0 8px;
+    border-right: 0;
+  }
+
+  /* Password Strength */
+  .password-strength {
+    margin-top: 0.5rem;
+    height: 4px;
+    background: #f1f5f9;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .password-strength-bar {
+    height: 100%;
+    width: 0;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+  }
+
+  .password-strength-bar.weak { width: 33%; background: #ef4444; }
+  .password-strength-bar.medium { width: 66%; background: #f59e0b; }
+  .password-strength-bar.strong { width: 100%; background: #10b981; }
+
+  .password-strength-text {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
+  .password-strength-text.weak { color: #ef4444; }
+  .password-strength-text.medium { color: #f59e0b; }
+  .password-strength-text.strong { color: #10b981; }
+
+  /* Buttons */
+  .wizard-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .btn-secondary:hover {
+    background: #e2e8f0;
+  }
+
+  .btn-primary {
+    background: #4a90e2;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #357abd;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+  }
+
+  .btn-primary:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+  }
+
+  /* Review Section */
+  .review-section {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .review-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+  }
+
+  .review-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .review-item:last-child {
+    border-bottom: none;
+  }
+
+  .review-label {
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  .review-value {
+    color: #1e293b;
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  /* Terms Checkbox */
+  .terms-container {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .form-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .form-checkbox input[type="checkbox"] {
+    margin-top: 0.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+  }
+
+  .form-checkbox label {
+    font-size: 0.875rem;
+    color: #475569;
+    cursor: pointer;
+  }
+
+  .form-checkbox a {
+    color: #4a90e2;
+    text-decoration: none;
+  }
+
+  .form-checkbox a:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .wizard-container {
+      padding: 1rem;
+    }
+
+    .pricing-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .progress-steps {
+      font-size: 0.75rem;
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      font-size: 0.875rem;
+    }
+
+    .wizard-title {
+      font-size: 2rem;
+    }
+
+    .form-card {
+      padding: 1.5rem;
+    }
+  }
+
+  /* Loading State */
+  .loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #f3f4f6;
+    border-top-color: #4a90e2;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<div class="wizard-container">
+  <!-- Header -->
+  <div class="wizard-header">
+    <h1 class="wizard-title">Get Started with StoreHub QMS</h1>
+    <p class="wizard-subtitle">Set up your queue management system in just a few minutes</p>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="progress-steps">
+    <div class="step active" data-step="1">
+      <div class="step-number">1</div>
+      <div class="step-label">Company Info</div>
+    </div>
+    <div class="step" data-step="2">
+      <div class="step-number">2</div>
+      <div class="step-label">Choose Plan</div>
+    </div>
+    <div class="step" data-step="3">
+      <div class="step-number">3</div>
+      <div class="step-label">Admin Account</div>
+    </div>
+    <div class="step" data-step="4">
+      <div class="step-number">4</div>
+      <div class="step-label">Review & Create</div>
+    </div>
+  </div>
+
+  <!-- Error Messages -->
+  <% if (locals.errors && errors.length > 0) { %>
+    <div class="alert alert-danger mb-4">
+      <% errors.forEach(error => { %>
+        <div><%= error.msg %></div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <!-- Form -->
+  <form method="POST" action="/backoffice/tenants" id="tenantForm">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="plan" id="selectedPlan" value="basic">
+
+    <!-- Step 1: Company Information -->
+    <div class="form-step active" data-step="1">
+      <div class="form-card">
+        <h2 class="mb-4">Tell us about your company</h2>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Company Name <span class="text-danger">*</span></label>
+              <input type="text" 
+                     class="form-input" 
+                     name="name" 
+                     id="companyName"
+                     value="<%= tenant?.name || '' %>" 
+                     required 
+                     placeholder="e.g., The Coffee House">
+              <div class="form-helper">This will be displayed to your customers</div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Business Type <span class="text-danger">*</span></label>
+              <select class="form-input" name="businessType" id="businessType">
+                <option value="restaurant">Restaurant</option>
+                <option value="cafe">Cafe</option>
+                <option value="bar">Bar & Lounge</option>
+                <option value="retail">Retail Store</option>
+                <option value="service">Service Business</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="government">Government</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Subdomain <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="text" 
+                       class="form-input" 
+                       name="slug" 
+                       id="slugInput"
+                       value="<%= tenant?.slug || '' %>" 
+                       required 
+                       pattern="[a-z0-9-]+"
+                       placeholder="your-company">
+                <span class="input-group-text">.storehubqms.com</span>
+              </div>
+              <div id="slugAvailability" class="mt-1"></div>
+              <div class="form-helper">Your customers will access your queue at this URL</div>
+              <div id="slugSuggestions" class="mt-2"></div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" 
+                     class="form-input" 
+                     name="phone" 
+                     value="<%= tenant?.phone || '' %>" 
+                     placeholder="+60 12-345 6789">
+              <div class="form-helper">For customer support and notifications</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Timezone <span class="text-danger">*</span></label>
+              <select class="form-input" name="timezone">
+                <option value="Asia/Kuala_Lumpur">Kuala Lumpur (GMT+8)</option>
+                <option value="Asia/Singapore">Singapore (GMT+8)</option>
+                <option value="Asia/Jakarta">Jakarta (GMT+7)</option>
+                <option value="Asia/Bangkok">Bangkok (GMT+7)</option>
+                <option value="Asia/Manila">Manila (GMT+8)</option>
+                <option value="Asia/Hong_Kong">Hong Kong (GMT+8)</option>
+                <option value="Asia/Tokyo">Tokyo (GMT+9)</option>
+                <option value="Asia/Sydney">Sydney (GMT+11)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Custom Domain (Optional)</label>
+              <input type="text" 
+                     class="form-input" 
+                     name="domain" 
+                     value="<%= tenant?.domain || '' %>" 
+                     placeholder="queue.yourcompany.com">
+              <div class="form-helper">You can configure this later</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Choose Plan -->
+    <div class="form-step" data-step="2">
+      <div class="form-card">
+        <h2 class="mb-2">Choose your plan</h2>
+        <p class="text-muted mb-4">Start with a 14-day free trial. No credit card required.</p>
+        
+        <div class="pricing-cards">
+          <!-- Free Plan -->
+          <div class="pricing-card" data-plan="free">
+            <div class="plan-name">Free</div>
+            <div class="plan-price">
+              <span class="currency">RM</span>0<span class="period">/month</span>
+            </div>
+            <div class="plan-description">Perfect for trying out the system</div>
+            <ul class="plan-features">
+              <li>1 Location</li>
+              <li>1 Queue</li>
+              <li>Up to 50 customers/day</li>
+              <li>Basic analytics</li>
+              <li>Email support</li>
+            </ul>
+          </div>
+
+          <!-- Basic Plan -->
+          <div class="pricing-card recommended selected" data-plan="basic">
+            <span class="recommended-badge">Recommended</span>
+            <div class="plan-name">Basic</div>
+            <div class="plan-price">
+              <span class="currency">RM</span>99<span class="period">/month</span>
+            </div>
+            <div class="plan-description">Great for small businesses</div>
+            <ul class="plan-features">
+              <li>1 Location</li>
+              <li>3 Queues</li>
+              <li>Up to 200 customers/day</li>
+              <li>Advanced analytics</li>
+              <li>SMS notifications</li>
+              <li>Priority email support</li>
+              <li>Custom branding</li>
+            </ul>
+          </div>
+
+          <!-- Premium Plan -->
+          <div class="pricing-card" data-plan="premium">
+            <div class="plan-name">Premium</div>
+            <div class="plan-price">
+              <span class="currency">RM</span>299<span class="period">/month</span>
+            </div>
+            <div class="plan-description">For growing businesses</div>
+            <ul class="plan-features">
+              <li>Up to 5 Locations</li>
+              <li>10 Queues per location</li>
+              <li>Up to 1,000 customers/day</li>
+              <li>AI-powered insights</li>
+              <li>WhatsApp integration</li>
+              <li>Priority phone support</li>
+              <li>API access</li>
+              <li>White-label options</li>
+            </ul>
+          </div>
+
+          <!-- Enterprise Plan -->
+          <div class="pricing-card" data-plan="enterprise">
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-price">
+              <span class="currency">Custom</span>
+            </div>
+            <div class="plan-description">For large organizations</div>
+            <ul class="plan-features">
+              <li>Unlimited locations</li>
+              <li>Unlimited queues</li>
+              <li>Unlimited customers</li>
+              <li>Advanced AI features</li>
+              <li>Dedicated account manager</li>
+              <li>24/7 phone support</li>
+              <li>Custom integrations</li>
+              <li>SLA guarantee</li>
+              <li>On-premise deployment</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="mt-4 p-3 bg-light rounded">
+          <p class="mb-0 text-sm text-muted">
+            <strong>Note:</strong> You can upgrade, downgrade, or cancel your plan at any time. 
+            All plans include automatic updates and security patches.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Admin Account -->
+    <div class="form-step" data-step="3">
+      <div class="form-card">
+        <h2 class="mb-4">Create your admin account</h2>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input type="text" 
+                     class="form-input" 
+                     name="adminName" 
+                     id="adminName"
+                     value="<%= locals.adminName || '' %>" 
+                     required 
+                     placeholder="John Doe">
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Email Address <span class="text-danger">*</span></label>
+              <input type="email" 
+                     class="form-input" 
+                     name="adminEmail" 
+                     id="adminEmail"
+                     value="<%= locals.adminEmail || '' %>" 
+                     required 
+                     placeholder="admin@company.com">
+              <div class="form-helper">We'll send your login details to this email</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Password <span class="text-danger">*</span></label>
+              <input type="password" 
+                     class="form-input" 
+                     name="adminPassword" 
+                     id="adminPassword"
+                     required 
+                     minlength="8"
+                     placeholder="Enter a strong password">
+              <div class="password-strength">
+                <div class="password-strength-bar" id="passwordStrengthBar"></div>
+              </div>
+              <div class="password-strength-text" id="passwordStrengthText"></div>
+              <div class="form-helper">Use at least 8 characters with a mix of letters, numbers & symbols</div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+              <input type="password" 
+                     class="form-input" 
+                     name="confirmPassword" 
+                     id="confirmPassword"
+                     required 
+                     placeholder="Re-enter your password">
+              <div class="form-error" id="passwordMatchError" style="display: none;">Passwords do not match</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 p-4 bg-light rounded">
+          <h5 class="mb-3">🔐 Your account will have full access to:</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2">✓ Manage all locations and queues</li>
+                <li class="mb-2">✓ View analytics and reports</li>
+                <li class="mb-2">✓ Configure system settings</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2">✓ Add and manage staff accounts</li>
+                <li class="mb-2">✓ Handle billing and subscriptions</li>
+                <li class="mb-2">✓ Access API documentation</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Review & Create -->
+    <div class="form-step" data-step="4">
+      <div class="form-card">
+        <h2 class="mb-4">Review and confirm</h2>
+        
+        <!-- Company Information Review -->
+        <div class="review-section">
+          <h4 class="review-title">Company Information</h4>
+          <div class="review-item">
+            <span class="review-label">Company Name</span>
+            <span class="review-value" id="reviewCompanyName">-</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Business Type</span>
+            <span class="review-value" id="reviewBusinessType">-</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Subdomain</span>
+            <span class="review-value" id="reviewSubdomain">-</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Timezone</span>
+            <span class="review-value" id="reviewTimezone">-</span>
+          </div>
+        </div>
+
+        <!-- Plan Review -->
+        <div class="review-section">
+          <h4 class="review-title">Selected Plan</h4>
+          <div class="review-item">
+            <span class="review-label">Plan</span>
+            <span class="review-value" id="reviewPlan">-</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Price</span>
+            <span class="review-value" id="reviewPrice">-</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Trial Period</span>
+            <span class="review-value">14 days free trial</span>
+          </div>
+        </div>
+
+        <!-- Admin Account Review -->
+        <div class="review-section">
+          <h4 class="review-title">Admin Account</h4>
+          <div class="review-item">
+            <span class="review-label">Admin Name</span>
+            <span class="review-value" id="reviewAdminName">-</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Admin Email</span>
+            <span class="review-value" id="reviewAdminEmail">-</span>
+          </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="terms-container">
+          <div class="form-checkbox">
+            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+            <label for="agreeTerms">
+              I agree to the <a href="/terms" target="_blank">Terms of Service</a> and 
+              <a href="/privacy" target="_blank">Privacy Policy</a>. 
+              I understand that my 14-day free trial will begin immediately upon registration.
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="wizard-buttons">
+      <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
+        <i class="fas fa-arrow-left"></i> Previous
+      </button>
+      <button type="button" class="btn btn-primary" id="nextBtn">
+        Next <i class="fas fa-arrow-right"></i>
+      </button>
+      <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">
+        <span id="submitBtnText">Create Tenant</span>
+        <span id="submitBtnSpinner" style="display: none;">
+          <span class="loading-spinner"></span> Creating...
+        </span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+// Multi-step form logic
+let currentStep = 1;
+const totalSteps = 4;
+
+// Navigation functions
+function showStep(step) {
+  // Hide all steps
+  document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'completed'));
+  
+  // Show current step
+  document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');
+  
+  // Update progress
+  for (let i = 1; i <= totalSteps; i++) {
+    const stepEl = document.querySelector(`.step[data-step="${i}"]`);
+    if (i < step) {
+      stepEl.classList.add('completed');
+    } else if (i === step) {
+      stepEl.classList.add('active');
+    }
+  }
+  
+  // Update buttons
+  document.getElementById('prevBtn').style.display = step === 1 ? 'none' : 'inline-flex';
+  document.getElementById('nextBtn').style.display = step === totalSteps ? 'none' : 'inline-flex';
+  document.getElementById('submitBtn').style.display = step === totalSteps ? 'inline-flex' : 'none';
+  
+  // Update review if on last step
+  if (step === totalSteps) {
+    updateReview();
+  }
+}
+
+// Next button
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (validateStep(currentStep)) {
+    currentStep++;
+    showStep(currentStep);
+  }
+});
+
+// Previous button
+document.getElementById('prevBtn').addEventListener('click', () => {
+  currentStep--;
+  showStep(currentStep);
+});
+
+// Form validation
+function validateStep(step) {
+  if (step === 1) {
+    // Validate company info
+    const name = document.getElementById('companyName').value.trim();
+    const slug = document.getElementById('slugInput').value.trim();
+    
+    if (!name) {
+      alert('Please enter your company name');
+      return false;
+    }
+    
+    if (!slug || slug.length < 3) {
+      alert('Please enter a valid subdomain (at least 3 characters)');
+      return false;
+    }
+    
+    // Check if slug is available
+    const availabilityEl = document.getElementById('slugAvailability');
+    if (availabilityEl.innerHTML.includes('Not available')) {
+      alert('This subdomain is not available. Please choose another one.');
+      return false;
+    }
+    
+    return true;
+  } else if (step === 2) {
+    // Plan is always selected
+    return true;
+  } else if (step === 3) {
+    // Validate admin account
+    const name = document.getElementById('adminName').value.trim();
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!name || !email || !password) {
+      alert('Please fill in all required fields');
+      return false;
+    }
+    
+    if (password.length < 8) {
+      alert('Password must be at least 8 characters long');
+      return false;
+    }
+    
+    if (password !== confirmPassword) {
+      alert('Passwords do not match');
+      return false;
+    }
+    
+    return true;
+  }
+  
+  return true;
+}
+
+// Update review
+function updateReview() {
+  // Company info
+  document.getElementById('reviewCompanyName').textContent = document.getElementById('companyName').value || '-';
+  document.getElementById('reviewBusinessType').textContent = document.getElementById('businessType').options[document.getElementById('businessType').selectedIndex].text || '-';
+  document.getElementById('reviewSubdomain').textContent = document.getElementById('slugInput').value + '.storehubqms.com' || '-';
+  document.getElementById('reviewTimezone').textContent = document.querySelector('[name="timezone"] option:checked').text || '-';
+  
+  // Plan info
+  const selectedPlan = document.querySelector('.pricing-card.selected');
+  if (selectedPlan) {
+    const planName = selectedPlan.querySelector('.plan-name').textContent;
+    const planPrice = selectedPlan.querySelector('.plan-price').textContent;
+    document.getElementById('reviewPlan').textContent = planName;
+    document.getElementById('reviewPrice').textContent = planPrice;
+  }
+  
+  // Admin info
+  document.getElementById('reviewAdminName').textContent = document.getElementById('adminName').value || '-';
+  document.getElementById('reviewAdminEmail').textContent = document.getElementById('adminEmail').value || '-';
+}
+
+// Plan selection
+document.querySelectorAll('.pricing-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('selectedPlan').value = card.dataset.plan;
+  });
+});
+
+// Auto-generate slug from name
+document.getElementById('companyName').addEventListener('input', function(e) {
+  const slug = e.target.value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  document.getElementById('slugInput').value = slug;
+  checkSlugAvailability(slug);
+});
+
+// Manual slug input
+document.getElementById('slugInput').addEventListener('input', function(e) {
+  const slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  e.target.value = slug;
+  checkSlugAvailability(slug);
+});
+
+// Check slug availability
+let checkTimeout;
+function checkSlugAvailability(slug) {
+  clearTimeout(checkTimeout);
+  const availabilityDiv = document.getElementById('slugAvailability');
+  const suggestionsDiv = document.getElementById('slugSuggestions');
+  
+  if (!slug || slug.length < 3) {
+    availabilityDiv.innerHTML = '';
+    suggestionsDiv.innerHTML = '';
+    return;
+  }
+  
+  availabilityDiv.innerHTML = '<span class="text-muted"><span class="loading-spinner"></span> Checking availability...</span>';
+  
+  checkTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch('/backoffice/tenants/api/check-subdomain', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': '<%= csrfToken %>'
+        },
+        body: JSON.stringify({ slug })
+      });
+      
+      const result = await response.json();
+      
+      if (result.available) {
+        availabilityDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Great! This subdomain is available</span>';
+        suggestionsDiv.innerHTML = '';
+      } else {
+        availabilityDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> This subdomain is already taken</span>';
+        // Generate suggestions
+        const suggestions = generateSlugSuggestions(slug);
+        suggestionsDiv.innerHTML = `
+          <div class="text-muted mb-1">Try one of these:</div>
+          <div class="d-flex flex-wrap gap-2">
+            ${suggestions.map(s => `<button type="button" class="btn btn-sm btn-outline-primary" onclick="selectSlug('${s}')">${s}</button>`).join('')}
+          </div>
+        `;
+      }
+    } catch (error) {
+      availabilityDiv.innerHTML = '<span class="text-danger">Error checking availability</span>';
+    }
+  }, 500);
+}
+
+// Generate slug suggestions
+function generateSlugSuggestions(baseSlug) {
+  const suggestions = [];
+  const suffixes = ['hq', 'my', 'app', 'qms', '2024', 'plus', 'pro'];
+  const randomNum = Math.floor(Math.random() * 900) + 100;
+  
+  suggestions.push(`${baseSlug}-${randomNum}`);
+  suffixes.forEach(suffix => {
+    suggestions.push(`${baseSlug}-${suffix}`);
+  });
+  
+  return suggestions.slice(0, 4);
+}
+
+// Select suggested slug
+function selectSlug(slug) {
+  document.getElementById('slugInput').value = slug;
+  checkSlugAvailability(slug);
+}
+
+// Password strength checker
+document.getElementById('adminPassword').addEventListener('input', function(e) {
+  const password = e.target.value;
+  const strengthBar = document.getElementById('passwordStrengthBar');
+  const strengthText = document.getElementById('passwordStrengthText');
+  
+  if (!password) {
+    strengthBar.className = 'password-strength-bar';
+    strengthText.textContent = '';
+    return;
+  }
+  
+  let strength = 0;
+  
+  // Length
+  if (password.length >= 8) strength++;
+  if (password.length >= 12) strength++;
+  
+  // Character variety
+  if (/[a-z]/.test(password)) strength++;
+  if (/[A-Z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^a-zA-Z0-9]/.test(password)) strength++;
+  
+  if (strength <= 2) {
+    strengthBar.className = 'password-strength-bar weak';
+    strengthText.className = 'password-strength-text weak';
+    strengthText.textContent = 'Weak password';
+  } else if (strength <= 4) {
+    strengthBar.className = 'password-strength-bar medium';
+    strengthText.className = 'password-strength-text medium';
+    strengthText.textContent = 'Medium strength';
+  } else {
+    strengthBar.className = 'password-strength-bar strong';
+    strengthText.className = 'password-strength-text strong';
+    strengthText.textContent = 'Strong password';
+  }
+});
+
+// Password match validation
+document.getElementById('confirmPassword').addEventListener('input', function(e) {
+  const password = document.getElementById('adminPassword').value;
+  const confirmPassword = e.target.value;
+  const errorDiv = document.getElementById('passwordMatchError');
+  
+  if (confirmPassword && password !== confirmPassword) {
+    errorDiv.style.display = 'block';
+    e.target.classList.add('error');
+  } else {
+    errorDiv.style.display = 'none';
+    e.target.classList.remove('error');
+  }
+});
+
+// Form submission
+document.getElementById('tenantForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  // Validate terms
+  if (!document.getElementById('agreeTerms').checked) {
+    alert('Please agree to the Terms of Service and Privacy Policy');
+    return;
+  }
+  
+  // Show loading state
+  document.getElementById('submitBtnText').style.display = 'none';
+  document.getElementById('submitBtnSpinner').style.display = 'inline-flex';
+  document.getElementById('submitBtn').disabled = true;
+  
+  // Set plan-specific values
+  const plan = document.getElementById('selectedPlan').value;
+  const planLimits = {
+    free: { maxMerchants: 1, maxQueues: 1, maxCustomers: 50 },
+    basic: { maxMerchants: 1, maxQueues: 3, maxCustomers: 200 },
+    premium: { maxMerchants: 5, maxQueues: 10, maxCustomers: 1000 },
+    enterprise: { maxMerchants: 999, maxQueues: 999, maxCustomers: 99999 }
+  };
+  
+  const limits = planLimits[plan] || planLimits.basic;
+  
+  // Add hidden fields for plan limits
+  Object.entries(limits).forEach(([key, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key.replace('maxCustomers', 'maxCustomersPerQueue');
+    input.value = value;
+    this.appendChild(input);
+  });
+  
+  // Add plan features
+  const features = {
+    aiFeatures: ['premium', 'enterprise'].includes(plan),
+    analytics: plan !== 'free',
+    customBranding: plan !== 'free'
+  };
+  
+  Object.entries(features).forEach(([key, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = value;
+    this.appendChild(input);
+  });
+  
+  // Submit form
+  this.submit();
+});
+
+// Initialize
+showStep(1);
+</script>
+
+<% } else { %>
+<!-- Edit Mode - Keep original simple form -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="fas fa-building me-2"></i>
+            Edit Tenant
+          </h3>
+        </div>
+        <div class="card-body">
+          <% if (locals.errors && errors.length > 0) { %>
+            <div class="alert alert-danger">
+              <% errors.forEach(error => { %>
+                <div><%= error.msg %></div>
+              <% }) %>
+            </div>
+          <% } %>
+
+          <form method="POST" action="/backoffice/tenants/<%= tenant.id %>?_method=PUT">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <!-- Basic Information -->
+            <h5 class="mb-3">Basic Information</h5>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Tenant Name <span class="text-danger">*</span></label>
+                <input type="text" 
+                       class="form-control" 
+                       name="name" 
+                       value="<%= tenant?.name || '' %>" 
+                       required>
+              </div>
+              
+              <div class="col-md-6">
+                <label class="form-label">Subdomain (Cannot be changed)</label>
+                <div class="input-group">
+                  <input type="text" 
+                         class="form-control bg-light" 
+                         value="<%= tenant?.slug || '' %>" 
+                         readonly>
+                  <span class="input-group-text">.storehubqms.com</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Custom Domain (Optional)</label>
+                <input type="text" 
+                       class="form-control" 
+                       name="domain" 
+                       value="<%= tenant?.domain || '' %>" 
+                       placeholder="queue.restaurant.com">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Business Type</label>
+                <select class="form-control" name="businessType">
+                  <option value="restaurant" <%= tenant?.businessType === 'restaurant' ? 'selected' : '' %>>Restaurant</option>
+                  <option value="cafe" <%= tenant?.businessType === 'cafe' ? 'selected' : '' %>>Cafe</option>
+                  <option value="bar" <%= tenant?.businessType === 'bar' ? 'selected' : '' %>>Bar</option>
+                  <option value="retail" <%= tenant?.businessType === 'retail' ? 'selected' : '' %>>Retail Store</option>
+                  <option value="service" <%= tenant?.businessType === 'service' ? 'selected' : '' %>>Service Business</option>
+                  <option value="other" <%= tenant?.businessType === 'other' ? 'selected' : '' %>>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" 
+                       class="form-control" 
+                       name="phone" 
+                       value="<%= tenant?.phone || '' %>">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Timezone</label>
+                <select class="form-control" name="timezone">
+                  <option value="Asia/Kuala_Lumpur" <%= !tenant?.timezone || tenant?.timezone === 'Asia/Kuala_Lumpur' ? 'selected' : '' %>>Asia/Kuala_Lumpur (GMT+8)</option>
+                  <option value="Asia/Singapore" <%= tenant?.timezone === 'Asia/Singapore' ? 'selected' : '' %>>Asia/Singapore (GMT+8)</option>
+                  <option value="Asia/Jakarta" <%= tenant?.timezone === 'Asia/Jakarta' ? 'selected' : '' %>>Asia/Jakarta (GMT+7)</option>
+                  <option value="Asia/Bangkok" <%= tenant?.timezone === 'Asia/Bangkok' ? 'selected' : '' %>>Asia/Bangkok (GMT+7)</option>
+                  <option value="Asia/Manila" <%= tenant?.timezone === 'Asia/Manila' ? 'selected' : '' %>>Asia/Manila (GMT+8)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="form-check">
+                <input type="checkbox" 
+                       class="form-check-input" 
+                       name="isActive" 
+                       id="isActive"
+                       <%= tenant?.isActive ? 'checked' : '' %>>
+                <label class="form-check-label" for="isActive">
+                  Active (Tenant can access the system)
+                </label>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>Update Tenant
+              </button>
+              <a href="/backoffice/tenants" class="btn btn-secondary ms-2">
+                <i class="fas fa-times me-2"></i>Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>

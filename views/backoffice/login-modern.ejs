@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/backoffice-modern.css?v=<%= Date.now() %>">
+  <% if (typeof csrfMeta === 'function') { %>
+    <%- csrfMeta() %>
+  <% } %>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+    
+    .login-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+    }
+    
+    .login-card {
+      background: var(--glass-white);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid var(--glass-border);
+      border-radius: 30px;
+      padding: 50px 40px;
+      box-shadow: var(--shadow-large), 0 0 80px rgba(102, 126, 234, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: var(--primary-gradient);
+      border-radius: 30px;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .login-card:hover::before {
+      opacity: 0.3;
+    }
+    
+    .login-logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 30px;
+      background: var(--primary-gradient);
+      border-radius: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: white;
+      box-shadow: var(--shadow-large), var(--shadow-glow);
+      position: relative;
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+    
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0) rotateZ(0deg); }
+      50% { transform: translateY(-10px) rotateZ(3deg); }
+    }
+    
+    .login-logo::after {
+      content: '';
+      position: absolute;
+      width: 120%;
+      height: 120%;
+      background: var(--primary-gradient);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: logoPulse 2s ease-in-out infinite;
+      z-index: -1;
+    }
+    
+    @keyframes logoPulse {
+      0%, 100% { transform: scale(0.8); opacity: 0.3; }
+      50% { transform: scale(1.2); opacity: 0; }
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .login-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+      animation: gradientMove 3s ease-in-out infinite;
+    }
+    
+    .login-subtitle {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+    }
+    
+    .admin-badge-modern {
+      display: inline-block;
+      background: var(--secondary-gradient);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 25px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: var(--shadow-medium);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .admin-badge-modern::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .admin-badge-modern:hover::before {
+      left: 100%;
+    }
+    
+    .form-group-modern {
+      margin-bottom: 25px;
+      position: relative;
+    }
+    
+    .form-label-modern {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: var(--text-tertiary);
+      transition: color 0.3s ease;
+    }
+    
+    .form-input-modern {
+      width: 100%;
+      padding: 18px 20px 18px 55px;
+      background: var(--glass-white);
+      border: 2px solid var(--glass-border);
+      border-radius: 15px;
+      font-size: 1rem;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+    
+    .form-input-modern::placeholder {
+      color: var(--text-tertiary);
+    }
+    
+    .form-input-modern:focus {
+      outline: none;
+      border-color: var(--neon-blue);
+      background: var(--glass-white-heavy);
+      box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1), var(--shadow-glow);
+    }
+    
+    .form-input-modern:focus + .input-icon {
+      color: var(--neon-blue);
+    }
+    
+    .login-btn {
+      width: 100%;
+      padding: 18px;
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-large);
+    }
+    
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    .login-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-large), var(--shadow-neon);
+    }
+    
+    .login-btn:hover::before {
+      left: 100%;
+    }
+    
+    .login-btn:active {
+      transform: translateY(-1px);
+    }
+    
+    .login-features {
+      display: flex;
+      justify-content: space-between;
+      margin: 30px 0;
+      padding: 20px 0;
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    
+    .feature-item {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .feature-icon {
+      font-size: 30px;
+      margin-bottom: 5px;
+      filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+    }
+    
+    .feature-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    
+    .auth-links-modern {
+      text-align: center;
+      margin-top: 30px;
+    }
+    
+    .auth-links-modern a {
+      color: var(--neon-blue);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .auth-links-modern a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--neon-blue);
+      transition: width 0.3s ease;
+    }
+    
+    .auth-links-modern a:hover::after {
+      width: 100%;
+    }
+    
+    .alert-modern {
+      padding: 15px 20px;
+      border-radius: 15px;
+      margin-bottom: 25px;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+      animation: slideInDown 0.5s ease-out;
+    }
+    
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .alert-error-modern {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(254, 81, 150, 0.1));
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .alert-success-modern {
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));
+      color: #0ea5e9;
+      border: 1px solid rgba(79, 172, 254, 0.3);
+    }
+    
+    /* Floating elements */
+    .floating-shapes {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    
+    .floating-shape {
+      position: absolute;
+      opacity: 0.1;
+      animation: floatShape 20s infinite ease-in-out;
+    }
+    
+    .floating-shape:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      background: var(--primary-gradient);
+      border-radius: 50%;
+      top: 10%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+    
+    .floating-shape:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      background: var(--secondary-gradient);
+      border-radius: 30%;
+      top: 70%;
+      right: 10%;
+      animation-delay: 5s;
+    }
+    
+    .floating-shape:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      background: var(--success-gradient);
+      border-radius: 50%;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: 10s;
+    }
+    
+    @keyframes floatShape {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+      33% {
+        transform: translate(30px, -30px) rotate(120deg);
+      }
+      66% {
+        transform: translate(-20px, 20px) rotate(240deg);
+      }
+    }
+    
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 40px 25px;
+      }
+      
+      .login-title {
+        font-size: 2rem;
+      }
+      
+      .login-features {
+        flex-direction: column;
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="animated-bg"></div>
+  
+  <!-- Particles -->
+  <div class="particles"></div>
+  
+  <!-- Floating Shapes -->
+  <div class="floating-shapes">
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+  </div>
+  
+  <div class="login-wrapper">
+    <div class="login-card glass-card">
+      <div class="login-logo">
+        BO
+      </div>
+      
+      <div class="login-header">
+        <h1 class="login-title gradient-text">QMS BackOffice</h1>
+        <p class="login-subtitle">Welcome to the future of system management</p>
+        <div class="admin-badge-modern">System Administrator Portal</div>
+      </div>
+      
+      <% if (messages.error) { %>
+        <div class="alert-modern alert-error-modern">
+          <%= messages.error %>
+        </div>
+      <% } %>
+      
+      <% if (messages.success) { %>
+        <div class="alert-modern alert-success-modern">
+          <%= messages.success %>
+        </div>
+      <% } %>
+      
+      <form action="/backoffice/auth/login" method="POST" id="loginForm">
+        <% if (typeof csrfInput === 'function') { %>
+          <%- csrfInput() %>
+        <% } else if (locals.csrfToken) { %>
+          <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+        <% } %>
+        <% if (locals.redirect) { %>
+          <input type="hidden" name="redirect" value="<%= redirect %>">
+        <% } %>
+        
+        <div class="form-group-modern">
+          <label class="form-label-modern" for="email">Email Address</label>
+          <div class="input-wrapper">
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="form-input-modern"
+              required 
+              placeholder="admin@company.com"
+              autocomplete="email"
+            >
+            <span class="input-icon">📧</span>
+          </div>
+        </div>
+        
+        <div class="form-group-modern">
+          <label class="form-label-modern" for="password">Password</label>
+          <div class="input-wrapper">
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="form-input-modern"
+              required 
+              placeholder="Enter your secure password"
+              autocomplete="current-password"
+            >
+            <span class="input-icon">🔐</span>
+          </div>
+        </div>
+        
+        <button type="submit" class="login-btn liquid-button sound-enabled">
+          Access System
+        </button>
+      </form>
+      
+      <div class="login-features">
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-text">Secure</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">Fast</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🌟</div>
+          <div class="feature-text">Modern</div>
+        </div>
+      </div>
+      
+      <div class="auth-links-modern">
+        <% if (locals.isFirstBackOfficeUser === undefined) { %>
+          <p><a href="/backoffice/auth/setup-check" class="sound-enabled">Check System Setup</a></p>
+        <% } %>
+        <p style="margin-top: 15px;">
+          <a href="/" class="sound-enabled">← Back to Main Site</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <script src="/js/backoffice-modern.js"></script>
+  <script>
+    // Additional login page specific animations
+    document.addEventListener('DOMContentLoaded', function() {
+      // Auto-focus with animation
+      setTimeout(() => {
+        document.getElementById('email').focus();
+      }, 500);
+      
+      // Form submission animation
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const button = this.querySelector('.login-btn');
+        button.innerHTML = '<div class="loader-dots"><div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div></div>';
+        button.style.pointerEvents = 'none';
+      });
+      
+      // Input field animations
+      const inputs = document.querySelectorAll('.form-input-modern');
+      inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+          this.parentElement.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+          if (this.value === '') {
+            this.parentElement.parentElement.classList.remove('focused');
+          }
+        });
+      });
+      
+      // Add typing sound effect (optional)
+      inputs.forEach(input => {
+        input.addEventListener('keydown', function() {
+          if (typeof playSound !== 'undefined') {
+            playSound('hover');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

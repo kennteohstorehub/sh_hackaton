@@ -107,8 +107,7 @@ test.describe('WebChat Notification System Tests', () => {
                 if (rowText.includes(phone)) {
                     console.log('Found our customer!');
                     // Try different button selectors
-                    const notifyBtn = row.querySelector('.btn-notify, .btn-select, .call-button, button[onclick*=
-otifyCustomer]');
+                    const notifyBtn = row.querySelector('.btn-notify, .btn-select, .call-button, button[onclick*="notifyCustomer"]');
                     if (notifyBtn) {
                         console.log('Clicking notify button');
                         notifyBtn.click();

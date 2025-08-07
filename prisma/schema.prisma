@@ -12,7 +12,7 @@ datasource db {
 // MULTI-TENANT CORE MODELS
 // ===============================
 
-model SuperAdmin {
+model BackOfficeUser {
   id                    String                @id @default(uuid())
   email                 String                @unique
   password              String
@@ -23,7 +23,7 @@ model SuperAdmin {
   passwordResetExpires  DateTime?
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
-  auditLogs             SuperAdminAuditLog[]
+  auditLogs             BackOfficeAuditLog[]
 
   @@index([email])
   @@index([isActive])
@@ -41,7 +41,10 @@ model Tenant {
   users                 TenantUser[]
   merchants             Merchant[]
   subscription          TenantSubscription?
-  auditLogs             SuperAdminAuditLog[]
+  auditLogs             BackOfficeAuditLog[]
+  webChatMessages       WebChatMessage[]
+  notificationLogs      NotificationLog[]
+  generalAuditLogs      AuditLog[]
 
   @@index([slug])
   @@index([domain])
@@ -93,9 +96,9 @@ model TenantSubscription {
   @@index([priority])
 }
 
-model SuperAdminAuditLog {
+model BackOfficeAuditLog {
   id              String      @id @default(uuid())
-  superAdminId    String?
+  backOfficeUserId String?
   tenantId        String?
   action          String
   resourceType    String
@@ -104,10 +107,10 @@ model SuperAdminAuditLog {
   ipAddress       String?
   userAgent       String?
   timestamp       DateTime    @default(now())
-  superAdmin      SuperAdmin? @relation(fields: [superAdminId], references: [id], onDelete: SetNull)
+  backOfficeUser  BackOfficeUser? @relation(fields: [backOfficeUserId], references: [id], onDelete: SetNull)
   tenant          Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([superAdminId, timestamp])
+  @@index([backOfficeUserId, timestamp])
   @@index([tenantId, timestamp])
   @@index([action, timestamp])
   @@index([resourceType, resourceId])
@@ -318,6 +321,8 @@ model QueueEntry {
   feedback          QueueEntryFeedback?
   pushSubscriptions PushSubscription[]
   webChatSessions   WebChatSession[]
+  webChatMessages   WebChatMessage[]
+  notificationLogs  NotificationLog[]
 
   @@index([queueId, status, joinedAt])
   @@index([customerId, status])
@@ -417,6 +422,35 @@ enum SubscriptionPriority {
   enterprise
 }
 
+// New enums for enhanced features
+enum MessageSender {
+  CUSTOMER
+  STAFF
+  SYSTEM
+}
+
+enum NotificationChannel {
+  WEBCHAT
+  WHATSAPP
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationStatus {
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+}
+
+enum UserType {
+  SUPERADMIN
+  MERCHANT
+  CUSTOMER
+  SYSTEM
+}
+
 // ===============================
 // PUSH NOTIFICATION MODELS
 // ===============================
@@ -457,4 +491,90 @@ model WebChatSession {
   @@index([recoveryToken])
   @@index([sessionExpiresAt])
   @@index([isActive, lastActivityAt])
+}
+
+// ===============================
+// WEBCHAT MESSAGES
+// ===============================
+
+model WebChatMessage {
+  id                String         @id @default(uuid())
+  tenantId          String?
+  queueEntryId      String
+  sessionId         String
+  sender            MessageSender
+  content           String
+  isRead            Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  
+  tenant            Tenant?        @relation(fields: [tenantId], references: [id])
+  queueEntry        QueueEntry     @relation(fields: [queueEntryId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId])
+  @@index([queueEntryId])
+  @@index([sessionId])
+}
+
+// ===============================
+// NOTIFICATION LOGS
+// ===============================
+
+model NotificationLog {
+  id                String               @id @default(uuid())
+  tenantId          String?
+  queueEntryId      String
+  channel           NotificationChannel
+  status            NotificationStatus
+  message           String
+  errorMessage      String?
+  sentAt            DateTime             @default(now())
+  
+  tenant            Tenant?              @relation(fields: [tenantId], references: [id])
+  queueEntry        QueueEntry           @relation(fields: [queueEntryId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId])
+  @@index([queueEntryId])
+  @@index([sentAt])
+}
+
+// ===============================
+// AUDIT LOGS
+// ===============================
+
+model AuditLog {
+  id                String    @id @default(uuid())
+  tenantId          String?
+  userId            String?
+  userType          UserType
+  action            String
+  resource          String
+  resourceId        String?
+  details           Json?
+  ipAddress         String?
+  userAgent         String?
+  createdAt         DateTime  @default(now())
+  
+  tenant            Tenant?   @relation(fields: [tenantId], references: [id])
+  
+  @@index([tenantId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action, resource])
+}
+
+// ===============================
+// SYSTEM SETTINGS
+// ===============================
+
+model SystemSettings {
+  id                        String   @id @default(uuid())
+  key                       String   @unique
+  value                     Json
+  category                  String   // 'general', 'security', 'email', 'notification'
+  description               String?
+  updatedAt                 DateTime @updatedAt
+  updatedBy                 String?
+  
+  @@index([category])
+  @@index([key])
 }

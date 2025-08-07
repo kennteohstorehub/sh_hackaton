@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Queue - <%= merchantName %></title>
+    
+    <!-- StoreHub Design System -->
+    <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+    <link rel="stylesheet" href="/css/storehub-queue-public.css?v=<%= Date.now() %>">
+    <script src="/js/storehub-design-system.js?v=<%= Date.now() %>"></script>
+    
+    <style>
+        /* Additional page-specific styles */
+        .queue-join-hero {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-hover) 100%);
+            color: white;
+            padding: var(--space-12) 0;
+            margin-bottom: var(--space-8);
+        }
+        
+        .hero-content {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 0 var(--space-6);
+        }
+        
+        .business-logo-large {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: var(--radius-lg);
+            margin: 0 auto var(--space-6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .business-logo-large img {
+            max-width: 80%;
+            max-height: 80%;
+        }
+        
+        .hero-title {
+            font-size: var(--heading-1);
+            font-weight: var(--weight-bold);
+            margin-bottom: var(--space-3);
+        }
+        
+        .hero-subtitle {
+            font-size: var(--body-large);
+            opacity: 0.9;
+        }
+        
+        .queue-stats-banner {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-md);
+            margin: calc(var(--space-8) * -1) auto var(--space-8);
+            max-width: 600px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-4);
+            text-align: center;
+        }
+        
+        .stat-item {
+            padding: var(--space-3);
+        }
+        
+        .stat-value {
+            font-size: var(--heading-2);
+            font-weight: var(--weight-bold);
+            color: var(--primary-orange);
+            display: block;
+            margin-bottom: var(--space-1);
+        }
+        
+        .stat-label {
+            font-size: var(--small);
+            color: var(--gray-600);
+        }
+        
+        .join-form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 var(--space-6);
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .form-title {
+            font-size: var(--heading-3);
+            font-weight: var(--weight-semibold);
+            color: var(--gray-900);
+            margin-bottom: var(--space-6);
+            text-align: center;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-5);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: var(--space-3);
+            margin-top: var(--space-6);
+        }
+        
+        .info-section {
+            max-width: 600px;
+            margin: var(--space-8) auto;
+            padding: 0 var(--space-6);
+        }
+        
+        .info-card {
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .info-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--primary-orange);
+            flex-shrink: 0;
+        }
+        
+        .info-text {
+            flex: 1;
+            font-size: var(--body);
+            color: var(--gray-700);
+        }
+        
+        @media (max-width: 768px) {
+            .queue-stats-banner {
+                grid-template-columns: 1fr;
+                margin-top: calc(var(--space-6) * -1);
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-card {
+                padding: var(--space-6);
+            }
+            
+            .hero-title {
+                font-size: var(--heading-2);
+            }
+        }
+    </style>
+</head>
+<body class="storehub-public-page">
+    <!-- Hero Section -->
+    <div class="queue-join-hero">
+        <div class="hero-content">
+            <div class="business-logo-large">
+                <% if (typeof logoUrl !== 'undefined' && logoUrl) { %>
+                    <img src="<%= logoUrl %>" alt="<%= merchantName %>">
+                <% } else { %>
+                    <span style="font-size: 48px; color: var(--primary-orange);">
+                        <%= merchantName.charAt(0).toUpperCase() %>
+                    </span>
+                <% } %>
+            </div>
+            <h1 class="hero-title"><%= merchantName %></h1>
+            <p class="hero-subtitle">Join our virtual queue and skip the wait</p>
+        </div>
+    </div>
+    
+    <!-- Queue Stats Banner -->
+    <div class="queue-stats-banner">
+        <div class="stat-item">
+            <span class="stat-value" id="currentWaiting"><%= totalWaiting || 0 %></span>
+            <span class="stat-label">Currently Waiting</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="avgWaitTime"><%= avgWaitTime || 15 %> min</span>
+            <span class="stat-label">Average Wait Time</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="queueStatus">
+                <% if (queueActive && acceptingCustomers) { %>
+                    Open
+                <% } else { %>
+                    Closed
+                <% } %>
+            </span>
+            <span class="stat-label">Queue Status</span>
+        </div>
+    </div>
+    
+    <!-- Join Form -->
+    <div class="join-form-container">
+        <div class="form-card">
+            <h2 class="form-title">Join the Queue</h2>
+            
+            <form id="joinQueueForm">
+                <div class="form-group">
+                    <label class="form-label required">Your Name</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="customerName" 
+                           name="customerName" 
+                           required 
+                           placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">Phone Number</label>
+                        <input type="tel" 
+                               class="form-control" 
+                               id="customerPhone" 
+                               name="customerPhone" 
+                               required 
+                               placeholder="+60123456789">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">Party Size</label>
+                        <select class="form-control" id="partySize" name="partySize" required>
+                            <option value="">Select size</option>
+                            <% 
+                            // Use merchant's max party size setting, default to 5
+                            const maxSize = locals.maxPartySize || 5;
+                            for (let i = 1; i <= maxSize; i++) { 
+                            %>
+                                <option value="<%= i %>"><%= i %> <%= i === 1 ? 'person' : 'people' %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+                
+                <% if (typeof serviceTypes !== 'undefined' && serviceTypes && serviceTypes.length > 0) { %>
+                <div class="form-group">
+                    <label class="form-label">Service Type</label>
+                    <select class="form-control" id="serviceType" name="serviceType">
+                        <option value="">Select service (optional)</option>
+                        <% serviceTypes.forEach(service => { %>
+                            <option value="<%= service.id %>"><%= service.name %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <% } %>
+                
+                <div class="form-group">
+                    <label class="form-label">Special Requests</label>
+                    <textarea class="form-control" 
+                              id="specialRequests" 
+                              name="specialRequests" 
+                              rows="3" 
+                              placeholder="Any special requirements or requests? (optional)"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+                        Join Queue Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Info Section -->
+    <div class="info-section">
+        <div class="info-card">
+            <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="info-text">
+                We'll notify you when your turn is approaching
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+            </svg>
+            <div class="info-text">
+                Make sure your phone number is correct for notifications
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <div class="info-text">
+                Please arrive when called to avoid losing your spot
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div id="successModal" class="modal" style="display: none;">
+        <div class="modal-header">
+            <h3>You're in the Queue!</h3>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+            <div class="storehub-queue-number-display" style="margin: var(--space-6) auto;">
+                <span id="queueNumber">-</span>
+            </div>
+            <p style="font-size: var(--body-large); margin-bottom: var(--space-4);">
+                Your queue number is <strong id="queueNumberText">-</strong>
+            </p>
+            <p style="color: var(--gray-600); margin-bottom: var(--space-6);">
+                Estimated wait time: <strong id="estimatedWait">-</strong> minutes
+            </p>
+            <div class="alert alert-info">
+                We'll send you a notification when it's almost your turn. Please keep your phone nearby.
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="viewQueueStatus()">View Queue Status</button>
+        </div>
+    </div>
+    
+    <script>
+        // Form submission
+        document.getElementById('joinQueueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; margin-right: 8px;"></span> Joining queue...';
+            
+            const formData = {
+                customerName: document.getElementById('customerName').value,
+                customerPhone: document.getElementById('customerPhone').value,
+                partySize: parseInt(document.getElementById('partySize').value),
+                serviceType: document.getElementById('serviceType')?.value || null,
+                specialRequests: document.getElementById('specialRequests').value || null,
+                platform: 'web'
+            };
+            
+            try {
+                const response = await fetch('/api/queue/<%= queueId %>/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Show success modal
+                    document.getElementById('queueNumber').textContent = data.position;
+                    document.getElementById('queueNumberText').textContent = data.position;
+                    document.getElementById('estimatedWait').textContent = data.estimatedWaitTime || '15-20';
+                    
+                    // Store queue entry ID for status page
+                    sessionStorage.setItem('queueEntryId', data.id);
+                    sessionStorage.setItem('queueId', '<%= queueId %>');
+                    
+                    openModal('successModal');
+                    
+                    // Reset form
+                    document.getElementById('joinQueueForm').reset();
+                } else {
+                    showToast(data.error || 'Failed to join queue', 'danger');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+        
+        // View queue status
+        function viewQueueStatus() {
+            const entryId = sessionStorage.getItem('queueEntryId');
+            const queueId = sessionStorage.getItem('queueId');
+            if (entryId && queueId) {
+                window.location.href = `/queue-status/${queueId}/${entryId}`;
+            }
+        }
+        
+        // Auto-refresh stats every 30 seconds
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/queue/<%= queueId %>/stats');
+                const stats = await response.json();
+                
+                document.getElementById('currentWaiting').textContent = stats.waitingCount || 0;
+                document.getElementById('avgWaitTime').textContent = (stats.averageWaitTime || 15) + ' min';
+                
+                if (stats.isActive && stats.acceptingCustomers) {
+                    document.getElementById('queueStatus').textContent = 'Open';
+                    document.getElementById('queueStatus').style.color = 'var(--success-green)';
+                } else {
+                    document.getElementById('queueStatus').textContent = 'Closed';
+                    document.getElementById('queueStatus').style.color = 'var(--error-red)';
+                }
+            } catch (error) {
+                console.error('Failed to update stats:', error);
+            }
+        }, 30000);
+        
+        // Format phone number as user types
+        document.getElementById('customerPhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.startsWith('60')) {
+                // Malaysian number
+                if (value.length > 2) {
+                    value = '+60' + value.substring(2);
+                }
+            } else if (!value.startsWith('+')) {
+                value = '+60' + value;
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

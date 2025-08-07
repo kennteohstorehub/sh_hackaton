@@ -1,0 +1,372 @@
+<%- include('../layout', { title: title }) %>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i class="fas fa-user me-2"></i>
+          <%= user.name %>
+          <% if (!user.isActive) { %>
+            <span class="badge bg-danger ms-2">Inactive</span>
+          <% } %>
+        </h2>
+        <div>
+          <a href="/superadmin/users/<%= user.id %>/edit" class="btn btn-primary">
+            <i class="fas fa-edit me-2"></i>Edit
+          </a>
+          <a href="/superadmin/users" class="btn btn-secondary ms-2">
+            <i class="fas fa-arrow-left me-2"></i>Back to List
+          </a>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- User Information -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">User Information</h5>
+            </div>
+            <div class="card-body">
+              <table class="table table-sm">
+                <tbody>
+                  <tr>
+                    <th width="40%">ID:</th>
+                    <td><code><%= user.id %></code></td>
+                  </tr>
+                  <tr>
+                    <th>Email:</th>
+                    <td>
+                      <%= user.email %>
+                      <% if (user.emailVerified) { %>
+                        <span class="badge bg-success ms-2">Verified</span>
+                      <% } else { %>
+                        <span class="badge bg-warning ms-2">Unverified</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Phone:</th>
+                    <td><%= user.phone || 'Not provided' %></td>
+                  </tr>
+                  <tr>
+                    <th>Role:</th>
+                    <td>
+                      <span class="badge bg-<%= user.role === 'SUPER_ADMIN' ? 'danger' : user.role === 'ADMIN' ? 'primary' : 'secondary' %>">
+                        <%= user.role %>
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Status:</th>
+                    <td>
+                      <% if (user.isActive) { %>
+                        <span class="badge bg-success">Active</span>
+                      <% } else { %>
+                        <span class="badge bg-danger">Inactive</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Created:</th>
+                    <td><%= new Date(user.createdAt).toLocaleString() %></td>
+                  </tr>
+                  <tr>
+                    <th>Last Updated:</th>
+                    <td><%= new Date(user.updatedAt).toLocaleString() %></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Login Information -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Login Information</h5>
+            </div>
+            <div class="card-body">
+              <table class="table table-sm">
+                <tbody>
+                  <tr>
+                    <th width="40%">Last Login:</th>
+                    <td>
+                      <% if (user.lastLoginAt) { %>
+                        <%= new Date(user.lastLoginAt).toLocaleString() %>
+                      <% } else { %>
+                        <span class="text-muted">Never logged in</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Login Count:</th>
+                    <td><%= user.loginCount || 0 %></td>
+                  </tr>
+                  <tr>
+                    <th>Failed Login Count:</th>
+                    <td><%= user.failedLoginCount || 0 %></td>
+                  </tr>
+                  <% if (user.lastFailedLoginAt) { %>
+                    <tr>
+                      <th>Last Failed Login:</th>
+                      <td><%= new Date(user.lastFailedLoginAt).toLocaleString() %></td>
+                    </tr>
+                  <% } %>
+                  <tr>
+                    <th>Password Reset Required:</th>
+                    <td>
+                      <% if (user.passwordResetRequired) { %>
+                        <span class="badge bg-warning">Yes</span>
+                      <% } else { %>
+                        <span class="badge bg-success">No</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tenant & Merchant Information -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Tenant Information</h5>
+            </div>
+            <div class="card-body">
+              <% if (user.tenant) { %>
+                <table class="table table-sm">
+                  <tbody>
+                    <tr>
+                      <th width="40%">Tenant:</th>
+                      <td>
+                        <a href="/superadmin/tenants/<%= user.tenant.id %>">
+                          <%= user.tenant.name %>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Subdomain:</th>
+                      <td>
+                        <a href="https://<%= user.tenant.slug %>.storehubqms.com" target="_blank">
+                          <%= user.tenant.slug %>.storehubqms.com
+                          <i class="fas fa-external-link-alt ms-1"></i>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Tenant Status:</th>
+                      <td>
+                        <% if (user.tenant.isActive) { %>
+                          <span class="badge bg-success">Active</span>
+                        <% } else { %>
+                          <span class="badge bg-danger">Inactive</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              <% } else { %>
+                <p class="text-muted mb-0">No tenant associated</p>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Merchants -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Merchants</h5>
+            </div>
+            <div class="card-body">
+              <% if (user.merchants && user.merchants.length > 0) { %>
+                <div class="list-group">
+                  <% user.merchants.forEach(merchant => { %>
+                    <div class="list-group-item">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1"><%= merchant.name %></h6>
+                          <small class="text-muted">
+                            <%= merchant._count.queues %> queue(s)
+                          </small>
+                        </div>
+                        <div>
+                          <% if (merchant.isActive) { %>
+                            <span class="badge bg-success">Active</span>
+                          <% } else { %>
+                            <span class="badge bg-danger">Inactive</span>
+                          <% } %>
+                        </div>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <p class="text-muted mb-0">No merchants assigned</p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <button class="btn btn-<%= user.isActive ? 'warning' : 'success' %> w-100 mb-2" 
+                      onclick="toggleUserStatus('<%= user.id %>', <%= user.isActive %>)">
+                <i class="fas fa-<%= user.isActive ? 'pause' : 'play' %> me-2"></i>
+                <%= user.isActive ? 'Deactivate User' : 'Activate User' %>
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-info w-100 mb-2" 
+                      onclick="resetPassword('<%= user.id %>', '<%= user.email %>')">
+                <i class="fas fa-key me-2"></i>
+                Reset Password
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-danger w-100 mb-2" 
+                      onclick="deleteUser('<%= user.id %>', '<%= user.name %>')">
+                <i class="fas fa-trash me-2"></i>
+                Delete User
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Recent Activity</h5>
+        </div>
+        <div class="card-body">
+          <% if (recentActivity && recentActivity.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Date/Time</th>
+                    <th>Action</th>
+                    <th>Resource</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% recentActivity.forEach(activity => { %>
+                    <tr>
+                      <td><%= new Date(activity.createdAt).toLocaleString() %></td>
+                      <td><%= activity.action %></td>
+                      <td><%= activity.resourceType %></td>
+                      <td>
+                        <% if (activity.details) { %>
+                          <small class="text-muted">
+                            <%= JSON.stringify(activity.details).substring(0, 50) %>...
+                          </small>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+            <div class="text-center mt-3">
+              <button class="btn btn-sm btn-outline-secondary" onclick="loadMoreActivity()">
+                Load More Activity
+              </button>
+            </div>
+          <% } else { %>
+            <p class="text-muted mb-0 text-center">No recent activity</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleUserStatus(userId, currentStatus) {
+  const action = currentStatus ? 'deactivate' : 'activate';
+  
+  if (confirm(`Are you sure you want to ${action} this user?`)) {
+    fetch(`/superadmin/users/${userId}/toggle-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= csrfToken %>'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Error: ' + (data.error || 'Failed to update user status'));
+      }
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+}
+
+function resetPassword(userId, userEmail) {
+  if (confirm(`Reset password for ${userEmail}?\n\nA temporary password will be sent to their email.`)) {
+    fetch(`/superadmin/users/${userId}/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= csrfToken %>'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+      } else {
+        alert('Error: ' + (data.error || 'Failed to reset password'));
+      }
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+}
+
+function deleteUser(userId, userName) {
+  if (confirm(`Are you sure you want to delete the user "${userName}"?\n\nThis action cannot be undone!`)) {
+    if (prompt(`Type "${userName}" to confirm deletion:`) === userName) {
+      fetch(`/superadmin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': '<%= csrfToken %>'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '/superadmin/users';
+        } else {
+          alert('Error: ' + (data.error || 'Failed to delete user'));
+        }
+      })
+      .catch(error => {
+        alert('Error: ' + error.message);
+      });
+    }
+  }
+}
+
+function loadMoreActivity() {
+  // TODO: Implement pagination for activity log
+  alert('Activity pagination not yet implemented');
+}
+</script>

@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "timestamp": "2025-08-05T01:19:42.730Z",
+    "totalTests": 8,
+    "passed": 6,
+    "warnings": 0,
+    "failed": 2
+  },
+  "verifications": [
+    {
+      "test": "JavaScript closest() fix",
+      "status": "PASS",
+      "details": "No .day-hours references found in closest() calls",
+      "timestamp": "2025-08-05T01:19:42.729Z"
+    },
+    {
+      "test": "Hours row selector fix",
+      "status": "PASS",
+      "details": "Found 1 .hours-row references",
+      "timestamp": "2025-08-05T01:19:42.729Z"
+    },
+    {
+      "test": "Hyphenated ID usage",
+      "status": "FAIL",
+      "details": "No hyphenated ID references found",
+      "timestamp": "2025-08-05T01:19:42.729Z"
+    },
+    {
+      "test": "CamelCase ID cleanup",
+      "status": "PASS",
+      "details": "No camelCase ID references found",
+      "timestamp": "2025-08-05T01:19:42.729Z"
+    },
+    {
+      "test": "Null checks added",
+      "status": "FAIL",
+      "details": "Only found 0 null checks",
+      "timestamp": "2025-08-05T01:19:42.729Z"
+    },
+    {
+      "test": "Error handling added",
+      "status": "PASS",
+      "details": "Found 6 console.warn statements",
+      "timestamp": "2025-08-05T01:19:42.729Z"
+    },
+    {
+      "test": "HTML/JS consistency",
+      "status": "PASS",
+      "details": "100.0% consistency",
+      "timestamp": "2025-08-05T01:19:42.730Z"
+    },
+    {
+      "test": "CSRF protection",
+      "status": "PASS",
+      "details": "Found 3 createFetchOptions calls",
+      "timestamp": "2025-08-05T01:19:42.730Z"
+    }
+  ],
+  "overallStatus": "IMPROVED",
+  "recommendations": []
+}

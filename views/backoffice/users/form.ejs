@@ -1,0 +1,228 @@
+<%- include('../layout', { title: title }) %>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="fas fa-user me-2"></i>
+            <%= action === 'create' ? 'Create New User' : 'Edit User' %>
+          </h3>
+        </div>
+        <div class="card-body">
+          <% if (locals.errors && errors.length > 0) { %>
+            <div class="alert alert-danger">
+              <% errors.forEach(error => { %>
+                <div><%= error.msg %></div>
+              <% }) %>
+            </div>
+          <% } %>
+
+          <form method="POST" action="/superadmin/users<%= action === 'edit' ? '/' + user.id + '?_method=PUT' : '' %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <!-- Basic Information -->
+            <h5 class="mb-3">Basic Information</h5>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Name <span class="text-danger">*</span></label>
+                <input type="text" 
+                       class="form-control" 
+                       name="name" 
+                       value="<%= user?.name || '' %>" 
+                       required 
+                       placeholder="John Doe">
+              </div>
+              
+              <div class="col-md-6">
+                <label class="form-label">Email <span class="text-danger">*</span></label>
+                <input type="email" 
+                       class="form-control" 
+                       name="email" 
+                       value="<%= user?.email || '' %>" 
+                       required 
+                       placeholder="john@example.com">
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" 
+                       class="form-control" 
+                       name="phone" 
+                       value="<%= user?.phone || '' %>" 
+                       placeholder="+60123456789">
+              </div>
+              
+              <div class="col-md-6">
+                <label class="form-label">Role <span class="text-danger">*</span></label>
+                <select class="form-control" name="role" required>
+                  <option value="USER" <%= !user?.role || user?.role === 'USER' ? 'selected' : '' %>>User</option>
+                  <option value="ADMIN" <%= user?.role === 'ADMIN' ? 'selected' : '' %>>Admin</option>
+                  <option value="SUPER_ADMIN" <%= user?.role === 'SUPER_ADMIN' ? 'selected' : '' %>>Super Admin</option>
+                </select>
+                <small class="text-muted">
+                  User: Regular user | Admin: Tenant admin | Super Admin: System-wide access
+                </small>
+              </div>
+            </div>
+
+            <% if (action === 'create') { %>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Tenant <span class="text-danger">*</span></label>
+                  <select class="form-control" name="tenantId" required>
+                    <option value="">Select a tenant...</option>
+                    <% tenants.forEach(tenant => { %>
+                      <option value="<%= tenant.id %>" <%= user?.tenantId === tenant.id ? 'selected' : '' %>>
+                        <%= tenant.name %> (<%= tenant.slug %>)
+                      </option>
+                    <% }) %>
+                  </select>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Password <span class="text-danger">*</span></label>
+                  <input type="password" 
+                         class="form-control" 
+                         name="password" 
+                         required 
+                         minlength="8"
+                         placeholder="Min 8 characters">
+                  <small class="text-muted">Must be at least 8 characters with letters and numbers</small>
+                </div>
+              </div>
+            <% } else { %>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Tenant</label>
+                  <input type="text" 
+                         class="form-control bg-light" 
+                         value="<%= user?.tenant?.name || 'N/A' %>" 
+                         readonly>
+                  <small class="text-muted">Tenant cannot be changed after creation</small>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">New Password (Optional)</label>
+                  <input type="password" 
+                         class="form-control" 
+                         name="password" 
+                         minlength="8"
+                         placeholder="Leave blank to keep current">
+                  <small class="text-muted">Only fill to change password</small>
+                </div>
+              </div>
+            <% } %>
+
+            <hr class="my-4">
+
+            <!-- Account Settings -->
+            <h5 class="mb-3">Account Settings</h5>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-check mb-3">
+                  <input type="checkbox" 
+                         class="form-check-input" 
+                         name="isActive" 
+                         id="isActive"
+                         <%= action === 'create' || user?.isActive ? 'checked' : '' %>>
+                  <label class="form-check-label" for="isActive">
+                    Active
+                  </label>
+                  <div class="form-text">User can log in to the system</div>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-check mb-3">
+                  <input type="checkbox" 
+                         class="form-check-input" 
+                         name="emailVerified" 
+                         id="emailVerified"
+                         <%= user?.emailVerified ? 'checked' : '' %>>
+                  <label class="form-check-label" for="emailVerified">
+                    Email Verified
+                  </label>
+                  <div class="form-text">Mark email as verified</div>
+                </div>
+              </div>
+            </div>
+
+            <% if (action === 'edit' && user) { %>
+              <hr class="my-4">
+              
+              <!-- Account Information -->
+              <h5 class="mb-3">Account Information</h5>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <p class="mb-2">
+                    <strong>Created:</strong><br>
+                    <%= new Date(user.createdAt).toLocaleString() %>
+                  </p>
+                  <p class="mb-2">
+                    <strong>Last Updated:</strong><br>
+                    <%= new Date(user.updatedAt).toLocaleString() %>
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p class="mb-2">
+                    <strong>Last Login:</strong><br>
+                    <% if (user.lastLoginAt) { %>
+                      <%= new Date(user.lastLoginAt).toLocaleString() %>
+                    <% } else { %>
+                      <span class="text-muted">Never logged in</span>
+                    <% } %>
+                  </p>
+                  <p class="mb-2">
+                    <strong>Login Count:</strong><br>
+                    <%= user.loginCount || 0 %>
+                  </p>
+                </div>
+              </div>
+            <% } %>
+
+            <div class="mt-4">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>
+                <%= action === 'create' ? 'Create User' : 'Update User' %>
+              </button>
+              <a href="/superadmin/users" class="btn btn-secondary ms-2">
+                <i class="fas fa-times me-2"></i>Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+  const password = document.querySelector('input[name="password"]');
+  
+  // Only validate password if it's required (create) or filled (edit)
+  if (password && (password.required || password.value)) {
+    if (password.value.length < 8) {
+      e.preventDefault();
+      alert('Password must be at least 8 characters long');
+      return false;
+    }
+    
+    if (!/(?=.*[A-Za-z])(?=.*\d)/.test(password.value)) {
+      e.preventDefault();
+      alert('Password must contain at least one letter and one number');
+      return false;
+    }
+  }
+  
+  return true;
+});
+</script>

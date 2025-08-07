@@ -7,16 +7,22 @@ const logger = require('../../utils/logger');
 // Use appropriate auth middleware based on environment
 const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true';
 
-const { requireGuest } = useAuthBypass ? 
+const { requireGuest, ensureTenantSession } = useAuthBypass ? 
   require('../../middleware/auth-bypass') : 
   require('../../middleware/auth');
+const { requireGuestByContext } = require('../../middleware/auth-context');
 const { validateLogin, validateRegister } = require('../../middleware/validators');
 const { handleValidationErrors, authLimiter } = require('../../middleware/security');
 
 const router = express.Router();
 
+// Apply tenant session management to all routes if not using auth bypass
+if (!useAuthBypass && ensureTenantSession) {
+  router.use(ensureTenantSession);
+}
+
 // Login page
-router.get('/login', requireGuest, (req, res) => {
+router.get('/login', requireGuest, requireGuestByContext, (req, res) => {
   const redirect = req.query.redirect || '/dashboard';
   
   // Ensure messages object exists
@@ -26,7 +32,7 @@ router.get('/login', requireGuest, (req, res) => {
   console.log('[AUTH] Login GET - CSRF Token available:', !!res.locals.csrfToken);
   console.log('[AUTH] Login GET - Session exists:', !!req.session);
   
-  res.render('auth/login', {
+  res.render('auth/login-storehub', {
     title: 'Login - StoreHub Queue Management System',
     redirect,
     messages: messages,
@@ -35,11 +41,11 @@ router.get('/login', requireGuest, (req, res) => {
 });
 
 // Register page
-router.get('/register', requireGuest, (req, res) => {
+router.get('/register', requireGuest, requireGuestByContext, (req, res) => {
   // Ensure messages object exists
   const messages = res.locals.messages || { error: null, success: null };
   
-  res.render('auth/register', {
+  res.render('auth/register-storehub', {
     title: 'Register - StoreHub Queue Management System',
     messages: messages,
     csrfToken: res.locals.csrfToken || ''
@@ -68,11 +74,12 @@ router.post('/login',
 
     const { email, password } = req.body;
 
-    // Find merchant
-    console.log('[AUTH] About to call merchantService.findByEmail with email:', email);
+    // Find merchant with tenant context
+    console.log('[AUTH] About to call merchantService.findByEmail with email:', email, 'tenantId:', req.tenantId);
     let merchant;
     try {
-      merchant = await merchantService.findByEmail(email);
+      // Pass tenant context for multi-tenant isolation
+      merchant = await merchantService.findByEmail(email, req.tenantId);
       console.log('[AUTH] merchantService.findByEmail returned:', merchant ? 'found' : 'not found');
     } catch (findError) {
       console.error('[AUTH] Error during merchantService.findByEmail:', findError);
@@ -96,8 +103,8 @@ router.post('/login',
       merchantKeys: Object.keys(merchant).slice(0, 10) // First 10 keys
     });
 
-    // Check password - use authenticate method
-    const authenticatedMerchant = await merchantService.authenticate(email, password);
+    // Check password - use authenticate method with tenant context
+    const authenticatedMerchant = await merchantService.authenticate(email, password, req.tenantId);
     if (!authenticatedMerchant) {
       req.flash('error', 'Invalid email or password.');
       return res.redirect('/auth/login');
@@ -126,14 +133,29 @@ router.post('/login',
         req.session.csrfTokenExpiry = csrfTokenExpiry;
       }
       
-      // Create session with userId - use consistent ID
+      // Create session with userId and tenant context - use consistent ID
       req.session.userId = merchantId;
+      req.session.sessionType = 'tenant';
       req.session.user = {
         id: merchantId,
         email: merchant.email,
         businessName: merchant.businessName,
         merchantId: merchantId
       };
+      
+      // Store tenant context in session for multi-tenant support
+      if (req.tenantId) {
+        req.session.tenantId = req.tenantId;
+        req.session.tenantSlug = req.tenant?.slug;
+      }
+      
+      // Special handling for BackOffice - clear tenant context but change session type
+      if (req.isBackOffice) {
+        req.session.sessionType = 'backoffice';
+        req.session.isBackOffice = true;
+        req.session.tenantId = null;
+        req.session.tenantSlug = null;
+      }
       
       logger.info('Setting session data:', {
         merchantId,
@@ -183,24 +205,24 @@ router.post('/register',
 
     const { businessName, email, password, phone, businessType } = req.body;
 
-    // Check if merchant already exists
-    const existingMerchant = await merchantService.findByEmail(email);
+    // Check if merchant already exists within tenant context
+    const existingMerchant = await merchantService.findByEmail(email, req.tenantId);
     if (existingMerchant) {
       req.flash('error', 'An account with this email already exists.');
       return res.redirect('/auth/register');
     }
 
-    // Create merchant
+    // Create merchant with tenant context
     const merchant = await merchantService.create({
       businessName,
       email,
       password,
       phone,
       businessType
-    });
+    }, req.tenantId);
     
-    // Initialize merchant defaults
-    await merchantService.initializeDefaults(merchant.id);
+    // Initialize merchant defaults with tenant context
+    await merchantService.initializeDefaults(merchant.id, req.tenantId);
 
     // Store the CSRF token before regeneration
     const csrfToken = req.session.csrfToken;
@@ -220,14 +242,21 @@ router.post('/register',
         req.session.csrfTokenExpiry = csrfTokenExpiry;
       }
       
-      // Create session with userId
+      // Create session with userId and tenant context
       req.session.userId = merchant.id;
+      req.session.sessionType = 'tenant';
       req.session.user = {
         id: merchant.id,
         email: merchant.email,
         businessName: merchant.businessName,
         merchantId: merchant.id
       };
+      
+      // Store tenant context in session for multi-tenant support
+      if (req.tenantId) {
+        req.session.tenantId = req.tenantId;
+        req.session.tenantSlug = req.tenant?.slug;
+      }
 
       logger.info(`New merchant registered: ${merchant.email}`);
       req.flash('success', `Welcome to StoreHub Queue Management System, ${merchant.businessName}!`);
@@ -237,7 +266,9 @@ router.post('/register',
         if (err) {
           logger.error('Session save error:', err);
         }
-        res.redirect('/dashboard');
+        // MULTI-TENANT FIX: Use absolute path for redirect
+    const dashboardUrl = req.tenant ? '/dashboard' : '/dashboard';
+    res.redirect(dashboardUrl);
       });
     });
 

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StoreHub QMS</title>
+    <link rel="stylesheet" href="/css/storehub-dashboard.css">
+</head>
+<body class="storehub-dashboard">
+    <%- include('../partials/header-storehub', { activePage: 'dashboard' }) %>
+    
+    <div class="storehub-container">
+        <!-- Page Header -->
+        <div class="storehub-page-header">
+            <h1 class="storehub-page-title">Dashboard</h1>
+            <p class="storehub-page-subtitle">Welcome back! Here's what's happening with your queues today.</p>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="storehub-stats-grid">
+            <div class="storehub-stat-card">
+                <div class="storehub-stat-label">Customers Today</div>
+                <div class="storehub-stat-value">124</div>
+                <div class="storehub-stat-change positive">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    12% from yesterday
+                </div>
+            </div>
+            
+            <div class="storehub-stat-card">
+                <div class="storehub-stat-label">Average Wait Time</div>
+                <div class="storehub-stat-value">18 min</div>
+                <div class="storehub-stat-change positive">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                    </svg>
+                    5 min faster
+                </div>
+            </div>
+            
+            <div class="storehub-stat-card">
+                <div class="storehub-stat-label">Currently Waiting</div>
+                <div class="storehub-stat-value">8</div>
+                <div class="storehub-stat-change">
+                    Normal capacity
+                </div>
+            </div>
+            
+            <div class="storehub-stat-card">
+                <div class="storehub-stat-label">No-show Rate</div>
+                <div class="storehub-stat-value">3.2%</div>
+                <div class="storehub-stat-change positive">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                    </svg>
+                    0.8% improvement
+                </div>
+            </div>
+        </div>
+        
+        <!-- Queue Management Section -->
+        <div class="storehub-queue-section">
+            <div class="storehub-queue-header">
+                <h2 class="storehub-queue-title">Active Queues</h2>
+                <div class="storehub-queue-actions">
+                    <button class="btn btn-secondary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Manage Queues
+                    </button>
+                    <button class="btn btn-primary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Create Queue
+                    </button>
+                </div>
+            </div>
+            
+            <div class="storehub-queue-list">
+                <!-- Queue Item -->
+                <div class="storehub-queue-item">
+                    <div class="storehub-queue-item-header">
+                        <h3 class="storehub-queue-name">Main Dining Queue</h3>
+                        <span class="storehub-queue-status active">Active</span>
+                    </div>
+                    <div class="storehub-queue-stats">
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">8</span>
+                            <span class="storehub-queue-stat-label">Waiting</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">15</span>
+                            <span class="storehub-queue-stat-label">Min Wait</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">45</span>
+                            <span class="storehub-queue-stat-label">Served Today</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">2</span>
+                            <span class="storehub-queue-stat-label">No Shows</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Queue Item -->
+                <div class="storehub-queue-item">
+                    <div class="storehub-queue-item-header">
+                        <h3 class="storehub-queue-name">Takeaway Queue</h3>
+                        <span class="storehub-queue-status active">Active</span>
+                    </div>
+                    <div class="storehub-queue-stats">
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">3</span>
+                            <span class="storehub-queue-stat-label">Waiting</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">5</span>
+                            <span class="storehub-queue-stat-label">Min Wait</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">67</span>
+                            <span class="storehub-queue-stat-label">Served Today</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">0</span>
+                            <span class="storehub-queue-stat-label">No Shows</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Queue Item -->
+                <div class="storehub-queue-item">
+                    <div class="storehub-queue-item-header">
+                        <h3 class="storehub-queue-name">VIP Queue</h3>
+                        <span class="storehub-queue-status paused">Paused</span>
+                    </div>
+                    <div class="storehub-queue-stats">
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">0</span>
+                            <span class="storehub-queue-stat-label">Waiting</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">-</span>
+                            <span class="storehub-queue-stat-label">Min Wait</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">12</span>
+                            <span class="storehub-queue-stat-label">Served Today</span>
+                        </div>
+                        <div class="storehub-queue-stat">
+                            <span class="storehub-queue-stat-value">0</span>
+                            <span class="storehub-queue-stat-label">No Shows</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="storehub-charts-grid">
+            <div class="storehub-chart-card">
+                <h3 class="storehub-chart-title">Customer Flow Today</h3>
+                <div style="height: 300px; background: var(--gray-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gray-500);">
+                    Chart placeholder
+                </div>
+            </div>
+            
+            <div class="storehub-chart-card">
+                <h3 class="storehub-chart-title">Wait Time Trends</h3>
+                <div style="height: 300px; background: var(--gray-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gray-500);">
+                    Chart placeholder
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Apply design system to existing elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add fade-in animation to cards
+            document.querySelectorAll('.storehub-stat-card, .storehub-queue-item, .storehub-chart-card').forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    el.style.transition = 'all 0.3s ease-out';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+
+<!-- Page Header -->
+<div class="content-header">
+  <h1 class="content-title">Dashboard</h1>
+  <p class="content-subtitle">Monitor your queue management system and oversee all merchant operations</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="dashboard-grid">
+  <div class="stats-card tenants dashboard-animate">
+    <div class="stats-icon">🏢</div>
+    <div class="stats-value"><%= systemStats?.tenants?.total || 0 %></div>
+    <div class="stats-label">Total Tenants</div>
+    <div class="stats-trend trend-positive">
+      <span>↑ <%= systemStats?.tenants?.active || 0 %> active</span>
+    </div>
+  </div>
+  
+  <div class="stats-card customers dashboard-animate">
+    <div class="stats-icon">👥</div>
+    <div class="stats-value"><%= systemStats?.customersToday || 0 %></div>
+    <div class="stats-label">Customers Today</div>
+    <div class="stats-trend trend-neutral">
+      <span>→ <%= systemStats?.customersThisMonth || 0 %> this month</span>
+    </div>
+  </div>
+  
+  <div class="stats-card queues dashboard-animate">
+    <div class="stats-icon">⚡</div>
+    <div class="stats-value"><%= systemStats?.queues?.active || 0 %></div>
+    <div class="stats-label">Active Queues</div>
+    <div class="stats-trend trend-positive">
+      <span>↑ <%= systemStats?.queues?.total || 0 %> total</span>
+    </div>
+  </div>
+  
+  <div class="stats-card health dashboard-animate">
+    <div class="stats-icon">
+      <%= systemStats?.systemHealth?.status === 'healthy' ? '✓' : '⚠️' %>
+    </div>
+    <div class="stats-value"><%= systemStats?.systemHealth?.score || 100 %>%</div>
+    <div class="stats-label">System Health</div>
+    <div class="stats-trend <%= systemStats?.systemHealth?.status === 'healthy' ? 'trend-positive' : 'trend-negative' %>">
+      <span><%= systemStats?.systemHealth?.status === 'healthy' ? '↑ All systems operational' : '↓ ' + (systemStats?.systemHealth?.issues?.join(', ') || 'Issues detected') %></span>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="content-grid">
+  <!-- Recent Activity -->
+  <div class="card dashboard-animate">
+    <div class="card-header">
+      <h3 class="card-title">Recent Activity</h3>
+    </div>
+    <div class="card-body">
+      <div class="activity-feed">
+        <% if (typeof recentActivity !== 'undefined' && recentActivity && recentActivity.length > 0) { %>
+          <% recentActivity.forEach((activity, index) => { %>
+            <div class="activity-item">
+              <div class="activity-indicator"></div>
+              <div class="activity-content">
+                <div class="activity-action"><%= activity.action %></div>
+                <div class="activity-details"><%= activity.details %></div>
+                <div class="activity-time"><%= activity.timestamp %></div>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p>No recent activity</p>
+            <p>System activities will appear here</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <div class="card dashboard-animate">
+    <div class="card-header">
+      <h3 class="card-title">Quick Actions</h3>
+    </div>
+    <div class="card-body">
+      <div class="quick-actions" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <a href="/backoffice/tenants/create" class="btn btn-primary">
+          <span>➕</span>
+          Add New Tenant
+        </a>
+        <a href="/backoffice/merchants" class="btn btn-secondary">
+          <span>🏪</span>
+          View All Merchants
+        </a>
+        <a href="/backoffice/audit-logs" class="btn btn-secondary">
+          <span>📝</span>
+          View Audit Logs
+        </a>
+        <a href="/backoffice/settings" class="btn btn-secondary">
+          <span>⚙️</span>
+          System Settings
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Tenants -->
+<div class="card dashboard-animate" style="margin-top: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">Recent Tenants</h3>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    <% if (typeof recentTenants !== 'undefined' && recentTenants && recentTenants.length > 0) { %>
+      <div class="table-responsive">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Tenant Name</th>
+              <th>Subdomain</th>
+              <th>Merchants</th>
+              <th>Users</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentTenants.forEach((tenant) => { %>
+              <tr>
+                <td>
+                  <strong><%= tenant.name %></strong>
+                </td>
+                <td>
+                  <code style="background: var(--sh-primary-orange-light); color: var(--sh-primary-orange); padding: 0.25rem 0.5rem; border-radius: 4px;"><%= tenant.slug %></code>
+                </td>
+                <td><%= tenant._count?.merchants || 0 %></td>
+                <td><%= tenant._count?.users || 0 %></td>
+                <td>
+                  <span class="status-badge <%= tenant.isActive ? 'status-active' : 'status-inactive' %>">
+                    <%= tenant.isActive ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td><%= new Date(tenant.createdAt).toLocaleDateString() %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-state-icon">🏢</div>
+        <p>No tenants found</p>
+        <a href="/backoffice/tenants/create" class="btn btn-primary">
+          Create Your First Tenant
+        </a>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Analytics Charts -->
+<div class="content-grid" style="margin-top: 2rem;">
+  <div class="chart-container dashboard-animate">
+    <h3>Customer Traffic Trends</h3>
+    <div id="trafficChart" style="height: 300px;"></div>
+  </div>
+  
+  <div class="chart-container dashboard-animate">
+    <h3>Queue Distribution</h3>
+    <div id="queueChart" style="height: 300px;"></div>
+  </div>
+</div>
+
+<!-- System Information -->
+<div class="card dashboard-animate" style="margin-top: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">System Information</h3>
+  </div>
+  <div class="card-body">
+    <div class="system-info-grid">
+      <div class="info-item">
+        <h4>
+          <span>🗄️</span> Database
+        </h4>
+        <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">PostgreSQL</p>
+        <div class="progress-bar" style="width: 100%; height: 6px; background: var(--sh-gray-200); border-radius: 3px; overflow: hidden; margin-top: 0.5rem;">
+          <div class="progress-fill" style="height: 100%; background: var(--sh-primary-orange); border-radius: 3px; transition: width 0.3s ease; width: <%= systemStats?.systemHealth?.score || 100 %>%;"></div>
+        </div>
+        <p style="margin-top: 0.5rem;">
+          Status: <span class="status-badge status-<%= systemStats?.systemHealth?.status || 'healthy' %>">
+            <%= systemStats?.systemHealth?.status === 'healthy' ? 'Healthy' : systemStats?.systemHealth?.status === 'degraded' ? 'Degraded' : 'Issues' %>
+          </span>
+        </p>
+      </div>
+      
+      <div class="info-item">
+        <h4>
+          <span>📊</span> Tenants
+        </h4>
+        <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--sh-gray-900);"><%= systemStats?.tenants?.total || 0 %></p>
+        <p>
+          <span class="status-badge status-active"><%= systemStats?.tenants?.active || 0 %> Active</span>
+        </p>
+      </div>
+      
+      <div class="info-item">
+        <h4>
+          <span>🏪</span> Merchants
+        </h4>
+        <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--sh-gray-900);"><%= systemStats?.merchants?.total || 0 %></p>
+        <p>
+          <span class="status-badge status-active"><%= systemStats?.merchants?.active || 0 %> Active</span>
+        </p>
+      </div>
+      
+      <div class="info-item">
+        <h4>
+          <span>📦</span> Version
+        </h4>
+        <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">StoreHub QMS v2.0</p>
+        <p>
+          <span class="status-badge status-active">✓ Latest Version</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize Charts with ApexCharts
+  document.addEventListener('DOMContentLoaded', function() {
+    // StoreHub theme options
+    const chartTheme = {
+      theme: {
+        mode: 'light'
+      },
+      chart: {
+        background: 'transparent',
+        toolbar: {
+          show: false
+        },
+        fontFamily: 'Open Sans, sans-serif'
+      },
+      grid: {
+        borderColor: '#E5E5E5',
+        strokeDashArray: 0
+      },
+      tooltip: {
+        theme: 'light',
+        style: {
+          fontSize: '12px'
+        }
+      }
+    };
+
+    // Traffic Chart
+    if (typeof ApexCharts !== 'undefined') {
+      const trafficOptions = {
+        ...chartTheme,
+        series: [{
+          name: 'Customers',
+          data: [450, 520, 480, 610, 550, 680, 720]
+        }, {
+          name: 'Queue Entries',
+          data: [320, 380, 350, 440, 400, 490, 510]
+        }],
+        chart: {
+          ...chartTheme.chart,
+          type: 'area',
+          height: 300,
+          sparkline: {
+            enabled: false
+          }
+        },
+        colors: ['#FA8C16', '#52C41A'],
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth',
+          width: 2
+        },
+        fill: {
+          type: 'gradient',
+          gradient: {
+            opacityFrom: 0.4,
+            opacityTo: 0.1
+          }
+        },
+        xaxis: {
+          categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          labels: {
+            style: {
+              colors: '#595959'
+            }
+          }
+        },
+        yaxis: {
+          labels: {
+            style: {
+              colors: '#595959'
+            }
+          }
+        },
+        legend: {
+          position: 'bottom',
+          horizontalAlign: 'center',
+          labels: {
+            colors: '#a8a8b3'
+          }
+        }
+      };
+
+      const trafficChart = new ApexCharts(document.querySelector("#trafficChart"), trafficOptions);
+      trafficChart.render();
+
+      // Queue Distribution Chart
+      const queueOptions = {
+        ...chartTheme,
+        series: [30, 25, 35, 10],
+        chart: {
+          ...chartTheme.chart,
+          type: 'donut',
+          height: 300
+        },
+        labels: ['Active', 'Waiting', 'Completed', 'Cancelled'],
+        colors: ['#FA8C16', '#FAAD14', '#52C41A', '#F5222D'],
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '65%',
+              labels: {
+                show: true,
+                total: {
+                  show: true,
+                  label: 'Total',
+                  color: '#595959',
+                  formatter: function (w) {
+                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                  }
+                }
+              }
+            }
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        legend: {
+          position: 'bottom',
+          horizontalAlign: 'center',
+          labels: {
+            colors: '#a8a8b3'
+          }
+        },
+        stroke: {
+          show: false
+        }
+      };
+
+      const queueChart = new ApexCharts(document.querySelector("#queueChart"), queueOptions);
+      queueChart.render();
+    }
+
+    // Add intersection observer for animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.dashboard-animate').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
+
+    // Real-time dashboard updates
+    function updateDashboard() {
+      fetch('/backoffice/dashboard/api/metrics')
+        .then(response => response.json())
+        .then(data => {
+          if (data.systemStats) {
+            // Update tenant count
+            const tenantValue = document.querySelector('.stats-card.tenants .stats-value');
+            if (tenantValue) tenantValue.textContent = data.systemStats.tenants?.total || 0;
+            
+            const tenantTrend = document.querySelector('.stats-card.tenants .stats-trend span:last-child');
+            if (tenantTrend) tenantTrend.textContent = `${data.systemStats.tenants?.active || 0} active`;
+            
+            // Update customer count
+            const customerValue = document.querySelector('.stats-card.customers .stats-value');
+            if (customerValue) customerValue.textContent = data.systemStats.customersToday || 0;
+            
+            const customerTrend = document.querySelector('.stats-card.customers .stats-trend span:last-child');
+            if (customerTrend) customerTrend.textContent = `${data.systemStats.customersThisMonth || 0} this month`;
+            
+            // Update queue count
+            const queueValue = document.querySelector('.stats-card.queues .stats-value');
+            if (queueValue) queueValue.textContent = data.systemStats.queues?.active || 0;
+            
+            const queueTrend = document.querySelector('.stats-card.queues .stats-trend span:last-child');
+            if (queueTrend) queueTrend.textContent = `${data.systemStats.queues?.total || 0} total`;
+            
+            // Update system health
+            const healthValue = document.querySelector('.stats-card.health .stats-value');
+            if (healthValue) healthValue.textContent = `${data.systemStats.systemHealth?.score || 100}%`;
+            
+            const healthIcon = document.querySelector('.stats-card.health .stats-icon');
+            if (healthIcon) {
+              const status = data.systemStats.systemHealth?.status;
+              healthIcon.textContent = status === 'healthy' ? '💚' : status === 'degraded' ? '💛' : '❤️';
+            }
+            
+            const healthStatus = document.querySelector('.stats-card.health .stats-trend span:last-child');
+            if (healthStatus) {
+              const status = data.systemStats.systemHealth?.status;
+              healthStatus.textContent = status === 'healthy' ? 'All systems operational' : 
+                                       data.systemStats.systemHealth?.issues?.join(', ') || 'Issues detected';
+            }
+          }
+        })
+        .catch(error => console.error('Failed to update dashboard:', error));
+    }
+
+    // Update dashboard every 30 seconds
+    setInterval(updateDashboard, 30000);
+  });
+</script>

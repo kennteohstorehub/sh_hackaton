@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Inactive - StoreHub QMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .warning-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: #FFA500;
+        }
+        
+        h1 {
+            color: #FF8C00;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tenant-name {
+            font-size: 1.4rem;
+            color: #555;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+        
+        p {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .reasons {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        
+        .reasons h3 {
+            color: #F57C00;
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .reasons ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .reasons li {
+            color: #666;
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .reasons li:before {
+            content: "•";
+            color: #FFA500;
+            font-weight: bold;
+            position: absolute;
+            left: 0.5rem;
+        }
+        
+        .actions {
+            margin-top: 2.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #FF8C00;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        
+        .button:hover {
+            background-color: #E67E00;
+        }
+        
+        .button-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .button-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .contact-info {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .contact-info h3 {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-info p {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-info a {
+            color: #FF8C00;
+            text-decoration: none;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .support-hours {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="warning-icon">⚠️</div>
+        <h1>Subscription Inactive</h1>
+        
+        <% if (locals.tenant && locals.tenant.name) { %>
+            <div class="tenant-name"><%= tenant.name %></div>
+        <% } %>
+        
+        <p>
+            <%= locals.message || 'Your subscription is currently inactive' %>
+        </p>
+        
+        <div class="reasons">
+            <h3>This may be due to:</h3>
+            <ul>
+                <li>Your subscription has expired</li>
+                <li>Payment method needs to be updated</li>
+                <li>Account is temporarily suspended</li>
+                <li>Pending subscription renewal</li>
+            </ul>
+        </div>
+        
+        <p>
+            To restore access to your queue management system, please contact your administrator or our support team.
+        </p>
+        
+        <div class="contact-info">
+            <h3>Need immediate assistance?</h3>
+            <p>Our support team is here to help you get back online quickly.</p>
+            <p>
+                📧 Email: <a href="mailto:billing@storehubqms.com">billing@storehubqms.com</a><br>
+                📞 Phone: <a href="tel:+1234567890">+1 (234) 567-890</a>
+            </p>
+        </div>
+        
+        <div class="actions">
+            <a href="https://admin.storehubqms.com" class="button">Admin Portal</a>
+            <a href="https://storehubqms.com/pricing" class="button button-secondary">View Plans</a>
+        </div>
+        
+        <p class="support-hours">
+            Support hours: Monday - Friday, 9:00 AM - 6:00 PM (GMT+8)
+        </p>
+    </div>
+</body>
+</html>

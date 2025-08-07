@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <!-- StoreHub Design System -->
+  <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+  <link rel="stylesheet" href="/css/storehub-global.css?v=<%= Date.now() %>">
+  <script src="/js/storehub-design-system.js?v=<%= Date.now() %>" defer></script>
+  <%- csrfMeta() %>
+  <style>
+    body {
+      background: linear-gradient(135deg, var(--base-black) 0%, var(--gray-900) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .auth-container {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+    
+    .auth-header {
+      background: var(--base-black);
+      color: white;
+      padding: var(--space-8) var(--space-6);
+      text-align: center;
+      position: relative;
+    }
+    
+    .auth-badge {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-3);
+      background: var(--primary-orange);
+      color: white;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      font-size: var(--tiny);
+      font-weight: var(--weight-semibold);
+      text-transform: uppercase;
+    }
+    
+    .auth-logo {
+      font-size: var(--heading-1);
+      font-weight: var(--weight-bold);
+      margin-bottom: var(--space-2);
+    }
+    
+    .auth-subtitle {
+      font-size: var(--body);
+      opacity: 0.8;
+      color: var(--gray-400);
+    }
+    
+    .auth-body {
+      padding: var(--space-8) var(--space-6);
+    }
+    
+    .auth-title {
+      font-size: var(--heading-3);
+      font-weight: var(--weight-semibold);
+      color: var(--gray-900);
+      margin-bottom: var(--space-2);
+      text-align: center;
+    }
+    
+    .auth-description {
+      text-align: center;
+      color: var(--gray-600);
+      margin-bottom: var(--space-6);
+      font-size: var(--small);
+    }
+    
+    .form-group {
+      margin-bottom: var(--space-5);
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-size: var(--small);
+      font-weight: var(--weight-medium);
+      color: var(--gray-700);
+    }
+    
+    .form-control {
+      width: 100%;
+      height: 48px;
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--body);
+      border: 1px solid var(--gray-400);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+      background-color: white;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-orange);
+      box-shadow: 0 0 0 3px rgba(250, 140, 22, 0.1);
+      outline: none;
+    }
+    
+    .btn-auth {
+      width: 100%;
+      height: 48px;
+      margin-top: var(--space-6);
+      font-size: var(--body);
+      font-weight: var(--weight-semibold);
+      background: var(--base-black);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-normal);
+    }
+    
+    .btn-auth:hover {
+      background: var(--gray-900);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .btn-auth:active {
+      transform: translateY(0);
+    }
+    
+    .security-notice {
+      background: var(--gray-100);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      margin-top: var(--space-6);
+      font-size: var(--small);
+      color: var(--gray-700);
+      text-align: center;
+    }
+    
+    .security-notice-icon {
+      display: inline-block;
+      margin-right: var(--space-2);
+    }
+    
+    .alert {
+      margin-bottom: var(--space-4);
+    }
+    
+    .auth-footer {
+      text-align: center;
+      margin-top: var(--space-6);
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--gray-300);
+      font-size: var(--small);
+      color: var(--gray-600);
+    }
+    
+    /* Loading state */
+    .btn-auth:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: var(--space-2);
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container fade-in">
+    <div class="auth-header">
+      <span class="auth-badge">Admin</span>
+      <div class="auth-logo">StoreHub</div>
+      <div class="auth-subtitle">BackOffice Portal</div>
+    </div>
+    
+    <div class="auth-body">
+      <h1 class="auth-title">Administrator Login</h1>
+      <p class="auth-description">
+        Access the backoffice management system
+      </p>
+      
+      <% if (messages && messages.error) { %>
+      <div class="alert alert-danger">
+        <%= messages.error %>
+      </div>
+      <% } %>
+      
+      <% if (messages && messages.success) { %>
+      <div class="alert alert-success">
+        <%= messages.success %>
+      </div>
+      <% } %>
+      
+      <% if (messages && messages.info) { %>
+      <div class="alert alert-info">
+        <%= messages.info %>
+      </div>
+      <% } %>
+      
+      <form action="/backoffice/auth/login" method="POST" class="needs-validation" novalidate id="loginForm">
+        <%- csrfInput() %>
+        
+        <div class="form-group">
+          <label for="email" class="form-label">Email Address</label>
+          <input 
+            type="email" 
+            class="form-control" 
+            id="email" 
+            name="email" 
+            required 
+            autofocus
+            placeholder="admin@storehub.com"
+            autocomplete="username"
+          >
+          <div class="invalid-feedback">
+            Please enter a valid email address.
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input 
+            type="password" 
+            class="form-control" 
+            id="password" 
+            name="password" 
+            required
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          >
+          <div class="invalid-feedback">
+            Please enter your password.
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-auth" id="submitBtn">
+          Sign In to BackOffice
+        </button>
+      </form>
+      
+      <div class="security-notice">
+        <span class="security-notice-icon">🔒</span>
+        This is a secure area. All activities are logged and monitored.
+      </div>
+      
+      <div class="auth-footer">
+        <p>StoreHub BackOffice v2.0</p>
+        <p>© <%= new Date().getFullYear() %> StoreHub. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Form validation and loading state
+    (function() {
+      'use strict';
+      
+      const form = document.getElementById('loginForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const originalBtnText = submitBtn.innerHTML;
+      
+      form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        } else {
+          // Show loading state
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner"></span> Authenticating...';
+        }
+        
+        form.classList.add('was-validated');
+      }, false);
+      
+      // Auto-focus email field
+      window.addEventListener('load', function() {
+        const emailField = document.getElementById('email');
+        if (emailField && !emailField.value) {
+          emailField.focus();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

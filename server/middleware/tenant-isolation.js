@@ -108,6 +108,7 @@ class TenantResolver {
    * 5. Single-tenant fallback (backward compatibility)
    */
   static async resolve(req) {
+    console.log('[DEBUG] TenantResolver.resolve started');
     try {
       let tenantId = null;
       let tenantSlug = null;
@@ -116,6 +117,7 @@ class TenantResolver {
       // Method 1: Explicit tenant header (for API clients)
       // Security: Only allow if no authenticated user or if user belongs to specified tenant
       if (req.headers['x-tenant-id']) {
+        console.log(`[DEBUG] Found x-tenant-id header: ${req.headers['x-tenant-id']}`);
         tenantId = req.headers['x-tenant-id'];
         
         // If user is authenticated, validate they belong to the requested tenant
@@ -139,6 +141,7 @@ class TenantResolver {
 
       // Method 2: Subdomain resolution
       else if (req.subdomains && req.subdomains.length > 0) {
+        console.log(`[DEBUG] Found subdomains: ${JSON.stringify(req.subdomains)}`);
         tenantSlug = req.subdomains[req.subdomains.length - 1]; // Get first subdomain
         TenantSecurityLogger.info('TENANT_RESOLVED_BY_SUBDOMAIN', {
           req,
@@ -150,6 +153,7 @@ class TenantResolver {
 
       // Method 3: Domain mapping
       else if (req.hostname) {
+        console.log(`[DEBUG] Trying to resolve tenant by hostname: ${req.hostname}`);
         const domainMapping = await this.findTenantByDomain(req.hostname);
         if (domainMapping) {
           tenant = domainMapping;
@@ -164,11 +168,13 @@ class TenantResolver {
 
       // Fetch tenant by ID or slug if not already resolved
       if (!tenant && (tenantId || tenantSlug)) {
+        console.log(`[DEBUG] Fetching tenant with id: ${tenantId} or slug: ${tenantSlug}`);
         tenant = await this.fetchTenant(tenantId, tenantSlug);
       }
 
       // Method 4: Check authenticated merchant's tenant
       if (!tenant && req.user && req.user.tenantId) {
+        console.log(`[DEBUG] Trying to resolve tenant from user's tenantId: ${req.user.tenantId}`);
         tenant = await this.fetchTenant(req.user.tenantId, null);
         if (tenant) {
           TenantSecurityLogger.info('TENANT_RESOLVED_BY_MERCHANT', {
@@ -182,6 +188,7 @@ class TenantResolver {
 
       // Method 5: Single-tenant fallback for backward compatibility
       if (!tenant) {
+        console.log('[DEBUG] No tenant resolved yet, attempting fallback');
         tenant = await this.getSingleTenantFallback();
         if (tenant) {
           TenantSecurityLogger.info('TENANT_RESOLVED_BY_FALLBACK', {
@@ -194,6 +201,7 @@ class TenantResolver {
 
       // Validate tenant is active
       if (tenant && !tenant.isActive) {
+        console.log(`[DEBUG] Tenant ${tenant.id} is inactive`);
         TenantSecurityLogger.critical('INACTIVE_TENANT_ACCESS_ATTEMPT', {
           req,
           tenantId: tenant.id,
@@ -202,8 +210,10 @@ class TenantResolver {
         throw new Error('TENANT_INACTIVE');
       }
 
+      console.log(tenant ? `[DEBUG] TenantResolver.resolve finished, found tenant: ${tenant.id}` : '[DEBUG] TenantResolver.resolve finished, no tenant found');
       return tenant;
     } catch (error) {
+      console.error('[DEBUG] CRITICAL ERROR in TenantResolver.resolve:', error);
       TenantSecurityLogger.error('TENANT_RESOLUTION_FAILED', {
         req,
         error: error.message,
@@ -378,6 +388,7 @@ class TenantValidator {
  * Establishes tenant context and enforces tenant boundaries for all requests
  */
 const tenantIsolationMiddleware = async (req, res, next) => {
+  console.log('[DEBUG] Entering tenantIsolationMiddleware');
   try {
     // Skip tenant isolation for public routes or health checks
     if (req.path.startsWith('/health') || req.path.startsWith('/public')) {
@@ -385,9 +396,11 @@ const tenantIsolationMiddleware = async (req, res, next) => {
     }
 
     // Resolve tenant from request context
+    console.log('[DEBUG] Attempting to resolve tenant');
     const tenant = await TenantResolver.resolve(req);
     
     if (!tenant) {
+      console.log('[DEBUG] Tenant resolution failed, returning 400');
       TenantSecurityLogger.error('TENANT_RESOLUTION_FAILED', {
         req,
         path: req.path,
@@ -398,6 +411,7 @@ const tenantIsolationMiddleware = async (req, res, next) => {
         code: 'TENANT_NOT_FOUND'
       });
     }
+    console.log(`[DEBUG] Tenant resolved: ${tenant.id} (${tenant.slug})`);
 
     // Attach tenant context to request
     req.tenant = tenant;
@@ -405,12 +419,14 @@ const tenantIsolationMiddleware = async (req, res, next) => {
 
     // For authenticated routes, validate user-tenant relationship
     if (req.user && req.user.id) {
+      console.log(`[DEBUG] Validating access for user ${req.user.id}`);
       // Check if this is a merchant user (has businessName property)
       if (req.user.businessName) {
         // Validate merchant access
         const hasAccess = await TenantValidator.validateMerchantTenantAccess(req.user.id, tenant, req);
         
         if (!hasAccess) {
+          console.log('[DEBUG] Merchant tenant access denied');
           TenantSecurityLogger.critical('UNAUTHORIZED_TENANT_ACCESS_BLOCKED', {
             req,
             merchantId: req.user.id,
@@ -429,6 +445,7 @@ const tenantIsolationMiddleware = async (req, res, next) => {
         const hasAccess = await TenantValidator.validateUserTenantAccess(req.user, tenant, req);
         
         if (!hasAccess) {
+          console.log('[DEBUG] User tenant access denied');
           TenantSecurityLogger.critical('UNAUTHORIZED_TENANT_ACCESS_BLOCKED', {
             req,
             userId: req.user.id,
@@ -443,6 +460,8 @@ const tenantIsolationMiddleware = async (req, res, next) => {
           });
         }
       }
+    } else {
+      console.log('[DEBUG] No authenticated user found on request');
     }
 
     TenantSecurityLogger.info('TENANT_CONTEXT_ESTABLISHED', {
@@ -452,8 +471,10 @@ const tenantIsolationMiddleware = async (req, res, next) => {
       userId: req.user?.id
     });
 
+    console.log('[DEBUG] Exiting tenantIsolationMiddleware successfully');
     next();
   } catch (error) {
+    console.error('[DEBUG] CRITICAL ERROR in tenantIsolationMiddleware:', error);
     TenantSecurityLogger.critical('TENANT_MIDDLEWARE_ERROR', {
       error: error.message,
       stack: error.stack
@@ -472,15 +493,18 @@ const tenantIsolationMiddleware = async (req, res, next) => {
  * Use this after tenantIsolationMiddleware for merchant-specific routes
  */
 const validateMerchantAccess = async (req, res, next) => {
+  console.log('[DEBUG] Entering validateMerchantAccess');
   try {
     const merchantId = req.params.merchantId || req.body.merchantId || req.user?.id;
     
     if (!merchantId) {
+      console.log('[DEBUG] Merchant ID not found, returning 400');
       return res.status(400).json({
         error: 'Merchant ID required',
         code: 'MERCHANT_ID_REQUIRED'
       });
     }
+    console.log(`[DEBUG] Validating merchant access for merchantId: ${merchantId}`);
 
     const hasAccess = await TenantValidator.validateMerchantTenantAccess(
       merchantId, 
@@ -489,6 +513,7 @@ const validateMerchantAccess = async (req, res, next) => {
     );
 
     if (!hasAccess) {
+      console.log('[DEBUG] Merchant access validation failed, returning 403');
       return res.status(403).json({
         error: 'Access denied to merchant resources',
         code: 'MERCHANT_ACCESS_DENIED'
@@ -496,8 +521,10 @@ const validateMerchantAccess = async (req, res, next) => {
     }
 
     req.merchantId = merchantId;
+    console.log('[DEBUG] Exiting validateMerchantAccess successfully');
     next();
   } catch (error) {
+    console.error('[DEBUG] CRITICAL ERROR in validateMerchantAccess:', error);
     TenantSecurityLogger.error('MERCHANT_ACCESS_VALIDATION_ERROR', {
       req,
       error: error.message

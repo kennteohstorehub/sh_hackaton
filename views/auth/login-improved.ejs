@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css?v=<%= Date.now() %>">
+  <link rel="stylesheet" href="/css/auth-improvements.css?v=<%= Date.now() %>">
+  <%- csrfMeta() %>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #000000 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      position: relative;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .login-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 140, 0, 0.3);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 400px;
+      margin: 1rem;
+      position: relative;
+    }
+    
+    .portal-identifier {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 140, 0, 0.3);
+      color: #ff8c00;
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .login-header h1 {
+      background: linear-gradient(135deg, #ff8c00, #ff6b35);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+    
+    .login-header p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.95rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 140, 0, 0.2);
+      border-radius: 10px;
+      font-size: 1rem;
+      color: white;
+      transition: all 0.3s;
+      box-sizing: border-box;
+    }
+    
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: rgba(255, 140, 0, 0.6);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+    }
+    
+    .password-field {
+      position: relative;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .password-toggle:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .forgot-password {
+      text-align: right;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .forgot-password a {
+      color: rgba(255, 140, 0, 0.8);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+    
+    .forgot-password a:hover {
+      color: #ff8c00;
+      text-decoration: underline;
+    }
+    
+    .btn-login {
+      width: 100%;
+      padding: 0.875rem;
+      background: linear-gradient(135deg, #ff8c00, #ff6b35);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-login:hover:not(.loading) {
+      background: linear-gradient(135deg, #ff6b35, #ff8c00);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+    }
+    
+    .btn-login:active {
+      transform: translateY(0);
+    }
+    
+    .btn-login.loading {
+      color: transparent;
+      pointer-events: none;
+    }
+    
+    .btn-login.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .auth-links {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 140, 0, 0.2);
+    }
+    
+    .auth-links a {
+      color: #ff8c00;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    
+    .auth-links a:hover {
+      color: #ff6b35;
+      text-decoration: underline;
+    }
+    
+    .auth-links p {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .logo {
+      display: block;
+      margin: 0 auto 1rem;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #ff8c00, #ff6b35);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+    }
+    
+    /* Enhanced Field Validation */
+    .field-feedback {
+      position: absolute;
+      bottom: -1.25rem;
+      left: 0;
+      font-size: 0.8rem;
+      color: #ef4444;
+      opacity: 0;
+      transform: translateY(-5px);
+      transition: all 0.3s ease;
+    }
+    
+    .field-feedback.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .field-feedback.success {
+      color: #22c55e;
+    }
+    
+    .form-group.has-error input {
+      border-color: rgba(239, 68, 68, 0.5);
+      background: rgba(239, 68, 68, 0.05);
+    }
+    
+    .form-group.has-success input {
+      border-color: rgba(34, 197, 94, 0.5);
+      background: rgba(34, 197, 94, 0.05);
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 2rem 1.5rem;
+        margin: 0.5rem;
+      }
+      
+      .login-header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .form-group input {
+        padding: 0.875rem 1rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      
+      .btn-login {
+        padding: 0.875rem;
+      }
+      
+      .portal-identifier {
+        position: static;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+    }
+    
+    /* Accessibility improvements */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    
+    .btn-login:focus-visible {
+      outline: 2px solid #ffffff;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="portal-identifier tenant">Merchant Portal</div>
+    
+    <div class="login-header">
+      <div class="logo">SQ</div>
+      <h1>Welcome Back</h1>
+      <p>Sign in to manage your queues</p>
+    </div>
+    
+    <% if (messages.error) { %>
+      <div class="alert alert-error">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <div class="alert-title">Sign In Failed</div>
+          <div class="alert-message">
+            <% if (messages.error.includes('Invalid credentials')) { %>
+              Please check your email and password. If you've forgotten your password, use the "Forgot Password" link below.
+            <% } else if (messages.error.includes('Account not found')) { %>
+              No account found with this email address. Please check your email or create a new account.
+            <% } else if (messages.error.includes('Too many attempts')) { %>
+              Too many failed login attempts. Please wait a few minutes before trying again.
+            <% } else { %>
+              <%= messages.error %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+    
+    <% if (messages.success) { %>
+      <div class="alert alert-success">
+        <div class="alert-icon">✅</div>
+        <div class="alert-content">
+          <div class="alert-title">Success</div>
+          <div class="alert-message"><%= messages.success %></div>
+        </div>
+      </div>
+    <% } %>
+    
+    <form action="/auth/login" method="POST" id="loginForm" novalidate>
+      <%- csrfInput() %>
+      <% if (locals.redirect) { %>
+        <input type="hidden" name="redirect" value="<%= redirect %>">
+      <% } %>
+      
+      <div class="form-group" id="emailGroup">
+        <label for="email">Email Address <span class="sr-only">(required)</span></label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          required 
+          placeholder="merchant@example.com"
+          autocomplete="email"
+          aria-describedby="emailFeedback"
+        >
+        <div class="field-feedback" id="emailFeedback" role="alert" aria-live="polite"></div>
+      </div>
+      
+      <div class="form-group password-field" id="passwordGroup">
+        <label for="password">Password <span class="sr-only">(required)</span></label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          required 
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          aria-describedby="passwordFeedback"
+        >
+        <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Show password">
+          👁️
+        </button>
+        <div class="field-feedback" id="passwordFeedback" role="alert" aria-live="polite"></div>
+      </div>
+      
+      <div class="forgot-password">
+        <a href="/auth/forgot-password">Forgot your password?</a>
+      </div>
+      
+      <button type="submit" class="btn-login" id="loginButton">
+        <span class="btn-text">Sign In</span>
+      </button>
+    </form>
+    
+    <div class="auth-links">
+      <p>Don't have an account? <a href="/auth/register">Create one</a></p>
+      <p style="margin-top: 0.75rem;"><a href="/">← Back to Home</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Form validation and UX enhancements
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginButton = document.getElementById('loginButton');
+    
+    // Email validation
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+    
+    // Show field feedback
+    function showFieldFeedback(fieldId, message, isSuccess = false) {
+      const group = document.getElementById(fieldId + 'Group');
+      const feedback = document.getElementById(fieldId + 'Feedback');
+      
+      group.classList.remove('has-error', 'has-success');
+      group.classList.add(isSuccess ? 'has-success' : 'has-error');
+      
+      feedback.textContent = message;
+      feedback.classList.remove('success');
+      if (isSuccess) feedback.classList.add('success');
+      feedback.classList.add('show');
+    }
+    
+    // Hide field feedback
+    function hideFieldFeedback(fieldId) {
+      const group = document.getElementById(fieldId + 'Group');
+      const feedback = document.getElementById(fieldId + 'Feedback');
+      
+      group.classList.remove('has-error', 'has-success');
+      feedback.classList.remove('show');
+    }
+    
+    // Real-time email validation
+    emailInput.addEventListener('blur', function() {
+      const email = this.value.trim();
+      if (email && !validateEmail(email)) {
+        showFieldFeedback('email', 'Please enter a valid email address');
+      } else if (email) {
+        hideFieldFeedback('email');
+      }
+    });
+    
+    emailInput.addEventListener('input', function() {
+      if (this.value.trim() && validateEmail(this.value.trim())) {
+        hideFieldFeedback('email');
+      }
+    });
+    
+    // Password validation
+    passwordInput.addEventListener('blur', function() {
+      const password = this.value;
+      if (password && password.length < 6) {
+        showFieldFeedback('password', 'Password must be at least 6 characters long');
+      } else if (password) {
+        hideFieldFeedback('password');
+      }
+    });
+    
+    passwordInput.addEventListener('input', function() {
+      if (this.value.length >= 6) {
+        hideFieldFeedback('password');
+      }
+    });
+    
+    // Form submission with loading state
+    form.addEventListener('submit', function(e) {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      
+      let hasErrors = false;
+      
+      // Validate email
+      if (!email) {
+        showFieldFeedback('email', 'Email address is required');
+        hasErrors = true;
+      } else if (!validateEmail(email)) {
+        showFieldFeedback('email', 'Please enter a valid email address');
+        hasErrors = true;
+      }
+      
+      // Validate password
+      if (!password) {
+        showFieldFeedback('password', 'Password is required');
+        hasErrors = true;
+      } else if (password.length < 6) {
+        showFieldFeedback('password', 'Password must be at least 6 characters long');
+        hasErrors = true;
+      }
+      
+      if (hasErrors) {
+        e.preventDefault();
+        return;
+      }
+      
+      // Show loading state
+      loginButton.classList.add('loading');
+      loginButton.disabled = true;
+      
+      // Set timeout to handle slow responses
+      setTimeout(() => {
+        if (loginButton.classList.contains('loading')) {
+          loginButton.classList.remove('loading');
+          loginButton.disabled = false;
+        }
+      }, 10000); // 10 second timeout
+    });
+    
+    // Password toggle functionality
+    function togglePassword() {
+      const passwordField = document.getElementById('password');
+      const toggleButton = document.querySelector('.password-toggle');
+      
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleButton.innerHTML = '🙈';
+        toggleButton.setAttribute('aria-label', 'Hide password');
+      } else {
+        passwordField.type = 'password';
+        toggleButton.innerHTML = '👁️';
+        toggleButton.setAttribute('aria-label', 'Show password');
+      }
+    }
+    
+    // Auto-focus first input
+    document.addEventListener('DOMContentLoaded', function() {
+      emailInput.focus();
+    });
+    
+    // Handle browser back button
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        loginButton.classList.remove('loading');
+        loginButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+# Kubernetes Security Configuration for Multi-Tenant Isolation
+# Strict namespace isolation with RBAC and Network Policies
+
+---
+# Base namespace template for tenant isolation
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-template
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    tenant-isolation: "enabled"
+    security-level: "high"
+  annotations:
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: "runtime/default"
+
+---
+# Network Policy for complete tenant isolation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tenant-isolation-policy
+  namespace: tenant-template
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 3000
+  # Allow ingress from same namespace (internal communication)
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: tenant-template
+    ports:
+    - protocol: TCP
+      port: 3000
+    - protocol: TCP
+      port: 6379  # Redis
+  egress:
+  # Allow egress to shared services namespace (database, redis)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: shared-services
+    ports:
+    - protocol: TCP
+      port: 5432  # PostgreSQL
+    - protocol: TCP
+      port: 6379  # Redis
+  # Allow egress to kube-system for DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow HTTPS for external API calls
+  - to: {}
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+
+---
+# Pod Security Policy for strict security controls
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: restricted-tenant-psp
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'runtime/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  readOnlyRootFilesystem: false
+  seLinux:
+    rule: 'RunAsAny'
+
+---
+# Service Account for tenant applications
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tenant-app-sa
+  namespace: tenant-template
+automountServiceAccountToken: false
+
+---
+# Role for tenant applications (minimal permissions)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: tenant-template
+  name: tenant-app-role
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list"]
+  resourceNames: ["app-config", "app-secrets"]
+
+---
+# RoleBinding for tenant applications
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tenant-app-binding
+  namespace: tenant-template
+subjects:
+- kind: ServiceAccount
+  name: tenant-app-sa
+  namespace: tenant-template
+roleRef:
+  kind: Role
+  name: tenant-app-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole for PSP usage
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: restricted-psp-user
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs: ['use']
+  resourceNames:
+  - restricted-tenant-psp
+
+---
+# ClusterRoleBinding for PSP
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: restricted-psp-binding
+roleRef:
+  kind: ClusterRole
+  name: restricted-psp-user
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: tenant-app-sa
+  namespace: tenant-template
+
+---
+# Resource Quota to prevent resource exhaustion
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-quota
+  namespace: tenant-template
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    requests.storage: 20Gi
+    persistentvolumeclaims: "5"
+    pods: "10"
+    services: "5"
+    secrets: "10"
+    configmaps: "10"
+
+---
+# Limit Range for pod resource constraints
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: tenant-limits
+  namespace: tenant-template
+spec:
+  limits:
+  - default:
+      memory: "1Gi"
+      cpu: "500m"
+    defaultRequest:
+      memory: "256Mi"
+      cpu: "100m"
+    max:
+      memory: "2Gi"
+      cpu: "1"
+    min:
+      memory: "64Mi"
+      cpu: "50m"
+    type: Container
+  - default:
+      storage: "1Gi"
+    max:
+      storage: "10Gi"
+    min:
+      storage: "100Mi"
+    type: PersistentVolumeClaim

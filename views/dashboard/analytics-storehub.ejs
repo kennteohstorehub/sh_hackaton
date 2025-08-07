@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Analytics - <%= merchant?.businessName || 'StoreHub QMS' %></title>
+    
+    <!-- StoreHub Design System -->
+    <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+    <link rel="stylesheet" href="/css/storehub-analytics.css?v=<%= Date.now() %>">
+    <!-- Unified Header CSS - Load last to ensure precedence -->
+    <link rel="stylesheet" href="/css/header-unified.css?v=<%= Date.now() %>">
+    
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        /* Additional page-specific styles */
+        .analytics-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: var(--space-6);
+            background-color: var(--gray-100);
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* Customer Outcomes Breakdown */
+        .outcome-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            margin-top: var(--space-3);
+        }
+        
+        .outcome-item {
+            display: flex;
+            align-items: center;
+            font-size: var(--small);
+        }
+        
+        .outcome-label {
+            color: var(--gray-600);
+            font-weight: var(--weight-medium);
+            min-width: 80px;
+        }
+        
+        .outcome-value {
+            font-weight: var(--weight-bold);
+            margin: 0 var(--space-2);
+            font-size: var(--body);
+        }
+        
+        .outcome-value.success {
+            color: var(--success-green);
+        }
+        
+        .outcome-value.error {
+            color: var(--error-red);
+        }
+        
+        .outcome-value.warning {
+            color: var(--warning-yellow);
+        }
+        
+        .outcome-percentage {
+            color: var(--gray-500);
+            font-size: var(--tiny);
+        }
+        
+        /* Outcome Chart */
+        .outcome-chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-4);
+            margin-top: var(--space-3);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--small);
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: var(--radius-sm);
+        }
+        
+        @media (max-width: 768px) {
+            .analytics-container {
+                padding: var(--space-4);
+            }
+            
+            .outcome-breakdown {
+                font-size: var(--tiny);
+            }
+            
+            .outcome-label {
+                min-width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <%- include('../partials/header-storehub', { 
+        activePage: 'analytics',
+        title: 'Analytics',
+        merchant: locals.merchant,
+        queues: locals.queues || [],
+        user: locals.user
+    }) %>
+    
+    <!-- Main Content -->
+    <div class="analytics-container">
+        <!-- Period Selector -->
+        <div class="period-selector-card">
+            <h3>Analytics Period</h3>
+            <div class="period-buttons">
+                <button class="btn-period" data-period="1d">Today</button>
+                <button class="btn-period active" data-period="7d">Last 7 Days</button>
+                <button class="btn-period" data-period="30d">Last 30 Days</button>
+                <button class="btn-period" data-period="90d">Last 90 Days</button>
+                <button class="btn-period" data-period="180d">Last 6 Months</button>
+            </div>
+        </div>
+        
+        <!-- Overview Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <h4 class="stat-label">Total Customers Served</h4>
+                    <p class="stat-value" id="totalCustomersServed">0</p>
+                    <p class="stat-change positive">
+                        <span>↑ 12%</span> from last period
+                    </p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <h4 class="stat-label">Average Wait Time</h4>
+                    <p class="stat-value"><span id="averageWaitTime">0</span> min</p>
+                    <p class="stat-change negative">
+                        <span>↓ 5%</span> from last period
+                    </p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <h4 class="stat-label">Customer Outcomes</h4>
+                    <div class="outcome-breakdown">
+                        <div class="outcome-item">
+                            <span class="outcome-label">Served:</span>
+                            <span class="outcome-value success" id="servedCount">0</span>
+                            <span class="outcome-percentage">(<span id="servedPercentage">0</span>%)</span>
+                        </div>
+                        <div class="outcome-item">
+                            <span class="outcome-label">No-Show:</span>
+                            <span class="outcome-value error" id="noShowCount">0</span>
+                            <span class="outcome-percentage">(<span id="noShowPercentage">0</span>%)</span>
+                        </div>
+                        <div class="outcome-item">
+                            <span class="outcome-label">Withdrawn:</span>
+                            <span class="outcome-value warning" id="withdrawnCount">0</span>
+                            <span class="outcome-percentage">(<span id="withdrawnPercentage">0</span>%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <h4 class="stat-label">Active Queues</h4>
+                    <p class="stat-value"><span id="activeQueues">0</span> / <span id="totalQueues">0</span></p>
+                    <p class="stat-change neutral">
+                        <span>—</span> No change
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <!-- Daily Customers Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Daily Customer Traffic</h3>
+                    <button class="btn-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="chart-body">
+                    <canvas id="dailyCustomersChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Customer Outcomes Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Customer Outcomes Breakdown</h3>
+                    <button class="btn-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="chart-body outcome-chart-container">
+                    <canvas id="outcomesChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Peak Hours Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Peak Hours Analysis</h3>
+                    <button class="btn-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="chart-body">
+                    <canvas id="peakHoursChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Queue Performance Table -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3>Queue Performance</h3>
+                <div class="table-actions">
+                    <button class="btn btn-secondary" onclick="exportAnalytics('csv')">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Export CSV
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportAnalytics('json')">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Export JSON
+                    </button>
+                </div>
+            </div>
+            <div class="table-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Queue Name</th>
+                            <th>Total</th>
+                            <th>Served</th>
+                            <th>No-Show</th>
+                            <th>Withdrawn</th>
+                            <th>Success Rate</th>
+                            <th>Avg Wait</th>
+                            <th>Current</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queuePerformanceTable">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Insights Section -->
+        <div class="insights-grid">
+            <div class="insight-card">
+                <div class="insight-icon success">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="insight-content">
+                    <h4>Best Performance Day</h4>
+                    <p>Tuesday saw the highest customer throughput with minimal wait times</p>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon warning">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div class="insight-content">
+                    <h4>Peak Hour Alert</h4>
+                    <p>Consider additional staffing between 12:00 PM - 2:00 PM</p>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon info">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="insight-content">
+                    <h4>Optimization Tip</h4>
+                    <p>Reducing average service time by 2 minutes could serve 15% more customers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/storehub-design-system.js?v=<%= Date.now() %>"></script>
+    <script>
+        // Global variables
+        let currentPeriod = '7d';
+        let analyticsData = null;
+        let charts = {};
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePeriodSelector();
+            loadAnalytics(currentPeriod);
+        });
+        
+        // Period selector
+        function initializePeriodSelector() {
+            document.querySelectorAll('.btn-period').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.btn-period').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentPeriod = this.dataset.period;
+                    loadAnalytics(currentPeriod);
+                });
+            });
+        }
+        
+        // Load analytics data
+        async function loadAnalytics(period) {
+            try {
+                const response = await fetch(`/api/analytics/dashboard?period=${period}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    analyticsData = data.analytics;
+                    updateOverviewStats();
+                    updateCharts();
+                    updateQueuePerformanceTable();
+                } else {
+                    StoreHubDS.showToast('Failed to load analytics', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                StoreHubDS.showToast('Error loading analytics', 'error');
+            }
+        }
+        
+        // Update overview stats
+        function updateOverviewStats() {
+            document.getElementById('totalCustomersServed').textContent = analyticsData.totalCustomersServed.toLocaleString();
+            document.getElementById('averageWaitTime').textContent = analyticsData.averageWaitTime;
+            
+            // Update customer outcomes breakdown
+            document.getElementById('servedCount').textContent = analyticsData.outcomeBreakdown.served.count.toLocaleString();
+            document.getElementById('servedPercentage').textContent = analyticsData.outcomeBreakdown.served.percentage;
+            
+            document.getElementById('noShowCount').textContent = analyticsData.outcomeBreakdown.noShow.count.toLocaleString();
+            document.getElementById('noShowPercentage').textContent = analyticsData.outcomeBreakdown.noShow.percentage;
+            
+            document.getElementById('withdrawnCount').textContent = analyticsData.outcomeBreakdown.withdrawn.count.toLocaleString();
+            document.getElementById('withdrawnPercentage').textContent = analyticsData.outcomeBreakdown.withdrawn.percentage;
+            
+            document.getElementById('activeQueues').textContent = analyticsData.activeQueues;
+            document.getElementById('totalQueues').textContent = analyticsData.totalQueues;
+        }
+        
+        // Update charts
+        function updateCharts() {
+            // Daily customers chart
+            if (charts.dailyCustomers) {
+                charts.dailyCustomers.destroy();
+            }
+            
+            const dailyCtx = document.getElementById('dailyCustomersChart').getContext('2d');
+            charts.dailyCustomers = new Chart(dailyCtx, {
+                type: 'bar',
+                data: {
+                    labels: analyticsData.dailyStats.map(stat => {
+                        const date = new Date(stat.date);
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }),
+                    datasets: [{
+                        label: 'Served',
+                        data: analyticsData.dailyStats.map(stat => stat.completed),
+                        backgroundColor: '#52C41A',
+                        stack: 'Stack 0'
+                    }, {
+                        label: 'No-Show',
+                        data: analyticsData.dailyStats.map(stat => stat.noShows),
+                        backgroundColor: '#FF4D4F',
+                        stack: 'Stack 0'
+                    }, {
+                        label: 'Withdrawn',
+                        data: analyticsData.dailyStats.map(stat => stat.withdrawn),
+                        backgroundColor: '#FAAD14',
+                        stack: 'Stack 0'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    family: "'Open Sans', sans-serif",
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Customer Outcomes Pie Chart
+            if (charts.outcomes) {
+                charts.outcomes.destroy();
+            }
+            
+            const outcomesCtx = document.getElementById('outcomesChart').getContext('2d');
+            charts.outcomes = new Chart(outcomesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Successfully Served', 'No-Show', 'Withdrawn'],
+                    datasets: [{
+                        data: [
+                            analyticsData.outcomeBreakdown.served.count,
+                            analyticsData.outcomeBreakdown.noShow.count,
+                            analyticsData.outcomeBreakdown.withdrawn.count
+                        ],
+                        backgroundColor: ['#52C41A', '#FF4D4F', '#FAAD14'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {
+                                    family: "'Open Sans', sans-serif",
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Peak hours chart
+            if (charts.peakHours) {
+                charts.peakHours.destroy();
+            }
+            
+            const peakCtx = document.getElementById('peakHoursChart').getContext('2d');
+            const peakHoursData = [];
+            const peakHoursLabels = [];
+            
+            for (let hour = 0; hour < 24; hour++) {
+                peakHoursLabels.push(`${hour}:00`);
+                peakHoursData.push(analyticsData.peakHours[hour] || 0);
+            }
+            
+            charts.peakHours = new Chart(peakCtx, {
+                type: 'bar',
+                data: {
+                    labels: peakHoursLabels,
+                    datasets: [{
+                        label: 'Customers',
+                        data: peakHoursData,
+                        backgroundColor: function(context) {
+                            const value = context.dataset.data[context.dataIndex];
+                            const max = Math.max(...context.dataset.data);
+                            const intensity = value / max;
+                            return intensity > 0.7 ? '#FA8C16' : 
+                                   intensity > 0.4 ? '#FFA940' : '#FFE7BA';
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update queue performance table
+        function updateQueuePerformanceTable() {
+            const tbody = document.getElementById('queuePerformanceTable');
+            tbody.innerHTML = '';
+            
+            analyticsData.queuePerformance.forEach(queue => {
+                const row = tbody.insertRow();
+                const successRateClass = queue.successRate >= 80 ? 'success' : 
+                                        queue.successRate >= 60 ? 'warning' : 'error';
+                
+                row.innerHTML = `
+                    <td>${queue.name}</td>
+                    <td>${queue.totalCustomers}</td>
+                    <td><span style="color: var(--success-green); font-weight: 600;">${queue.completedCustomers}</span></td>
+                    <td><span style="color: var(--error-red); font-weight: 600;">${queue.noShowCustomers}</span></td>
+                    <td><span style="color: var(--warning-yellow); font-weight: 600;">${queue.withdrawnCustomers}</span></td>
+                    <td>
+                        <span class="badge badge-${successRateClass}">
+                            ${queue.successRate}%
+                        </span>
+                    </td>
+                    <td>${queue.averageWaitTime} min</td>
+                    <td>
+                        <span class="badge ${queue.currentLength > 0 ? 'badge-success' : 'badge-secondary'}">
+                            ${queue.currentLength}
+                        </span>
+                    </td>
+                `;
+            });
+        }
+        
+        // Export analytics
+        async function exportAnalytics(format) {
+            try {
+                const response = await fetch(`/api/analytics/export?format=${format}&period=${currentPeriod}`);
+                
+                if (format === 'csv') {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `analytics-${currentPeriod}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const data = await response.json();
+                    const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `analytics-${currentPeriod}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                }
+                
+                StoreHubDS.showToast('Analytics exported successfully', 'success');
+            } catch (error) {
+                console.error('Error exporting analytics:', error);
+                StoreHubDS.showToast('Failed to export analytics', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

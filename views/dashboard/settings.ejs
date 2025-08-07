@@ -1184,8 +1184,8 @@
                 
                 <div class="form-group">
                     <label for="restaurantAddress">Address</label>
-                    <textarea id="restaurantAddress" name="restaurantAddress" rows="3" placeholder="Enter full restaurant address"></textarea>
-                    <div class="form-help">Complete address including city, state, and postal code</div>
+                    <textarea id="restaurantAddress" name="restaurantAddress" rows="3" placeholder="123 Main Street, Kuala Lumpur, WP, 50450, Malaysia"></textarea>
+                    <div class="form-help">Enter address separated by commas: Street, City, State, Postal Code, Country</div>
                 </div>
                 
                 <!-- Compact Operating Hours -->
@@ -1348,9 +1348,9 @@
                         <div class="form-help">How many minutes before their turn to notify customers</div>
                     </div>
                     <div class="form-group">
-                        <label for="maxPartySize">Maximum Party Size</label>
-                        <input type="number" id="maxPartySize" name="maxPartySize" min="1" max="20" placeholder="8">
-                        <div class="form-help">Largest group size allowed to join the queue</div>
+                        <label for="partySizeRegularMax">Maximum Party Size</label>
+                        <input type="number" id="partySizeRegularMax" name="partySizeRegularMax" min="1" max="20" placeholder="5" value="<%= merchant?.settings?.partySizeRegularMax || 5 %>">
+                        <div class="form-help">Largest group size allowed to join the queue (1-10 recommended, max 20)</div>
                     </div>
                 </div>
                 
@@ -1514,8 +1514,17 @@
             const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
             
             days.forEach(day => {
-                const checkbox = document.getElementById(`${day}Closed`);
-                const dayHoursElement = checkbox.closest('.day-hours');
+                const checkbox = document.getElementById(`${day}-closed`);
+                if (!checkbox) {
+                    console.warn(`Checkbox not found for ${day}-closed`);
+                    return;
+                }
+                
+                const dayHoursElement = checkbox.closest('.hours-row');
+                if (!dayHoursElement) {
+                    console.warn(`Hours row not found for ${day}`);
+                    return;
+                }
                 
                 // Set initial state
                 updateDayHoursVisual(dayHoursElement, checkbox.checked);
@@ -1545,12 +1554,20 @@
                 if (data.success && data.merchant) {
                     const merchant = data.merchant;
                     
-                    // Populate form fields
-                    document.getElementById('restaurantName').value = merchant.businessName || 'Demo Restaurant';
-                    document.getElementById('restaurantPhone').value = merchant.phone || '+1234567890';
+                    // Populate form fields with null checks
+                    const restaurantNameEl = document.getElementById('restaurantName');
+                    const restaurantPhoneEl = document.getElementById('restaurantPhone');
+                    const restaurantAddressEl = document.getElementById('restaurantAddress');
+                    
+                    if (restaurantNameEl) {
+                        restaurantNameEl.value = merchant.businessName || 'Demo Restaurant';
+                    }
+                    if (restaurantPhoneEl) {
+                        restaurantPhoneEl.value = merchant.phone || '+1234567890';
+                    }
                     
                     // Populate address
-                    if (merchant.address) {
+                    if (merchant.address && restaurantAddressEl) {
                         const addressText = [
                             merchant.address.street,
                             merchant.address.city,
@@ -1558,7 +1575,7 @@
                             merchant.address.zipCode,
                             merchant.address.country
                         ].filter(Boolean).join(', ');
-                        document.getElementById('restaurantAddress').value = addressText;
+                        restaurantAddressEl.value = addressText;
                     }
                     
                     // Populate business hours
@@ -1567,9 +1584,9 @@
                         days.forEach(day => {
                             const dayData = merchant.businessHours[day];
                             if (dayData) {
-                                const closedCheckbox = document.getElementById(`${day}Closed`);
-                                const startInput = document.getElementById(`${day}Start`);
-                                const endInput = document.getElementById(`${day}End`);
+                                const closedCheckbox = document.getElementById(`${day}-closed`);
+                                const startInput = document.querySelector(`input[name="businessHours[${day}][start]"]`);
+                                const endInput = document.querySelector(`input[name="businessHours[${day}][end]"]`);
                                 
                                 if (closedCheckbox) closedCheckbox.checked = dayData.closed || false;
                                 if (startInput) startInput.value = dayData.start || '09:00';
@@ -1580,8 +1597,15 @@
                     
                     // Update queue settings if available
                     if (merchant.settings) {
-                        document.getElementById('maxCapacity').value = merchant.settings.maxQueueSize || 50;
-                        document.getElementById('avgServiceTime').value = merchant.settings.notificationInterval || 15;
+                        const maxCapacityEl = document.getElementById('maxCapacity');
+                        const avgServiceTimeEl = document.getElementById('avgServiceTime');
+                        
+                        if (maxCapacityEl) {
+                            maxCapacityEl.value = merchant.settings.maxQueueSize || 50;
+                        }
+                        if (avgServiceTimeEl) {
+                            avgServiceTimeEl.value = merchant.settings.notificationInterval || 15;
+                        }
                     }
                 }
             } catch (error) {
@@ -1601,18 +1625,36 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Saving...';
                 
-                // Get form values directly from DOM elements to avoid concatenation
-                const restaurantName = document.getElementById('restaurantName').value.trim();
-                const restaurantPhone = document.getElementById('restaurantPhone').value.trim();
-                const restaurantAddress = document.getElementById('restaurantAddress').value.trim();
+                // Get form values with null checks
+                const restaurantNameEl = document.getElementById('restaurantName');
+                const restaurantPhoneEl = document.getElementById('restaurantPhone');
+                const restaurantAddressEl = document.getElementById('restaurantAddress');
                 
-                // Parse business hours
+                if (!restaurantNameEl || !restaurantPhoneEl || !restaurantAddressEl) {
+                    throw new Error('Required form elements not found');
+                }
+                
+                const restaurantName = restaurantNameEl.value.trim();
+                const restaurantPhone = restaurantPhoneEl.value.trim();
+                const restaurantAddress = restaurantAddressEl.value.trim();
+                
+                // Parse business hours with proper error handling
                 const businessHours = {};
                 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
                 days.forEach(day => {
                     const closedCheckbox = document.getElementById(`${day}-closed`);
                     const startInput = document.querySelector(`input[name="businessHours[${day}][start]"]`);
                     const endInput = document.querySelector(`input[name="businessHours[${day}][end]"]`);
+                    
+                    if (!closedCheckbox) {
+                        console.warn(`Missing closed checkbox for ${day}`);
+                    }
+                    if (!startInput) {
+                        console.warn(`Missing start input for ${day}`);
+                    }
+                    if (!endInput) {
+                        console.warn(`Missing end input for ${day}`);
+                    }
                     
                     businessHours[day] = {
                         closed: closedCheckbox ? closedCheckbox.checked : false,
@@ -1621,10 +1663,23 @@
                     };
                 });
                 
+                // Parse address - split by comma if possible
+                let addressData = null;
+                if (restaurantAddress && restaurantAddress.trim()) {
+                    const addressParts = restaurantAddress.split(',').map(part => part.trim());
+                    addressData = {
+                        street: addressParts[0] || restaurantAddress,
+                        city: addressParts[1] || '',
+                        state: addressParts[2] || '',
+                        zipCode: addressParts[3] || '',
+                        country: addressParts[4] || ''
+                    };
+                }
+                
                 const businessData = {
                     businessName: restaurantName,
                     phone: restaurantPhone,
-                    address: restaurantAddress ? { street: restaurantAddress } : null,
+                    address: addressData,
                     businessHours: businessHours
                 };
                 
@@ -1660,20 +1715,28 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Saving...';
                 
-                // Get form values directly to avoid issues
-                const maxCapacity = document.getElementById('maxCapacity').value;
-                const avgServiceTime = document.getElementById('avgServiceTime').value;
-                const autoNotifications = document.getElementById('autoNotifications').checked;
+                // Get form values with null checks
+                const maxCapacityEl = document.getElementById('maxCapacity');
+                const avgServiceTimeEl = document.getElementById('avgServiceTime');
+                const autoNotificationsEl = document.getElementById('autoNotifications');
+                const partySizeRegularMaxEl = document.getElementById('partySizeRegularMax');
+                
+                if (!maxCapacityEl || !avgServiceTimeEl || !autoNotificationsEl) {
+                    throw new Error('Required queue settings form elements not found');
+                }
+                
+                const maxCapacity = maxCapacityEl.value;
+                const avgServiceTime = avgServiceTimeEl.value;
+                const autoNotifications = autoNotificationsEl.checked;
+                const partySizeRegularMax = partySizeRegularMaxEl ? partySizeRegularMaxEl.value : 5;
                 
                 const settingsData = {
-                    settings: {
-                        maxQueueSize: parseInt(maxCapacity) || 50,
-                        avgMealDuration: parseInt(avgServiceTime) || 15,
-                        autoNotifications: autoNotifications
-                    }
+                    partySizeRegularMax: parseInt(partySizeRegularMax) || 5,
+                    maxQueueSize: parseInt(maxCapacity) || 50,
+                    averageServiceTime: parseInt(avgServiceTime) || 15
                 };
                 
-                const response = await fetch('/api/merchant/profile', createFetchOptions({
+                const response = await fetch('/api/merchant/settings/operations', createFetchOptions({
                     method: 'PUT',
                     body: JSON.stringify(settingsData)
                 }));
@@ -1744,9 +1807,11 @@
                 if (closedCheckbox && hoursRow) {
                     // Add event listener for toggle
                     closedCheckbox.addEventListener('change', function() {
-                        // The CSS will handle the visual changes automatically
-                        // No need to manually show/hide elements
+                        // The CSS will handle the visual changes automatically via :has() selector
+                        console.log(`${day} hours toggle changed:`, this.checked);
                     });
+                } else {
+                    console.warn(`Missing elements for ${day}: checkbox=${!!closedCheckbox}, row=${!!hoursRow}`);
                 }
             });
         }

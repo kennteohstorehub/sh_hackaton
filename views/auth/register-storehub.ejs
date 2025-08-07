@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <!-- StoreHub Design System -->
+  <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
+  <link rel="stylesheet" href="/css/storehub-global.css?v=<%= Date.now() %>">
+  <script src="/js/storehub-design-system.js?v=<%= Date.now() %>" defer></script>
+  <%- csrfMeta() %>
+  <style>
+    body {
+      background: linear-gradient(135deg, var(--gray-100) 0%, var(--base-white) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4) 0;
+    }
+    
+    .auth-container {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+      margin: var(--space-4);
+    }
+    
+    .auth-header {
+      background: var(--primary-orange);
+      color: white;
+      padding: var(--space-6) var(--space-6);
+      text-align: center;
+    }
+    
+    .auth-logo {
+      font-size: var(--heading-2);
+      font-weight: var(--weight-bold);
+      margin-bottom: var(--space-1);
+    }
+    
+    .auth-subtitle {
+      font-size: var(--small);
+      opacity: 0.9;
+    }
+    
+    .auth-body {
+      padding: var(--space-6);
+    }
+    
+    .auth-title {
+      font-size: var(--heading-3);
+      font-weight: var(--weight-semibold);
+      color: var(--gray-900);
+      margin-bottom: var(--space-2);
+      text-align: center;
+    }
+    
+    .auth-description {
+      text-align: center;
+      color: var(--gray-600);
+      margin-bottom: var(--space-6);
+      font-size: var(--small);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+    
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .form-group {
+      margin-bottom: var(--space-4);
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-size: var(--small);
+      font-weight: var(--weight-medium);
+      color: var(--gray-700);
+    }
+    
+    .form-label.required::after {
+      content: " *";
+      color: var(--error-red);
+    }
+    
+    .form-control {
+      width: 100%;
+      height: 44px;
+      padding: var(--space-3) var(--space-3);
+      font-size: var(--body);
+      border: 1px solid var(--gray-400);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-orange);
+      box-shadow: 0 0 0 3px rgba(250, 140, 22, 0.1);
+      outline: none;
+    }
+    
+    .form-text {
+      display: block;
+      margin-top: var(--space-1);
+      font-size: var(--tiny);
+      color: var(--gray-600);
+    }
+    
+    .btn-auth {
+      width: 100%;
+      height: 48px;
+      margin-top: var(--space-5);
+      font-size: var(--body);
+      font-weight: var(--weight-semibold);
+    }
+    
+    .auth-divider {
+      text-align: center;
+      margin: var(--space-5) 0;
+      position: relative;
+    }
+    
+    .auth-divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      background: var(--gray-300);
+    }
+    
+    .auth-divider span {
+      background: white;
+      padding: 0 var(--space-3);
+      position: relative;
+      color: var(--gray-600);
+      font-size: var(--small);
+    }
+    
+    .auth-footer {
+      text-align: center;
+      margin-top: var(--space-5);
+      font-size: var(--small);
+      color: var(--gray-600);
+    }
+    
+    .auth-footer a {
+      color: var(--primary-orange);
+      text-decoration: none;
+      font-weight: var(--weight-medium);
+    }
+    
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    .alert {
+      margin-bottom: var(--space-4);
+    }
+    
+    .tenant-info {
+      background: var(--gray-100);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-5);
+      text-align: center;
+    }
+    
+    .tenant-info-label {
+      font-size: var(--tiny);
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .tenant-info-name {
+      font-size: var(--body-large);
+      font-weight: var(--weight-semibold);
+      color: var(--gray-900);
+      margin-top: var(--space-1);
+    }
+    
+    .terms-checkbox {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+    }
+    
+    .terms-checkbox input[type="checkbox"] {
+      margin-top: 2px;
+    }
+    
+    .terms-checkbox label {
+      font-size: var(--small);
+      color: var(--gray-700);
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container fade-in">
+    <div class="auth-header">
+      <div class="auth-logo">StoreHub</div>
+      <div class="auth-subtitle">Queue Management System</div>
+    </div>
+    
+    <div class="auth-body">
+      <h1 class="auth-title">Create Your Account</h1>
+      <p class="auth-description">
+        Join thousands of businesses managing their queues efficiently
+      </p>
+      
+      <% if (locals.tenant) { %>
+      <div class="tenant-info">
+        <div class="tenant-info-label">Registering for</div>
+        <div class="tenant-info-name"><%= tenant.name %></div>
+      </div>
+      <% } %>
+      
+      <% if (messages && messages.error) { %>
+      <div class="alert alert-danger">
+        <%= messages.error %>
+      </div>
+      <% } %>
+      
+      <% if (messages && messages.success) { %>
+      <div class="alert alert-success">
+        <%= messages.success %>
+      </div>
+      <% } %>
+      
+      <form action="/auth/register" method="POST" class="needs-validation" novalidate>
+        <%- csrfInput() %>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="businessName" class="form-label required">Business Name</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="businessName" 
+              name="businessName" 
+              required 
+              autofocus
+              placeholder="Your Business"
+            >
+            <div class="invalid-feedback">
+              Please enter your business name.
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phone" class="form-label required">Phone Number</label>
+            <input 
+              type="tel" 
+              class="form-control" 
+              id="phone" 
+              name="phone" 
+              required
+              placeholder="+60123456789"
+            >
+            <div class="invalid-feedback">
+              Please enter a valid phone number.
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email" class="form-label required">Email Address</label>
+          <input 
+            type="email" 
+            class="form-control" 
+            id="email" 
+            name="email" 
+            required
+            placeholder="your@email.com"
+          >
+          <div class="invalid-feedback">
+            Please enter a valid email address.
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label required">Password</label>
+          <input 
+            type="password" 
+            class="form-control" 
+            id="password" 
+            name="password" 
+            required
+            minlength="8"
+            placeholder="Min. 8 characters"
+          >
+          <span class="form-text">
+            Use at least 8 characters with a mix of letters and numbers
+          </span>
+          <div class="invalid-feedback">
+            Password must be at least 8 characters long.
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label required">Confirm Password</label>
+          <input 
+            type="password" 
+            class="form-control" 
+            id="confirmPassword" 
+            name="confirmPassword" 
+            required
+            placeholder="Confirm your password"
+          >
+          <div class="invalid-feedback">
+            Passwords must match.
+          </div>
+        </div>
+        
+        <div class="terms-checkbox">
+          <input type="checkbox" id="terms" name="terms" required>
+          <label for="terms">
+            I agree to the <a href="/terms" target="_blank">Terms of Service</a> 
+            and <a href="/privacy" target="_blank">Privacy Policy</a>
+          </label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-auth">
+          Create Account
+        </button>
+      </form>
+      
+      <div class="auth-divider">
+        <span>or</span>
+      </div>
+      
+      <div class="auth-footer">
+        Already have an account? 
+        <a href="/auth/login">Sign in here</a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Form validation
+    (function() {
+      'use strict';
+      const forms = document.querySelectorAll('.needs-validation');
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          // Check password match
+          const password = form.querySelector('#password');
+          const confirmPassword = form.querySelector('#confirmPassword');
+          
+          if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Passwords must match');
+          } else {
+            confirmPassword.setCustomValidity('');
+          }
+          
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+      
+      // Real-time password match validation
+      const password = document.getElementById('password');
+      const confirmPassword = document.getElementById('confirmPassword');
+      
+      function checkPasswordMatch() {
+        if (confirmPassword.value !== '' && password.value !== confirmPassword.value) {
+          confirmPassword.setCustomValidity('Passwords must match');
+        } else {
+          confirmPassword.setCustomValidity('');
+        }
+      }
+      
+      password.addEventListener('input', checkPasswordMatch);
+      confirmPassword.addEventListener('input', checkPasswordMatch);
+    })();
+  </script>
+</body>
+</html>

@@ -19,13 +19,16 @@ if (useAuthBypass) {
 }
 
 // GET /api/analytics/dashboard - Get dashboard analytics
+// Note: Analytics data is retained for a maximum of 6 months
 router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
     const merchantId = req.session.user.id;
     const { period = '7d' } = req.query;
 
-    // Calculate date range
+    // Calculate date range (max 6 months due to data retention policy)
     let startDate;
+    const sixMonthsAgo = moment().subtract(6, 'months').startOf('day');
+    
     switch (period) {
       case '1d':
         startDate = moment().subtract(1, 'day').startOf('day');
@@ -39,8 +42,16 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
       case '90d':
         startDate = moment().subtract(90, 'days').startOf('day');
         break;
+      case '180d':
+        startDate = moment().subtract(180, 'days').startOf('day');
+        break;
       default:
         startDate = moment().subtract(7, 'days').startOf('day');
+    }
+    
+    // Ensure we don't request data older than 6 months
+    if (startDate.isBefore(sixMonthsAgo)) {
+      startDate = sixMonthsAgo;
     }
 
     // Get all queues for the merchant
@@ -49,13 +60,23 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
     // Calculate analytics
     const analytics = {
       totalCustomersServed: 0,
+      totalNoShows: 0,
+      totalWithdrawn: 0,
+      totalCalled: 0,
+      successRate: 0,
       averageWaitTime: 0,
       totalQueues: queues.length,
       activeQueues: 0,
-      customerSatisfaction: 0,
+      noShowRate: 0,
+      withdrawalRate: 0,
       peakHours: {},
       dailyStats: [],
-      queuePerformance: []
+      queuePerformance: [],
+      outcomeBreakdown: {
+        served: { count: 0, percentage: 0 },
+        noShow: { count: 0, percentage: 0 },
+        withdrawn: { count: 0, percentage: 0 }
+      }
     };
 
     // Process each queue
@@ -67,9 +88,21 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         moment(entry.joinedAt).isAfter(startDate)
       );
 
-      analytics.totalCustomersServed += recentEntries.filter(entry => 
+      const completedCount = recentEntries.filter(entry => 
         entry.status === 'completed'
       ).length;
+      
+      const noShowCount = recentEntries.filter(entry => 
+        entry.status === 'no_show'
+      ).length;
+      
+      const withdrawnCount = recentEntries.filter(entry => 
+        entry.status === 'withdrawn'
+      ).length;
+      
+      analytics.totalCustomersServed += completedCount;
+      analytics.totalNoShows += noShowCount;
+      analytics.totalWithdrawn += withdrawnCount;
 
       // Calculate average wait time
       const completedEntries = recentEntries.filter(entry => 
@@ -93,11 +126,15 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
       });
 
       // Queue performance
+      const queueTotal = completedCount + noShowCount + withdrawnCount;
       analytics.queuePerformance.push({
         queueId: queue._id,
         name: queue.name,
         totalCustomers: recentEntries.length,
-        completedCustomers: completedEntries.length,
+        completedCustomers: completedCount,
+        noShowCustomers: noShowCount,
+        withdrawnCustomers: withdrawnCount,
+        successRate: queueTotal > 0 ? Math.round((completedCount / queueTotal) * 100) : 0,
         averageWaitTime: completedEntries.length > 0 ? 
           Math.round(completedEntries.reduce((sum, entry) => {
             return sum + moment(entry.completedAt).diff(moment(entry.joinedAt), 'minutes');
@@ -119,24 +156,30 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         date: date.format('YYYY-MM-DD'),
         customers: dayEntries.length,
         completed: dayEntries.filter(entry => entry.status === 'completed').length,
-        cancelled: dayEntries.filter(entry => entry.status === 'cancelled').length
+        cancelled: dayEntries.filter(entry => entry.status === 'cancelled').length,
+        noShows: dayEntries.filter(entry => entry.status === 'no_show').length,
+        withdrawn: dayEntries.filter(entry => entry.status === 'withdrawn').length
       });
     }
 
-    // Calculate customer satisfaction (simplified)
-    const allRecentEntries = queues.flatMap(queue => 
-      queue.entries.filter(entry => 
-        moment(entry.joinedAt).isAfter(startDate) && entry.sentimentScore
-      )
-    );
-
-    if (allRecentEntries.length > 0) {
-      const avgSentiment = allRecentEntries.reduce((sum, entry) => 
-        sum + (entry.sentimentScore || 0), 0
-      ) / allRecentEntries.length;
+    // Calculate total called (served + no-show + withdrawn)
+    analytics.totalCalled = analytics.totalCustomersServed + analytics.totalNoShows + analytics.totalWithdrawn;
+    
+    // Calculate rates and percentages
+    if (analytics.totalCalled > 0) {
+      analytics.successRate = Math.round((analytics.totalCustomersServed / analytics.totalCalled) * 100);
+      analytics.noShowRate = Math.round((analytics.totalNoShows / analytics.totalCalled) * 100);
+      analytics.withdrawalRate = Math.round((analytics.totalWithdrawn / analytics.totalCalled) * 100);
       
-      // Convert sentiment score (-1 to 1) to satisfaction percentage (0 to 100)
-      analytics.customerSatisfaction = Math.round(((avgSentiment + 1) / 2) * 100);
+      // Update outcome breakdown
+      analytics.outcomeBreakdown.served.count = analytics.totalCustomersServed;
+      analytics.outcomeBreakdown.served.percentage = analytics.successRate;
+      
+      analytics.outcomeBreakdown.noShow.count = analytics.totalNoShows;
+      analytics.outcomeBreakdown.noShow.percentage = analytics.noShowRate;
+      
+      analytics.outcomeBreakdown.withdrawn.count = analytics.totalWithdrawn;
+      analytics.outcomeBreakdown.withdrawn.percentage = analytics.withdrawalRate;
     }
 
     res.json({
@@ -164,8 +207,10 @@ router.get('/queue/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    // Calculate date range
+    // Calculate date range (max 6 months due to data retention policy)
     let startDate;
+    const sixMonthsAgo = moment().subtract(6, 'months').startOf('day');
+    
     switch (period) {
       case '1d':
         startDate = moment().subtract(1, 'day').startOf('day');
@@ -179,8 +224,16 @@ router.get('/queue/:id', authMiddleware, async (req, res) => {
       case '90d':
         startDate = moment().subtract(90, 'days').startOf('day');
         break;
+      case '180d':
+        startDate = moment().subtract(180, 'days').startOf('day');
+        break;
       default:
         startDate = moment().subtract(7, 'days').startOf('day');
+    }
+    
+    // Ensure we don't request data older than 6 months
+    if (startDate.isBefore(sixMonthsAgo)) {
+      startDate = sixMonthsAgo;
     }
 
     // Filter entries by date range

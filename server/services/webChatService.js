@@ -1,5 +1,6 @@
 const logger = require('../utils/logger');
 const prisma = require('../utils/prisma');
+const { TenantAwarePrisma, TenantSecurityLogger } = require('../middleware/tenant-isolation');
 
 class WebChatService {
     constructor() {
@@ -8,6 +9,19 @@ class WebChatService {
         
         // Clean up old sessions every hour
         setInterval(() => this.cleanupSessions(), 60 * 60 * 1000);
+    }
+
+    /**
+     * Get tenant-aware Prisma client
+     */
+    _getTenantPrisma(tenantId) {
+        if (!tenantId) {
+            TenantSecurityLogger.warn('WEBCHAT_SERVICE_NO_TENANT_CONTEXT', {
+                message: 'Using regular Prisma client without tenant filtering - backward compatibility mode'
+            });
+            return prisma;
+        }
+        return TenantAwarePrisma.create(tenantId);
     }
 
     /**
@@ -137,7 +151,7 @@ Just type or click the buttons!`,
     /**
      * Confirm cancellation
      */
-    async confirmCancellation(sessionId) {
+    async confirmCancellation(sessionId, tenantId = null) {
         const session = this.getSession(sessionId);
         const conversationState = this.conversationStates.get(sessionId);
         
@@ -148,9 +162,17 @@ Just type or click the buttons!`,
             };
         }
         
+        const db = this._getTenantPrisma(tenantId);
+        
+        TenantSecurityLogger.info('WEBCHAT_CANCEL_QUEUE_ENTRY', {
+            sessionId,
+            queueEntryId: conversationState.queueEntryId,
+            tenantId
+        });
+        
         try {
             // Update queue entry status
-            await prisma.queueEntry.update({
+            await db.queueEntry.update({
                 where: { id: conversationState.queueEntryId },
                 data: {
                     status: 'cancelled',
