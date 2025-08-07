@@ -5,6 +5,9 @@ const queueService = require('../services/queueService');
 const prisma = require('../utils/prisma');
 const logger = require('../utils/logger');
 const checkQueueStatus = require('../middleware/checkQueueStatus');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs').promises;
 
 // Use appropriate auth middleware based on environment
 let requireAuth, loadUser;
@@ -23,6 +26,49 @@ const { tenantIsolationMiddleware, validateMerchantAccess } = require('../middle
 const { generateQRPosterPDF, generateSimpleQRPDF } = require('../utils/pdfGenerator');
 
 const router = express.Router();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const merchantId = req.session?.user?.id || 'temp';
+    const uploadDir = path.join(__dirname, '../../public/uploads/merchants', merchantId);
+    
+    // Create directory if it doesn't exist
+    try {
+      await fs.mkdir(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+    } catch (error) {
+      cb(error);
+    }
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    
+    if (file.fieldname === 'logo') {
+      cb(null, 'logo-' + uniqueSuffix + ext);
+    } else if (file.fieldname === 'banner') {
+      cb(null, 'banner-' + uniqueSuffix + ext);
+    } else {
+      cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    }
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PNG, JPG, and SVG images are allowed.'));
+    }
+  }
+});
 
 // Public endpoints (no auth required)
 // GET /api/merchants - Get list of active merchants (public)
@@ -315,6 +361,127 @@ router.put('/settings/notifications', checkQueueStatus(), async (req, res) => {
   } catch (error) {
     logger.error('Error updating notification settings:', error);
     res.status(500).json({ error: 'Failed to update notification settings' });
+  }
+});
+
+// POST /api/merchant/upload-logo - Upload business logo
+router.post('/upload-logo', upload.single('logo'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const merchantId = req.session.user.id;
+    const logoUrl = `/uploads/merchants/${merchantId}/${req.file.filename}`;
+
+    // Update merchant with logo URL
+    await prisma.merchant.update({
+      where: { id: merchantId },
+      data: { logoUrl }
+    });
+
+    res.json({ 
+      success: true, 
+      logoUrl,
+      message: 'Logo uploaded successfully'
+    });
+  } catch (error) {
+    logger.error('Error uploading logo:', error);
+    res.status(500).json({ error: 'Failed to upload logo' });
+  }
+});
+
+// POST /api/merchant/upload-banner - Upload banner image
+router.post('/upload-banner', upload.single('banner'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const merchantId = req.session.user.id;
+    const bannerUrl = `/uploads/merchants/${merchantId}/${req.file.filename}`;
+
+    // Update merchant with banner URL
+    await prisma.merchant.update({
+      where: { id: merchantId },
+      data: { bannerImageUrl: bannerUrl }
+    });
+
+    res.json({ 
+      success: true, 
+      bannerUrl,
+      message: 'Banner uploaded successfully'
+    });
+  } catch (error) {
+    logger.error('Error uploading banner:', error);
+    res.status(500).json({ error: 'Failed to upload banner' });
+  }
+});
+
+// PUT /api/merchant/branding - Update branding settings
+router.put('/branding', async (req, res) => {
+  try {
+    const merchantId = req.session.user.id;
+    const { brandColor } = req.body;
+
+    await prisma.merchant.update({
+      where: { id: merchantId },
+      data: { brandColor }
+    });
+
+    res.json({ 
+      success: true,
+      message: 'Branding settings updated successfully'
+    });
+  } catch (error) {
+    logger.error('Error updating branding:', error);
+    res.status(500).json({ error: 'Failed to update branding' });
+  }
+});
+
+// PUT /api/merchant/settings/mobile - Update mobile display settings
+router.put('/settings/mobile', async (req, res) => {
+  try {
+    const merchantId = req.session.user.id;
+    const {
+      mobileRefreshInterval,
+      mobileDisplayFormat,
+      mobileHighlightDuration,
+      mobileAutoScroll,
+      mobileSoundAlerts,
+      mobileVibrationAlerts
+    } = req.body;
+
+    // Find or create settings
+    const settings = await prisma.merchantSettings.upsert({
+      where: { merchantId },
+      update: {
+        mobileRefreshInterval,
+        mobileDisplayFormat,
+        mobileHighlightDuration,
+        mobileAutoScroll,
+        mobileSoundAlerts,
+        mobileVibrationAlerts
+      },
+      create: {
+        merchantId,
+        mobileRefreshInterval,
+        mobileDisplayFormat,
+        mobileHighlightDuration,
+        mobileAutoScroll,
+        mobileSoundAlerts,
+        mobileVibrationAlerts
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Mobile settings updated successfully',
+      settings
+    });
+  } catch (error) {
+    logger.error('Error updating mobile settings:', error);
+    res.status(500).json({ error: 'Failed to update mobile settings' });
   }
 });
 

@@ -6,8 +6,8 @@ This document provides comprehensive guidance for testing the multi-tenant authe
 
 The system implements a sophisticated multi-tenant architecture with:
 
-- **BackOffice Portal**: Admin interface at `admin.lvh.me:3838`
-- **Tenant Portals**: Individual tenant interfaces (e.g., `demo.lvh.me:3838`, `test-cafe.lvh.me:3838`)
+- **BackOffice Portal**: Admin interface at `admin.lvh.me:3000`
+- **Tenant Portals**: Individual tenant interfaces (e.g., `demo.lvh.me:3000`, `test-cafe.lvh.me:3000`)
 - **Session Isolation**: Complete separation between BackOffice and tenant sessions
 - **Security Boundaries**: Strict access controls preventing cross-tenant data access
 
@@ -137,9 +137,9 @@ npx playwright test multi-tenant-security.spec.js
 ## 📊 Test Coverage Areas
 
 ### ✅ Authentication Flows
-- [x] BackOffice login at admin.lvh.me:3838
-- [x] Demo tenant login at demo.lvh.me:3838  
-- [x] Test Cafe tenant login at test-cafe.lvh.me:3838
+- [x] BackOffice login at admin.lvh.me:3000
+- [x] Demo tenant login at demo.lvh.me:3000  
+- [x] Test Cafe tenant login at test-cafe.lvh.me:3000
 - [x] Invalid credential handling
 - [x] Session persistence across page reloads
 - [x] Logout functionality
@@ -177,17 +177,17 @@ npx playwright test multi-tenant-security.spec.js
 ## 🎯 Test Credentials
 
 ### BackOffice Portal
-- **URL**: http://admin.lvh.me:3838/backoffice/auth/login
+- **URL**: http://admin.lvh.me:3000/backoffice/auth/login
 - **Email**: backoffice@storehubqms.local
 - **Password**: BackOffice123!@#
 
 ### Demo Tenant
-- **URL**: http://demo.lvh.me:3838/auth/login
+- **URL**: http://demo.lvh.me:3000/auth/login
 - **Email**: admin@demo.local
 - **Password**: Demo123!@#
 
 ### Test Cafe Tenant
-- **URL**: http://test-cafe.lvh.me:3838/auth/login
+- **URL**: http://test-cafe.lvh.me:3000/auth/login
 - **Email**: cafe@testcafe.local
 - **Password**: Test123!@#
 
@@ -211,10 +211,10 @@ The test runner generates a comprehensive report (`multi-tenant-auth-test-report
     "testRunner": "custom-multi-tenant-auth-runner"
   },
   "testConfiguration": {
-    "backofficeUrl": "http://admin.lvh.me:3838",
+    "backofficeUrl": "http://admin.lvh.me:3000",
     "tenantUrls": [
-      "http://demo.lvh.me:3838",
-      "http://test-cafe.lvh.me:3838"
+      "http://demo.lvh.me:3000",
+      "http://test-cafe.lvh.me:3000"
     ],
     "databaseUrl": "configured",
     "sessionSecret": "configured"
@@ -247,7 +247,7 @@ The test runner generates a comprehensive report (`multi-tenant-auth-test-report
    npm start
    
    # Or check port usage
-   lsof -i :3838
+   lsof -i :3000
    ```
 
 4. **Missing Test Data**

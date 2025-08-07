@@ -55,7 +55,7 @@ This document describes the comprehensive test suite for the new card-based ackn
 
 2. Ensure the server is running on port 3838:
    ```bash
-   curl http://localhost:3838/health
+   curl http://localhost:3000/health
    ```
 
 ### Run All Card Tests

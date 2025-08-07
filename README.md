@@ -103,8 +103,8 @@ An AI-powered queue management system that reduces customer friction and manages
    ```
 
 6. **Access the application**
-   - Frontend: http://localhost:3001
-   - API: http://localhost:3001/api
+   - Frontend: http://localhost:3000
+   - API: http://localhost:3000/api
 
 ## 📋 Environment Variables
 
@@ -250,7 +250,7 @@ pm2 save
 docker build -t storehub-queue-management .
 
 # Run container
-docker run -p 3001:3001 -e MONGODB_URI=mongodb://host.docker.internal:27017/storehub-queue-management storehub-queue-management
+docker run -p 3001:3000 -e MONGODB_URI=mongodb://host.docker.internal:27017/storehub-queue-management storehub-queue-management
 ```
 
 ## 🤝 Contributing

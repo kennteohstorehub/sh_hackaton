@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Find Null Style Error', () => {
-    const BASE_URL = 'http://localhost:3838';
+    const BASE_URL = 'http://localhost:3000';
     
     test('Monitor console for null style errors during notification flow', async ({ page, context }) => {
         // Track all console errors

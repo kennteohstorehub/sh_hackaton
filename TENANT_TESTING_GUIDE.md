@@ -7,11 +7,11 @@
 These URLs work without any setup - lvh.me automatically resolves to 127.0.0.1:
 
 #### SuperAdmin Portal
-- **URL**: http://admin.lvh.me:3838
+- **URL**: http://admin.lvh.me:3000
 - **Purpose**: Manage all tenants, users, and system settings
 
 #### Main Landing Page
-- **URL**: http://lvh.me:3838
+- **URL**: http://lvh.me:3000
 - **Purpose**: Shows "no subdomain" page directing users to use their organization's subdomain
 
 ---
@@ -20,7 +20,7 @@ These URLs work without any setup - lvh.me automatically resolves to 127.0.0.1:
 
 ### 1. Demo Restaurant (Default Test Tenant)
 - **Subdomain**: demo
-- **URL**: http://demo.lvh.me:3838
+- **URL**: http://demo.lvh.me:3000
 - **Admin Credentials**:
   - Email: `admin@demo.local`
   - Password: `Demo123!@#`
@@ -28,7 +28,7 @@ These URLs work without any setup - lvh.me automatically resolves to 127.0.0.1:
 
 ### 2. Test Cafe
 - **Subdomain**: test-cafe
-- **URL**: http://test-cafe.lvh.me:3838
+- **URL**: http://test-cafe.lvh.me:3000
 - **Admin Credentials**:
   - Email: `admin@testcafe.local`
   - Password: `Test123!@#`
@@ -36,7 +36,7 @@ These URLs work without any setup - lvh.me automatically resolves to 127.0.0.1:
 
 ### 3. Test Restaurant 1
 - **Subdomain**: test-restaurant-1
-- **URL**: http://test-restaurant-1.lvh.me:3838
+- **URL**: http://test-restaurant-1.lvh.me:3000
 - **Admin Credentials**:
   - Email: `admin@test1.com`
   - Password: `Test123!@#`
@@ -44,7 +44,7 @@ These URLs work without any setup - lvh.me automatically resolves to 127.0.0.1:
 
 ### 4. Test Restaurant 2
 - **Subdomain**: test-restaurant-2
-- **URL**: http://test-restaurant-2.lvh.me:3838
+- **URL**: http://test-restaurant-2.lvh.me:3000
 - **Admin Credentials**:
   - Email: `admin@test2.com`
   - Password: `Test123!@#`
@@ -115,7 +115,7 @@ createSuperAdmin();
 
 ### 1. SuperAdmin Functions
 1. **Login to SuperAdmin Portal**
-   - Go to: http://admin.lvh.me:3838
+   - Go to: http://admin.lvh.me:3000
    - Use SuperAdmin credentials
    - You should see the SuperAdmin dashboard
 
@@ -129,12 +129,12 @@ createSuperAdmin();
    - Submit and verify tenant is created
 
 3. **Access New Tenant**
-   - Visit: http://test-pizza.lvh.me:3838
+   - Visit: http://test-pizza.lvh.me:3000
    - Login with the admin credentials you just created
 
 ### 2. Tenant Admin Functions
 1. **Login as Tenant Admin**
-   - Go to: http://demo.lvh.me:3838
+   - Go to: http://demo.lvh.me:3000
    - Login with: admin@demo.local / Demo123!@#
 
 2. **Create Queue**
@@ -147,11 +147,11 @@ createSuperAdmin();
 
 ### 3. Data Isolation Testing
 1. **Login to Tenant 1**
-   - URL: http://test-restaurant-1.lvh.me:3838
+   - URL: http://test-restaurant-1.lvh.me:3000
    - Create some queues and customers
 
 2. **Login to Tenant 2**
-   - URL: http://test-restaurant-2.lvh.me:3838
+   - URL: http://test-restaurant-2.lvh.me:3000
    - Verify you cannot see Tenant 1's data
 
 3. **Check Cross-Tenant Security**
@@ -160,7 +160,7 @@ createSuperAdmin();
 
 ### 4. Customer Experience
 1. **Join Queue via WebChat**
-   - Go to: http://demo.lvh.me:3838/webchat
+   - Go to: http://demo.lvh.me:3000/webchat
    - Join the queue as a customer
    - Test receiving notifications
 
@@ -199,7 +199,7 @@ All test tenants are created with the "Basic" plan:
 ## 🛠️ Troubleshooting
 
 ### Cannot Access Subdomains
-1. Ensure you're using `.lvh.me:3838` URLs
+1. Ensure you're using `.lvh.me:3000` URLs
 2. Check if the server is running on port 3838
 3. Verify `.env.local` has `BASE_DOMAIN=lvh.me`
 

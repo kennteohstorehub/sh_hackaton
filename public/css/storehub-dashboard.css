@@ -371,7 +371,283 @@
 }
 
 /* ========================================
-   7. Empty States
+   7. Queue Table (Horizontal Layout)
+   ======================================== */
+.queue-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--body);
+}
+
+.queue-table thead {
+  background: var(--gray-100);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.queue-table th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: var(--weight-semibold);
+  color: var(--gray-700);
+  font-size: var(--small);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--gray-300);
+  white-space: nowrap;
+}
+
+.queue-table tbody tr {
+  transition: all var(--transition-fast);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.queue-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.queue-table tbody tr.queue-row {
+  animation: fadeIn var(--transition-normal);
+}
+
+.queue-table td {
+  padding: var(--space-4);
+  vertical-align: middle;
+  color: var(--gray-900);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+/* Column specific styles */
+.queue-table .queue-number {
+  width: 80px;
+  font-weight: var(--weight-bold);
+}
+
+.queue-table .number-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-orange);
+  color: white;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--small);
+  font-weight: var(--weight-semibold);
+  min-width: 45px;
+}
+
+.queue-table .queue-pax {
+  width: 80px;
+}
+
+.queue-table .pax-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-200);
+  color: var(--gray-700);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--body);
+  font-weight: var(--weight-medium);
+  min-width: 32px;
+}
+
+.queue-table .queue-phone {
+  width: 150px;
+  font-family: var(--font-mono);
+  color: var(--gray-700);
+}
+
+.queue-table .queue-name {
+  min-width: 200px;
+}
+
+.queue-table .name-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.queue-table .customer-name {
+  font-weight: var(--weight-medium);
+  color: var(--gray-900);
+}
+
+.queue-table .verification-code-badge {
+  background: var(--primary-blue);
+  color: white;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.05em;
+}
+
+.queue-table .queue-wait-time {
+  width: 120px;
+}
+
+.queue-table .wait-time {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  font-size: var(--small);
+  color: var(--gray-700);
+}
+
+.queue-table .queue-actions {
+  width: 150px;
+}
+
+.queue-table .action-buttons {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.queue-table .queue-status {
+  width: 120px;
+}
+
+.queue-table .badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--tiny);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.queue-table .badge-success {
+  background: rgba(82, 196, 26, 0.1);
+  color: var(--success-green);
+}
+
+/* Customer status styles */
+.queue-table .customer-called {
+  background: rgba(255, 193, 7, 0.05);
+  border-left: 3px solid var(--warning-yellow);
+}
+
+.queue-table .badge-called {
+  background: var(--warning-yellow);
+  color: white;
+}
+
+.queue-table .status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: var(--tiny);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  margin-left: var(--space-2);
+}
+
+.queue-table .status-indicator.called {
+  background: rgba(255, 193, 7, 0.2);
+  color: var(--warning-yellow);
+}
+
+.queue-table .called-time {
+  margin-top: var(--space-1);
+  color: var(--gray-600);
+  font-size: var(--tiny);
+}
+
+/* Button styles */
+.btn-warning {
+  background: var(--warning-yellow);
+  color: white;
+  border: none;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
+}
+
+.btn-success {
+  background: var(--success-green);
+  color: white;
+  border: none;
+}
+
+.btn-success:hover {
+  background: #218838;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .queue-table {
+    font-size: var(--small);
+  }
+  
+  .queue-table th,
+  .queue-table td {
+    padding: var(--space-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .queue-table-container {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .queue-table {
+    min-width: 700px;
+  }
+}
+
+/* Row animations */
+.queue-table tbody tr.fade-in {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.queue-table tbody tr.scale-out {
+  animation: scaleOut 0.3s ease-out;
+  opacity: 0;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+/* ========================================
+   8. Empty States
    ======================================== */
 .empty-state {
   text-align: center;
@@ -610,216 +886,9 @@
 }
 
 /* ========================================
-   13. Stop Queue Modal Styles
+   13. Stop Queue Modal Styles - REMOVED
    ======================================== */
-.stop-queue-modal .modal {
-  max-width: 400px;
-  width: 90%;
-  background-color: white;
-  border: 2px solid var(--error-red);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
-  height: auto;
-}
-
-.stop-queue-modal .modal-header {
-  background-color: var(--error-red);
-  color: white;
-  padding: var(--space-5);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stop-queue-modal .modal-header h3 {
-  color: white;
-  font-size: var(--heading-4);
-  font-weight: var(--weight-bold);
-  margin: 0;
-}
-
-.stop-queue-modal .modal-close {
-  color: white;
-  opacity: 0.9;
-  font-size: 24px;
-  line-height: 1;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
-}
-
-.stop-queue-modal .modal-close:hover {
-  opacity: 1;
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.stop-queue-modal .modal-body {
-  padding: var(--space-5);
-  background-color: white;
-  overflow-y: auto;
-  flex: 0 1 auto;
-}
-
-.stop-queue-modal .alert {
-  background-color: #fff5f5;
-  border: 2px solid var(--error-red);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  display: flex;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.stop-queue-modal .alert svg {
-  color: var(--error-red);
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.stop-queue-modal .alert > div {
-  flex: 1;
-}
-
-.stop-queue-modal .alert strong {
-  color: var(--gray-900);
-  display: block;
-  margin-bottom: var(--space-2);
-  font-size: var(--body);
-}
-
-.stop-queue-modal .alert p {
-  color: var(--gray-700);
-  margin: 0;
-  font-size: var(--body);
-  line-height: 1.5;
-}
-
-.stop-queue-modal .form-group {
-  margin-bottom: 0;
-}
-
-.stop-queue-modal .form-group:last-child {
-  margin-bottom: 0;
-}
-
-.stop-queue-modal .form-label {
-  color: var(--gray-700);
-  font-size: var(--body);
-  margin-bottom: var(--space-3);
-  display: block;
-}
-
-.stop-queue-modal .form-control {
-  background-color: white;
-  border: 2px solid var(--gray-300);
-  color: var(--gray-900);
-  font-size: var(--body);
-  padding: var(--space-3) var(--space-4);
-  width: 100%;
-}
-
-.stop-queue-modal .form-control:focus {
-  border-color: var(--error-red);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--error-rgb), 0.1);
-}
-
-.stop-queue-modal .form-control::placeholder {
-  color: var(--gray-500);
-}
-
-.stop-queue-modal .error-message {
-  color: var(--error-red);
-  font-size: var(--small);
-  margin-top: var(--space-2);
-}
-
-.stop-queue-modal .modal-footer {
-  background-color: var(--gray-100);
-  border-top: 1px solid var(--gray-300);
-  padding: var(--space-5);
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-}
-
-.stop-queue-modal .btn-secondary {
-  background-color: white;
-  color: var(--gray-700);
-  border: 1px solid var(--gray-300);
-  padding: var(--space-3) var(--space-5);
-  font-weight: var(--weight-medium);
-}
-
-.stop-queue-modal .btn-secondary:hover {
-  background-color: var(--gray-100);
-  border-color: var(--gray-400);
-}
-
-.stop-queue-modal .btn-danger {
-  background-color: var(--error-red);
-  color: white;
-  border: 1px solid var(--error-red);
-  padding: var(--space-3) var(--space-5);
-  font-weight: var(--weight-semibold);
-}
-
-.stop-queue-modal .btn-danger:hover {
-  background-color: #dc2626;
-  border-color: #dc2626;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Darker backdrop for better visibility */
-.modal-backdrop.stop-queue-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1040;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Mobile adjustments for stop queue modal */
-@media (max-width: 768px) {
-  .stop-queue-modal .modal {
-    max-width: 95%;
-    width: 95%;
-    max-height: 90vh;
-  }
-  
-  .stop-queue-modal .modal-body {
-    padding: var(--space-4);
-  }
-  
-  .stop-queue-modal .modal-header,
-  .stop-queue-modal .modal-footer {
-    padding: var(--space-4);
-  }
-}
+/* Stop queue modal styles have been removed to prevent conflicts with inline styles in index.ejs */
 
 
 /* ========================================
@@ -841,5 +910,187 @@
   .tab-pane {
     display: block !important;
     page-break-inside: avoid;
+  }
+}
+
+/* ========================================
+   15. Queue Table Styles
+   ======================================== */
+.queue-table-container {
+  background: white;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.queue-table thead {
+  background: var(--gray-50);
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.queue-table th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: 600;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.queue-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background-color var(--transition-fast);
+}
+
+.queue-table tbody tr:hover {
+  background-color: var(--gray-50);
+}
+
+.queue-table td {
+  padding: var(--space-4);
+  color: var(--gray-800);
+  vertical-align: middle;
+}
+
+/* Column specific styles */
+.queue-table .queue-number {
+  width: 80px;
+  font-weight: 600;
+}
+
+.queue-table .number-badge {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.queue-table .queue-pax {
+  width: 80px;
+}
+
+.queue-table .pax-badge {
+  display: inline-block;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 30px;
+  text-align: center;
+}
+
+.queue-table .queue-phone {
+  width: 150px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-size: 0.9rem;
+}
+
+.queue-table .queue-name {
+  min-width: 200px;
+}
+
+.queue-table .name-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.queue-table .customer-name {
+  font-weight: 500;
+  color: var(--gray-900);
+}
+
+.queue-table .queue-wait-time {
+  width: 120px;
+}
+
+.queue-table .wait-time {
+  display: inline-block;
+  background: var(--warning-light);
+  color: var(--warning-dark);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.queue-table .queue-actions {
+  width: 150px;
+}
+
+.queue-table .action-buttons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.queue-table .btn-sm {
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.875rem;
+  min-width: auto;
+}
+
+.queue-table .btn-danger {
+  background: var(--danger);
+  color: white;
+  border: 1px solid var(--danger);
+}
+
+.queue-table .btn-danger:hover {
+  background: var(--danger-dark);
+  border-color: var(--danger-dark);
+}
+
+/* Called/Notified customer highlight */
+.queue-row.notified {
+  background-color: var(--success-light);
+}
+
+.queue-row.notified:hover {
+  background-color: var(--success-light);
+  opacity: 0.9;
+}
+
+/* Mobile responsive table */
+@media (max-width: 768px) {
+  .queue-table-container {
+    overflow-x: auto;
+  }
+  
+  .queue-table {
+    min-width: 600px;
+    font-size: 0.875rem;
+  }
+  
+  .queue-table th,
+  .queue-table td {
+    padding: var(--space-2) var(--space-3);
+  }
+  
+  .queue-table .queue-phone,
+  .queue-table .queue-wait-time {
+    display: none;
+  }
+  
+  .queue-table .action-buttons {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  
+  .queue-table .btn-sm {
+    padding: var(--space-1);
+    font-size: 0.75rem;
   }
 }

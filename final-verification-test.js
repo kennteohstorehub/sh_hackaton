@@ -144,7 +144,7 @@ const server = app.listen(port, () => {
 // Automated test suite
 async function runTests() {
   const fetch = (await import('node-fetch')).default;
-  const baseUrl = 'http://localhost:3838';
+  const baseUrl = 'http://localhost:3000';
   let testResults = [];
   
   console.log('\n🧪 Starting BackOffice System Verification Tests\n');

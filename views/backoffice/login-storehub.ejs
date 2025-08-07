@@ -7,11 +7,12 @@
   <!-- StoreHub Design System -->
   <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
   <link rel="stylesheet" href="/css/storehub-global.css?v=<%= Date.now() %>">
+  <link rel="stylesheet" href="/css/storehub-backoffice-redesign.css?v=<%= Date.now() %>">
   <script src="/js/storehub-design-system.js?v=<%= Date.now() %>" defer></script>
   <%- csrfMeta() %>
   <style>
     body {
-      background: linear-gradient(135deg, var(--base-black) 0%, var(--gray-900) 100%);
+      background: linear-gradient(135deg, var(--sh-base-black) 0%, var(--sh-gray-900) 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -20,90 +21,90 @@
     
     .auth-container {
       background: white;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-xl);
+      border-radius: var(--sh-radius-lg);
+      box-shadow: var(--sh-shadow-xl);
       width: 100%;
       max-width: 420px;
       overflow: hidden;
     }
     
     .auth-header {
-      background: var(--base-black);
+      background: var(--sh-primary-orange);
       color: white;
-      padding: var(--space-8) var(--space-6);
+      padding: var(--sh-space-8) var(--sh-space-6);
       text-align: center;
       position: relative;
     }
     
     .auth-badge {
       position: absolute;
-      top: var(--space-3);
-      right: var(--space-3);
-      background: var(--primary-orange);
+      top: var(--sh-space-3);
+      right: var(--sh-space-3);
+      background: rgba(255, 255, 255, 0.2);
       color: white;
-      padding: var(--space-1) var(--space-3);
-      border-radius: var(--radius-full);
-      font-size: var(--tiny);
-      font-weight: var(--weight-semibold);
+      padding: var(--sh-space-1) var(--sh-space-3);
+      border-radius: var(--sh-radius-full);
+      font-size: var(--sh-tiny);
+      font-weight: var(--sh-weight-semibold);
       text-transform: uppercase;
     }
     
     .auth-logo {
-      font-size: var(--heading-1);
-      font-weight: var(--weight-bold);
-      margin-bottom: var(--space-2);
+      font-size: var(--sh-heading-1);
+      font-weight: var(--sh-weight-bold);
+      margin-bottom: var(--sh-space-2);
     }
     
     .auth-subtitle {
-      font-size: var(--body);
-      opacity: 0.8;
-      color: var(--gray-400);
+      font-size: var(--sh-body);
+      opacity: 0.9;
+      color: rgba(255, 255, 255, 0.9);
     }
     
     .auth-body {
-      padding: var(--space-8) var(--space-6);
+      padding: var(--sh-space-8) var(--sh-space-6);
     }
     
     .auth-title {
-      font-size: var(--heading-3);
-      font-weight: var(--weight-semibold);
-      color: var(--gray-900);
-      margin-bottom: var(--space-2);
+      font-size: var(--sh-heading-3);
+      font-weight: var(--sh-weight-semibold);
+      color: var(--sh-gray-900);
+      margin-bottom: var(--sh-space-2);
       text-align: center;
     }
     
     .auth-description {
       text-align: center;
-      color: var(--gray-600);
-      margin-bottom: var(--space-6);
-      font-size: var(--small);
+      color: var(--sh-gray-600);
+      margin-bottom: var(--sh-space-6);
+      font-size: var(--sh-small);
     }
     
     .form-group {
-      margin-bottom: var(--space-5);
+      margin-bottom: var(--sh-space-5);
     }
     
     .form-label {
       display: block;
-      margin-bottom: var(--space-2);
-      font-size: var(--small);
-      font-weight: var(--weight-medium);
-      color: var(--gray-700);
+      margin-bottom: var(--sh-space-2);
+      font-size: var(--sh-small);
+      font-weight: var(--sh-weight-medium);
+      color: var(--sh-gray-700);
     }
     
     .form-control {
       width: 100%;
       height: 48px;
-      padding: var(--space-3) var(--space-4);
-      font-size: var(--body);
-      border: 1px solid var(--gray-400);
-      border-radius: var(--radius-md);
-      transition: all var(--transition-fast);
+      padding: var(--sh-space-3) var(--sh-space-4);
+      font-size: var(--sh-body);
+      border: 1px solid var(--sh-gray-400);
+      border-radius: var(--sh-radius-md);
+      transition: all 0.2s ease;
       background-color: white;
     }
     
     .form-control:focus {
-      border-color: var(--primary-orange);
+      border-color: var(--sh-primary-orange);
       box-shadow: 0 0 0 3px rgba(250, 140, 22, 0.1);
       outline: none;
     }
@@ -111,54 +112,57 @@
     .btn-auth {
       width: 100%;
       height: 48px;
-      margin-top: var(--space-6);
-      font-size: var(--body);
-      font-weight: var(--weight-semibold);
-      background: var(--base-black);
+      margin-top: var(--sh-space-6);
+      font-size: var(--sh-body);
+      font-weight: var(--sh-weight-semibold);
+      background: var(--sh-primary-orange);
       color: white;
       border: none;
-      border-radius: var(--radius-md);
+      border-radius: var(--sh-radius-md);
       cursor: pointer;
-      transition: all var(--transition-normal);
+      transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+      box-shadow: var(--sh-shadow-sm);
     }
     
     .btn-auth:hover {
-      background: var(--gray-900);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
+      background: var(--sh-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--sh-shadow-md);
     }
     
     .btn-auth:active {
+      background: var(--sh-primary-pressed);
       transform: translateY(0);
+      box-shadow: none;
     }
     
     .security-notice {
-      background: var(--gray-100);
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
-      padding: var(--space-3);
-      margin-top: var(--space-6);
-      font-size: var(--small);
-      color: var(--gray-700);
+      background: var(--sh-gray-100);
+      border: 1px solid var(--sh-gray-300);
+      border-radius: var(--sh-radius-md);
+      padding: var(--sh-space-3);
+      margin-top: var(--sh-space-6);
+      font-size: var(--sh-small);
+      color: var(--sh-gray-700);
       text-align: center;
     }
     
     .security-notice-icon {
       display: inline-block;
-      margin-right: var(--space-2);
+      margin-right: var(--sh-space-2);
     }
     
     .alert {
-      margin-bottom: var(--space-4);
+      margin-bottom: var(--sh-space-4);
     }
     
     .auth-footer {
       text-align: center;
-      margin-top: var(--space-6);
-      padding-top: var(--space-6);
-      border-top: 1px solid var(--gray-300);
-      font-size: var(--small);
-      color: var(--gray-600);
+      margin-top: var(--sh-space-6);
+      padding-top: var(--sh-space-6);
+      border-top: 1px solid var(--sh-gray-300);
+      font-size: var(--sh-small);
+      color: var(--sh-gray-600);
     }
     
     /* Loading state */

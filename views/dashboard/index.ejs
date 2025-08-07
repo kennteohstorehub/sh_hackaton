@@ -327,9 +327,39 @@
             /* No visual changes - status is shown by button change */
         }
         
+        .customer-card.withdrawn-customer {
+            background: #ffe5e5;
+            opacity: 0.8;
+        }
+        
+        .customer-row.withdrawn-customer {
+            background: #ffe5e5 !important;
+            opacity: 0.8;
+        }
+        
         .status-badge.notified {
             background-color: #666666;  /* Dark gray */
             color: #ffffff;  /* White text */
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.withdrawn {
+            background-color: #ff6b6b;  /* Light red */
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.no-show {
+            background-color: #868e96;  /* Medium gray */
+            color: #ffffff;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.75rem;
@@ -544,10 +574,60 @@
             align-items: center;
         }
         
-        /* Seated customers table has different columns */
+        /* Completed customers table has different columns */
         #seated-customers .customer-list-header,
         #seated-customers .customer-row {
-            grid-template-columns: 80px 1fr 120px 70px 80px 100px 1fr 120px;
+            grid-template-columns: 60px 120px 1fr 100px 80px 100px 100px 100px 100px 120px 120px;
+        }
+        
+        #seated-customers .customer-list-header span,
+        #seated-customers .customer-row > div {
+            font-size: 0.9rem;
+        }
+        
+        .time-column {
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .time-duration {
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .time-duration.long-wait {
+            color: #dc3545;
+        }
+        
+        .time-duration.good-time {
+            color: #28a745;
+        }
+        
+        /* Responsive adjustments for seated customers */
+        @media (max-width: 1400px) {
+            #seated-customers .customer-list-header,
+            #seated-customers .customer-row {
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            #seated-customers .customer-list-header,
+            #seated-customers .customer-row {
+                grid-template-columns: 50px 100px 1fr 80px 60px 80px 80px 80px 80px 100px 100px;
+            }
+        }
+        
+        #seated-customers .customer-name {
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        #seated-customers .phone {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
         }
         
         .notified-time {
@@ -1234,7 +1314,7 @@
         <section id="queue-management" class="tabs-container" role="tabpanel" aria-label="Queue Management">
             <div class="tabs-header">
                 <button class="tab-button active" onclick="showTab('active-queue')">Active Queue</button>
-                <button class="tab-button" onclick="showTab('seated-customers')">Seated Customers</button>
+                <button class="tab-button" onclick="showTab('seated-customers')">Completed Customers</button>
             </div>
 
             <!-- Active Queue Tab -->
@@ -1355,8 +1435,25 @@
                                             </div>
                                             <div class="actions">
                                                 <% if (customer.status === 'called') { %>
-                                                    <button class="btn-action btn-pending" onclick="showCodeVerificationModal('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">Pending Arrival</button>
-                                                    <button class="btn-action btn-revoke" onclick="revokeNotification('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">Revoke</button>
+                                                    <button class="btn-action" style="background: #28a745; color: white;" onclick="showCodeVerificationModal('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">
+                                                        <i class="bi bi-check-circle"></i> Seat
+                                                    </button>
+                                                    <button class="btn-action" style="background: #ff6b6b; color: white;" onclick="markAsWithdrawn('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">
+                                                        <i class="bi bi-person-dash"></i> Withdrawn
+                                                    </button>
+                                                    <button class="btn-action" style="background: #6c757d; color: white;" onclick="markAsNoShow('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">
+                                                        <i class="bi bi-x-octagon"></i> No Show
+                                                    </button>
+                                                <% } else if (customer.status === 'withdrawn') { %>
+                                                    <span class="status-badge withdrawn">WITHDRAWN</span>
+                                                    <button class="btn-action btn-remove" onclick="removeCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">
+                                                        <i class="bi bi-trash"></i> Remove
+                                                    </button>
+                                                <% } else if (customer.status === 'no_show') { %>
+                                                    <span class="status-badge no-show">NO SHOW</span>
+                                                    <button class="btn-action btn-remove" onclick="removeCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">
+                                                        <i class="bi bi-trash"></i> Remove
+                                                    </button>
                                                 <% } else if (index === 0) { %>
                                                     <button class="btn-action btn-notify" onclick="notifyNext('<%= activeQueue.id || activeQueue._id %>')">Notify</button>
                                                 <% } else { %>
@@ -1409,11 +1506,11 @@
                                             </div>
                                             <div class="customer-card-actions">
                                                 <% if (customer.status === 'called') { %>
-                                                    <button onclick="showCodeVerificationModal('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')" class="action-button btn-pending">
-                                                        <i class="bi bi-person-check"></i> Pending Arrival
+                                                    <button onclick="showCodeVerificationModal('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')" class="action-button" style="background: #28a745; color: white;">
+                                                        <i class="bi bi-check-circle"></i> Seat Customer
                                                     </button>
                                                     <button onclick="revokeNotification('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')" class="action-button btn-revoke">
-                                                        <i class="bi bi-x-circle"></i> Revoke
+                                                        <i class="bi bi-x-circle"></i> Cancel
                                                     </button>
                                                 <% } else if (customer.status === 'waiting') { %>
                                                     <button onclick="callCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>', event)" class="action-button call-button">
@@ -1460,7 +1557,7 @@
                 <% } %>
             </div>
             
-            <!-- Seated Customers Tab -->
+            <!-- Completed Customers Tab -->
             <div id="seated-customers" class="tab-content">
                 <% if (queues.length > 0) { %>
                     <% const activeQueue = queues.find(queue => queue.isActive); %>
@@ -1470,39 +1567,71 @@
                         <% if (seatedCustomers.length > 0) { %>
                             <div class="customer-list">
                                 <div class="customer-list-header">
-                                    <span>Table</span>
-                                    <span>Customer</span>
+                                    <span>PAX</span>
                                     <span>Phone</span>
-                                    <span>Code</span>
-                                    <span>Party</span>
-                                    <span>Seated Time</span>
-                                    <span>Special Requests</span>
+                                    <span>Name</span>
+                                    <span>Join Time</span>
+                                    <span>Wait Time</span>
+                                    <span>Notified</span>
+                                    <span>Acknowledged</span>
+                                    <span>Show Up</span>
+                                    <span>Total Time</span>
+                                    <span>Status</span>
                                     <span>Actions</span>
                                 </div>
                                 
                                 <% seatedCustomers.forEach((customer) => { %>
-                                    <% const seatedMinutes = Math.floor((new Date() - new Date(customer.completedAt)) / (1000 * 60)); %>
+                                    <% 
+                                        // Helper function to format time
+                                        const formatTime = (date) => {
+                                            if (!date) return '-';
+                                            const d = new Date(date);
+                                            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                        };
+                                        
+                                        // Calculate time differences
+                                        const joinTime = new Date(customer.joinedAt);
+                                        const callTime = customer.calledAt ? new Date(customer.calledAt) : null;
+                                        const ackTime = customer.acknowledgedAt ? new Date(customer.acknowledgedAt) : null;
+                                        const showUpTime = customer.servedAt ? new Date(customer.servedAt) : (customer.completedAt ? new Date(customer.completedAt) : null);
+                                        
+                                        // Calculate durations in minutes
+                                        const waitMinutes = callTime ? Math.floor((callTime - joinTime) / (1000 * 60)) : 0;
+                                        const totalMinutes = showUpTime ? Math.floor((showUpTime - joinTime) / (1000 * 60)) : 0;
+                                        
+                                        // Determine status display
+                                        const statusDisplay = 'COMPLETED';
+                                    %>
                                     <div class="customer-row seated-customer-row">
-                                        <div class="position" style="font-weight: bold;">Table <%= customer.tableNumber || '-' %></div>
-                                        <div class="customer-name"><%= customer.customerName %></div>
+                                        <div class="party-size" style="text-align: center;"><%= customer.partySize %></div>
                                         <div class="phone"><%= customer.customerPhone %></div>
-                                        <div class="verification-code">
-                                            <% if (customer.verificationCode) { %>
-                                                <span class="code-badge"><%= customer.verificationCode %></span>
-                                            <% } else { %>
-                                                <span>-</span>
-                                            <% } %>
+                                        <div class="customer-name"><%= customer.customerName %></div>
+                                        <div class="time-column" title="Joined at <%= formatTime(customer.joinedAt) %>">
+                                            <%= formatTime(customer.joinedAt) %>
                                         </div>
-                                        <div class="party-size"><%= customer.partySize %></div>
-                                        <div class="wait-time"><%= seatedMinutes %> min</div>
-                                        <div class="special-requests">
-                                            <% if (customer.specialRequests && customer.specialRequests.trim()) { %>
-                                                <span class="special-requests-text" title="<%= customer.specialRequests %>">
-                                                    <%= customer.specialRequests.length > 30 ? customer.specialRequests.substring(0, 30) + '...' : customer.specialRequests %>
-                                                </span>
-                                            <% } else { %>
-                                                <span class="no-requests">-</span>
-                                            <% } %>
+                                        <div class="time-column">
+                                            <span class="time-duration <%= waitMinutes > 30 ? 'long-wait' : (waitMinutes < 10 ? 'good-time' : '') %>">
+                                                <%= waitMinutes %> min
+                                            </span>
+                                        </div>
+                                        <div class="time-column" title="<%= callTime ? 'Notified at ' + formatTime(callTime) : 'Not notified' %>">
+                                            <%= formatTime(callTime) %>
+                                        </div>
+                                        <div class="time-column" title="<%= ackTime ? 'Acknowledged at ' + formatTime(ackTime) : 'Not acknowledged' %>">
+                                            <%= formatTime(ackTime) %>
+                                        </div>
+                                        <div class="time-column" title="<%= showUpTime ? 'Showed up at ' + formatTime(showUpTime) : 'Time not recorded' %>">
+                                            <%= formatTime(showUpTime) %>
+                                        </div>
+                                        <div class="time-column">
+                                            <span class="time-duration <%= totalMinutes > 60 ? 'long-wait' : '' %>">
+                                                <%= totalMinutes %> min
+                                            </span>
+                                        </div>
+                                        <div class="status" style="text-align: center;">
+                                            <span class="status-badge" style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                                <%= statusDisplay %>
+                                            </span>
                                         </div>
                                         <div class="actions">
                                             <button class="btn-action btn-select" onclick="requeueCustomer('<%= activeQueue.id || activeQueue._id %>', '<%= customer._id || customer.id %>')">Requeue</button>
@@ -1543,6 +1672,7 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/socket-nuclear-fix.js"></script>
     <script>
         <%- csrfAjaxSetup %>
     </script>
@@ -1598,6 +1728,7 @@
             event.target.classList.add('active');
         }
 
+        // Socket.io initialization (nuclear fix already applied)
         const socket = io();
         
         // Store active queue ID for refresh operations
@@ -1766,6 +1897,53 @@
         socket.on('customer-acknowledged', (data) => {
             console.log('Customer acknowledged:', data);
             updateCustomerAcknowledgment(data);
+        });
+        
+        // Listen for customer withdrawn
+        socket.on('customer-withdrawn', (data) => {
+            console.log('Customer withdrawn:', data);
+            const customerRow = document.querySelector(`[data-customer-id="${data.customerId}"]`);
+            if (customerRow) {
+                customerRow.classList.add('withdrawn-customer');
+                customerRow.classList.remove('notified-customer');
+                
+                // Update the actions cell
+                const actionsCell = customerRow.querySelector('.actions');
+                if (actionsCell) {
+                    actionsCell.innerHTML = `
+                        <span class="status-badge withdrawn">WITHDRAWN</span>
+                        <button class="btn-action btn-remove" onclick="removeCustomer('${data.queueId}', '${data.customerId}')">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    `;
+                }
+                
+                showToast(`${data.customerName} marked as withdrawn`, 'info');
+            }
+        });
+        
+        // Listen for customer no-show
+        socket.on('customer-no-show', (data) => {
+            console.log('Customer no-show:', data);
+            const customerRow = document.querySelector(`[data-customer-id="${data.customerId}"]`);
+            if (customerRow) {
+                customerRow.classList.add('no-show-customer');
+                customerRow.classList.remove('notified-customer');
+                customerRow.style.opacity = '0.6';
+                
+                // Update the actions cell
+                const actionsCell = customerRow.querySelector('.actions');
+                if (actionsCell) {
+                    actionsCell.innerHTML = `
+                        <span class="status-badge no-show">NO SHOW</span>
+                        <button class="btn-action btn-remove" onclick="removeCustomer('${data.queueId}', '${data.customerId}')">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    `;
+                }
+                
+                showToast(`${data.customerName} marked as no-show`, 'info');
+            }
         });
         
         function updateSessionStatus(sessionId, isOnline) {
@@ -3245,6 +3423,153 @@
                 console.error('Error requeuing customer:', error);
                 alert('Error requeuing customer');
             }
+        }
+        
+        async function markAsWithdrawn(queueId, customerId) {
+            // Get customer name for confirmation
+            const customerRow = event.target.closest('.customer-row');
+            const customerName = customerRow ? customerRow.querySelector('.customer-name').textContent.trim() : 'this customer';
+            
+            // Confirmation dialog
+            const reason = prompt(`Mark ${customerName} as withdrawn?\n\nThey have notified us they can't make it.\n\nOptional: Enter reason (or leave blank):`);
+            
+            if (reason === null) {
+                return; // User cancelled
+            }
+            
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Processing...';
+            
+            try {
+                const response = await fetch(`/api/queue/${queueId}/withdraw/${customerId}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken
+                    },
+                    body: JSON.stringify({ reason: reason || 'Customer notified they cannot make it' })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`✅ ${customerName} marked as withdrawn`, 'success');
+                    
+                    // Update the UI to show withdrawn status
+                    if (customerRow) {
+                        customerRow.classList.add('withdrawn-customer');
+                        customerRow.classList.remove('notified-customer');
+                        
+                        // Update the actions cell
+                        const actionsCell = customerRow.querySelector('.actions');
+                        if (actionsCell) {
+                            actionsCell.innerHTML = `
+                                <span class="status-badge withdrawn">WITHDRAWN</span>
+                                <button class="btn-action btn-remove" onclick="removeCustomer('${queueId}', '${customerId}')">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            `;
+                        }
+                    }
+                } else {
+                    showNotification(result.error || 'Failed to mark as withdrawn', 'error');
+                    button.disabled = false;
+                    button.textContent = 'Withdrawn';
+                }
+            } catch (error) {
+                console.error('Error marking as withdrawn:', error);
+                alert('Error marking customer as withdrawn');
+                button.disabled = false;
+                button.textContent = 'Withdrawn';
+            }
+        }
+        
+        async function markAsNoShow(queueId, customerId) {
+            // Get customer name for confirmation
+            const customerRow = event.target.closest('.customer-row');
+            const customerName = customerRow ? customerRow.querySelector('.customer-name').textContent.trim() : 'this customer';
+            
+            // Confirmation dialog
+            if (!confirm(`Mark ${customerName} as no-show?\n\nThey did not respond to the notification.`)) {
+                return;
+            }
+            
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Processing...';
+            
+            try {
+                const response = await fetch(`/api/queue/no-show`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken
+                    },
+                    body: JSON.stringify({ 
+                        queueId: queueId,
+                        customerName: customerName,
+                        reason: 'Did not respond to notification'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`${customerName} marked as no-show`, 'info');
+                    
+                    // Update the UI to show no-show status
+                    if (customerRow) {
+                        customerRow.classList.add('no-show-customer');
+                        customerRow.classList.remove('notified-customer');
+                        customerRow.style.opacity = '0.6';
+                        
+                        // Update the actions cell
+                        const actionsCell = customerRow.querySelector('.actions');
+                        if (actionsCell) {
+                            actionsCell.innerHTML = `
+                                <span class="status-badge no-show">NO SHOW</span>
+                                <button class="btn-action btn-remove" onclick="removeCustomer('${queueId}', '${customerId}')">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            `;
+                        }
+                    }
+                } else {
+                    showNotification(result.error || 'Failed to mark as no-show', 'error');
+                    button.disabled = false;
+                    button.textContent = 'No Show';
+                }
+            } catch (error) {
+                console.error('Error marking as no-show:', error);
+                alert('Error marking customer as no-show');
+                button.disabled = false;
+                button.textContent = 'No Show';
+            }
+        }
+        
+        async function removeCustomer(queueId, customerId) {
+            // Get customer row to extract info
+            const customerRow = event.target.closest('.customer-row');
+            const customerName = customerRow ? customerRow.querySelector('.customer-name').textContent.trim() : 'this customer';
+            
+            if (!confirm(`Remove ${customerName} from the display?\n\nThis will not affect analytics.`)) {
+                return;
+            }
+            
+            // Simply remove from display - the customer is already marked as withdrawn/no-show
+            if (customerRow) {
+                customerRow.style.animation = 'fadeOut 0.3s ease-out forwards';
+                setTimeout(() => {
+                    if (customerRow && customerRow.parentNode) {
+                        customerRow.remove();
+                    }
+                }, 300);
+            }
+            
+            showNotification(`${customerName} removed from display`, 'info');
         }
         
         async function revokeNotification(queueId, customerId) {

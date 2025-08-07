@@ -486,7 +486,95 @@
 }
 
 /* ========================================
-   11. Responsive Adjustments
+   11. Branding Section
+   ======================================== */
+.branding-container {
+    padding: var(--space-5);
+}
+
+.branding-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+    align-items: start;
+}
+
+.logo-upload-section h3,
+.brand-settings h3 {
+    font-size: var(--heading-4);
+    font-weight: var(--weight-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-4);
+}
+
+.logo-preview {
+    width: 200px;
+    height: 200px;
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-4);
+    background: var(--gray-50);
+    overflow: hidden;
+}
+
+.logo-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.upload-controls {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.banner-preview {
+    width: 100%;
+    height: 150px;
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-4);
+    background: var(--gray-50);
+    overflow: hidden;
+}
+
+.banner-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.color-input-wrapper {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+}
+
+.color-picker {
+    width: 60px;
+    height: 40px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    padding: 2px;
+}
+
+.color-hex {
+    flex: 1;
+    max-width: 150px;
+    text-transform: uppercase;
+    font-family: 'Courier New', monospace;
+}
+
+/* ========================================
+   12. Responsive Adjustments
    ======================================== */
 @media (max-width: 768px) {
     .settings-section {
@@ -495,6 +583,23 @@
     
     .settings-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .branding-row {
+        grid-template-columns: 1fr;
+        gap: var(--space-6);
+    }
+    
+    .logo-preview {
+        margin: 0 auto var(--space-4);
+    }
+    
+    .upload-controls {
+        flex-direction: column;
+    }
+    
+    .upload-controls button {
+        width: 100%;
     }
     
     .hours-table {

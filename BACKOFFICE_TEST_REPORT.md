@@ -2,7 +2,7 @@
 
 **Generated:** 2025-08-04  
 **System:** StoreHub Queue Management System - BackOffice Portal  
-**Base URL:** http://admin.lvh.me:3838  
+**Base URL:** http://admin.lvh.me:3000  
 
 ## 📊 Executive Summary
 
@@ -33,7 +33,7 @@ Password: BackOffice123!@#
 ### 📋 Manual Verification Steps
 
 #### 1. Login Flow Testing
-1. Visit: http://admin.lvh.me:3838/backoffice/auth/login
+1. Visit: http://admin.lvh.me:3000/backoffice/auth/login
 2. Verify login form displays with:
    - Email field (required, type="email")
    - Password field (required, type="password")

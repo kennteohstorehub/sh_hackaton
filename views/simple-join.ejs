@@ -230,12 +230,13 @@
                     throw new Error(data.error || data.message || 'Failed to join queue');
                 }
                 
-                // Show success
-                document.getElementById('joinForm').style.display = 'none';
-                document.getElementById('successMsg').style.display = 'block';
-                document.getElementById('queueNumber').textContent = data.queueNumber;
-                document.getElementById('position').textContent = data.position;
-                document.getElementById('waitTime').textContent = data.estimatedWaitTime;
+                // Store queue entry info and redirect to status page
+                sessionStorage.setItem('queueEntryId', data.queueEntry?.id || data.id);
+                sessionStorage.setItem('queueNumber', data.queueNumber);
+                sessionStorage.setItem('verificationCode', data.verificationCode);
+                
+                // Skip success message and redirect directly to queue status page
+                window.location.href = `/queue-status/${queueId}/${data.queueEntry?.id || data.id}`;
                 
             } catch (error) {
                 errorMsg.textContent = error.message;

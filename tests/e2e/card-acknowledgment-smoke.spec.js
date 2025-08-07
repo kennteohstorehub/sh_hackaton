@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const axios = require('axios');
 
-const BASE_URL = 'http://localhost:3838';
+const BASE_URL = 'http://localhost:3000';
 
 test.describe('Card Acknowledgment Smoke Tests', () => {
     test('Quick validation of card-based acknowledgment system', async ({ page }) => {
@@ -84,4 +84,3 @@ test.describe('Card Acknowledgment Smoke Tests', () => {
         }
     });
 });
-EOF < /dev/null

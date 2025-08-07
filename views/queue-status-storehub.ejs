@@ -53,12 +53,37 @@
         .queue-number-huge.called {
             background: var(--success-green);
             animation: pulse 2s infinite;
+            position: relative;
+        }
+        
+        .queue-number-huge.called::before {
+            content: '✓';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: white;
+            color: var(--success-green);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: var(--shadow-lg);
+            animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(82, 196, 26, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(82, 196, 26, 0); }
+        }
+        
+        @keyframes flashScreen {
+            0% { opacity: 0; }
+            50% { opacity: 0.3; }
+            100% { opacity: 0; }
         }
         
         .status-message {
@@ -194,6 +219,44 @@
             z-index: 1;
         }
         
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Add bell ringing animation for notification icon */
+        @keyframes ring {
+            0% { transform: rotate(0); }
+            10% { transform: rotate(14deg); }
+            20% { transform: rotate(-8deg); }
+            30% { transform: rotate(14deg); }
+            40% { transform: rotate(-4deg); }
+            50% { transform: rotate(10deg); }
+            60% { transform: rotate(0); }
+            100% { transform: rotate(0); }
+        }
+        
+        .notification-card svg {
+            animation: ring 2s ease-in-out infinite;
+        }
+        
+        /* Enhanced visual feedback */
+        .status-hero.active {
+            background: linear-gradient(135deg, var(--success-green) 0%, #7ED321 100%);
+            animation: colorShift 3s ease-in-out infinite;
+        }
+        
+        @keyframes colorShift {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.1); }
+        }
+        
         @media (max-width: 768px) {
             .status-container {
                 margin-top: calc(var(--space-6) * -1);
@@ -234,23 +297,32 @@
     <div class="status-container">
         <!-- Notification Cards -->
         <% if (customer.status === 'called') { %>
-        <div class="notification-card success">
+        <div class="notification-card success" style="animation: slideDown 0.5s ease-out;">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
             </svg>
             <div>
-                <strong>It's your turn!</strong> Please proceed to the counter now.
+                <strong>🔔 It's your turn!</strong> Please proceed to the counter now.
+            </div>
+        </div>
+        <% } else if (customer.status === 'serving') { %>
+        <div class="notification-card success" style="animation: slideDown 0.5s ease-out;">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <strong>You're being served!</strong> Thank you for your patience.
             </div>
         </div>
         <% } %>
         
         <!-- Main Status Card -->
         <div class="main-status-card">
-            <div class="queue-number-huge <%= customer.status === 'called' ? 'called' : '' %>">
+            <div class="queue-number-huge <%= ['called', 'serving'].includes(customer.status) ? 'called' : '' %>">
                 <%= customer.position %>
             </div>
             
-            <h2 class="status-message <%= customer.status === 'called' ? 'called' : '' %>">
+            <h2 class="status-message <%= ['called', 'serving'].includes(customer.status) ? 'called' : '' %>">
                 <% if (customer.status === 'waiting') { %>
                     You're in the queue!
                 <% } else if (customer.status === 'called') { %>
@@ -294,6 +366,15 @@
                 </div>
             </div>
             
+            <!-- Verification Code Display -->
+            <% if (customer.verificationCode) { %>
+            <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: var(--space-4); margin-top: var(--space-6); text-align: center;">
+                <p style="font-size: var(--small); color: var(--gray-600); margin-bottom: var(--space-2);">Your Verification Code:</p>
+                <p style="font-size: var(--heading-2); font-weight: var(--weight-bold); color: var(--primary-orange); letter-spacing: 3px;"><%= customer.verificationCode %></p>
+                <p style="font-size: var(--tiny); color: var(--gray-500); margin-top: var(--space-2);">Please show this code when you arrive at the counter</p>
+            </div>
+            <% } %>
+            
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <button class="btn btn-secondary" onclick="refreshStatus()">
@@ -306,6 +387,10 @@
                 <% if (customer.status === 'waiting') { %>
                 <button class="btn btn-text text-danger" onclick="confirmLeaveQueue()">
                     Leave Queue
+                </button>
+                <% } else if (customer.status === 'called') { %>
+                <button class="btn btn-text text-warning" onclick="confirmWithdrawal()">
+                    Can't Make It
                 </button>
                 <% } %>
             </div>
@@ -404,7 +489,7 @@
         </div>
     </div>
     
-    <!-- Confirmation Modal -->
+    <!-- Leave Queue Confirmation Modal -->
     <div id="leaveQueueModal" class="modal" style="display: none;">
         <div class="modal-header">
             <h3>Leave Queue?</h3>
@@ -418,19 +503,137 @@
         </div>
     </div>
     
+    <!-- Withdrawal Confirmation Modal -->
+    <div id="withdrawalModal" class="modal" style="display: none;">
+        <div class="modal-header">
+            <h3>Can't Make It?</h3>
+        </div>
+        <div class="modal-body">
+            <p>We understand things come up! Thank you for letting us know.</p>
+            <p>Would you like to provide a reason? (Optional)</p>
+            <input type="text" id="withdrawalReason" class="form-control" placeholder="e.g., Running late, Emergency came up..." style="margin-top: 10px;">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeWithdrawalModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="withdrawFromQueue()">Confirm</button>
+        </div>
+    </div>
+    
     <script>
+        // Track if notification has been played
+        let notificationPlayed = localStorage.getItem('notificationPlayed_<%= customer.id %>') === 'true';
+        let previousStatus = '<%= customer.status %>';
+        
         // Auto-refresh every 10 seconds if waiting or called
         <% if (['waiting', 'called'].includes(customer.status)) { %>
         setInterval(() => {
-            refreshStatus();
+            checkStatusUpdate();
         }, 10000);
         <% } %>
         
-        // Play notification sound when called
-        <% if (customer.status === 'called') { %>
-        const audio = new Audio('/sounds/notification.mp3');
-        audio.play().catch(e => console.log('Audio play failed:', e));
+        // Play notification sound when called or serving
+        <% if (['called', 'serving'].includes(customer.status)) { %>
+        if (!notificationPlayed) {
+            playNotificationSound();
+            localStorage.setItem('notificationPlayed_<%= customer.id %>', 'true');
+        }
         <% } %>
+        
+        function playNotificationSound() {
+            // Try multiple sound formats for compatibility
+            const audioFormats = [
+                { file: '/sounds/table-ready.mp3', type: 'audio/mpeg' },
+                { file: '/sounds/table-ready.ogg', type: 'audio/ogg' },
+                { file: '/sounds/notification.mp3', type: 'audio/mpeg' },
+                { file: '/sounds/notification.ogg', type: 'audio/ogg' }
+            ];
+            
+            let played = false;
+            
+            for (const format of audioFormats) {
+                if (!played) {
+                    const audio = new Audio(format.file);
+                    audio.volume = 0.7;
+                    
+                    // Play sound with user interaction fallback
+                    const playPromise = audio.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise
+                            .then(() => {
+                                played = true;
+                                console.log('Notification sound played:', format.file);
+                                
+                                // Repeat sound 3 times with delay
+                                let count = 0;
+                                const repeatInterval = setInterval(() => {
+                                    count++;
+                                    if (count < 3) {
+                                        audio.currentTime = 0;
+                                        audio.play();
+                                    } else {
+                                        clearInterval(repeatInterval);
+                                    }
+                                }, 2000);
+                            })
+                            .catch(error => {
+                                console.log('Audio play failed for', format.file, ':', error);
+                                
+                                // Show visual notification as fallback
+                                if (!played) {
+                                    showVisualNotification();
+                                }
+                            });
+                    }
+                }
+            }
+        }
+        
+        function showVisualNotification() {
+            // Flash the screen with animation
+            const flashOverlay = document.createElement('div');
+            flashOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: var(--success-green);
+                opacity: 0;
+                z-index: 9999;
+                pointer-events: none;
+                animation: flashScreen 0.5s ease-in-out 3;
+            `;
+            
+            document.body.appendChild(flashOverlay);
+            
+            setTimeout(() => {
+                flashOverlay.remove();
+            }, 1500);
+        }
+        
+        // Check for status updates via API
+        async function checkStatusUpdate() {
+            try {
+                const response = await fetch('/api/queue/<%= queue.id %>/status/<%= customer.id %>');
+                const data = await response.json();
+                
+                if (data.status !== previousStatus) {
+                    if (['called', 'serving'].includes(data.status) && !notificationPlayed) {
+                        playNotificationSound();
+                        localStorage.setItem('notificationPlayed_<%= customer.id %>', 'true');
+                        notificationPlayed = true;
+                    }
+                    
+                    // Reload page to show updated status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.log('Status check failed:', error);
+            }
+        }
         
         function refreshStatus() {
             window.location.reload();
@@ -462,6 +665,48 @@
             }
             
             closeModal();
+        }
+        
+        function confirmWithdrawal() {
+            openModal('withdrawalModal');
+        }
+        
+        function closeWithdrawalModal() {
+            const modal = document.getElementById('withdrawalModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        async function withdrawFromQueue() {
+            const reason = document.getElementById('withdrawalReason').value || 'Customer unable to make it';
+            
+            try {
+                const response = await fetch('/api/queue/withdraw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        queueId: '<%= queue.id %>',
+                        customerName: '<%= customer.customerName %>',
+                        reason: reason
+                    })
+                });
+                
+                if (response.ok) {
+                    showToast('Thank you for letting us know. We hope to see you again soon!', 'info');
+                    setTimeout(() => {
+                        window.location.href = '/queue/<%= queue.id %>';
+                    }, 3000);
+                } else {
+                    showToast('Failed to withdraw from queue', 'danger');
+                }
+            } catch (error) {
+                showToast('Network error', 'danger');
+            }
+            
+            closeWithdrawalModal();
         }
         
         // Enable notifications

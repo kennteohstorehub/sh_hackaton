@@ -18,7 +18,7 @@ The StoreHub Queue Management System has critical authentication issues preventi
 **Steps to Reproduce**:
 1. Set `USE_AUTH_BYPASS=false` in .env
 2. Start server with `npm run dev`
-3. Access http://localhost:3838
+3. Access http://localhost:3000
 4. Observe infinite redirect loop between /auth/login and /dashboard
 
 **Root Cause**: 

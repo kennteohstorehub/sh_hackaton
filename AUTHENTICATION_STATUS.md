@@ -28,13 +28,13 @@
 ## Manual Testing Instructions
 
 ### Test 1: Regular Tenant Login
-1. Open browser to: http://localhost:3838/auth/login
+1. Open browser to: http://localhost:3000/auth/login
 2. Login with: `admin@demo.local` / `Demo123!@#`
 3. Expected: Redirect to dashboard
 4. Actual: Redirects back to login
 
 ### Test 2: SuperAdmin Login
-1. Open browser to: http://localhost:3838/superadmin/auth/login
+1. Open browser to: http://localhost:3000/superadmin/auth/login
 2. Login with: `superadmin@storehubqms.local` / `SuperAdmin123!@#`
 3. Expected: Redirect to SuperAdmin dashboard
 4. Actual: Redirects back to login, dashboard 404

@@ -145,13 +145,13 @@ Confirmed proper middleware order in `/server/index.js`:
 
 ### Manual Testing Required:
 1. **Regular Tenant Login**:
-   - Visit tenant subdomain (e.g., `testcompany.localhost:3838`)
+   - Visit tenant subdomain (e.g., `testcompany.localhost:3000`)
    - Login with valid credentials
    - Verify redirect to `/dashboard` works
    - Verify no redirect loops
 
 2. **SuperAdmin Login**:
-   - Visit `admin.localhost:3838` or `/superadmin/auth/login`
+   - Visit `admin.localhost:3000` or `/superadmin/auth/login`
    - Login with SuperAdmin credentials
    - Verify redirect to `/superadmin/dashboard` works
    - Verify no redirect loops

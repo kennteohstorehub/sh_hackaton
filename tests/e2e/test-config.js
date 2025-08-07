@@ -3,7 +3,7 @@ require('dotenv').config({ path: __dirname + '/.env' });
 
 module.exports = {
   // Base configuration
-  baseURL: process.env.BASE_URL || 'http://localhost:3838',
+  baseURL: process.env.BASE_URL || 'http://localhost:3000',
   
   // Test credentials
   testUser: {

@@ -25,7 +25,7 @@ const prisma = new PrismaClient();
 
 // Test configuration
 const TEST_CONFIG = {
-  baseUrl: process.env.TEST_BASE_URL || 'http://localhost:3838',
+  baseUrl: process.env.TEST_BASE_URL || 'http://localhost:3000',
   adminUser: {
     email: 'admin@test.com',
     password: 'admin123'

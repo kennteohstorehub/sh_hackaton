@@ -8,9 +8,286 @@
     <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
     <link rel="stylesheet" href="/css/storehub-global.css?v=<%= Date.now() %>">
     <link rel="stylesheet" href="/css/storehub-dashboard.css?v=<%= Date.now() %>">
+    <!-- Unified Header CSS - Load last to ensure precedence -->
+    <link rel="stylesheet" href="/css/header-unified.css?v=<%= Date.now() %>">
     <script src="/js/storehub-design-system.js?v=<%= Date.now() %>"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/socket-nuclear-fix.js"></script>
     <%- csrfMeta() %>
+    <style>
+        /* Notified customer styling */
+        .customer-called {
+            background-color: #f0f9ff !important;
+            border-left: 4px solid #52c41a !important;
+        }
+        
+        .status-indicator.called {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background-color: #52c41a;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .customer-called .queue-number .number-badge {
+            background-color: #52c41a !important;
+            color: white !important;
+        }
+        
+        /* Verification code styling with better contrast */
+        .verification-code-badge {
+            background: #4A90E2;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-left: 8px;
+            display: inline-block;
+            border: 1px solid #3A7BC8;
+        }
+        
+        /* Ensure table fills width */
+        .queue-table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        .queue-table {
+            width: 100%;
+            table-layout: auto;
+            min-width: 100%;
+            background-color: white !important;
+        }
+        
+        /* Fix text visibility with proper colors */
+        .queue-table th {
+            background-color: #f5f5f5 !important;
+            color: #333333 !important;
+            font-weight: 600 !important;
+            padding: 12px !important;
+            text-align: left !important;
+            border-bottom: 2px solid #d0d0d0 !important;
+        }
+        
+        .queue-table td {
+            color: #333333 !important;
+            padding: 12px !important;
+            border-bottom: 1px solid #e0e0e0 !important;
+            background-color: white !important;
+        }
+        
+        .queue-table tbody tr:hover {
+            background-color: #fafafa !important;
+        }
+        
+        /* Ensure all text elements are visible */
+        .queue-number, .queue-pax, .queue-phone, .queue-name, .queue-wait-time {
+            color: #333333 !important;
+        }
+        
+        .number-badge, .pax-badge, .customer-name, .wait-time {
+            color: #333333 !important;
+            font-weight: 500 !important;
+        }
+        
+        .verification-code-badge {
+            background-color: #ff8c00 !important;
+            color: white !important;
+            padding: 2px 8px !important;
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            margin-left: 8px !important;
+            display: inline-block !important;
+        }
+        
+        /* Column widths */
+        .queue-table th:nth-child(1) { width: 60px; }  /* No. */
+        .queue-table th:nth-child(2) { width: 60px; }  /* Pax */
+        .queue-table th:nth-child(3) { width: 140px; } /* Phone */
+        .queue-table th:nth-child(4) { width: auto; }  /* Name - flexible */
+        .queue-table th:nth-child(5) { width: 100px; } /* Wait Time */
+        .queue-table th:nth-child(6) { width: 200px; } /* Actions */
+        
+        /* Action buttons styling */
+        /* Removed conflicting CSS - using StoreHub button styles instead */
+        
+        
+        /* Ensure buttons are visible */
+        .btn-primary {
+            background-color: #ff8c00 !important;
+            border-color: #ff8c00 !important;
+            color: white !important;
+        }
+        
+        .btn-success {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #212529 !important;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+        }
+        
+        /* StoreHub Design System Button Styles */
+        .btn-storehub {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            height: 36px;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 250ms cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border: none;
+            outline: none;
+            white-space: nowrap;
+            visibility: visible !important;
+        }
+        
+        .btn-storehub:focus {
+            outline: 2px solid #FA8C16;
+            outline-offset: 2px;
+        }
+        
+        .btn-storehub .btn-icon {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Action buttons container */
+        .action-buttons-group {
+            display: flex !important;
+            gap: 8px;
+            justify-content: flex-end;
+            align-items: center;
+            visibility: visible !important;
+        }
+        
+        /* Primary Orange Button (Notify) */
+        .btn-primary-storehub {
+            background-color: #FA8C16;
+            color: white;
+        }
+        
+        .btn-primary-storehub:hover:not(:disabled) {
+            background-color: #FFA940;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        
+        .btn-primary-storehub:active:not(:disabled) {
+            background-color: #D46B08;
+            box-shadow: none;
+        }
+        
+        /* Danger Outline Button (No Show) */
+        .btn-danger-outline {
+            background-color: white;
+            color: #CF1322;
+            border: 1px solid #CF1322;
+        }
+        
+        .btn-danger-outline:hover:not(:disabled) {
+            background-color: #FFF0F0;
+            border-color: #A8071A;
+            box-shadow: 0 2px 4px rgba(207, 19, 34, 0.08);
+        }
+        
+        .btn-danger-outline:active:not(:disabled) {
+            background-color: #FFE7E7;
+            box-shadow: none;
+        }
+        
+        /* Success State (Already Notified) */
+        .btn-success-storehub {
+            background-color: #52C41A;
+            color: white;
+            cursor: default;
+        }
+        
+        /* Disabled State */
+        .btn-storehub:disabled {
+            background-color: #D9D9D9;
+            color: #6B6B6B;
+            cursor: not-allowed;
+            box-shadow: none;
+            border: none;
+        }
+        
+        /* Action Buttons Group */
+        .action-buttons-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        /* Toast Notifications */
+        .toast-storehub {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideInRight 250ms ease-out;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+        }
+        
+        .toast-success {
+            background: #52C41A;
+            color: white;
+        }
+        
+        .toast-info {
+            background: #1890FF;
+            color: white;
+        }
+        
+        .toast-warning {
+            background: #FADB14;
+            color: #262626;
+        }
+        
+        .toast-error {
+            background: #CF1322;
+            color: white;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -111,12 +388,6 @@
                         </svg>
                         Refresh
                     </button>
-                    <button class="btn btn-primary btn-sm" onclick="showAddCustomerModal()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Add Customer
-                    </button>
                 </div>
             </div>
             
@@ -134,67 +405,143 @@
             <div class="tab-content">
                 <!-- Waiting Tab -->
                 <div class="tab-pane active" id="waiting-tab">
-                    <div class="queue-grid" id="waitingQueue">
-                        <% if (waitingCustomers && waitingCustomers.length > 0) { %>
-                            <% waitingCustomers.forEach(customer => { %>
-                                <div class="queue-card" data-customer-id="<%= customer.id %>">
-                                    <div class="queue-number">#<%= customer.queueNumber %></div>
-                                    <div class="queue-info">
-                                        <div class="queue-name"><%= customer.customerName || customer.name || 'Guest' %></div>
-                                        <div class="queue-details">
-                                            <div class="queue-detail-item">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                                </svg>
-                                                <%= customer.partySize || 1 %> <%= customer.partySize === 1 ? 'person' : 'people' %>
-                                            </div>
-                                            <div class="queue-detail-item">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                <%= customer.waitTime || '0 min' %>
-                                            </div>
-                                            <% if (customer.customerPhone || customer.phone) { %>
-                                            <div class="queue-detail-item">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                                </svg>
-                                                <%= customer.customerPhone || customer.phone %>
-                                            </div>
-                                            <% } %>
-                                        </div>
-                                    </div>
-                                    <div class="queue-actions">
-                                        <button class="btn btn-primary btn-sm" onclick="callCustomer('<%= queueId || activeQueue?.id || activeQueue?._id %>', '<%= customer.id %>', event)">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-right: 4px;">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
-                                            </svg>
-                                            Call
-                                        </button>
-                                        <button class="btn btn-text btn-sm" onclick="removeCustomer('<%= customer.id %>')">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            <% }) %>
-                        <% } else { %>
-                            <div class="empty-state">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <h3>No customers waiting</h3>
-                                <p>New customers will appear here</p>
-                            </div>
-                        <% } %>
-                    </div>
+                    <% if (waitingCustomers && waitingCustomers.length > 0) { %>
+                        <div class="queue-table-container">
+                            <table class="queue-table">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Pax</th>
+                                        <th>Phone Number</th>
+                                        <th>Name</th>
+                                        <th>Wait Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="waitingQueue">
+                                    <% waitingCustomers.forEach((customer, index) => { %>
+                                        <% const waitMinutes = customer.waitTime ? parseInt(customer.waitTime) : Math.floor((new Date() - new Date(customer.joinedAt)) / (1000 * 60)); %>
+                                        <% const isCalled = customer.status === 'called' || customer.calledAt; %>
+                                        <tr class="queue-row <%= isCalled ? 'customer-called' : '' %>" data-customer-id="<%= customer.id %>" data-status="<%= customer.status %>">
+                                            <td class="queue-number">
+                                                <span class="number-badge <%= isCalled ? 'badge-called' : '' %>">#<%= customer.position || customer.queueNumber || (index + 1) %></span>
+                                                <% if (isCalled) { %>
+                                                <span class="status-indicator called">Called</span>
+                                                <% } %>
+                                            </td>
+                                            <td class="queue-pax">
+                                                <span class="pax-badge"><%= customer.partySize || 1 %></span>
+                                            </td>
+                                            <td class="queue-phone">
+                                                <%= customer.customerPhone || customer.phone || '-' %>
+                                            </td>
+                                            <td class="queue-name">
+                                                <div class="name-container">
+                                                    <span class="customer-name"><%= customer.customerName || customer.name || 'Guest' %></span>
+                                                    <% if (customer.verificationCode) { %>
+                                                    <span class="verification-code-badge">
+                                                        <%= customer.verificationCode %>
+                                                    </span>
+                                                    <% } %>
+                                                </div>
+                                            </td>
+                                            <td class="queue-wait-time">
+                                                <span class="wait-time" data-joined-at="<%= customer.joinedAt %>">
+                                                    <%= waitMinutes %> min
+                                                </span>
+                                                <% if (isCalled && customer.calledAt) { %>
+                                                <div class="called-time">
+                                                    <small>Called <%= Math.floor((new Date() - new Date(customer.calledAt)) / (1000 * 60)) %> min ago</small>
+                                                </div>
+                                                <% } %>
+                                            </td>
+                                            <td class="queue-actions" style="position: relative !important; z-index: 100 !important; min-width: 180px !important; text-align: center !important; vertical-align: middle !important;">
+                                                <!-- BUTTONS SHOULD APPEAR HERE -->
+                                                <div class="action-buttons-group" style="display: flex !important; gap: 8px; justify-content: center; align-items: center; position: relative !important; z-index: 101 !important; visibility: visible !important; opacity: 1 !important;">
+                                                    <% 
+                                                    // Get queue ID and customer data safely
+                                                    const safeQueueId = typeof queueId !== 'undefined' ? queueId : 
+                                                                       (typeof activeQueue !== 'undefined' && activeQueue ? 
+                                                                        (activeQueue.id || activeQueue._id || '') : '');
+                                                    const safeCustomerId = customer.id || customer._id || '';
+                                                    const customerCalled = customer.status === 'called' || customer.calledAt;
+                                                    const minutesSinceCalled = customerCalled && customer.calledAt ? 
+                                                        Math.floor((new Date() - new Date(customer.calledAt)) / (1000 * 60)) : 0;
+                                                    
+                                                    // Debug output
+                                                    const debugInfo = `QueueID: ${safeQueueId}, Called: ${customerCalled}, MinutesSince: ${minutesSinceCalled}`;
+                                                    %>
+                                                    
+                                                    <% if (!customerCalled) { %>
+                                                        <!-- Notify Button for waiting customers -->
+                                                        <button type="button" 
+                                                                class="btn-storehub btn-primary-storehub"
+                                                                style="display: inline-flex !important; background-color: #FA8C16 !important; color: white !important; padding: 0 16px !important; height: 36px !important; border-radius: 8px !important; border: none !important; align-items: center !important; gap: 6px !important; font-size: 14px !important; font-weight: 500 !important; cursor: pointer !important; position: relative !important; z-index: 1000 !important; visibility: visible !important; opacity: 1 !important;"
+                                                                onclick="notifyTableReady('<%= safeQueueId %>', '<%= customer.customerName || customer.name || 'Guest' %>', '<%= customer.customerPhone || customer.phone || '' %>')">
+                                                            <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                                            </svg>
+                                                            <span>Notify</span>
+                                                        </button>
+                                                    <% } else if (minutesSinceCalled < 30) { %>
+                                                        <!-- Customer has been called - show Seat Customer button -->
+                                                        <button type="button" 
+                                                                class="btn-storehub btn-success-storehub"
+                                                                style="display: inline-flex !important; background-color: #28a745 !important; color: white !important; padding: 0 16px !important; height: 36px !important; border-radius: 8px !important; border: none !important; align-items: center !important; gap: 6px !important; font-size: 14px !important; font-weight: 500 !important; cursor: pointer !important;"
+                                                                onclick="showTableAssignmentModal('<%= safeQueueId %>', '<%= safeCustomerId %>', event)">
+                                                            <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                            <span>Seat Customer</span>
+                                                        </button>
+                                                    <% } else { %>
+                                                        <!-- No-show button after 30 minutes -->
+                                                        <button type="button" 
+                                                                class="btn-storehub btn-danger-outline"
+                                                                style="display: inline-flex !important; background-color: white !important; color: #CF1322 !important; padding: 0 16px !important; height: 36px !important; border-radius: 8px !important; border: 1px solid #CF1322 !important; align-items: center !important; gap: 6px !important; font-size: 14px !important; font-weight: 500 !important; cursor: pointer !important;"
+                                                                onclick="markAsNoShow('<%= safeQueueId %>', '<%= customer.customerName || customer.name || 'Guest' %>')">
+                                                            <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                            <span>No Show</span>
+                                                        </button>
+                                                    <% } %>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <h3>No customers waiting</h3>
+                            <p>New customers will appear here</p>
+                        </div>
+                    <% } %>
                 </div>
                 
                 <!-- Completed Tab -->
                 <div class="tab-pane" id="completed-tab">
-                    <div class="queue-list" id="completedQueue">
-                        <!-- Completed customers will be loaded here -->
+                    <div class="queue-table-container">
+                        <table class="queue-table">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Pax</th>
+                                    <th>Phone Number</th>
+                                    <th>Name</th>
+                                    <th>Total Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="completedQueue">
+                                <!-- Completed customers will be loaded here -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -232,55 +579,70 @@
         </div>
     </div>
     
-    <!-- Add Customer Modal -->
-    <div class="modal" id="addCustomerModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add New Customer</h3>
-                <button class="modal-close" onclick="closeModal('addCustomerModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addCustomerForm">
-                    <div class="form-group">
-                        <label class="form-label required">Customer Name</label>
-                        <input type="text" class="form-control" id="customerName" placeholder="Enter customer name" required>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label required">Phone Number</label>
-                            <input type="tel" class="form-control" id="customerPhone" placeholder="+60123456789" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label required">Party Size</label>
-                            <select class="form-control" id="partySize" required>
-                                <option value="">Select size</option>
-                                <% 
-                                // Use merchant's max party size setting, default to 5
-                                const maxPartySize = locals.merchantSettings?.partySizeRegularMax || 5;
-                                for (let i = 1; i <= maxPartySize; i++) { 
-                                %>
-                                    <option value="<%= i %>"><%= i %> <%= i === 1 ? 'person' : 'people' %></option>
-                                <% } %>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Special Requests</label>
-                        <textarea class="form-control" id="specialRequests" rows="3" placeholder="Any special requirements or requests (optional)"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('addCustomerModal')">Cancel</button>
-                <button class="btn btn-primary" onclick="addCustomer()">Add to Queue</button>
-            </div>
-        </div>
-    </div>
+    <style>
+        /* Animations for modals and overlays */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes scaleIn {
+            from { 
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* Status indicators */
+        .customer-on-way {
+            position: relative;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .status-indicator.called {
+            background: #52C41A;
+            color: white;
+        }
+        
+        .status-indicator.on-way {
+            background: #1890FF;
+            color: white;
+        }
+    </style>
     
     <script>
-        // Initialize Socket.IO
+        // Initialize Socket.IO (nuclear fix already applied)
         const socket = io();
-        const queueId = '<%= queueId %>';
+        const queueId = '<%= typeof queueId !== "undefined" ? queueId : (typeof activeQueue !== "undefined" && activeQueue ? (activeQueue.id || activeQueue._id) : "") %>';
+        
         
         // Tab functionality
         document.querySelectorAll('.tab-link').forEach(tab => {
@@ -315,26 +677,115 @@
             showNotification('New customer added to queue', 'success');
         });
         
-        socket.on('customer-called', (customer) => {
-            moveCustomerToCompleted(customer);
-            showNotification(`Customer #${customer.queueNumber} seated`, 'info');
+        socket.on('customer-called', (data) => {
+            // Update the customer's status to "called" instead of removing them
+            const customerId = data.customerId || data.id;
+            const row = document.querySelector(`[data-customer-id="${customerId}"]`);
+            
+            if (row) {
+                // Update the row's visual state
+                row.classList.add('customer-called');
+                row.setAttribute('data-status', 'called');
+                
+                // Update the status badge
+                const statusCell = row.querySelector('.queue-number');
+                if (statusCell && !statusCell.querySelector('.status-indicator')) {
+                    const statusIndicator = document.createElement('span');
+                    statusIndicator.className = 'status-indicator called';
+                    statusIndicator.textContent = 'Notified';
+                    statusCell.appendChild(statusIndicator);
+                }
+                
+                // Update the notify button to show notified state
+                const notifyBtn = row.querySelector('.btn-notify, [onclick*="notifyTableReady"]');
+                if (notifyBtn) {
+                    notifyBtn.disabled = true;
+                    notifyBtn.className = 'btn-storehub btn-success-storehub';
+                    notifyBtn.style.opacity = '0.6';
+                    notifyBtn.innerHTML = `
+                        <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Notified</span>
+                    `;
+                }
+                
+                // Show notification
+                showNotification(`✅ Notified: ${data.customerName}`, 'success');
+            }
+        });
+        
+        // Listen for customer acknowledgment (on the way)
+        socket.on('customer-acknowledged', (data) => {
+            console.log('Customer acknowledged notification:', data);
+            
+            // Show notification
+            showNotification(`🚶 ${data.customerName} is on their way!`, 'info');
+            
+            // Update the customer's row in the UI
+            const row = document.querySelector(`[data-customer-id="${data.entryId}"]`);
+            if (row) {
+                // Add visual indicator that customer is on the way
+                const statusCell = row.querySelector('.queue-number');
+                if (statusCell) {
+                    // Remove old status indicator
+                    const oldIndicator = statusCell.querySelector('.status-indicator');
+                    if (oldIndicator) {
+                        oldIndicator.remove();
+                    }
+                    
+                    // Add new "on the way" indicator
+                    const statusIndicator = document.createElement('span');
+                    statusIndicator.className = 'status-indicator on-way';
+                    statusIndicator.style.cssText = 'background: #1890FF; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;';
+                    statusIndicator.textContent = 'On the way';
+                    statusCell.appendChild(statusIndicator);
+                }
+                
+                // Update row styling
+                row.classList.add('customer-on-way');
+                row.style.background = 'linear-gradient(to right, #e6f7ff 0%, transparent 100%)';
+            }
+        });
+        
+        socket.on('customer-confirmed', (data) => {
+            // Show notification when customer confirms they're coming
+            showNotification(`✅ ${data.customerName} confirmed they're coming!`, 'success');
+            
+            // Update UI to show confirmation status
+            const row = document.querySelector(`[data-customer-id="${data.customerId}"]`);
+            if (row) {
+                // Add visual indicator
+                const nameCell = row.querySelector('.queue-name .customer-name');
+                if (nameCell && !nameCell.querySelector('.confirmed-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'confirmed-badge';
+                    badge.style.cssText = 'background: #52C41A; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;';
+                    badge.textContent = '✓ Confirmed';
+                    nameCell.appendChild(badge);
+                }
+            }
+        });
+        
+        socket.on('customer-cancelled', (data) => {
+            // Show notification when customer cancels
+            showNotification(`❌ ${data.customerName} cancelled their spot`, 'warning');
+            
+            // Remove customer from display
+            const row = document.querySelector(`[data-customer-id="${data.customerId}"]`);
+            if (row) {
+                row.style.animation = 'fadeOut 0.5s ease-out';
+                setTimeout(() => {
+                    row.remove();
+                    updateCounts();
+                }, 500);
+            }
+            showNotification(`Customer #${customer.position || customer.queueNumber} seated`, 'info');
         });
         
         // Functions
         function refreshQueue() {
             location.reload();
-        }
-        
-        function showAddCustomerModal() {
-            const modal = document.getElementById('addCustomerModal');
-            if (modal) {
-                if (typeof StoreHubDS !== 'undefined' && StoreHubDS.openModal) {
-                    StoreHubDS.openModal(modal);
-                } else {
-                    // Fallback if StoreHubDS is not available
-                    modal.style.display = 'flex';
-                }
-            }
         }
         
         function openModal(modalId) {
@@ -366,61 +817,6 @@
             if (backdrop) {
                 backdrop.remove();
             }
-        }
-        
-        function addCustomer() {
-            const name = document.getElementById('customerName').value.trim();
-            const phone = document.getElementById('customerPhone').value.trim();
-            const partySize = document.getElementById('partySize').value;
-            const specialRequests = document.getElementById('specialRequests').value.trim();
-            
-            // Validate required fields
-            if (!name) {
-                showNotification('Please enter customer name', 'error');
-                return;
-            }
-            
-            if (!phone) {
-                showNotification('Please enter phone number', 'error');
-                return;
-            }
-            
-            if (!partySize) {
-                showNotification('Please select party size', 'error');
-                return;
-            }
-            
-            fetch(`/api/queues/${queueId}/customers`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ 
-                    name, 
-                    phone, 
-                    partySize: parseInt(partySize),
-                    specialRequests 
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    closeModal('addCustomerModal');
-                    document.getElementById('addCustomerForm').reset();
-                    showNotification('Customer added successfully', 'success');
-                    // Refresh the queue display
-                    if (data.customer) {
-                        addCustomerToDisplay(data.customer);
-                    }
-                } else {
-                    showNotification(data.message || 'Failed to add customer', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error adding customer:', error);
-                showNotification('Error adding customer', 'error');
-            });
         }
         
         function callCustomer(queueId, customerId, event) {
@@ -531,9 +927,346 @@
             }
         }
         
+        function seatCustomer(queueId, customerId, event) {
+            // Show table assignment modal
+            showTableAssignmentModal(queueId, customerId, event);
+        }
+        
+        function showTableAssignmentModal(queueId, customerId, event) {
+            // Create modal overlay
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'tableAssignmentModal';
+            modalOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease-in-out;
+            `;
+            
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideUp 0.3s ease-out;
+            `;
+            
+            modalContent.innerHTML = `
+                <h3 style="margin-bottom: 20px; color: #262626;">Assign Table</h3>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #595959; font-size: 14px;">Table Number</label>
+                    <input type="text" id="tableNumberInput" placeholder="Enter table number (e.g., A1, 12, VIP-3)" 
+                        style="width: 100%; padding: 10px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 16px;"
+                        autofocus>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="closeTableModal()" style="
+                        padding: 8px 20px;
+                        border: 1px solid #d9d9d9;
+                        background: white;
+                        color: #595959;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">Cancel</button>
+                    <button onclick="assignTableAndSeat('${queueId}', '${customerId}')" style="
+                        padding: 8px 20px;
+                        background: #FA8C16;
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">Assign & Seat</button>
+                </div>
+            `;
+            
+            modalOverlay.appendChild(modalContent);
+            document.body.appendChild(modalOverlay);
+            
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('tableNumberInput')?.focus();
+            }, 100);
+            
+            // Handle Enter key
+            document.getElementById('tableNumberInput')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    assignTableAndSeat(queueId, customerId);
+                }
+            });
+        }
+        
+        function closeTableModal() {
+            document.getElementById('tableAssignmentModal')?.remove();
+        }
+        
+        function assignTableAndSeat(queueId, customerId) {
+            const tableNumber = document.getElementById('tableNumberInput')?.value.trim();
+            
+            if (!tableNumber) {
+                alert('Please enter a table number');
+                return;
+            }
+            
+            // Close modal
+            closeTableModal();
+            
+            // Send request to assign table and seat customer
+            fetch(`/api/queue/${queueId}/assign-table/${customerId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ tableNumber })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success overlay
+                    showTableAssignmentOverlay(data.customer?.customerName || 'Customer', tableNumber);
+                    
+                    // Move customer to completed
+                    moveCustomerToCompleted(data.customer);
+                } else {
+                    showNotification(data.error || 'Failed to assign table', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error seating customer:', error);
+                showNotification('Error seating customer', 'error');
+            });
+        }
+        
+        function showTableAssignmentOverlay(customerName, tableNumber) {
+            // Create backdrop
+            const backdrop = document.createElement('div');
+            backdrop.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10001;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease-in-out;
+                cursor: pointer;
+            `;
+            
+            // Create modal card
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 32px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                position: relative;
+                animation: scaleIn 0.4s ease-out;
+                cursor: default;
+            `;
+            
+            modal.innerHTML = `
+                <!-- Close button -->
+                <button onclick="this.closest('div').parentElement.remove()" style="
+                    position: absolute;
+                    top: 12px;
+                    right: 12px;
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    color: #999;
+                    cursor: pointer;
+                    padding: 4px;
+                    line-height: 1;
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 4px;
+                    transition: all 0.2s;
+                " onmouseover="this.style.background='#f0f0f0'; this.style.color='#333'" 
+                   onmouseout="this.style.background='none'; this.style.color='#999'">×</button>
+                
+                <div style="text-align: center;">
+                    <!-- Success icon with green background circle -->
+                    <div style="
+                        width: 80px;
+                        height: 80px;
+                        background: #52C41A;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 20px;
+                    ">
+                        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    
+                    <!-- Success message -->
+                    <h2 style="
+                        font-size: 24px;
+                        color: #333;
+                        margin-bottom: 8px;
+                        font-weight: 600;
+                    ">Customer Seated!</h2>
+                    
+                    <!-- Table info -->
+                    <div style="
+                        background: #f0f9ff;
+                        border: 2px solid #1890ff;
+                        border-radius: 8px;
+                        padding: 12px;
+                        margin: 16px 0;
+                    ">
+                        <p style="
+                            font-size: 20px;
+                            color: #1890ff;
+                            margin: 0;
+                            font-weight: bold;
+                        ">Table ${tableNumber}</p>
+                    </div>
+                    
+                    <!-- Customer name -->
+                    <p style="
+                        font-size: 18px;
+                        color: #595959;
+                        margin: 0;
+                    ">${customerName}</p>
+                </div>
+            `;
+            
+            // Stop propagation on modal click to prevent closing when clicking inside
+            modal.onclick = (e) => e.stopPropagation();
+            
+            // Add modal to backdrop
+            backdrop.appendChild(modal);
+            
+            // Click backdrop to close
+            backdrop.onclick = (e) => {
+                if (e.target === backdrop) {
+                    backdrop.style.animation = 'fadeOut 0.3s ease-in-out';
+                    setTimeout(() => backdrop.remove(), 300);
+                }
+            };
+            
+            document.body.appendChild(backdrop);
+            
+            // Auto-remove after 3 seconds
+            const autoCloseTimeout = setTimeout(() => {
+                if (backdrop.parentElement) {
+                    backdrop.style.animation = 'fadeOut 0.3s ease-in-out';
+                    setTimeout(() => backdrop.remove(), 300);
+                }
+            }, 3000);
+            
+            // Clear timeout if manually closed
+            const originalOnclick = backdrop.onclick;
+            backdrop.onclick = (e) => {
+                clearTimeout(autoCloseTimeout);
+                originalOnclick(e);
+            };
+            
+            // Also show notification toast
+            showNotification(`✅ ${customerName} seated at Table ${tableNumber}`, 'success');
+        }
+        
+        function recallCustomer(queueId, customerId, event) {
+            if (!confirm('Send another notification to this customer?')) {
+                return;
+            }
+            
+            // Reuse the callCustomer function for recall
+            callCustomer(queueId, customerId, event);
+        }
+        
         function loadTabData(tabName) {
-            // Load data for specific tab
-            // This would fetch data from the server based on the tab
+            if (tabName === 'completed') {
+                // Load completed customers
+                fetch(`/api/queue/${queueId}/completed`, {
+                    headers: {
+                        'CSRF-Token': '<%= locals.csrfToken %>'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const completedQueue = document.getElementById('completedQueue');
+                    completedQueue.innerHTML = '';
+                    
+                    if (data.customers && data.customers.length > 0) {
+                        data.customers.forEach((customer, index) => {
+                            const totalMinutes = customer.totalTime || Math.floor((new Date(customer.completedAt || Date.now()) - new Date(customer.joinedAt)) / (1000 * 60));
+                            const row = document.createElement('tr');
+                            row.className = 'queue-row completed';
+                            row.innerHTML = `
+                                <td class="queue-number">
+                                    <span class="number-badge">#${customer.position || customer.queueNumber || (index + 1)}</span>
+                                </td>
+                                <td class="queue-pax">
+                                    <span class="pax-badge">${customer.partySize || 1}</span>
+                                </td>
+                                <td class="queue-phone">
+                                    ${customer.customerPhone || customer.phone || '-'}
+                                </td>
+                                <td class="queue-name">
+                                    <div class="name-container">
+                                        <span class="customer-name">${customer.customerName || customer.name || 'Guest'}</span>
+                                        ${customer.verificationCode ? `
+                                        <span class="verification-code-badge">
+                                            ${customer.verificationCode}
+                                        </span>
+                                        ` : ''}
+                                    </div>
+                                </td>
+                                <td class="queue-wait-time">
+                                    <span class="wait-time">${totalMinutes} min</span>
+                                </td>
+                                <td class="queue-status">
+                                    <span class="badge badge-success">Completed</span>
+                                </td>
+                            `;
+                            completedQueue.appendChild(row);
+                        });
+                    } else {
+                        completedQueue.innerHTML = `
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px;">
+                                    <div class="empty-state">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <h3>No completed customers yet</h3>
+                                        <p>Completed customers will appear here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading completed customers:', error);
+                    showNotification('Error loading completed customers', 'error');
+                });
+            }
         }
         
         function updateQueueDisplay(data) {
@@ -548,79 +1281,122 @@
         }
         
         function addCustomerToDisplay(customer) {
+            const waitingTab = document.getElementById('waiting-tab');
             const waitingQueue = document.getElementById('waitingQueue');
-            const emptyState = waitingQueue.querySelector('.empty-state');
+            
+            // Remove empty state if exists
+            const emptyState = waitingTab.querySelector('.empty-state');
             if (emptyState) {
-                emptyState.remove();
+                // Create table structure if it doesn't exist
+                waitingTab.innerHTML = `
+                    <div class="queue-table-container">
+                        <table class="queue-table">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Pax</th>
+                                    <th>Phone Number</th>
+                                    <th>Name</th>
+                                    <th>Wait Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="waitingQueue">
+                            </tbody>
+                        </table>
+                    </div>
+                `;
             }
             
-            const customerCard = createCustomerCard(customer);
-            waitingQueue.insertBefore(customerCard, waitingQueue.firstChild);
+            const customerRow = createCustomerRow(customer);
+            document.getElementById('waitingQueue').insertBefore(customerRow, document.getElementById('waitingQueue').firstChild);
             
             // Animate in
-            customerCard.classList.add('fade-in');
+            customerRow.classList.add('fade-in');
+            
+            // Update count
+            const waitingCount = document.getElementById('waitingQueue').children.length;
+            document.getElementById('waitingCount').textContent = waitingCount;
         }
         
-        function createCustomerCard(customer) {
-            const card = document.createElement('div');
-            card.className = 'queue-card';
-            card.setAttribute('data-customer-id', customer.id);
-            card.innerHTML = `
-                <div class="queue-number">#${customer.queueNumber}</div>
-                <div class="queue-info">
-                    <div class="queue-name">${customer.customerName || customer.name || 'Guest'}</div>
-                    <div class="queue-details">
-                        <div class="queue-detail-item">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                            ${customer.partySize || 1} ${customer.partySize === 1 ? 'person' : 'people'}
-                        </div>
-                        <div class="queue-detail-item">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Just now
-                        </div>
-                        ${customer.phone ? `
-                        <div class="queue-detail-item">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                            </svg>
-                            ${customer.phone}
-                        </div>
+        function createCustomerRow(customer) {
+            const row = document.createElement('tr');
+            row.className = 'queue-row';
+            row.setAttribute('data-customer-id', customer.id);
+            const waitMinutes = customer.waitTime ? parseInt(customer.waitTime) : 0;
+            
+            row.innerHTML = `
+                <td class="queue-number">
+                    <span class="number-badge">#${customer.position || customer.queueNumber || ''}</span>
+                </td>
+                <td class="queue-pax">
+                    <span class="pax-badge">${customer.partySize || 1}</span>
+                </td>
+                <td class="queue-phone">
+                    ${customer.customerPhone || customer.phone || '-'}
+                </td>
+                <td class="queue-name">
+                    <div class="name-container">
+                        <span class="customer-name">${customer.customerName || customer.name || 'Guest'}</span>
+                        ${customer.verificationCode ? `
+                        <span class="verification-code-badge">
+                            ${customer.verificationCode}
+                        </span>
                         ` : ''}
                     </div>
-                </div>
-                <div class="queue-actions">
-                    <button class="btn btn-primary btn-sm" onclick="callCustomer('${queueId || customer.queueId || ""}', '${customer.id}', event)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-right: 4px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
-                        </svg>
-                        Call
-                    </button>
-                    <button class="btn btn-text btn-sm" onclick="removeCustomer('${customer.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
+                </td>
+                <td class="queue-wait-time">
+                    <span class="wait-time" data-joined-at="${customer.joinedAt || new Date().toISOString()}">
+                        ${waitMinutes} min
+                    </span>
+                </td>
+                <td class="queue-actions">
+                    <div class="action-buttons">
+                        <button class="btn btn-primary btn-sm" onclick="callCustomer('${queueId}', '${customer.id}', event)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                            </svg>
+                            Call
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="removeCustomer('${customer.id}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </td>
             `;
-            return card;
+            return row;
         }
         
         function moveCustomerToCompleted(customer) {
-            const card = document.querySelector(`[data-customer-id="${customer.id}"]`);
-            if (card) {
-                card.classList.add('scale-out');
+            const row = document.querySelector(`[data-customer-id="${customer.id}"]`);
+            if (row) {
+                row.classList.add('scale-out');
                 setTimeout(() => {
-                    card.remove();
+                    row.remove();
                     // Update completed tab if active
                     if (document.querySelector('.tab-link[data-tab="completed"]').classList.contains('active')) {
                         loadTabData('completed');
                     }
                     // Update counts
                     updateCounts();
+                    
+                    // Check if waiting queue is now empty
+                    const waitingQueue = document.getElementById('waitingQueue');
+                    if (waitingQueue && waitingQueue.children.length === 0) {
+                        // Show empty state
+                        const waitingTab = document.getElementById('waiting-tab');
+                        waitingTab.innerHTML = `
+                            <div class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h3>No customers waiting</h3>
+                                <p>New customers will appear here</p>
+                            </div>
+                        `;
+                    }
                 }, 300);
             }
         }
@@ -657,6 +1433,78 @@
         
         function exportData() {
             window.location.href = `/api/queues/${queueId}/export`;
+        }
+        
+        function updateCounts() {
+            const waitingQueue = document.getElementById('waitingQueue');
+            const waitingCount = waitingQueue ? waitingQueue.querySelectorAll('tr').length : 0;
+            document.getElementById('waitingCount').textContent = waitingCount;
+            
+            // Update completed count if needed
+            const completedQueue = document.getElementById('completedQueue');
+            const completedCount = completedQueue ? completedQueue.querySelectorAll('tr:not(.empty-row)').length : 0;
+            const completedCountElement = document.getElementById('completedCount');
+            if (completedCountElement) {
+                completedCountElement.textContent = completedCount;
+            }
+        }
+        
+        // Update customer status in the UI after calling
+        window.updateCustomerStatus = function(customerId, status, customerData) {
+            const row = document.querySelector(`[data-customer-id="${customerId}"]`);
+            if (row) {
+                row.setAttribute('data-status', status);
+                
+                if (status === 'called') {
+                    row.classList.add('customer-called');
+                    
+                    // Update the number badge
+                    const numberBadge = row.querySelector('.number-badge');
+                    if (numberBadge) {
+                        numberBadge.classList.add('badge-called');
+                        // Add status indicator
+                        if (!row.querySelector('.status-indicator')) {
+                            const statusIndicator = document.createElement('span');
+                            statusIndicator.className = 'status-indicator called';
+                            statusIndicator.textContent = 'Called';
+                            numberBadge.parentElement.appendChild(statusIndicator);
+                        }
+                    }
+                    
+                    // Update action buttons
+                    const actionsCell = row.querySelector('.queue-actions .action-buttons');
+                    if (actionsCell) {
+                        actionsCell.innerHTML = `
+                            <button class="btn btn-success btn-sm" onclick="seatCustomer('${queueId}', '${customerId}', event)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Seat
+                            </button>
+                            <button class="btn btn-warning btn-sm" onclick="recallCustomer('${queueId}', '${customerId}', event)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Recall
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="removeCustomer('${customerId}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        `;
+                    }
+                    
+                    // Add called time info
+                    const waitTimeCell = row.querySelector('.queue-wait-time');
+                    if (waitTimeCell && !waitTimeCell.querySelector('.called-time')) {
+                        const calledTime = document.createElement('div');
+                        calledTime.className = 'called-time';
+                        calledTime.innerHTML = '<small>Just called</small>';
+                        waitTimeCell.appendChild(calledTime);
+                    }
+                }
+            }
         }
         
         // Queue Control Functions
@@ -793,6 +1641,195 @@
                 showNotification('Failed to stop queue', 'error');
             }
         }
+        
+        // Create notification sound element
+        const notificationSound = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlIC4gb3JnwABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSw==');
+        
+        // StoreHub Button Action Functions
+        function notifyTableReady(queueId, customerName, customerPhone) {
+            // Disable button immediately to prevent double-clicks
+            const btn = event.target.closest('button');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-small"></span> Notifying...';
+            
+            // Make API call to notify customer
+            fetch('/api/queue/notify-table', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({
+                    queueId: queueId,
+                    customerName: customerName,
+                    customerPhone: customerPhone,
+                    message: 'Your table is ready! Please proceed to the counter.'
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to notify customer');
+                return response.json();
+            })
+            .then(data => {
+                // Play notification sound
+                notificationSound.play().catch(e => console.log('Could not play sound:', e));
+                
+                // Update button to show notified state
+                btn.className = 'btn-storehub btn-success-storehub';
+                btn.style.cssText = 'display: inline-flex !important; background-color: #52C41A !important; color: white !important; padding: 0 16px !important; height: 36px !important; border-radius: 8px !important; border: none !important; align-items: center !important; gap: 6px !important; font-size: 14px !important; font-weight: 500 !important; opacity: 0.6 !important; cursor: not-allowed !important;';
+                btn.innerHTML = `
+                    <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Notified</span>
+                `;
+                btn.disabled = true;
+                
+                // Show success toast
+                showToast('success', `Customer ${customerName} has been notified!`);
+                
+                // Update the row's status visually (don't remove it)
+                const row = btn.closest('tr');
+                if (row) {
+                    row.classList.add('customer-called');
+                    row.setAttribute('data-status', 'called');
+                    
+                    // Add status indicator if not already present
+                    const statusCell = row.querySelector('.queue-number');
+                    if (statusCell && !statusCell.querySelector('.status-indicator')) {
+                        const statusIndicator = document.createElement('span');
+                        statusIndicator.className = 'status-indicator called';
+                        statusIndicator.textContent = 'Notified';
+                        statusCell.appendChild(statusIndicator);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error notifying customer:', error);
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+                btn.style.cssText = 'display: inline-flex !important; background-color: #FA8C16 !important; color: white !important; padding: 0 16px !important; height: 36px !important; border-radius: 8px !important; border: none !important; align-items: center !important; gap: 6px !important; font-size: 14px !important; font-weight: 500 !important; cursor: pointer !important; position: relative !important; z-index: 1000 !important; visibility: visible !important; opacity: 1 !important;';
+                showToast('error', 'Failed to notify customer. Please try again.');
+                
+                // Important: Don't hide or remove the row on error - keep customer visible
+                const row = btn.closest('tr');
+                if (row) {
+                    row.style.opacity = '1';
+                    row.style.display = '';
+                    row.classList.remove('fade-out', 'scale-out');
+                }
+            });
+        }
+        
+        function markAsNoShow(queueId, customerName) {
+            // Confirm action
+            if (!confirm(`Mark ${customerName} as no-show? This will remove them from the queue and record in analytics.`)) {
+                return;
+            }
+            
+            // Disable button
+            const btn = event.target.closest('button');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-small"></span> Processing...';
+            
+            // Make API call to mark as no-show
+            fetch('/api/queue/no-show', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({
+                    queueId: queueId,
+                    customerName: customerName,
+                    reason: 'Did not respond to table ready notification'
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to mark as no-show');
+                return response.json();
+            })
+            .then(data => {
+                // Show success toast
+                showToast('info', `${customerName} marked as no-show`);
+                
+                // Remove the row from table
+                const row = btn.closest('tr');
+                if (row) {
+                    row.style.transition = 'opacity 0.3s ease';
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 300);
+                }
+            })
+            .catch(error => {
+                console.error('Error marking as no-show:', error);
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+                showToast('error', 'Failed to process no-show. Please try again.');
+            });
+        }
+        
+        // Toast notification function
+        function showToast(type, message) {
+            // Remove any existing toasts
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    ${getToastIcon(type)}
+                    <span class="toast-message">${message}</span>
+                </div>
+            `;
+            
+            // Add to page
+            document.body.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('toast-show'), 10);
+            
+            // Auto-dismiss after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('toast-show');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+        
+        function getToastIcon(type) {
+            const icons = {
+                success: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/><path d="M6 10L9 13L14 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                error: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/><path d="M13 7L7 13M7 7L13 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+                info: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/><path d="M10 14V10M10 6V6.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+                warning: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L2 17H18L10 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 8V11M10 14V14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+            };
+            return icons[type] || icons.info;
+        }
+        
+        // Add spinner styles
+        const spinnerStyle = document.createElement('style');
+        spinnerStyle.textContent = `
+            .spinner-small {
+                display: inline-block;
+                width: 14px;
+                height: 14px;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-top-color: white;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+            
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(spinnerStyle);
     </script>
 </body>
 </html>

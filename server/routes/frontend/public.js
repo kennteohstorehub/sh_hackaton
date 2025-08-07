@@ -12,6 +12,11 @@ const { requireAuth, loadUser } = useAuthBypass ?
 
 const router = express.Router();
 
+// Debug route for Socket.io
+router.get('/debug-socket', (req, res) => {
+  res.sendFile('debug-socket-origin.html', { root: process.cwd() });
+});
+
 // Home page - redirect to login if not authenticated
 router.get('/', (req, res) => {
   // Check if this is the admin subdomain
@@ -70,7 +75,9 @@ router.get('/dashboard', requireAuth, loadUser, async (req, res) => {
       const queueWithEntries = await queueService.getQueueWithEntries(activeQueue.id, req.tenantId);
       // Filter entries by status
       const allEntries = queueWithEntries?.entries || [];
-      waitingCustomers = allEntries.filter(e => e.status === 'waiting');
+      // Include both 'waiting' and 'called' status in waitingCustomers for dashboard display
+      // Customers should remain visible until they are seated (completed)
+      waitingCustomers = allEntries.filter(e => e.status === 'waiting' || e.status === 'called');
       servingCustomers = allEntries.filter(e => e.status === 'serving' || e.status === 'called');
       completedCustomers = allEntries.filter(e => e.status === 'completed');
       
@@ -112,6 +119,8 @@ router.get('/dashboard', requireAuth, loadUser, async (req, res) => {
       activeQueue, // Dashboard template expects activeQueue, not queue
       queue: activeQueue, // Keep for backward compatibility
       queueId: activeQueue ? activeQueue.id : null, // Add the missing queueId variable
+      currentQueueId: activeQueue ? activeQueue.id : null, // Add currentQueueId for header template
+      showViewPublic: true, // Enable the View Public button
       queues,
       waitingCustomers, // Dashboard template expects this
       activeCount: waitingCustomers.length, // Add missing activeCount variable
@@ -122,7 +131,9 @@ router.get('/dashboard', requireAuth, loadUser, async (req, res) => {
       queueStats,
       recentEntries,
       user: dashboardUser, // Use the properly formatted user object
-      csrfToken: res.locals.csrfToken || ''
+      csrfToken: res.locals.csrfToken || '',
+      currentQueueId: activeQueue ? activeQueue.id : null,
+      showViewPublic: true
     });
 
   } catch (error) {
@@ -177,6 +188,8 @@ router.get('/dashboard/analytics', requireAuth, loadUser, async (req, res) => {
       },
       activeQueue,
       queue: activeQueue,
+      currentQueueId: activeQueue ? activeQueue.id : null, // Add currentQueueId for header template
+      showViewPublic: true, // Enable the View Public button
       queues,
       user: dashboardUser,
       csrfToken: res.locals.csrfToken || ''
@@ -235,6 +248,8 @@ router.get('/dashboard/settings', requireAuth, loadUser, async (req, res) => {
       },
       activeQueue,
       queue: activeQueue,
+      currentQueueId: activeQueue ? activeQueue.id : null, // Add currentQueueId for header template
+      showViewPublic: true, // Enable the View Public button
       queues,
       user: dashboardUser,
       csrfToken: res.locals.csrfToken || ''
@@ -291,6 +306,8 @@ router.get('/dashboard/help', requireAuth, loadUser, async (req, res) => {
       },
       activeQueue,
       queue: activeQueue,
+      currentQueueId: activeQueue ? activeQueue.id : null, // Add currentQueueId for header template
+      showViewPublic: true, // Enable the View Public button
       queues,
       user: dashboardUser,
       csrfToken: res.locals.csrfToken || ''
@@ -495,6 +512,49 @@ router.get('/join-queue/:merchantId', async (req, res) => {
   }
 });
 
+// GET /queue/:queueId/join - Queue join page for customers
+router.get('/queue/:queueId/join', async (req, res) => {
+  try {
+    const { queueId } = req.params;
+    
+    const queue = await queueService.getQueueWithEntries(queueId);
+    
+    if (!queue) {
+      return res.render('public/error', {
+        title: 'Queue Not Found',
+        message: 'The queue you are looking for does not exist.',
+        showBackButton: false
+      });
+    }
+    
+    const merchantData = queue.merchant || queue.merchantId;
+    const waitingCustomers = queue.entries?.filter(e => e.status === 'waiting').length || 0;
+    const averageWaitTime = Math.round(waitingCustomers * (queue.averageServiceTime || 15));
+    
+    res.render('queue-join-storehub', {
+      queueId: queue.id || queue._id,
+      queueName: queue.name,
+      merchantId: merchantData?.id || merchantData?._id || queue.merchantId,
+      merchantName: merchantData?.businessName || 'Business',
+      logoUrl: merchantData?.logoUrl,
+      totalWaiting: waitingCustomers,
+      avgWaitTime: averageWaitTime,
+      queueActive: queue.isActive !== false,
+      acceptingCustomers: queue.acceptingCustomers !== false,
+      serviceTypes: merchantData?.serviceTypes || [],
+      maxPartySize: merchantData?.settings?.partySizeRegularMax || 5,
+      csrfToken: res.locals.csrfToken || ''
+    });
+    
+  } catch (error) {
+    logger.error('Queue join page error:', error);
+    res.status(500).render('public/error', {
+      title: 'Server Error',
+      message: 'An error occurred while loading the queue page. Please try again later.'
+    });
+  }
+});
+
 // GET /queue/:queueId/minimal - Minimalist queue join page (demo)
 router.get('/queue/:queueId/minimal', async (req, res) => {
   try {
@@ -590,8 +650,13 @@ router.get('/queue-status/:queueId/:customerId', async (req, res) => {
     });
     
   } catch (error) {
-    logger.error('Queue status page error:', error);
-    res.render('public/error', {
+    logger.error('Queue status page error:', {
+      error: error.message,
+      stack: error.stack,
+      queueId: req.params.queueId,
+      customerId: req.params.customerId
+    });
+    res.status(500).render('error', {
       title: 'Error',
       message: 'An error occurred while loading your queue status. Please try again.',
       showBackButton: true
@@ -1020,7 +1085,8 @@ router.get('/queue-join-demo/:queueId', async (req, res) => {
       queueActive: queue.isActive,
       acceptingCustomers: queue.acceptingCustomers,
       serviceTypes: merchant.serviceTypes || [],
-      maxPartySize: merchantSettings.partySizeRegularMax || 5 // Add party size limit
+      maxPartySize: merchantSettings.partySizeRegularMax || 5, // Add party size limit
+      csrfToken: res.locals.csrfToken || ''
     });
   } catch (error) {
     logger.error('Queue join demo error:', error);

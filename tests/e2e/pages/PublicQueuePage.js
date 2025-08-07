@@ -25,7 +25,7 @@ class PublicQueuePage {
   }
 
   async gotoPublicQueue(merchantId) {
-    await this.page.goto(`http://localhost:3838/queue/join/${merchantId}`);
+    await this.page.goto(`http://localhost:3000/queue/join/${merchantId}`);
     await this.page.waitForLoadState('networkidle');
   }
 

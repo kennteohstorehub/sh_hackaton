@@ -54,7 +54,7 @@ Successfully debugged, reviewed, and fixed the multi-tenant authentication syste
 ## Test Accounts Created
 
 ### BackOffice Administrator
-- **URL**: http://admin.lvh.me:3838
+- **URL**: http://admin.lvh.me:3000
 - **Login**: backoffice@storehubqms.local
 - **Password**: BackOffice123!@#
 - **Purpose**: System administration, tenant management
@@ -62,13 +62,13 @@ Successfully debugged, reviewed, and fixed the multi-tenant authentication syste
 ### Tenant Accounts
 
 #### 1. Demo Restaurant
-- **URL**: http://demo.lvh.me:3838
+- **URL**: http://demo.lvh.me:3000
 - **Login**: admin@demo.local
 - **Password**: Demo123!@#
 - **Tenant**: Demo Restaurant
 
 #### 2. Test Cafe
-- **URL**: http://test-cafe.lvh.me:3838
+- **URL**: http://test-cafe.lvh.me:3000
 - **Login**: cafe@testcafe.local
 - **Password**: Test123!@#
 - **Tenant**: Test Cafe
@@ -152,8 +152,8 @@ Successfully debugged, reviewed, and fixed the multi-tenant authentication syste
 
 ### Manual Testing Guide
 1. Start server: `npm start`
-2. Access BackOffice: http://admin.lvh.me:3838
-3. Access Tenant: http://demo.lvh.me:3838
+2. Access BackOffice: http://admin.lvh.me:3000
+3. Access Tenant: http://demo.lvh.me:3000
 4. Verify session isolation by switching contexts
 5. Test error scenarios and edge cases
 

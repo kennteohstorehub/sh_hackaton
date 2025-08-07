@@ -6,7 +6,7 @@
 
 **Error Message:**
 ```
-Error: listen EADDRINUSE: address already in use :::3001
+Error: listen EADDRINUSE: address already in use :::3000
 ```
 
 **Solution:**
@@ -17,7 +17,7 @@ Use the server management script to handle this automatically:
 
 Or manually kill the process:
 ```bash
-lsof -ti:3001 | xargs kill -9
+lsof -ti:3000 | xargs kill -9
 npm start
 ```
 
@@ -127,13 +127,13 @@ Monitor the terminal where you started the server for real-time logs.
 ### 3. Test API Endpoints
 ```bash
 # Test server health
-curl http://localhost:3001
+curl http://localhost:3000
 
 # Test dashboard
-curl http://localhost:3001/dashboard
+curl http://localhost:3000/dashboard
 
 # Test API
-curl http://localhost:3001/api/health
+curl http://localhost:3000/api/health
 ```
 
 ### 4. Browser Developer Tools

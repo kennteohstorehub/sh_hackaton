@@ -1,107 +1,124 @@
-const { chromium } = require('playwright');
+const puppeteer = require('puppeteer');
 
 async function testStopQueueModal() {
-  const browser = await chromium.launch({ headless: false });
-  const page = await browser.newPage();
-  
-  // Capture console logs
-  page.on('console', msg => {
-    const type = msg.type();
-    const text = msg.text();
-    if (type === 'error') {
-      console.log('❌ Console Error:', text);
-    } else if (type === 'warning' && text.includes('Origin-Agent-Cluster')) {
-      console.log('⚠️ Origin-Agent-Cluster Warning:', text);
-    }
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-  
+
   try {
-    console.log('Testing stop queue modal after fixes...\n');
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 800 });
+
+    // Login as merchant
+    console.log('Logging in as merchant...');
+    await page.goto('http://localhost:3000/auth/login');
     
-    // Login
-    await page.goto('http://demo.lvh.me:3838/auth/login');
-    await page.waitForLoadState('networkidle');
-    
-    await page.locator('input[name="email"]').fill('admin@demo.local');
-    await page.locator('input[name="password"]').fill('Demo123!@#');
+    await page.type('#email', 'merchant@demo.com');
+    await page.type('#password', 'password123');
     await page.click('button[type="submit"]');
     
-    // Wait for dashboard
-    await page.waitForURL('**/dashboard');
-    console.log('✅ Logged in successfully');
+    // Wait for dashboard to load
+    await page.waitForNavigation();
+    await page.waitForSelector('.dashboard-container', { timeout: 10000 });
     
-    // Check if queue is running
-    const stopButton = await page.$('button:has-text("Stop Queue")');
-    const startButton = await page.$('button:has-text("Start Queue")');
+    console.log('Dashboard loaded, looking for stop queue button...');
     
-    if (startButton) {
-      console.log('📍 Queue is stopped, starting it first...');
-      await startButton.click();
-      await page.waitForTimeout(2000);
-      await page.reload();
-      await page.waitForLoadState('networkidle');
-    }
+    // Take screenshot before clicking
+    await page.screenshot({ path: 'before-stop-modal.png', fullPage: true });
     
-    // Now test stop functionality
-    const stopButtonNew = await page.$('button:has-text("Stop Queue")');
-    if (stopButtonNew) {
-      console.log('\n🔄 Testing STOP functionality...');
+    // Find and click the stop queue button
+    const stopButton = await page.$('#stopQueueBtn');
+    if (stopButton) {
+      console.log('Found stop queue button, clicking...');
+      await stopButton.click();
       
-      // Click stop button
-      await stopButtonNew.click();
-      
-      // Wait for modal
-      await page.waitForSelector('.stop-queue-modal, #stopQueueModal', { timeout: 5000 });
-      console.log('✅ Stop queue modal appeared');
-      
-      // Check for console errors
+      // Wait a moment for modal to appear
       await page.waitForTimeout(1000);
       
-      // Type confirmation
-      const confirmInput = await page.$('#stopQueueConfirmInput');
-      if (confirmInput) {
-        await confirmInput.fill('Yes I want to stop queue');
-        console.log('✅ Typed confirmation text');
-      }
-      
       // Take screenshot of modal
-      await page.screenshot({ path: 'screenshots/stop-queue-modal.png' });
-      console.log('📸 Modal screenshot saved');
+      await page.screenshot({ path: 'stop-queue-modal.png', fullPage: true });
       
-      // Click confirm button
-      const confirmButton = await page.$('.modal-footer .btn-danger, button:has-text("Stop Queue"):not(.btn-sm)');
-      if (confirmButton) {
-        await confirmButton.click();
-        console.log('✅ Clicked confirm button');
+      // Get modal styles and position
+      const modalInfo = await page.evaluate(() => {
+        const modal = document.querySelector('.stop-queue-modal');
+        if (modal) {
+          const rect = modal.getBoundingClientRect();
+          const styles = window.getComputedStyle(modal);
+          return {
+            found: true,
+            position: {
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height
+            },
+            display: styles.display,
+            visibility: styles.visibility,
+            zIndex: styles.zIndex,
+            backgroundColor: styles.backgroundColor
+          };
+        }
         
-        // Wait for response
-        await page.waitForTimeout(2000);
+        // Also check for the modal content
+        const modalContent = document.querySelector('.modal-content');
+        if (modalContent) {
+          const rect = modalContent.getBoundingClientRect();
+          const styles = window.getComputedStyle(modalContent);
+          return {
+            found: true,
+            isModalContent: true,
+            position: {
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height
+            },
+            display: styles.display,
+            visibility: styles.visibility,
+            zIndex: styles.zIndex,
+            backgroundColor: styles.backgroundColor
+          };
+        }
         
-        // Check if page reloaded
-        try {
-          await page.waitForLoadState('networkidle', { timeout: 5000 });
-          console.log('✅ Page reloaded after stopping queue');
-          
-          // Check if button changed to Start
-          const newStartButton = await page.$('button:has-text("Start Queue")');
-          if (newStartButton) {
-            console.log('✅ Queue successfully STOPPED - button changed to "Start Queue"');
-          }
-        } catch (e) {
-          console.log('⚠️ Page did not reload - checking for errors');
+        return { found: false };
+      });
+      
+      console.log('Modal info:', JSON.stringify(modalInfo, null, 2));
+      
+      // Check if modal is visible and centered
+      const pageSize = await page.evaluate(() => ({
+        width: window.innerWidth,
+        height: window.innerHeight
+      }));
+      
+      if (modalInfo.found) {
+        const expectedLeft = (pageSize.width - modalInfo.position.width) / 2;
+        const expectedTop = (pageSize.height - modalInfo.position.height) / 2;
+        
+        console.log(`Page size: ${pageSize.width}x${pageSize.height}`);
+        console.log(`Modal position: top=${modalInfo.position.top}, left=${modalInfo.position.left}`);
+        console.log(`Expected position: top≈${expectedTop}, left≈${expectedLeft}`);
+        
+        if (Math.abs(modalInfo.position.left - expectedLeft) > 50) {
+          console.log('❌ Modal is NOT horizontally centered');
+        } else {
+          console.log('✓ Modal is horizontally centered');
+        }
+        
+        if (Math.abs(modalInfo.position.top - expectedTop) > 50) {
+          console.log('❌ Modal is NOT vertically centered');
+        } else {
+          console.log('✓ Modal is vertically centered');
         }
       }
+      
     } else {
-      console.log('❌ Stop Queue button not found');
+      console.log('Stop queue button not found');
     }
     
-    // Final screenshot
-    await page.screenshot({ path: 'screenshots/queue-stopped-final.png' });
-    console.log('\n📸 Final screenshot saved: queue-stopped-final.png');
-    
   } catch (error) {
-    console.error('\n❌ Test Error:', error);
-    await page.screenshot({ path: 'screenshots/stop-queue-error.png' });
+    console.error('Error:', error);
   } finally {
     await browser.close();
   }

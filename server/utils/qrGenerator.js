@@ -6,7 +6,7 @@ const QRCode = require('qrcode');
  * @param {string} baseUrl - Base URL of the application
  * @returns {Promise<string>} Base64 encoded QR code image
  */
-async function generateQueueQR(queueId, baseUrl = 'http://localhost:3001') {
+async function generateQueueQR(queueId, baseUrl = 'http://localhost:3000') {
   try {
     const queueUrl = `${baseUrl}/queue/${queueId}`;
     
@@ -35,7 +35,7 @@ async function generateQueueQR(queueId, baseUrl = 'http://localhost:3001') {
  * @param {string} baseUrl - Base URL of the application
  * @returns {Promise<string>} SVG string
  */
-async function generateQueueQRSVG(queueId, baseUrl = 'http://localhost:3001') {
+async function generateQueueQRSVG(queueId, baseUrl = 'http://localhost:3000') {
   try {
     const queueUrl = `${baseUrl}/queue/${queueId}`;
     

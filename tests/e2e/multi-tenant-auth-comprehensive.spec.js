@@ -5,8 +5,8 @@ const testConfig = require('./test-config');
  * Comprehensive Multi-Tenant Authentication System Tests
  * 
  * This test suite covers:
- * 1. BackOffice authentication at admin.lvh.me:3838
- * 2. Tenant authentication flows (demo.lvh.me:3838, test-cafe.lvh.me:3838)
+ * 1. BackOffice authentication at admin.lvh.me:3000
+ * 2. Tenant authentication flows (demo.lvh.me:3000, test-cafe.lvh.me:3000)
  * 3. Session isolation between contexts
  * 4. Security boundaries and access control
  * 5. Edge cases and error handling
@@ -17,18 +17,18 @@ const CREDENTIALS = {
   backoffice: {
     email: 'backoffice@storehubqms.local',
     password: 'BackOffice123!@#',
-    baseUrl: 'http://admin.lvh.me:3838'
+    baseUrl: 'http://admin.lvh.me:3000'
   },
   tenants: {
     demo: {
       email: 'admin@demo.local',
       password: 'Demo123!@#',
-      baseUrl: 'http://demo.lvh.me:3838'
+      baseUrl: 'http://demo.lvh.me:3000'
     },
     testCafe: {
       email: 'cafe@testcafe.local',
       password: 'Test123!@#',
-      baseUrl: 'http://test-cafe.lvh.me:3838'
+      baseUrl: 'http://test-cafe.lvh.me:3000'
     }
   },
   invalid: {
@@ -458,7 +458,7 @@ test.describe('Multi-Tenant Authentication System - Comprehensive Tests', () => 
     
     test('should handle invalid subdomain gracefully', async ({ page }) => {
       // Try to access non-existent tenant
-      await page.goto('http://nonexistent.lvh.me:3838/auth/login');
+      await page.goto('http://nonexistent.lvh.me:3000/auth/login');
       
       // Should show appropriate error page
       const response = await page.waitForResponse(/.*/, { timeout: 10000 });

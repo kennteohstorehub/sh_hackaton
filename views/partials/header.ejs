@@ -1,226 +1,58 @@
-<!-- Shared Header Component -->
-<link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
-<link rel="stylesheet" href="/css/tenant-identity.css?v=<%= Date.now() %>">
-<link rel="stylesheet" href="/css/text-overflow-fix.css?v=<%= Date.now() %>">
-<script src="/js/storehub-design-system.js?v=<%= Date.now() %>"></script>
-<style>
-    /* Header Styles */
-    .header {
-        background: rgba(0, 0, 0, 0.9);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(255, 140, 0, 0.3);
-        padding: 1rem 0;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-    }
-    
-    .header-content {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 2rem;
-    }
-    
-    .header-left {
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-    }
-    
-    .header h1 {
-        background: linear-gradient(135deg, #ff8c00, #ff6b35);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0;
-        white-space: nowrap;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Navigation */
-    .nav-container {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex: 1;
-        justify-content: center;
-    }
-    
-    .nav {
-        display: flex;
-        gap: 0;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 12px;
-        padding: 0.25rem;
-        border: 1px solid rgba(255, 140, 0, 0.2);
-    }
-    
-    .nav a {
-        text-decoration: none;
-        color: rgba(255, 255, 255, 0.8);
-        font-weight: 500;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        font-size: 0.85rem;
-        white-space: nowrap;
-        text-align: center;
-        min-width: 100px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .nav a:hover {
-        background: rgba(255, 140, 0, 0.2);
-        color: white;
-        transform: translateY(-1px);
-    }
-    
-    .nav a.active {
-        background: linear-gradient(135deg, #ff8c00, #ff6b35);
-        color: white;
-        box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
-    }
-    
-    /* User Section */
-    .user-section {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        min-width: 120px;
-    }
-    
-    .user-menu {
-        position: relative;
-    }
-    
-    .user-button {
-        background: rgba(255, 140, 0, 0.1);
-        border: 1px solid rgba(255, 140, 0, 0.3);
-        color: rgba(255, 255, 255, 0.9);
-        padding: 0.6rem 1rem;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    
-    button.user-button {
-        font-family: inherit;
-    }
-    
-    .user-button:hover {
-        background: rgba(255, 140, 0, 0.2);
-        border-color: rgba(255, 140, 0, 0.5);
-        color: white;
-        transform: translateY(-1px);
-    }
-    
-    /* View Public Button */
-    .btn-view-public {
-        background: rgba(255, 140, 0, 0.1);
-        border: 1px solid rgba(255, 140, 0, 0.3);
-        color: rgba(255, 255, 255, 0.9);
-        padding: 0.6rem 1rem;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    
-    .btn-view-public:hover {
-        background: rgba(255, 140, 0, 0.2);
-        border-color: rgba(255, 140, 0, 0.5);
-        color: white;
-        transform: translateY(-1px);
-    }
-    
-    /* Mobile Responsive */
-    @media (max-width: 1024px) {
-        .nav-container {
-            display: none;
-        }
-        
-        .header h1 {
-            font-size: 1.3rem;
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .header-content {
-            flex-direction: column;
-            gap: 1rem;
-            padding: 1rem;
-        }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header-left {
-            width: 100%;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        
-        .user-section {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-</style>
+<!-- Unified Header Component -->
+<link rel="stylesheet" href="/css/header-unified.css?v=<%= Date.now() %>">
 
-<header class="header">
-    <div class="header-content">
-        <div class="header-left">
-            <h1>StoreHub QMS</h1>
-            <% if (typeof tenant !== 'undefined' && tenant && tenant.name) { %>
-            <div class="tenant-badge">
-                <span class="tenant-label">Account:</span>
-                <span class="tenant-name"><%= tenant.name %></span>
+<header class="unified-header">
+    <div class="unified-header-content">
+        <!-- Left Section: Logo + Account -->
+        <div class="unified-header-left">
+            <a href="/dashboard" class="unified-logo">StoreHub QMS</a>
+            <% if (typeof tenant !== 'undefined' && tenant && tenant.slug) { %>
+            <div class="unified-account-badge">
+                <span class="unified-account-label">Account</span>
+                <span class="unified-account-name"><%= tenant.slug %></span>
             </div>
             <% } %>
         </div>
-        <div class="nav-container">
-            <nav class="nav">
-                <a href="/dashboard" class="<%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">Dashboard</a>
-                <a href="/dashboard/analytics" class="<%= typeof activePage !== 'undefined' && activePage === 'analytics' ? 'active' : '' %>">Analytics</a>
-                <a href="/dashboard/settings" class="<%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'active' : '' %>">Settings</a>
-                <a href="/dashboard/help" class="<%= typeof activePage !== 'undefined' && activePage === 'help' ? 'active' : '' %>">Help</a>
-            </nav>
-            
-            <% if (typeof showViewPublic !== 'undefined' && showViewPublic) { %>
-            <a href="/queue/<%= typeof currentQueueId !== 'undefined' ? currentQueueId : '' %>" class="btn-view-public" target="_blank">
-                <i class="bi bi-eye"></i>
-                View Public
+
+        <!-- Center Section: Navigation -->
+        <nav class="unified-nav">
+            <a href="/dashboard" 
+               class="unified-nav-link <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">
+                Dashboard
+            </a>
+            <a href="/dashboard/analytics" 
+               class="unified-nav-link <%= typeof activePage !== 'undefined' && activePage === 'analytics' ? 'active' : '' %>">
+                Analytics
+            </a>
+            <a href="/dashboard/settings" 
+               class="unified-nav-link <%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'active' : '' %>">
+                Settings
+            </a>
+            <a href="/dashboard/help" 
+               class="unified-nav-link <%= typeof activePage !== 'undefined' && activePage === 'help' ? 'active' : '' %>">
+                Help
+            </a>
+        </nav>
+
+        <!-- Right Section: Actions -->
+        <div class="unified-header-right">
+            <% if (typeof showViewPublic !== 'undefined' && showViewPublic && typeof currentQueueId !== 'undefined' && currentQueueId) { %>
+            <a href="/queue/<%= currentQueueId %>/join" target="_blank" class="unified-view-public">
+                <i class="bi bi-box-arrow-up-right"></i>
+                <span>View Public</span>
             </a>
             <% } %>
-        </div>
-        <div class="user-section">
-            <div class="user-menu">
+            
+            <div class="unified-user-dropdown">
                 <form action="/auth/logout" method="POST" style="display: inline;">
-                    <%- csrfInput() %>
-                    <button type="submit" class="user-button">
+                    <% if (typeof csrfInput !== 'undefined') { %>
+                        <%- csrfInput() %>
+                    <% } else if (typeof csrfToken !== 'undefined') { %>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <% } %>
+                    <button type="submit" class="unified-user-button">
                         <i class="bi bi-box-arrow-right"></i>
-                        Logout
+                        <span>Logout</span>
                     </button>
                 </form>
             </div>

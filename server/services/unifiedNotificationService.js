@@ -1,13 +1,11 @@
 const logger = require('../utils/logger');
 const telegramService = require('./telegramService');
-const smsService = require('./smsService');
 
 class UnifiedNotificationService {
   constructor() {
     this.services = {
-      telegram: telegramService,
-      sms: smsService
-      // WhatsApp services have been removed
+      telegram: telegramService
+      // SMS and WhatsApp services have been removed
     };
   }
 
@@ -25,16 +23,8 @@ class UnifiedNotificationService {
       );
     }
 
-    if (process.env.TWILIO_ACCOUNT_SID) {
-      initPromises.push(
-        this.services.sms.initialize()
-          .then(() => logger.info('✅ SMS service ready'))
-          .catch(err => logger.error('❌ SMS init failed:', err))
-      );
-    }
-
-    // WhatsApp services have been removed - using webchat and other channels only
-    logger.info('WhatsApp services disabled - using webchat, Telegram, and SMS only');
+    // SMS and WhatsApp services have been removed - using webchat and other channels only
+    logger.info('SMS and WhatsApp services disabled - using webchat and Telegram only');
 
     await Promise.allSettled(initPromises);
     logger.info('Notification services initialization complete');
@@ -67,13 +57,7 @@ class UnifiedNotificationService {
             }
             break;
             
-          // WhatsApp cases have been removed
-            
-          case 'sms':
-            if (entry.customerPhone && this.shouldSendSMS(type)) {
-              success = await service.sendQueueNotification(entry, type);
-            }
-            break;
+          // SMS and WhatsApp cases have been removed
         }
 
         if (success) {
@@ -105,22 +89,11 @@ class UnifiedNotificationService {
       // User has explicit preference
       channels.push(entry.notificationChannel);
     } else {
-      // Auto-detect available channels (WhatsApp removed)
+      // Auto-detect available channels (SMS and WhatsApp removed)
       if (entry.telegramChatId) channels.push('telegram');
-      if (entry.customerPhone) {
-        // SMS as primary option for phone numbers
-        if (this.services.sms?.isInitialized) {
-          channels.push('sms');
-        }
-      }
     }
     
     return channels;
-  }
-
-  shouldSendSMS(type) {
-    // Only send SMS for critical notifications to save costs
-    return ['ready', 'almost_ready'].includes(type);
   }
 
   async updateNotificationStatus(entryId, channel) {
@@ -128,8 +101,10 @@ class UnifiedNotificationService {
       await prisma.queueEntry.update({
         where: { id: entryId },
         data: {
-          lastNotificationChannel: channel,
-          lastNotificationAt: new Date()
+          lastNotified: new Date(),
+          notificationCount: {
+            increment: 1
+          }
         }
       });
     } catch (error) {
@@ -151,17 +126,7 @@ class UnifiedNotificationService {
       });
     }
     
-    // WhatsApp option removed
-    
-    if (this.services.sms?.isInitialized) {
-      available.push({
-        id: 'sms',
-        name: 'SMS',
-        description: 'Text messages (charges may apply)',
-        requiresSetup: false,
-        warning: 'Standard SMS rates apply'
-      });
-    }
+    // SMS and WhatsApp options removed
     
     return available;
   }

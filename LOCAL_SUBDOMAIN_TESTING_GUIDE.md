@@ -45,10 +45,10 @@ Use the free lvh.me service that resolves to 127.0.0.1:
 
 ```bash
 # No setup required! These work automatically:
-# http://lvh.me:3838
-# http://admin.lvh.me:3838
-# http://test-restaurant-1.lvh.me:3838
-# http://any-subdomain.lvh.me:3838
+# http://lvh.me:3000
+# http://admin.lvh.me:3000
+# http://test-restaurant-1.lvh.me:3000
+# http://any-subdomain.lvh.me:3000
 ```
 
 ### 2. Update Environment Configuration
@@ -167,8 +167,8 @@ const prisma = require('./server/utils/prisma');
 const logger = require('./server/utils/logger');
 
 const BASE_URL = process.env.BASE_DOMAIN === 'lvh.me' 
-  ? 'http://lvh.me:3838' 
-  : 'http://storehubqms.local:3838';
+  ? 'http://lvh.me:3000' 
+  : 'http://storehubqms.local:3000';
 
 async function createTestTenants() {
   logger.info('Creating test tenants for local development...');
@@ -271,9 +271,9 @@ npm run dev
 node test-local-subdomains.js
 
 # 5. Access the sites:
-# - Main: http://storehubqms.local:3838 (or http://lvh.me:3838)
-# - Admin: http://admin.storehubqms.local:3838
-# - Demo: http://demo.storehubqms.local:3838
+# - Main: http://storehubqms.local:3000 (or http://lvh.me:3000)
+# - Admin: http://admin.storehubqms.local:3000
+# - Demo: http://demo.storehubqms.local:3000
 ```
 
 ## Render Deployment Guide

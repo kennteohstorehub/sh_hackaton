@@ -39,7 +39,7 @@ test.describe('Queue Management System - Comprehensive E2E Test', () => {
     await test.step('1. Navigate to login page and authenticate', async () => {
       console.log('Step 1: Navigating to login page...');
       
-      await page.goto('http://localhost:3838/auth/login');
+      await page.goto('http://localhost:3000/auth/login');
       await page.waitForLoadState('networkidle');
       
       // Take screenshot of login page
@@ -147,7 +147,7 @@ test.describe('Queue Management System - Comprehensive E2E Test', () => {
         // Fallback: Navigate directly to public view using merchant ID
         const fallbackMerchantId = merchantId || 'demo-merchant-id';
         console.log(`No public view button found, navigating directly to: /queue/join/${fallbackMerchantId}`);
-        await page.goto(`http://localhost:3838/queue/join/${fallbackMerchantId}`);
+        await page.goto(`http://localhost:3000/queue/join/${fallbackMerchantId}`);
         await page.waitForLoadState('networkidle');
       }
       
@@ -386,7 +386,7 @@ test.describe('Queue Management System - Comprehensive E2E Test', () => {
       await merchantPage.waitForURL('**/dashboard**', { timeout: 10000 });
       
       // Navigate to dashboard
-      await merchantPage.goto('http://localhost:3838/dashboard');
+      await merchantPage.goto('http://localhost:3000/dashboard');
       await merchantPage.waitForLoadState('networkidle');
       
       // Wait for WebSocket connections and real-time updates
@@ -681,7 +681,7 @@ test.describe('Queue Management Components - Individual Tests', () => {
     await test.step('Test form validation with empty fields', async () => {
       // Use a fallback merchant ID for testing
       const merchantId = 'demo-merchant-id';
-      await page.goto(`http://localhost:3838/queue/join/${merchantId}`);
+      await page.goto(`http://localhost:3000/queue/join/${merchantId}`);
       await page.waitForLoadState('networkidle');
       
       // Try to submit empty form

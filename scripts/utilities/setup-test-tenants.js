@@ -252,7 +252,7 @@ async function setupTestData() {
     console.log('\n🔐 SUPERADMIN:');
     console.log('   Email: admin@storehub.com');
     console.log('   Password: superadmin123');
-    console.log('   URL: http://localhost:3838/superadmin/auth/login');
+    console.log('   URL: http://localhost:3000/superadmin/auth/login');
     console.log('\n🏢 TENANT 1 (Premium):');
     console.log('   Merchant 1: downtown@delicious.com / merchant123');
     console.log('   Merchant 2: uptown@delicious.com / merchant123');
@@ -260,7 +260,7 @@ async function setupTestData() {
     console.log('   Merchant: central@coffeeparadise.com / merchant123');
     console.log('\n🥐 TENANT 3 (Free):');
     console.log('   Merchant: owner@localbakery.com / merchant123');
-    console.log('\n📌 Regular Merchant Login: http://localhost:3838/auth/login');
+    console.log('\n📌 Regular Merchant Login: http://localhost:3000/auth/login');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   } catch (error) {

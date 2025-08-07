@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('WebChat Notification System', () => {
-  const BASE_URL = 'http://localhost:3838';
+  const BASE_URL = 'http://localhost:3000';
   const MERCHANT_ID = '6540e8d5861e79dc6ef4f88e';
   
   test('Should receive notifications in webchat after joining queue', async ({ page, context }) => {

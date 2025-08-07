@@ -1,7 +1,7 @@
 # End-to-End Test Report
 
 ## Test Environment
-- **Server URL**: http://localhost:3838
+- **Server URL**: http://localhost:3000
 - **Test Date**: 2025-07-25
 - **Server Status**: ✅ Running on port 3838
 
@@ -39,9 +39,9 @@
 ## Manual Test Steps
 
 ### For Merchant Dashboard Testing:
-1. Navigate to: http://localhost:3838/auth/login
+1. Navigate to: http://localhost:3000/auth/login
 2. Login with existing credentials or register new merchant
-3. Access dashboard at: http://localhost:3838/dashboard
+3. Access dashboard at: http://localhost:3000/dashboard
 4. Test queue management features:
    - Stop/Start queue functionality
    - Notify customer button
@@ -49,7 +49,7 @@
 
 ### For Customer Sign-up Testing:
 1. Get queue ID from merchant dashboard
-2. Navigate to: http://localhost:3838/queue/{queueId}
+2. Navigate to: http://localhost:3000/queue/{queueId}
 3. Test on mobile device or responsive mode:
    - Select queue
    - Fill form with test data
@@ -57,10 +57,10 @@
    - Check haptic feedback (mobile only)
 
 ## Key URLs for Testing
-- **Login**: http://localhost:3838/auth/login
-- **Register**: http://localhost:3838/auth/register  
-- **Dashboard**: http://localhost:3838/dashboard
-- **Public Queue**: http://localhost:3838/queue/{queueId}
+- **Login**: http://localhost:3000/auth/login
+- **Register**: http://localhost:3000/auth/register  
+- **Dashboard**: http://localhost:3000/dashboard
+- **Public Queue**: http://localhost:3000/queue/{queueId}
 
 ## Test Data
 For WhatsApp testing, use whitelisted number: +60126368832

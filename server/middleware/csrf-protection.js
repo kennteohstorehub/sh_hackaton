@@ -51,10 +51,14 @@ const csrfValidation = (req, res, next) => {
   }
 
   // Skip CSRF for webhook endpoints (they use signature verification)
+  // and public API endpoints
   const skipPaths = [
     '/api/webhooks/',
     '/api/messenger/webhook',
-    '/webhook/'
+    '/webhook/',
+    '/api/customer/join/',  // Public queue join endpoint
+    '/api/customer/queue/',  // Public queue stats endpoint
+    '/api/queue/acknowledge'  // Customer acknowledgment endpoint
   ];
   
   if (skipPaths.some(path => req.path.includes(path))) {

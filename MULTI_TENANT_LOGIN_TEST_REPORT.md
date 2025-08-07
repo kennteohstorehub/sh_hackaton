@@ -20,10 +20,10 @@
 
 ## Detailed Test Results
 
-### 1. BackOffice Login (admin.lvh.me:3838) ✅
+### 1. BackOffice Login (admin.lvh.me:3000) ✅
 - **Credentials**: backoffice@storehubqms.local / BackOffice123!@#
 - **Login Status**: SUCCESS
-- **Redirect URL**: http://admin.lvh.me:3838/backoffice/dashboard
+- **Redirect URL**: http://admin.lvh.me:3000/backoffice/dashboard
 - **Dashboard**: Fully functional BackOffice dashboard loaded
 - **Features Verified**:
   - Welcome message: "Welcome back to QMS BackOffice"
@@ -32,18 +32,18 @@
   - Recent tenants table showing all configured tenants
   - Quick actions panel (Add New Tenant, View All Merchants, etc.)
 
-### 2. Demo Tenant Login (demo.lvh.me:3838) ⚠️
+### 2. Demo Tenant Login (demo.lvh.me:3000) ⚠️
 - **Credentials**: admin@demo.local / Demo123!@#
 - **Login Status**: SUCCESS (credentials accepted)
-- **Redirect URL**: http://demo.lvh.me:3838/dashboard
+- **Redirect URL**: http://demo.lvh.me:3000/dashboard
 - **Dashboard Issue**: 500 Internal Server Error
 - **Error Page**: Custom StoreHub QMS error page displayed
 - **Problem**: After successful authentication, accessing the tenant dashboard fails
 
-### 3. Test Cafe Tenant Login (test-cafe.lvh.me:3838) ⚠️
+### 3. Test Cafe Tenant Login (test-cafe.lvh.me:3000) ⚠️
 - **Credentials**: cafe@testcafe.local / Test123!@#
 - **Login Status**: SUCCESS (credentials accepted)
-- **Redirect URL**: http://test-cafe.lvh.me:3838/dashboard
+- **Redirect URL**: http://test-cafe.lvh.me:3000/dashboard
 - **Dashboard Issue**: 500 Internal Server Error
 - **Error Page**: Custom StoreHub QMS error page displayed
 - **Problem**: Same issue as Demo tenant - authentication works, dashboard fails
@@ -53,8 +53,8 @@
 - **Result**: PASSED
 - **Verification**: Each browser context maintained separate sessions
 - **URLs Confirmed**:
-  - Demo: http://demo.lvh.me:3838/dashboard
-  - Test Cafe: http://test-cafe.lvh.me:3838/dashboard
+  - Demo: http://demo.lvh.me:3000/dashboard
+  - Test Cafe: http://test-cafe.lvh.me:3000/dashboard
 - **Isolation**: Sessions properly isolated by subdomain
 
 ## Key Findings

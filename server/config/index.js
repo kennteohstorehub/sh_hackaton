@@ -85,9 +85,9 @@ const config = {
 
   // Server
   server: {
-    port: parseInt(process.env.PORT, 10) || 3001,
+    port: parseInt(process.env.PORT || '3000', 10),
     host: process.env.HOST || 'localhost',
-    url: process.env.SERVER_URL || `http://localhost:${process.env.PORT || 3001}`,
+    url: process.env.SERVER_URL || `http://localhost:${process.env.PORT || 3000}`,
     trustProxy: process.env.TRUST_PROXY === 'true'
   },
 
@@ -109,7 +109,7 @@ const config = {
     cors: {
       origin: process.env.CORS_ORIGIN ? 
         process.env.CORS_ORIGIN.split(',') : 
-        process.env.NODE_ENV === 'production' ? false : ['http://localhost:3001'],
+        process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000'],
       credentials: true
     }
   },

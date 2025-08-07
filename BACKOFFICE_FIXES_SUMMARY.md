@@ -52,7 +52,7 @@ model Merchant {
 
 ## Testing Recommendations
 
-1. Test merchant listing page: http://admin.lvh.me:3838/backoffice/merchants
+1. Test merchant listing page: http://admin.lvh.me:3000/backoffice/merchants
 2. Test individual merchant details pages
 3. Verify toggle merchant status functionality
 4. Test search and filtering features

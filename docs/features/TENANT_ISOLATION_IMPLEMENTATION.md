@@ -285,7 +285,7 @@ npm run test:audit-logging
 # Should be BLOCKED
 curl -H "X-Tenant-ID: tenant1" \
      -H "Authorization: Bearer tenant2-token" \
-     http://localhost:3838/api/merchant/profile
+     http://localhost:3000/api/merchant/profile
 # Expected: 403 Forbidden
 ```
 
@@ -293,7 +293,7 @@ curl -H "X-Tenant-ID: tenant1" \
 ```bash  
 # Should resolve to correct tenant
 curl -H "Host: tenant1.yourdomain.com" \
-     http://localhost:3838/api/test/tenant-context
+     http://localhost:3000/api/test/tenant-context
 # Expected: {"tenant": {"slug": "tenant1", ...}}
 ```
 

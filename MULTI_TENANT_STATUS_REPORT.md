@@ -14,13 +14,13 @@
 - Test data created (4 tenants + SuperAdmin) ✅
 
 ### 3. **Routes Accessible via Direct URLs**
-- SuperAdmin Login: http://localhost:3838/superadmin/auth/login ✅
-- Regular Login: http://localhost:3838/auth/login ✅
+- SuperAdmin Login: http://localhost:3000/superadmin/auth/login ✅
+- Regular Login: http://localhost:3000/auth/login ✅
 
 ## 🔍 Issue with Subdomain Access
 
 ### Problem
-The subdomain URLs (e.g., http://admin.lvh.me:3838) cannot be accessed directly in browser.
+The subdomain URLs (e.g., http://admin.lvh.me:3000) cannot be accessed directly in browser.
 
 ### Root Cause
 The lvh.me domain resolution might be blocked or not working on your network/system.
@@ -33,7 +33,7 @@ Access the system without subdomains for now:
 #### SuperAdmin Access:
 ```bash
 # Open in browser:
-http://localhost:3838/superadmin/auth/login
+http://localhost:3000/superadmin/auth/login
 
 # Login with:
 Email: superadmin@storehubqms.local
@@ -43,7 +43,7 @@ Password: SuperAdmin123!@#
 #### Tenant Access:
 ```bash
 # Regular merchant login:
-http://localhost:3838/auth/login
+http://localhost:3000/auth/login
 
 # Use any test merchant:
 Email: admin@demo.local
@@ -53,10 +53,10 @@ Password: Demo123!@#
 ### Option 2: Test with curl (Command Line)
 ```bash
 # Test SuperAdmin subdomain
-curl -H "Host: admin.lvh.me" http://localhost:3838/superadmin/auth/login
+curl -H "Host: admin.lvh.me" http://localhost:3000/superadmin/auth/login
 
 # Test tenant subdomain
-curl -H "Host: demo.lvh.me" http://localhost:3838/
+curl -H "Host: demo.lvh.me" http://localhost:3000/
 ```
 
 ### Option 3: Add to /etc/hosts (Permanent Fix)
@@ -72,7 +72,7 @@ sudo echo "127.0.0.1 test-restaurant-2.lvh.me" >> /etc/hosts
 ### Option 4: Use Port Forwarding
 ```bash
 # If using a remote server or VM
-ssh -L 3838:localhost:3838 your-server
+ssh -L 3838:localhost:3000 your-server
 ```
 
 ## 📊 Current Test Data
@@ -80,7 +80,7 @@ ssh -L 3838:localhost:3838 your-server
 ### SuperAdmin
 - Email: `superadmin@storehubqms.local`
 - Password: `SuperAdmin123!@#`
-- Access: http://localhost:3838/superadmin/auth/login
+- Access: http://localhost:3000/superadmin/auth/login
 
 ### Test Tenants
 1. **Demo Restaurant**
@@ -115,14 +115,14 @@ ssh -L 3838:localhost:3838 your-server
 ## 🔗 Quick Access Links
 
 ### Without Subdomains (Working Now):
-- SuperAdmin: http://localhost:3838/superadmin/auth/login
-- Tenant Dashboard: http://localhost:3838/dashboard (after login)
-- Regular Login: http://localhost:3838/auth/login
+- SuperAdmin: http://localhost:3000/superadmin/auth/login
+- Tenant Dashboard: http://localhost:3000/dashboard (after login)
+- Regular Login: http://localhost:3000/auth/login
 
 ### With Subdomains (After /etc/hosts setup):
-- SuperAdmin: http://admin.lvh.me:3838
-- Demo Tenant: http://demo.lvh.me:3838
-- Test Cafe: http://test-cafe.lvh.me:3838
+- SuperAdmin: http://admin.lvh.me:3000
+- Demo Tenant: http://demo.lvh.me:3000
+- Test Cafe: http://test-cafe.lvh.me:3000
 
 ---
 

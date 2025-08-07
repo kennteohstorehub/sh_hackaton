@@ -29,7 +29,7 @@ async function waitForSocketEvent(page, eventName, timeout = 10000) {
 
 test.describe('WebChat Notification System - Comprehensive E2E Tests', () => {
     const queueId = '453b1b29-7d3b-4c0e-92d6-d86cc9952f8e';
-    const baseUrl = 'http://localhost:3838';
+    const baseUrl = 'http://localhost:3000';
     
     test.beforeEach(async ({ page }) => {
         // Admin login before each test

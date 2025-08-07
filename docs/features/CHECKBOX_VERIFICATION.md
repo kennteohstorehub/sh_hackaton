@@ -18,7 +18,7 @@ Added cache-busting parameter to the CSS link:
    - Keep DevTools open
 
 2. **Login to Application**
-   - Go to http://localhost:3838
+   - Go to http://localhost:3000
    - Login with demo@storehub.com / demo123
 
 3. **Navigate to Settings**

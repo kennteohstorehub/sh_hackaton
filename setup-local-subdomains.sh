@@ -181,14 +181,14 @@ show_next_steps() {
     echo "4. Create test tenants: node test-local-subdomains.js"
     echo
     echo "Access your local sites at:"
-    echo "  - Main: http://storehubqms.local:3838"
-    echo "  - Admin: http://admin.storehubqms.local:3838"
-    echo "  - Demo: http://demo.storehubqms.local:3838"
+    echo "  - Main: http://storehubqms.local:3000"
+    echo "  - Admin: http://admin.storehubqms.local:3000"
+    echo "  - Demo: http://demo.storehubqms.local:3000"
     echo
     echo "Alternative (no setup required):"
-    echo "  - Main: http://lvh.me:3838"
-    echo "  - Admin: http://admin.lvh.me:3838"
-    echo "  - Demo: http://demo.lvh.me:3838"
+    echo "  - Main: http://lvh.me:3000"
+    echo "  - Admin: http://admin.lvh.me:3000"
+    echo "  - Demo: http://demo.lvh.me:3000"
     echo
 }
 

@@ -17,18 +17,18 @@ const CREDENTIALS = {
   backoffice: {
     email: 'backoffice@storehubqms.local',
     password: 'BackOffice123!@#',
-    baseUrl: 'http://admin.lvh.me:3838'
+    baseUrl: 'http://admin.lvh.me:3000'
   },
   tenants: {
     demo: {
       email: 'admin@demo.local',
       password: 'Demo123!@#',
-      baseUrl: 'http://demo.lvh.me:3838'
+      baseUrl: 'http://demo.lvh.me:3000'
     },
     testCafe: {
       email: 'cafe@testcafe.local',
       password: 'Test123!@#',
-      baseUrl: 'http://test-cafe.lvh.me:3838'
+      baseUrl: 'http://test-cafe.lvh.me:3000'
     }
   }
 };

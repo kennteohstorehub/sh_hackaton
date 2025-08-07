@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const TEST_CONFIG = {
-  baseUrl: 'http://localhost:3838',
+  baseUrl: 'http://localhost:3000',
   credentials: {
     email: 'demo@smartqueue.com',
     password: 'demo123456'

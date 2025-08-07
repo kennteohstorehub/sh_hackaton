@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const axios = require('axios');
 
-const BASE_URL = 'http://localhost:3838';
+const BASE_URL = 'http://localhost:3000';
 
 test.describe('Acknowledgment UI Tests', () => {
     let testSessionId;
@@ -206,7 +206,7 @@ test.describe('Acknowledgment UI Tests', () => {
             return elements
                 .filter(el => {
                     const z = window.getComputedStyle(el).zIndex;
-                    return z && z \!== 'auto' && parseInt(z) > 10000;
+                    return z && z !== 'auto' && parseInt(z) > 10000;
                 })
                 .map(el => ({
                     tagName: el.tagName,
@@ -220,4 +220,3 @@ test.describe('Acknowledgment UI Tests', () => {
         expect(highZIndexElements).toHaveLength(0);
     });
 });
-ENDFILE < /dev/null

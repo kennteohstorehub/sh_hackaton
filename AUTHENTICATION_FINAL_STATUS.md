@@ -44,17 +44,17 @@ Comprehensive debugging and code review of the multi-tenant authentication syste
 ## Test Accounts Configured
 
 ### BackOffice Administrator
-- **URL**: http://admin.lvh.me:3838
+- **URL**: http://admin.lvh.me:3000
 - **Email**: backoffice@storehubqms.local
 - **Password**: BackOffice123!@#
 
 ### Tenant 1 - Demo Restaurant
-- **URL**: http://demo.lvh.me:3838
+- **URL**: http://demo.lvh.me:3000
 - **Email**: admin@demo.local
 - **Password**: Demo123!@#
 
 ### Tenant 2 - Test Cafe
-- **URL**: http://test-cafe.lvh.me:3838
+- **URL**: http://test-cafe.lvh.me:3000
 - **Email**: cafe@testcafe.local
 - **Password**: Test123!@#
 

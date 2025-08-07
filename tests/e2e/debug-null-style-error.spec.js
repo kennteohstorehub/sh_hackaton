@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Debug Null Style Error', () => {
-    const BASE_URL = 'http://localhost:3838';
+    const BASE_URL = 'http://localhost:3000';
     const QUEUE_ID = '453b1b29-7d3b-4c0e-92d6-d86cc9952f8e';
     
     test('Capture exact null style error with debugging', async ({ page, context }) => {

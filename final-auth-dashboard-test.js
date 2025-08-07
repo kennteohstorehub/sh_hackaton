@@ -8,7 +8,7 @@ async function testCompleteFlow(scenario) {
   console.log('─'.repeat(60));
   
   const axiosInstance = axios.create({
-    baseURL: 'http://localhost:3838',
+    baseURL: 'http://localhost:3000',
     withCredentials: true,
     maxRedirects: 0,
     validateStatus: (status) => true,

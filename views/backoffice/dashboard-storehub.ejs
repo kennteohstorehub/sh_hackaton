@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backoffice Dashboard - StoreHub</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- StoreHub Design System -->
+    <link rel="stylesheet" href="/css/storehub-backoffice-system.css">
+    
+    <style>
+        /* Quick Actions Grid */
+        .bo-quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-8);
+        }
+        
+        .bo-quick-action {
+            background: var(--base-white);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            padding: var(--space-6);
+            text-align: center;
+            text-decoration: none;
+            color: var(--gray-900);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .bo-quick-action:hover {
+            border-color: var(--primary-orange);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .bo-quick-action-icon {
+            font-size: 32px;
+            color: var(--primary-orange);
+            margin-bottom: var(--space-3);
+        }
+        
+        .bo-quick-action-title {
+            font-weight: var(--weight-semibold);
+            margin-bottom: var(--space-1);
+        }
+        
+        .bo-quick-action-desc {
+            font-size: var(--small);
+            color: var(--gray-600);
+        }
+        
+        /* Activity Feed */
+        .bo-activity-item {
+            display: flex;
+            gap: var(--space-3);
+            padding: var(--space-4) 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .bo-activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .bo-activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .bo-activity-icon.success {
+            background: rgba(82, 196, 26, 0.1);
+            color: var(--success-green);
+        }
+        
+        .bo-activity-icon.warning {
+            background: rgba(250, 219, 20, 0.1);
+            color: var(--warning-yellow);
+        }
+        
+        .bo-activity-icon.info {
+            background: rgba(24, 144, 255, 0.1);
+            color: var(--info-blue);
+        }
+        
+        .bo-activity-content {
+            flex: 1;
+        }
+        
+        .bo-activity-title {
+            font-weight: var(--weight-medium);
+            margin-bottom: var(--space-1);
+        }
+        
+        .bo-activity-time {
+            font-size: var(--small);
+            color: var(--gray-600);
+        }
+        
+        /* Charts placeholder */
+        .bo-chart-placeholder {
+            background: var(--gray-100);
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-md);
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-600);
+        }
+    </style>
+</head>
+<body class="backoffice">
+    <!-- Sidebar -->
+    <nav class="bo-sidebar" id="sidebar">
+        <div class="bo-sidebar-header">
+            <a href="/backoffice/dashboard" class="bo-sidebar-logo">
+                <span class="logo-icon">
+                    <i class="bi bi-shop"></i>
+                </span>
+                <span>StoreHub</span>
+            </a>
+        </div>
+        
+        <div class="bo-nav-menu">
+            <div class="bo-nav-item">
+                <a href="/backoffice/dashboard" class="bo-nav-link active">
+                    <i class="bi bi-speedometer2 nav-icon"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="bo-nav-item">
+                <a href="/backoffice/tenants" class="bo-nav-link">
+                    <i class="bi bi-building nav-icon"></i>
+                    <span>Tenants</span>
+                </a>
+            </div>
+            <div class="bo-nav-item">
+                <a href="/backoffice/merchants" class="bo-nav-link">
+                    <i class="bi bi-shop-window nav-icon"></i>
+                    <span>Merchants</span>
+                </a>
+            </div>
+            <div class="bo-nav-item">
+                <a href="/backoffice/users" class="bo-nav-link">
+                    <i class="bi bi-people nav-icon"></i>
+                    <span>Users</span>
+                </a>
+            </div>
+            <div class="bo-nav-item">
+                <a href="/backoffice/audit-logs" class="bo-nav-link">
+                    <i class="bi bi-file-text nav-icon"></i>
+                    <span>Audit Logs</span>
+                </a>
+            </div>
+            <div class="bo-nav-item">
+                <a href="/backoffice/settings" class="bo-nav-link">
+                    <i class="bi bi-gear nav-icon"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="bo-main-content">
+        <!-- Top Bar -->
+        <header class="bo-topbar">
+            <div class="bo-topbar-left">
+                <button class="bo-btn bo-btn-ghost bo-btn-sm" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h1 class="bo-topbar-title">Dashboard</h1>
+            </div>
+            
+            <div class="bo-topbar-right">
+                <button class="bo-btn bo-btn-ghost bo-btn-sm">
+                    <i class="bi bi-bell"></i>
+                </button>
+                
+                <div class="bo-user-menu">
+                    <div class="bo-user-avatar">
+                        <%= locals.user?.name?.charAt(0).toUpperCase() || 'A' %>
+                    </div>
+                    <span><%= locals.user?.name || 'Admin' %></span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Page Content -->
+        <div class="bo-page">
+            <!-- Stats Grid -->
+            <div class="bo-stats-grid">
+                <div class="bo-stat-card">
+                    <div class="bo-stat-label">Total Tenants</div>
+                    <div class="bo-stat-value"><%= locals.stats?.totalTenants || 0 %></div>
+                    <div class="bo-stat-change positive">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>12% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="bo-stat-card">
+                    <div class="bo-stat-label">Active Merchants</div>
+                    <div class="bo-stat-value"><%= locals.stats?.activeMerchants || 0 %></div>
+                    <div class="bo-stat-change positive">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>8% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="bo-stat-card">
+                    <div class="bo-stat-label">Total Users</div>
+                    <div class="bo-stat-value"><%= locals.stats?.totalUsers || 0 %></div>
+                    <div class="bo-stat-change negative">
+                        <i class="bi bi-arrow-down"></i>
+                        <span>3% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="bo-stat-card">
+                    <div class="bo-stat-label">Queue Sessions</div>
+                    <div class="bo-stat-value"><%= locals.stats?.queueSessions || 0 %></div>
+                    <div class="bo-stat-change positive">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>25% from last month</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="bo-card bo-mb-8">
+                <div class="bo-card-header">
+                    <h2 class="bo-card-title">Quick Actions</h2>
+                </div>
+                <div class="bo-card-body">
+                    <div class="bo-quick-actions">
+                        <a href="/backoffice/tenants/new" class="bo-quick-action">
+                            <div class="bo-quick-action-icon">
+                                <i class="bi bi-plus-circle"></i>
+                            </div>
+                            <div class="bo-quick-action-title">Create Tenant</div>
+                            <div class="bo-quick-action-desc">Add new tenant</div>
+                        </a>
+                        
+                        <a href="/backoffice/merchants/new" class="bo-quick-action">
+                            <div class="bo-quick-action-icon">
+                                <i class="bi bi-shop"></i>
+                            </div>
+                            <div class="bo-quick-action-title">Add Merchant</div>
+                            <div class="bo-quick-action-desc">Register merchant</div>
+                        </a>
+                        
+                        <a href="/backoffice/users/new" class="bo-quick-action">
+                            <div class="bo-quick-action-icon">
+                                <i class="bi bi-person-plus"></i>
+                            </div>
+                            <div class="bo-quick-action-title">Create User</div>
+                            <div class="bo-quick-action-desc">Add backoffice user</div>
+                        </a>
+                        
+                        <a href="/backoffice/audit-logs" class="bo-quick-action">
+                            <div class="bo-quick-action-icon">
+                                <i class="bi bi-clipboard-data"></i>
+                            </div>
+                            <div class="bo-quick-action-title">View Logs</div>
+                            <div class="bo-quick-action-desc">System activity</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Two Column Layout -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+                <!-- Recent Activity -->
+                <div class="bo-card">
+                    <div class="bo-card-header">
+                        <h3 class="bo-card-title">Recent Activity</h3>
+                        <a href="/backoffice/audit-logs" class="bo-btn bo-btn-ghost bo-btn-sm">View All</a>
+                    </div>
+                    <div class="bo-card-body">
+                        <% if (locals.recentActivity && locals.recentActivity.length > 0) { %>
+                            <% locals.recentActivity.forEach(activity => { %>
+                                <div class="bo-activity-item">
+                                    <div class="bo-activity-icon <%= activity.type %>">
+                                        <i class="bi bi-<%= activity.icon %>"></i>
+                                    </div>
+                                    <div class="bo-activity-content">
+                                        <div class="bo-activity-title"><%= activity.title %></div>
+                                        <div class="bo-activity-time"><%= activity.time %></div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="bo-activity-item">
+                                <div class="bo-activity-icon info">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="bo-activity-content">
+                                    <div class="bo-activity-title">New tenant created</div>
+                                    <div class="bo-activity-time">2 hours ago</div>
+                                </div>
+                            </div>
+                            <div class="bo-activity-item">
+                                <div class="bo-activity-icon success">
+                                    <i class="bi bi-person-check"></i>
+                                </div>
+                                <div class="bo-activity-content">
+                                    <div class="bo-activity-title">User login successful</div>
+                                    <div class="bo-activity-time">3 hours ago</div>
+                                </div>
+                            </div>
+                            <div class="bo-activity-item">
+                                <div class="bo-activity-icon warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </div>
+                                <div class="bo-activity-content">
+                                    <div class="bo-activity-title">High queue volume detected</div>
+                                    <div class="bo-activity-time">5 hours ago</div>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <!-- System Status -->
+                <div class="bo-card">
+                    <div class="bo-card-header">
+                        <h3 class="bo-card-title">System Status</h3>
+                        <span class="bo-badge bo-badge-success">All Systems Operational</span>
+                    </div>
+                    <div class="bo-card-body">
+                        <div class="bo-chart-placeholder">
+                            <div>
+                                <i class="bi bi-graph-up" style="font-size: 48px;"></i>
+                                <p>Performance Chart</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.bo-main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+        
+        // Mobile Menu
+        if (window.innerWidth < 1024) {
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.bo-btn') && e.target.querySelector('.bi-list')) {
+                    const sidebar = document.getElementById('sidebar');
+                    sidebar.classList.toggle('mobile-open');
+                }
+            });
+        }
+        
+        // User Menu Dropdown
+        document.querySelector('.bo-user-menu').addEventListener('click', function() {
+            // Implement dropdown menu
+            if (confirm('Do you want to logout?')) {
+                window.location.href = '/backoffice/logout';
+            }
+        });
+        
+        // Add fade-in animation to cards
+        document.querySelectorAll('.bo-card, .bo-stat-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.animation = `bo-slideUp var(--transition-base) ${index * 50}ms forwards`;
+        });
+    </script>
+</body>
+</html>

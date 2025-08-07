@@ -29,14 +29,14 @@ test.describe('Webchat Cache Fix Verification', () => {
         };
         
         // Join queue via API
-        const response = await page.request.post('http://localhost:3838/api/customer/join/453b1b29-7d3b-4c0e-92d6-d86cc9952f8e', {
+        const response = await page.request.post('http://localhost:3000/api/customer/join/453b1b29-7d3b-4c0e-92d6-d86cc9952f8e', {
             data: testData
         });
         
         const result = await response.json();
         expect(result.success).toBe(true);
         
-        const chatUrl = `http://localhost:3838${result.chatUrl}`;
+        const chatUrl = `http://localhost:3000${result.chatUrl}`;
         console.log('Testing chat URL:', chatUrl);
         console.log('Entry ID:', result.entryId);
         console.log('Verification Code:', result.customer.verificationCode);
@@ -74,7 +74,7 @@ test.describe('Webchat Cache Fix Verification', () => {
         await page.waitForTimeout(1000);
         
         // Send notification
-        const notifyResponse = await page.request.post(`http://localhost:3838/api/queue/${result.customer.queueId}/call-specific`, {
+        const notifyResponse = await page.request.post(`http://localhost:3000/api/queue/${result.customer.queueId}/call-specific`, {
             data: { customerId: result.entryId }
         });
         

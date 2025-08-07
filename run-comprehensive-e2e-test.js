@@ -28,7 +28,7 @@ const browser = browserArg ? browserArg.split('=')[1] : 'chromium';
 console.log('🚀 Starting Comprehensive Queue Management E2E Test');
 console.log('=' .repeat(60));
 console.log(`📊 Test Configuration:`);
-console.log(`   Base URL: http://localhost:3838`);
+console.log(`   Base URL: http://localhost:3000`);
 console.log(`   Test Email: demo@smartqueue.com`);
 console.log(`   Test Password: demo123456`);
 console.log(`   Browser: ${browser}`);
@@ -89,7 +89,7 @@ testProcess.on('close', (code) => {
     console.log('❌ E2E Test failed!');
     console.log('');
     console.log('🔍 Troubleshooting:');
-    console.log('   1. Ensure server is running on http://localhost:3838');
+    console.log('   1. Ensure server is running on http://localhost:3000');
     console.log('   2. Verify test credentials are configured correctly');
     console.log('   3. Check screenshots in test-results/ for visual debugging');
     console.log('   4. Review console output above for specific error details');

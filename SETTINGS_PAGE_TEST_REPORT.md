@@ -210,5 +210,5 @@ The system's authentication and page rendering work correctly, indicating that t
 **Test Environment:**
 - Node.js v24.2.0
 - Chrome Browser (Puppeteer)
-- Local development server (localhost:3838)
+- Local development server (localhost:3000)
 - Demo account: demo@smartqueue.com / demo123456

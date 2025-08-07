@@ -272,20 +272,3 @@ test.describe('WebChat Notification System', () => {
     await page.close();
   });
 });
-
-// Helper function to generate test data
-function generateRandomPhone() {
-  const prefix = '+6019';
-  const number = Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
-  return prefix + number;
-}
-
-function generateRandomName() {
-  const firstNames = ['John', 'Jane', 'Mike', 'Sarah', 'David', 'Emma', 'Chris', 'Lisa'];
-  const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
-  
-  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-  
-  return `${firstName} ${lastName}`;
-}

@@ -182,7 +182,7 @@ async function createTestTenant(tenantData) {
     
     logger.info(`✅ Created tenant: ${tenantData.name} (${tenantData.slug})`);
     logger.info(`   Admin login: ${tenantData.adminEmail} / ${tenantData.adminPassword}`);
-    logger.info(`   URL: http://${tenantData.slug}.lvh.me:3838`);
+    logger.info(`   URL: http://${tenantData.slug}.lvh.me:3000`);
     
     return result.tenant;
   } catch (error) {
@@ -275,11 +275,11 @@ async function main() {
     logger.info('\n✅ Test data setup complete!\n');
     logger.info('📋 Quick Access URLs:');
     logger.info('====================');
-    logger.info('BackOfficeUser Portal: http://admin.lvh.me:3838');
+    logger.info('BackOfficeUser Portal: http://admin.lvh.me:3000');
     logger.info(`  Login: ${BACKOFFICE_USER.email} / ${BACKOFFICE_USER.password}\n`);
     
     for (const tenant of TEST_TENANTS) {
-      logger.info(`${tenant.name}: http://${tenant.slug}.lvh.me:3838`);
+      logger.info(`${tenant.name}: http://${tenant.slug}.lvh.me:3000`);
       logger.info(`  Login: ${tenant.adminEmail} / ${tenant.adminPassword}`);
     }
     

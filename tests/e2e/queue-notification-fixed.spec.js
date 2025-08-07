@@ -18,7 +18,7 @@ test.describe('Queue Notification System - Simple', () => {
         
         // Step 1: Admin logs in
         console.log('\n=== Step 1: Admin Login ===');
-        await page.goto('http://localhost:3838/auth/login');
+        await page.goto('http://localhost:3000/auth/login');
         await page.waitForURL(/.*dashboard/);
         console.log('✅ Admin logged in');
         
@@ -27,7 +27,7 @@ test.describe('Queue Notification System - Simple', () => {
         const customerPage = await context.newPage();
         customerPage.on('console', msg => console.log('[CUSTOMER]', msg.text()));
         
-        await customerPage.goto(`http://localhost:3838/queue/${queueId}`);
+        await customerPage.goto(`http://localhost:3000/queue/${queueId}`);
         await customerPage.fill('#customerName', 'Test Customer');
         await customerPage.fill('#customerPhone', testPhone);
         await customerPage.selectOption('#partySize', '2');

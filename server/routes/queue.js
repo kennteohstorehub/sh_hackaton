@@ -497,14 +497,25 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
       return res.status(404).json({ error: 'Customer not found or not in valid status' });
     }
 
-    // Update the customer status to 'called'
-    customerEntry = await prisma.queueEntry.update({
-      where: { id: customerEntry.id },
-      data: {
-        status: 'called',
-        calledAt: new Date()
-      }
-    });
+    // Only update status if not already called
+    if (customerEntry.status !== 'called') {
+      customerEntry = await prisma.queueEntry.update({
+        where: { id: customerEntry.id },
+        data: {
+          status: 'called',
+          calledAt: new Date()
+        }
+      });
+    } else {
+      // Customer already called - just update the notification count
+      customerEntry = await prisma.queueEntry.update({
+        where: { id: customerEntry.id },
+        data: {
+          notificationCount: { increment: 1 },
+          lastNotified: new Date()
+        }
+      });
+    }
 
     // Send notifications to customer
     try {
@@ -572,23 +583,29 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
         logger.warn(`[NOTIFICATION] Duplicate notification blocked for entry ${customerEntry.id}`);
       }
       
-      // Tertiary: Try push notification
-      const pushNotificationService = require('../services/pushNotificationService');
-      const pushSent = await pushNotificationService.notifyTableReady(
-        customerEntry.id,
-        `#${customerEntry.position}`,
-        queue.merchant?.businessName || 'Restaurant'
-      );
-      
-      if (pushSent) {
-        logger.info(`Push notification sent to ${customerEntry.customerName} (specific call)`);
+      // Tertiary: Try push notification (wrapped in try-catch to prevent failures)
+      try {
+        const pushNotificationService = require('../services/pushNotificationService');
+        const pushSent = await pushNotificationService.notifyTableReady(
+          customerEntry.id,
+          `#${customerEntry.position}`,
+          queue.merchant?.businessName || 'Restaurant'
+        );
+        
+        if (pushSent) {
+          logger.info(`Push notification sent to ${customerEntry.customerName} (specific call)`);
+        }
+      } catch (pushError) {
+        logger.warn('Push notification failed (non-critical):', pushError.message);
+        // Continue - push notifications are optional
       }
       
-      logger.info(`Notifications sent to ${customerEntry.customerName} via websocket and push`);
+      logger.info(`Notifications sent to ${customerEntry.customerName} via websocket`);
       
-      // WhatsApp notifications have been removed - using webchat and push notifications only
+      // WhatsApp notifications have been removed - using webchat notifications only
     } catch (error) {
       logger.error('Error sending customer notification:', error);
+      // Continue - notification errors should not fail the call operation
     }
 
     // Calculate queue metrics
@@ -641,8 +658,16 @@ router.post('/:id/call-specific', [requireAuth, loadUser], [
     });
 
   } catch (error) {
-    logger.error('Error calling specific customer:', error);
-    res.status(500).json({ error: 'Failed to call specific customer' });
+    logger.error('Error calling specific customer:', {
+      error: error.message,
+      stack: error.stack,
+      queueId: req.params.id,
+      customerId: req.body?.customerId
+    });
+    res.status(500).json({ 
+      error: 'Failed to call specific customer',
+      message: error.message 
+    });
   }
 });
 
@@ -833,6 +858,48 @@ router.post('/:id/verify-and-seat/:customerId', [requireAuth, loadUser], [
   } catch (error) {
     logger.error('Error verifying and seating customer:', error);
     res.status(500).json({ error: 'Failed to verify and seat customer' });
+  }
+});
+
+// GET /api/queue/:id/completed - Get completed customers for a queue
+router.get('/:id/completed', [requireAuth, loadUser], async (req, res) => {
+  try {
+    const merchantId = req.user.id || req.user._id;
+    const queueId = req.params.id;
+    
+    // Get completed customers for this queue
+    const completedCustomers = await prisma.queueEntry.findMany({
+      where: {
+        queueId: queueId,
+        status: 'completed',
+        queue: {
+          merchantId: merchantId
+        }
+      },
+      orderBy: {
+        completedAt: 'desc'
+      },
+      take: 50 // Limit to last 50 completed customers
+    });
+    
+    res.json({
+      success: true,
+      customers: completedCustomers.map(customer => ({
+        id: customer.id,
+        customerName: customer.customerName,
+        customerPhone: customer.customerPhone,
+        partySize: customer.partySize,
+        position: customer.position,
+        queueNumber: customer.queueNumber,
+        verificationCode: customer.verificationCode,
+        joinedAt: customer.joinedAt,
+        completedAt: customer.completedAt,
+        totalTime: customer.completedAt ? Math.floor((new Date(customer.completedAt) - new Date(customer.joinedAt)) / (1000 * 60)) : 0
+      }))
+    });
+  } catch (error) {
+    logger.error('Error fetching completed customers:', error);
+    res.status(500).json({ error: 'Failed to fetch completed customers' });
   }
 });
 
@@ -1654,6 +1721,725 @@ router.post('/acknowledge', async (req, res) => {
   } catch (error) {
     logger.error('Error processing acknowledgment:', error);
     res.status(500).json({ error: 'Failed to process acknowledgment' });
+  }
+});
+
+// GET /api/queue/:queueId/status/:customerId - Get customer status in queue
+router.get('/:queueId/status/:customerId', async (req, res) => {
+  try {
+    const { queueId, customerId } = req.params;
+    
+    // Find the queue entry
+    const entry = await prisma.queueEntry.findFirst({
+      where: {
+        queueId: queueId,
+        id: customerId,
+        status: {
+          in: ['waiting', 'called', 'serving', 'completed']
+        }
+      },
+      include: {
+        queue: {
+          include: {
+            merchant: true
+          }
+        }
+      }
+    });
+    
+    if (!entry) {
+      return res.status(404).json({ error: 'Queue entry not found' });
+    }
+    
+    // Calculate current position
+    let currentPosition = 0;
+    if (entry.status === 'waiting') {
+      const waitingEntries = await prisma.queueEntry.findMany({
+        where: {
+          queueId: queueId,
+          status: 'waiting',
+          joinedAt: {
+            lte: entry.joinedAt
+          }
+        },
+        orderBy: {
+          joinedAt: 'asc'
+        }
+      });
+      currentPosition = waitingEntries.length;
+    } else if (entry.status === 'called') {
+      currentPosition = 0; // They're being called
+    }
+    
+    res.json({
+      success: true,
+      status: entry.status,
+      position: currentPosition,
+      customerName: entry.customerName,
+      verificationCode: entry.verificationCode,
+      joinedAt: entry.joinedAt,
+      calledAt: entry.calledAt,
+      servedAt: entry.servedAt,
+      completedAt: entry.completedAt,
+      estimatedWaitTime: entry.estimatedWaitTime,
+      queue: {
+        id: entry.queue.id,
+        name: entry.queue.name
+      },
+      merchant: {
+        businessName: entry.queue.merchant.businessName,
+        phone: entry.queue.merchant.phone
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Error getting customer status:', error);
+    res.status(500).json({ error: 'Failed to get status' });
+  }
+});
+
+// POST /api/queue/:id/seat/:customerId - Seat customer (mark as completed)
+router.post('/:id/seat/:customerId', [requireAuth, loadUser], async (req, res) => {
+  try {
+    const merchantId = req.user.id || req.user._id;
+    
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+    
+    // Find the customer (should be in 'called' status but we'll allow 'waiting' too)
+    const customer = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: { in: ['waiting', 'called'] }
+      }
+    });
+    
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found or already seated' });
+    }
+    
+    // Mark as completed (seated)
+    const seatedCustomer = await prisma.queueEntry.update({
+      where: { id: customer.id },
+      data: {
+        status: 'completed',
+        completedAt: new Date(),
+        servedAt: new Date()
+      }
+    });
+    
+    // Send webchat notification if customer has session
+    if (seatedCustomer.sessionId) {
+      req.io.to(`webchat-${seatedCustomer.sessionId}`).emit('customer-seated', {
+        customerId: seatedCustomer.id,
+        customerName: seatedCustomer.customerName,
+        message: 'You have been seated. Thank you for waiting!'
+      });
+    }
+    
+    logger.info(`Customer ${seatedCustomer.customerName} seated successfully`);
+    
+    // Send position updates
+    await sendPositionUpdateNotifications(queue.id, queue.name, req.io, merchantId);
+    
+    // Emit real-time updates
+    req.io.to(`merchant-${merchantId}`).emit('queue-updated', {
+      queueId: queue.id,
+      action: 'customer-seated',
+      customer: seatedCustomer
+    });
+    
+    res.json({
+      success: true,
+      customer: seatedCustomer,
+      message: 'Customer seated successfully'
+    });
+  } catch (error) {
+    logger.error('Error seating customer:', error);
+    res.status(500).json({ error: 'Failed to seat customer' });
+  }
+});
+
+// POST /api/queue/:id/confirm/:customerId - Customer confirms they're coming
+router.post('/:id/confirm/:customerId', async (req, res) => {
+  try {
+    const { verificationCode } = req.body;
+    
+    // Find the customer
+    const customer = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: 'called'
+      }
+    });
+    
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found or not in called status' });
+    }
+    
+    // Verify the code if provided
+    if (verificationCode && customer.verificationCode && verificationCode !== customer.verificationCode) {
+      return res.status(400).json({ error: 'Invalid verification code' });
+    }
+    
+    // Update customer status to confirmed
+    const updatedCustomer = await prisma.queueEntry.update({
+      where: { id: customer.id },
+      data: {
+        confirmedAt: new Date(),
+        metadata: {
+          ...customer.metadata,
+          confirmedComing: true,
+          confirmedAt: new Date().toISOString()
+        }
+      }
+    });
+    
+    // Get queue for merchant ID
+    const queue = await prisma.queue.findUnique({
+      where: { id: req.params.id },
+      include: { merchant: true }
+    });
+    
+    if (queue) {
+      // Notify merchant via WebSocket
+      req.io.to(`merchant-${queue.merchantId}`).emit('customer-confirmed', {
+        customerId: updatedCustomer.id,
+        customerName: updatedCustomer.customerName,
+        message: `${updatedCustomer.customerName} confirmed they're coming`
+      });
+    }
+    
+    logger.info(`Customer ${updatedCustomer.customerName} confirmed arrival`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Confirmation received',
+      customer: updatedCustomer 
+    });
+    
+  } catch (error) {
+    logger.error('Error confirming customer:', error);
+    res.status(500).json({ error: 'Failed to confirm' });
+  }
+});
+
+// POST /api/queue/:id/cancel/:customerId - Customer cancels their spot
+router.post('/:id/cancel/:customerId', async (req, res) => {
+  try {
+    const { verificationCode } = req.body;
+    
+    // Find the customer
+    const customer = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: { in: ['waiting', 'called'] }
+      }
+    });
+    
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    // Verify the code if provided
+    if (verificationCode && customer.verificationCode && verificationCode !== customer.verificationCode) {
+      return res.status(400).json({ error: 'Invalid verification code' });
+    }
+    
+    // Remove customer from queue
+    await prisma.queueEntry.delete({
+      where: { id: customer.id }
+    });
+    
+    // Get queue for merchant ID
+    const queue = await prisma.queue.findUnique({
+      where: { id: req.params.id },
+      include: { merchant: true }
+    });
+    
+    if (queue) {
+      // Update positions for remaining customers
+      const remainingCustomers = await prisma.queueEntry.findMany({
+        where: {
+          queueId: req.params.id,
+          status: { in: ['waiting', 'called'] },
+          position: { gt: customer.position }
+        }
+      });
+      
+      // Update positions
+      for (const c of remainingCustomers) {
+        await prisma.queueEntry.update({
+          where: { id: c.id },
+          data: { position: c.position - 1 }
+        });
+      }
+      
+      // Notify merchant via WebSocket
+      req.io.to(`merchant-${queue.merchantId}`).emit('customer-cancelled', {
+        customerId: customer.id,
+        customerName: customer.customerName,
+        message: `${customer.customerName} cancelled their queue spot`
+      });
+      
+      // Send position updates
+      await sendPositionUpdateNotifications(queue.id, queue.name, req.io, queue.merchantId);
+    }
+    
+    logger.info(`Customer ${customer.customerName} cancelled their queue spot`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Queue spot cancelled'
+    });
+    
+  } catch (error) {
+    logger.error('Error cancelling customer:', error);
+    res.status(500).json({ error: 'Failed to cancel' });
+  }
+});
+
+// POST /api/queue/notify-table - Notify customer that table is ready (StoreHub Standard)
+router.post('/notify-table', [requireAuth, loadUser], async (req, res) => {
+  // Destructure at the top level so variables are in scope for error handler
+  const { queueId, customerName, customerPhone, message } = req.body;
+  
+  try {
+    
+    // Validate input
+    if (!queueId || !customerName) {
+      return res.status(400).json({ error: 'Queue ID and customer name are required' });
+    }
+    
+    // Find the queue entry
+    const queueEntry = await prisma.queueEntry.findFirst({
+      where: {
+        queueId: queueId,
+        customerName: customerName,
+        status: 'waiting'
+      },
+      include: {
+        queue: {
+          include: {
+            merchant: true
+          }
+        }
+      }
+    });
+    
+    if (!queueEntry) {
+      return res.status(404).json({ error: 'Customer not found in queue' });
+    }
+    
+    // Update status to called and capture the updated entry
+    const updatedEntry = await prisma.queueEntry.update({
+      where: { id: queueEntry.id },
+      data: {
+        status: 'called',
+        calledAt: new Date(),
+        lastNotified: new Date()  // Changed from lastNotifiedAt to lastNotified
+      }
+    });
+    
+    // Send notification via WebSocket
+    if (req.io) {
+      // Emit to merchant dashboard
+      req.io.to(`merchant-${queueEntry.queue.merchantId}`).emit('customer-called', {
+        queueId: queueId,
+        customerId: queueEntry.id,
+        customerName: customerName,
+        position: queueEntry.position,
+        message: message || 'Your table is ready!'
+      });
+      
+      // Emit to customer if they're connected
+      req.io.to(`customer-${queueEntry.id}`).emit('table-ready', {
+        message: message || 'Your table is ready! Please proceed to the counter.',
+        queueName: queueEntry.queue.name,
+        merchantName: queueEntry.queue.merchant?.businessName || 'Restaurant'
+      });
+    }
+    
+    // SMS service has been removed - notifications are sent via WebSocket/WebChat only
+    // The phone number is stored for future use but not used for SMS currently
+    
+    // Log the notification in analytics (with error handling)
+    try {
+      // Get tenant ID from request context or merchant
+      const tenantId = req.tenantId || queueEntry.queue.merchant?.tenantId || 
+                       '9f5dc594-0c3d-4b49-bb46-986ca857dae5'; // Default tenant ID
+      
+      await prisma.queueAnalyticsEvent.create({
+        data: {
+          queueId: queueId,
+          merchantId: queueEntry.queue.merchantId,
+          tenantId: tenantId,
+          eventType: 'customer_called',
+          customerId: queueEntry.id,
+          customerName: customerName,
+          timestamp: new Date(),
+          metadata: {
+            position: queueEntry.position,
+            waitTime: Math.floor((new Date() - new Date(queueEntry.joinedAt)) / 60000)
+          }
+        }
+      });
+    } catch (analyticsError) {
+      // Log analytics error but don't fail the notification
+      logger.error('Failed to create analytics event:', analyticsError);
+      // Continue processing - analytics failure shouldn't stop notifications
+    }
+    
+    res.json({
+      success: true,
+      message: 'Customer has been notified',
+      customer: {
+        id: updatedEntry.id,
+        name: customerName,
+        status: 'called',
+        calledAt: updatedEntry.calledAt
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Error notifying customer:', {
+      error: error.message,
+      stack: error.stack,
+      queueId,
+      customerName,
+      customerPhone
+    });
+    res.status(500).json({ 
+      error: 'Failed to notify customer',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// POST /api/queue/no-show - Mark customer as no-show (StoreHub Standard)
+router.post('/no-show', [requireAuth, loadUser], async (req, res) => {
+  try {
+    const { queueId, customerName, reason } = req.body;
+    
+    // Validate input
+    if (!queueId || !customerName) {
+      return res.status(400).json({ error: 'Queue ID and customer name are required' });
+    }
+    
+    // Find the queue entry
+    const queueEntry = await prisma.queueEntry.findFirst({
+      where: {
+        queueId: queueId,
+        customerName: customerName,
+        status: 'called'
+      },
+      include: {
+        queue: true
+      }
+    });
+    
+    if (!queueEntry) {
+      return res.status(404).json({ error: 'Customer not found or not in called status' });
+    }
+    
+    // Calculate wait time
+    const waitTime = Math.floor((new Date() - new Date(queueEntry.joinedAt)) / 60000);
+    const responseTime = queueEntry.calledAt ? 
+      Math.floor((new Date() - new Date(queueEntry.calledAt)) / 60000) : 0;
+    
+    // Update status to no-show
+    await prisma.queueEntry.update({
+      where: { id: queueEntry.id },
+      data: {
+        status: 'no_show',
+        completedAt: new Date(),
+        notes: reason || 'Did not respond to notification'  // Using notes field instead of noShowReason
+      }
+    });
+    
+    // Log in analytics for reporting (with error handling)
+    try {
+      // Get tenant ID from request context or use default
+      const tenantId = req.tenantId || '9f5dc594-0c3d-4b49-bb46-986ca857dae5';
+      
+      await prisma.queueAnalyticsEvent.create({
+        data: {
+          queueId: queueId,
+          merchantId: queueEntry.queue.merchantId,
+          tenantId: tenantId,
+          eventType: 'customer_no_show',
+          customerId: queueEntry.id,
+          customerName: customerName,
+          timestamp: new Date(),
+          metadata: {
+            position: queueEntry.position,
+            waitTime: waitTime,
+            responseTime: responseTime,
+            reason: reason || 'Did not respond to notification'
+          }
+        }
+      });
+    } catch (analyticsError) {
+      // Log analytics error but don't fail the no-show marking
+      logger.error('Failed to create no-show analytics event:', analyticsError);
+      // Continue processing - analytics failure shouldn't stop no-show marking
+    }
+    
+    // Note: totalNoShows field needs to be added to Queue model if we want to track this
+    
+    // Emit real-time update
+    if (req.io) {
+      req.io.to(`merchant-${queueEntry.queue.merchantId}`).emit('customer-no-show', {
+        queueId: queueId,
+        customerId: queueEntry.id,
+        customerName: customerName,
+        waitTime: waitTime
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Customer marked as no-show',
+      customer: {
+        id: queueEntry.id,
+        name: customerName,
+        status: 'no_show',
+        waitTime: waitTime,
+        responseTime: responseTime
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Error marking customer as no-show:', {
+      error: error.message,
+      stack: error.stack,
+      queueId,
+      customerName,
+      reason
+    });
+    res.status(500).json({ 
+      error: 'Failed to mark customer as no-show',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// POST /api/queue/:id/withdraw/:customerId - Mark customer as withdrawn (they notified they can't make it)
+router.post('/:id/withdraw/:customerId', [requireAuth, loadUser], async (req, res) => {
+  try {
+    const merchantId = req.user.id || req.user._id;
+    const { reason } = req.body;
+    
+    // Find the queue
+    const queue = await queueService.findByMerchantAndId(merchantId, req.params.id);
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+    
+    // Find the customer entry
+    const customerEntry = await prisma.queueEntry.findFirst({
+      where: {
+        id: req.params.customerId,
+        queueId: req.params.id,
+        status: 'called'
+      }
+    });
+    
+    if (!customerEntry) {
+      return res.status(404).json({ error: 'Customer not found or not in called status' });
+    }
+    
+    // Calculate wait time and response time
+    const waitTime = Math.floor((new Date() - new Date(customerEntry.joinedAt)) / 60000);
+    const responseTime = customerEntry.calledAt ? 
+      Math.floor((new Date() - new Date(customerEntry.calledAt)) / 60000) : 0;
+    
+    // Update status to withdrawn
+    const updatedEntry = await prisma.queueEntry.update({
+      where: { id: customerEntry.id },
+      data: {
+        status: 'withdrawn',
+        withdrawnAt: new Date(),
+        withdrawalReason: reason || 'Customer notified they cannot make it'
+      }
+    });
+    
+    // Log in analytics for reporting
+    try {
+      const tenantId = req.tenantId || req.session?.tenantId;
+      
+      await prisma.queueAnalyticsEvent.create({
+        data: {
+          queueId: req.params.id,
+          merchantId: merchantId,
+          tenantId: tenantId,
+          eventType: 'customer_withdrawn',
+          customerId: customerEntry.id,
+          customerName: customerEntry.customerName,
+          timestamp: new Date(),
+          metadata: {
+            position: customerEntry.position,
+            waitTime: waitTime,
+            responseTime: responseTime,
+            reason: reason || 'Customer notified they cannot make it',
+            acknowledged: customerEntry.acknowledged
+          }
+        }
+      });
+    } catch (analyticsError) {
+      logger.error('Failed to create withdrawal analytics event:', analyticsError);
+    }
+    
+    // Emit real-time update to merchant dashboard
+    if (req.io) {
+      req.io.to(`merchant-${merchantId}`).emit('customer-withdrawn', {
+        queueId: req.params.id,
+        customerId: customerEntry.id,
+        customerName: customerEntry.customerName,
+        waitTime: waitTime,
+        reason: reason
+      });
+    }
+    
+    // Send thank you notification to customer for letting us know
+    if (customerEntry.sessionId && req.io) {
+      const roomId = `customer-${customerEntry.customerId}`;
+      req.io.to(roomId).emit('withdrawal-confirmed', {
+        message: 'Thank you for letting us know. We hope to see you again soon!',
+        customerName: customerEntry.customerName
+      });
+    }
+    
+    logger.info(`Customer ${customerEntry.customerName} marked as withdrawn`, {
+      queueId: req.params.id,
+      customerId: customerEntry.id,
+      reason: reason
+    });
+    
+    res.json({
+      success: true,
+      message: 'Customer marked as withdrawn',
+      customer: {
+        id: updatedEntry.id,
+        name: updatedEntry.customerName,
+        status: 'withdrawn',
+        waitTime: waitTime,
+        responseTime: responseTime,
+        reason: reason
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Error marking customer as withdrawn:', error);
+    res.status(500).json({ 
+      error: 'Failed to mark customer as withdrawn',
+      message: error.message
+    });
+  }
+});
+
+// POST /api/queue/withdraw - Mark customer as withdrawn (alternative endpoint)
+router.post('/withdraw', [requireAuth, loadUser], async (req, res) => {
+  try {
+    const { queueId, customerName, reason } = req.body;
+    
+    // Validate input
+    if (!queueId || !customerName) {
+      return res.status(400).json({ error: 'Queue ID and customer name are required' });
+    }
+    
+    // Find the queue entry
+    const queueEntry = await prisma.queueEntry.findFirst({
+      where: {
+        queueId: queueId,
+        customerName: customerName,
+        status: 'called'
+      },
+      include: {
+        queue: true
+      }
+    });
+    
+    if (!queueEntry) {
+      return res.status(404).json({ error: 'Customer not found or not in called status' });
+    }
+    
+    // Calculate wait time
+    const waitTime = Math.floor((new Date() - new Date(queueEntry.joinedAt)) / 60000);
+    const responseTime = queueEntry.calledAt ? 
+      Math.floor((new Date() - new Date(queueEntry.calledAt)) / 60000) : 0;
+    
+    // Update status to withdrawn
+    const updatedEntry = await prisma.queueEntry.update({
+      where: { id: queueEntry.id },
+      data: {
+        status: 'withdrawn',
+        withdrawnAt: new Date(),
+        withdrawalReason: reason || 'Customer notified they cannot make it'
+      }
+    });
+    
+    // Log in analytics for reporting
+    try {
+      const tenantId = req.tenantId || req.session?.tenantId;
+      
+      await prisma.queueAnalyticsEvent.create({
+        data: {
+          queueId: queueId,
+          merchantId: queueEntry.queue.merchantId,
+          tenantId: tenantId,
+          eventType: 'customer_withdrawn',
+          customerId: queueEntry.id,
+          customerName: customerName,
+          timestamp: new Date(),
+          metadata: {
+            position: queueEntry.position,
+            waitTime: waitTime,
+            responseTime: responseTime,
+            reason: reason || 'Customer notified they cannot make it'
+          }
+        }
+      });
+    } catch (analyticsError) {
+      logger.error('Failed to create withdrawal analytics event:', analyticsError);
+    }
+    
+    // Emit real-time update
+    if (req.io) {
+      req.io.to(`merchant-${queueEntry.queue.merchantId}`).emit('customer-withdrawn', {
+        queueId: queueId,
+        customerId: queueEntry.id,
+        customerName: customerName,
+        waitTime: waitTime,
+        reason: reason
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Customer marked as withdrawn',
+      customer: {
+        id: updatedEntry.id,
+        name: updatedEntry.customerName,
+        status: 'withdrawn',
+        waitTime: waitTime,
+        responseTime: responseTime
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Error marking customer as withdrawn:', error);
+    res.status(500).json({ 
+      error: 'Failed to mark customer as withdrawn',
+      message: error.message
+    });
   }
 });
 

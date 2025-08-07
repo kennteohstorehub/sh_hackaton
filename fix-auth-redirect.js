@@ -124,6 +124,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 console.log('\n🎉 Authentication fixes applied!');
 console.log('\n📝 Test URLs:');
-console.log('   Regular User: http://localhost:3838/test/test-auth/merchant');
-console.log('   SuperAdmin: http://localhost:3838/test/test-auth/superadmin');
+console.log('   Regular User: http://localhost:3000/test/test-auth/merchant');
+console.log('   SuperAdmin: http://localhost:3000/test/test-auth/superadmin');
 console.log('\n⚠️  Restart the server for changes to take effect.');

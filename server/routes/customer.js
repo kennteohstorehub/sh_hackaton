@@ -149,9 +149,11 @@ router.post('/join/:queueId', [
     
     res.status(201).json({
       success: true,
-      entryId: newEntry.id || newEntry._id,  // Include the entry ID
+      id: newEntry.id || newEntry._id,  // Include the entry ID
+      entryId: newEntry.id || newEntry._id,  // Keep for backward compatibility
       position,
-      estimatedWait,
+      estimatedWaitTime: estimatedWait,
+      estimatedWait,  // Keep for backward compatibility
       customer: responseEntry,
       queue: {
         id: queue.id,
@@ -338,6 +340,30 @@ router.get('/status/:queueId/:customerId', async (req, res) => {
   } catch (error) {
     logger.error('Error getting customer status:', error);
     res.status(500).json({ error: 'Failed to get status' });
+  }
+});
+
+// GET /api/customer/queue/:queueId/stats - Get queue statistics (public endpoint)
+router.get('/queue/:queueId/stats', async (req, res) => {
+  try {
+    const { queueId } = req.params;
+    const stats = await queueService.getQueueStats(queueId);
+    
+    const queue = await queueService.findById(queueId);
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+    
+    res.json({
+      success: true,
+      waitingCount: stats?.waitingCount || 0,
+      averageWaitTime: stats?.averageWaitTime || 15,
+      isActive: queue.isActive,
+      acceptingCustomers: queue.acceptingCustomers
+    });
+  } catch (error) {
+    logger.error('Error getting queue stats:', error);
+    res.status(500).json({ error: 'Failed to get queue statistics' });
   }
 });
 

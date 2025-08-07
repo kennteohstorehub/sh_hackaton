@@ -49,8 +49,8 @@ This document summarizes the comprehensive fixes applied to the multi-tenant QMS
 ### 6. ✅ Authentication Flow Separation
 **Issue**: Mixed authentication flows between BackOffice and Tenant users
 **Fix**: Complete separation implemented:
-- BackOffice: `admin.domain.com` (or `admin.lvh.me:3838` in dev)
-- Tenants: `slug.domain.com` (or `slug.lvh.me:3838` in dev)
+- BackOffice: `admin.domain.com` (or `admin.lvh.me:3000` in dev)
+- Tenants: `slug.domain.com` (or `slug.lvh.me:3000` in dev)
 - Context-specific login redirects
 - Session validation per context
 - Automatic cleanup of invalid sessions
@@ -86,18 +86,18 @@ if (subdomain === 'admin') {
 ## Test Accounts
 
 ### BackOffice Access
-- **URL**: http://admin.lvh.me:3838
+- **URL**: http://admin.lvh.me:3000
 - **Login**: backoffice@storehubqms.local
 - **Password**: BackOffice123!@#
 
 ### Tenant Access
 #### Demo Restaurant
-- **URL**: http://demo.lvh.me:3838
+- **URL**: http://demo.lvh.me:3000
 - **Login**: admin@demo.local
 - **Password**: Demo123!@#
 
 #### Test Cafe
-- **URL**: http://test-cafe.lvh.me:3838
+- **URL**: http://test-cafe.lvh.me:3000
 - **Login**: cafe@testcafe.local
 - **Password**: Test123!@#
 
@@ -147,20 +147,20 @@ npm start
 ```
 
 ### 2. Test BackOffice Authentication
-1. Visit: http://admin.lvh.me:3838
+1. Visit: http://admin.lvh.me:3000
 2. Login with: backoffice@storehubqms.local / BackOffice123!@#
 3. Verify redirect to BackOffice dashboard
 4. Check session type in developer tools
 
 ### 3. Test Tenant Authentication
-1. Visit: http://demo.lvh.me:3838
+1. Visit: http://demo.lvh.me:3000
 2. Login with: admin@demo.local / Demo123!@#
 3. Verify redirect to tenant dashboard
 4. Check session isolation from BackOffice
 
 ### 4. Test Session Isolation
-1. Login to BackOffice (admin.lvh.me:3838)
-2. Navigate to tenant URL (demo.lvh.me:3838)
+1. Login to BackOffice (admin.lvh.me:3000)
+2. Navigate to tenant URL (demo.lvh.me:3000)
 3. Verify session is cleared and login required
 4. Repeat in reverse order
 

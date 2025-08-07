@@ -62,7 +62,7 @@ node setup-push-notifications.js
 ## Testing
 
 ### Manual Testing
-1. Open `http://localhost:3838/join.html?merchantId=YOUR_MERCHANT_ID`
+1. Open `http://localhost:3000/join.html?merchantId=YOUR_MERCHANT_ID`
 2. Allow notifications when prompted
 3. Fill out the form and join the queue
 4. Call the customer from the dashboard to trigger a notification

@@ -10,7 +10,7 @@ async function testBackOfficeLogin() {
   
   try {
     // Step 1: Get CSRF token
-    const loginPageRes = await axios.get('http://admin.lvh.me:3838/backoffice/auth/login', {
+    const loginPageRes = await axios.get('http://admin.lvh.me:3000/backoffice/auth/login', {
       headers: { 'Cookie': '' }
     });
     
@@ -21,7 +21,7 @@ async function testBackOfficeLogin() {
     console.log('✅ Got CSRF token and session cookie');
     
     // Step 2: Attempt login
-    const loginRes = await axios.post('http://admin.lvh.me:3838/backoffice/auth/login', 
+    const loginRes = await axios.post('http://admin.lvh.me:3000/backoffice/auth/login', 
       {
         email: 'backoffice@storehubqms.local',
         password: 'BackOffice123!@#',
@@ -56,7 +56,7 @@ async function testTenantLogin(tenantSlug, email, password) {
   
   try {
     // Step 1: Get CSRF token
-    const loginPageRes = await axios.get(`http://${tenantSlug}.lvh.me:3838/auth/login`, {
+    const loginPageRes = await axios.get(`http://${tenantSlug}.lvh.me:3000/auth/login`, {
       headers: { 'Cookie': '' }
     });
     
@@ -67,7 +67,7 @@ async function testTenantLogin(tenantSlug, email, password) {
     console.log('✅ Got CSRF token and session cookie');
     
     // Step 2: Attempt login
-    const loginRes = await axios.post(`http://${tenantSlug}.lvh.me:3838/auth/login`, 
+    const loginRes = await axios.post(`http://${tenantSlug}.lvh.me:3000/auth/login`, 
       {
         email: email,
         password: password,
@@ -89,7 +89,7 @@ async function testTenantLogin(tenantSlug, email, password) {
       console.log('✅ Login successful!');
       
       // Try to access dashboard
-      const dashboardRes = await axios.get(`http://${tenantSlug}.lvh.me:3838/dashboard`, {
+      const dashboardRes = await axios.get(`http://${tenantSlug}.lvh.me:3000/dashboard`, {
         headers: {
           'Cookie': loginRes.headers['set-cookie']?.join('; ') || sessionCookie
         },

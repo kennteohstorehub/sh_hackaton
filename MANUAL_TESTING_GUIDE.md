@@ -16,9 +16,9 @@ Add:
 ```
 
 Then access:
-1. BackOffice: http://admin.lvh.me:3838 (backoffice@storehubqms.local / BackOffice123\!@#)
-2. Demo: http://demo.lvh.me:3838 (admin@demo.local / Demo123\!@#)
-3. Test Cafe: http://test-cafe.lvh.me:3838 (cafe@testcafe.local / Test123\!@#)
+1. BackOffice: http://admin.lvh.me:3000 (backoffice@storehubqms.local / BackOffice123\!@#)
+2. Demo: http://demo.lvh.me:3000 (admin@demo.local / Demo123\!@#)
+3. Test Cafe: http://test-cafe.lvh.me:3000 (cafe@testcafe.local / Test123\!@#)
 
 The server is running on port 3838.
 EOF < /dev/null

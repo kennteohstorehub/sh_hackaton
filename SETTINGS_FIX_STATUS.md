@@ -106,7 +106,7 @@ To verify the settings page is fully functional:
    ```
 
 2. **Login**
-   - Navigate to http://localhost:3838
+   - Navigate to http://localhost:3000
    - Login with: admin@demo.local / Demo123!@#
 
 3. **Test Restaurant Settings**

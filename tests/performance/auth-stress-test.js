@@ -10,7 +10,7 @@ const v8 = require('v8');
 const { Pool } = require('pg');
 const logger = require('../../server/utils/logger');
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3838';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const DATABASE_URL = process.env.DATABASE_URL;
 
 // Stress test configurations

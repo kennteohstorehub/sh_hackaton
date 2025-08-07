@@ -8,7 +8,7 @@ const { performance } = require('perf_hooks');
 const bcrypt = require('bcryptjs');
 const logger = require('../../server/utils/logger');
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3838';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const TEST_USER = {
   email: 'perftest@example.com',
   password: 'TestPassword123!',

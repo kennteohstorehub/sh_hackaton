@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Navigation Consistency Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to login page
-    await page.goto('http://localhost:3838/auth/login');
+    await page.goto('http://localhost:3000/auth/login');
     
     // Check if already logged in by looking for dashboard elements
     const isDashboard = await page.url().includes('/dashboard');
@@ -33,7 +33,7 @@ test.describe('Navigation Consistency Tests', () => {
       console.log(`Testing navigation on ${pageInfo.name} page...`);
       
       // Navigate to the page
-      await page.goto(`http://localhost:3838${pageInfo.path}`);
+      await page.goto(`http://localhost:3000${pageInfo.path}`);
       await page.waitForLoadState('networkidle');
       
       // Check if nav-container exists
@@ -72,7 +72,7 @@ test.describe('Navigation Consistency Tests', () => {
       console.log(`Testing navigation FROM ${sourcePage.name} page...`);
       
       // Start from the source page
-      await page.goto(`http://localhost:3838${sourcePage.path}`);
+      await page.goto(`http://localhost:3000${sourcePage.path}`);
       await page.waitForLoadState('networkidle');
       
       // Test clicking each navigation link
@@ -96,7 +96,7 @@ test.describe('Navigation Consistency Tests', () => {
           
           // Go back to source page for next test
           if (targetPage !== pages[pages.length - 1]) {
-            await page.goto(`http://localhost:3838${sourcePage.path}`);
+            await page.goto(`http://localhost:3000${sourcePage.path}`);
             await page.waitForLoadState('networkidle');
           }
         }
@@ -106,7 +106,7 @@ test.describe('Navigation Consistency Tests', () => {
 
   test('View Public button behavior with active queue', async ({ page }) => {
     // First, create an active queue
-    await page.goto('http://localhost:3838/dashboard/queues');
+    await page.goto('http://localhost:3000/dashboard/queues');
     await page.waitForLoadState('networkidle');
     
     // Check if there are any queues
@@ -130,7 +130,7 @@ test.describe('Navigation Consistency Tests', () => {
     
     // Now check View Public button on all pages
     for (const pageInfo of pages) {
-      await page.goto(`http://localhost:3838${pageInfo.path}`);
+      await page.goto(`http://localhost:3000${pageInfo.path}`);
       await page.waitForLoadState('networkidle');
       
       // Check if View Public button exists when there's an active queue
@@ -159,7 +159,7 @@ test.describe('Navigation Consistency Tests', () => {
       console.log(`Testing logout from ${pageInfo.name} page...`);
       
       // Navigate to the page
-      await page.goto(`http://localhost:3838${pageInfo.path}`);
+      await page.goto(`http://localhost:3000${pageInfo.path}`);
       await page.waitForLoadState('networkidle');
       
       // Find and click logout button
@@ -188,7 +188,7 @@ test.describe('Navigation Consistency Tests', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     
     // Test on dashboard
-    await page.goto('http://localhost:3838/dashboard');
+    await page.goto('http://localhost:3000/dashboard');
     await page.waitForLoadState('networkidle');
     
     // Check if mobile nav toggle is visible
@@ -216,7 +216,7 @@ test.describe('Navigation Consistency Tests', () => {
 
   test('Navigation consistency with different queue states', async ({ page }) => {
     // Test with no queues
-    await page.goto('http://localhost:3838/dashboard');
+    await page.goto('http://localhost:3000/dashboard');
     await page.waitForLoadState('networkidle');
     
     let viewPublicButton = await page.locator('.btn-view-public');

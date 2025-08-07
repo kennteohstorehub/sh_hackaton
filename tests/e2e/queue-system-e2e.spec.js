@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Queue Management System E2E Tests', () => {
-  const BASE_URL = process.env.BASE_URL || 'http://localhost:3838';
+  const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
   const TEST_MERCHANT_ID = process.env.TEST_MERCHANT_ID || '3ecceb82-fb33-42c8-9d84-19eb69417e16';
   
   // Check if auth bypass is enabled for testing

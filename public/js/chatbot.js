@@ -28,7 +28,7 @@ class QueueChatbot {
     
     init() {
         // Initialize Socket.IO
-        this.socket = io();
+        this.socket = io(window.location.origin);
         
         // Set up event listeners
         this.setupEventListeners();

@@ -3,7 +3,7 @@
 ## Server Status
 - **Running**: Yes, on port 3838
 - **Health Check**: OK
-- **URL**: http://localhost:3838
+- **URL**: http://localhost:3000
 
 ## Feature Implementation
 
@@ -32,11 +32,11 @@ When a merchant assigns a table to a customer, the system now:
 
 ### How to Test
 
-1. **Merchant Login**: http://localhost:3838/auth/login
+1. **Merchant Login**: http://localhost:3000/auth/login
    - Email: `demo@storehub.com`
    - Password: `demo123`
 
-2. **Customer WebChat**: http://localhost:3838/chat/[merchantId]
+2. **Customer WebChat**: http://localhost:3000/chat/[merchantId]
    - Join queue with test details
    - Wait for merchant to call
    - Acknowledge when called

@@ -12,19 +12,19 @@ After a merchant assigns a table to a customer, the system now:
 ```bash
 npm run dev
 ```
-The server is running at http://localhost:3838
+The server is running at http://localhost:3000
 
 ### 2. Open Two Browser Windows
 
 #### Window 1: Merchant Dashboard
-1. Navigate to http://localhost:3838/auth/login
+1. Navigate to http://localhost:3000/auth/login
 2. Login with:
    - Email: `demo@storehub.com`
    - Password: `demo123`
 3. You'll see the queue dashboard
 
 #### Window 2: Customer WebChat
-1. Navigate to http://localhost:3838/chat/[merchantId]
+1. Navigate to http://localhost:3000/chat/[merchantId]
    - You can find the merchantId in the merchant dashboard URL
 2. Or use the QR code from the merchant dashboard
 

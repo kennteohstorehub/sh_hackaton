@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 // Test configuration
-const BASE_URL = 'http://localhost:3838';
+const BASE_URL = 'http://localhost:3000';
 const BACKOFFICE_CREDENTIALS = {
   email: 'backoffice@storehubqms.local',
   password: 'BackOffice123!@#'

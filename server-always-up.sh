@@ -3,7 +3,7 @@
 # Server Always Up Script
 # This script ensures the server stays running and automatically restarts on crash
 
-PORT=3838
+PORT=3000
 LOG_FILE="server-always-up.log"
 PID_FILE="server.pid"
 

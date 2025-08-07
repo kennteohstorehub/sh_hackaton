@@ -8,7 +8,7 @@ async function checkDesign() {
   
   try {
     // Navigate to the site
-    await page.goto('http://demo.lvh.me:3838', { waitUntil: 'networkidle' });
+    await page.goto('http://demo.lvh.me:3000', { waitUntil: 'networkidle' });
     
     console.log('📄 Current Page:', page.url());
     
@@ -75,14 +75,14 @@ async function checkDesign() {
     
     // Check merchant login
     console.log('\nMerchant Login (/auth/login):');
-    const loginResponse = await page.goto('http://demo.lvh.me:3838/auth/login', { waitUntil: 'networkidle' });
+    const loginResponse = await page.goto('http://demo.lvh.me:3000/auth/login', { waitUntil: 'networkidle' });
     console.log('  Status:', loginResponse.status());
     await page.screenshot({ path: 'screenshots/merchant-login.png', fullPage: true });
     
     // Check backoffice login
     console.log('\nBackoffice Login (/backoffice/auth/login):');
     try {
-      const backofficeResponse = await page.goto('http://admin.lvh.me:3838/backoffice/auth/login', { waitUntil: 'networkidle' });
+      const backofficeResponse = await page.goto('http://admin.lvh.me:3000/backoffice/auth/login', { waitUntil: 'networkidle' });
       console.log('  Status:', backofficeResponse.status());
       await page.screenshot({ path: 'screenshots/backoffice-login.png', fullPage: true });
     } catch (e) {

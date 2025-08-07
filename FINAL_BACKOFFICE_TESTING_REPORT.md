@@ -13,7 +13,7 @@ This report provides the **final comprehensive assessment** of the StoreHub Queu
 - **Test Date**: August 4, 2025
 - **Testing Duration**: Comprehensive multi-hour assessment
 - **Testing Methods**: Automated (Playwright), Manual, Code Analysis, Security Testing
-- **Application URL**: http://localhost:3838/backoffice
+- **Application URL**: http://localhost:3000/backoffice
 - **Database**: PostgreSQL with 5 active BackOffice users confirmed
 
 ---

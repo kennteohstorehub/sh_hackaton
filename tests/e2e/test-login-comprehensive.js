@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 // Test configuration
-const BASE_URL = 'http://localhost:3838';
+const BASE_URL = 'http://localhost:3000';
 
 // Test credentials
 const SUPERADMIN_CREDENTIALS = {
@@ -447,7 +447,7 @@ test.describe('Login Functionality Tests', () => {
 // Helper function to run the tests
 async function runLoginTests() {
   console.log('🧪 Starting comprehensive login tests...');
-  console.log('📍 Server should be running on http://localhost:3838');
+  console.log('📍 Server should be running on http://localhost:3000');
   console.log('');
   
   // Note: This would normally be run with: npx playwright test test-login-comprehensive.js

@@ -59,7 +59,7 @@ describe('Authentication Middleware Tests', () => {
       hostname: 'demo.lvh.me',
       headers: {},
       xhr: false,
-      get: jest.fn().mockReturnValue('demo.lvh.me:3838'),
+      get: jest.fn().mockReturnValue('demo.lvh.me:3000'),
       ip: '127.0.0.1',
       body: {},
       params: {},

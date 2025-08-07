@@ -109,7 +109,7 @@ Added comprehensive error handling and debugging:
 1. **Login Flow**:
    ```bash
    # Navigate to settings page
-   http://localhost:3838/dashboard/settings
+   http://localhost:3000/dashboard/settings
    ```
 
 2. **Form Testing**:
@@ -127,12 +127,12 @@ Added comprehensive error handling and debugging:
 
 ```bash
 # Test merchant profile endpoint
-curl -X GET http://localhost:3838/api/merchant/profile \
+curl -X GET http://localhost:3000/api/merchant/profile \
   -H "Cookie: session_cookie_here" \
   -H "Content-Type: application/json"
 
 # Test profile update
-curl -X PUT http://localhost:3838/api/merchant/profile \
+curl -X PUT http://localhost:3000/api/merchant/profile \
   -H "Cookie: session_cookie_here" \
   -H "X-CSRF-Token: csrf_token_here" \
   -H "Content-Type: application/json" \

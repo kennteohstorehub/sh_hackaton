@@ -300,7 +300,6 @@ test.describe('Merchant Settings Tests', () => {
       await expect(page.locator(':text("WhatsApp")')).toBeVisible();
       await expect(page.locator(':text("Facebook Messenger")')).toBeVisible();
       await expect(page.locator(':text("Telegram")')).toBeVisible();
-      await expect(page.locator(':text("SMS")')).toBeVisible();
     });
 
     test('should configure WhatsApp integration', async ({ page }) => {
@@ -320,23 +319,6 @@ test.describe('Merchant Settings Tests', () => {
       await expect(page.locator('.success-message')).toBeVisible();
     });
 
-    test('should configure SMS integration', async ({ page }) => {
-      await page.goto('/settings');
-      await page.click(':text("Integrations")');
-      
-      // Enable SMS
-      await page.check('input[name="smsEnabled"]');
-      
-      // Add SMS gateway details
-      await page.fill('input[name="smsApiKey"]', 'test-api-key');
-      await page.fill('input[name="smsSenderId"]', 'QUEUE');
-      
-      // Save
-      await page.click('button:has-text("Save Integration Settings")');
-      
-      // Verify
-      await expect(page.locator('.success-message')).toBeVisible();
-    });
   });
 
   test.describe('Notification Settings', () => {

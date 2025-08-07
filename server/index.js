@@ -1,7 +1,11 @@
+// Load environment variables FIRST
+require('dotenv').config();
+
 // BUILD VERSION: 2025-01-24-v8 - CONDITIONAL AUTH BYPASS
 console.log('🚀 Starting server with BUILD VERSION: 2025-01-24-v8');
 console.log('✅ Neon database migration completed successfully');
 console.log('✅ Demo data seeded in PostgreSQL');
+console.log(`📍 PORT from .env: ${process.env.PORT}`);
 
 // Show appropriate authentication messages
 const useAuthBypassStartup = process.env.USE_AUTH_BYPASS === 'true';
@@ -24,6 +28,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const expressLayouts = require('express-ejs-layouts');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
@@ -32,7 +37,6 @@ const methodOverride = require('method-override');
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
-require('dotenv').config();
 const { config, initialize: initializeConfig } = require('./config');
 
 const logger = require('./utils/logger');
@@ -62,11 +66,11 @@ const pushRoutes = require('./routes/push');
 // Frontend Routes
 const authRoutes = require('./routes/frontend/auth');
 const publicRoutes = require('./routes/frontend/public');
+const registrationRoutes = require('./routes/public-registration');
 
 // BackOffice Routes
 const backOfficeAuthRoutes = require('./routes/backoffice/auth');
 const backOfficeDashboardRoutes = require('./routes/backoffice/dashboard');
-const backOfficeTenantRoutes = require('./routes/backoffice/tenants');
 const backOfficeUserRoutes = require('./routes/backoffice/users');
 const backOfficeMerchantRoutes = require('./routes/backoffice/merchants');
 const backOfficeAuditLogRoutes = require('./routes/backoffice/audit-logs');
@@ -80,7 +84,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3001'],
+    origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000'],
     methods: ['GET', 'POST']
   }
 });
@@ -115,6 +119,12 @@ if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY) {
 // View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
+
+// Configure express-ejs-layouts
+app.use(expressLayouts);
+app.set('layout', false); // Disable default layout - we'll set it per route
+app.set('layout extractScripts', true);
+app.set('layout extractStyles', true);
 
 // Register template security helpers
 registerHelpers(app);
@@ -324,6 +334,9 @@ app.use((req, res, next) => {
 // Apply CSRF validation to all state-changing routes
 app.use(csrfValidation);
 
+// Public Registration Route (no auth required)
+app.use('/', registrationRoutes);
+
 // Frontend Routes
 app.use('/', publicRoutes);
 // Always use the real auth routes - no conditional routing
@@ -332,7 +345,6 @@ app.use('/auth', authRoutes);
 // BackOffice Routes
 app.use('/backoffice/auth', backOfficeAuthRoutes);
 app.use('/backoffice/dashboard', backOfficeDashboardRoutes);
-app.use('/backoffice/tenants', backOfficeTenantRoutes);
 app.use('/backoffice/users', backOfficeUserRoutes);
 app.use('/backoffice/merchants', backOfficeMerchantRoutes);
 app.use('/backoffice/audit-logs', backOfficeAuditLogRoutes);
@@ -356,7 +368,12 @@ app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/test-csrf', require('./routes/test-csrf'));
 app.use('/api/debug', require('./routes/debug-session'));
 app.use('/api/session-test', require('./routes/session-test'));
-app.use('/api/queue/acknowledge', require('./routes/acknowledge'));
+
+// Acknowledge endpoint - bypass CSRF for customer actions
+app.use('/api/queue/acknowledge', (req, res, next) => {
+  req.skipCSRF = true;
+  next();
+}, require('./routes/acknowledge'));
 
 // Test auth bypass (development only)
 if (process.env.NODE_ENV !== 'production') {

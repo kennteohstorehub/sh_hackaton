@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const axios = require('axios');
 
-const BASE_URL = 'http://localhost:3838';
+const BASE_URL = 'http://localhost:3000';
 
 test.describe('Card-Based Acknowledgment System', () => {
     let testSessionId;
@@ -77,11 +77,11 @@ test.describe('Card-Based Acknowledgment System', () => {
             // Verify cards are inline (not overlay)
             const isInline = await page.evaluate(() => {
                 const container = document.querySelector('.action-cards-container');
-                if (\!container) return false;
+                if (!container) return false;
                 
                 const styles = window.getComputedStyle(container);
                 // Check it's not positioned as overlay
-                return styles.position \!== 'fixed' && styles.position \!== 'absolute';
+                return styles.position !== 'fixed' && styles.position !== 'absolute';
             });
             expect(isInline).toBe(true);
 
@@ -230,7 +230,7 @@ test.describe('Card-Based Acknowledgment System', () => {
             // Check for the message in CSS pseudo-element
             const messageVisible = await page.evaluate(() => {
                 const inputArea = document.querySelector('.input-area.input-hidden');
-                if (\!inputArea) return false;
+                if (!inputArea) return false;
                 
                 const styles = window.getComputedStyle(inputArea, '::before');
                 return styles.content.includes('use the action buttons');
@@ -741,4 +741,3 @@ test.describe('Card-Based Acknowledgment System', () => {
         });
     });
 });
-EOF < /dev/null

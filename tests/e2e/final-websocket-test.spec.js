@@ -12,7 +12,7 @@ test.describe('WebSocket Notification E2E Test', () => {
     try {
       // Step 1: Customer visits join queue page
       console.log('Step 1: Customer joining queue...');
-      await customerPage.goto('http://localhost:3838/queue/join/7a99f35e-0f73-4f8e-831c-fde8fc3a5532');
+      await customerPage.goto('http://localhost:3000/queue/join/7a99f35e-0f73-4f8e-831c-fde8fc3a5532');
       
       // Check if we're on the join page or if we need to click something
       const pageTitle = await customerPage.title();
@@ -73,7 +73,7 @@ test.describe('WebSocket Notification E2E Test', () => {
       
       // Step 2: Merchant logs in
       console.log('Step 2: Merchant logging in...');
-      await merchantPage.goto('http://localhost:3838/login');
+      await merchantPage.goto('http://localhost:3000/login');
       await merchantPage.fill('input[name="email"]', 'demo@storehub.com');
       await merchantPage.fill('input[name="password"]', 'demo1234');
       await merchantPage.click('button[type="submit"]');

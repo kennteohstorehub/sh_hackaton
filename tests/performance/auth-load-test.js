@@ -8,7 +8,7 @@ const { performance } = require('perf_hooks');
 const os = require('os');
 const logger = require('../../server/utils/logger');
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3838';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
 const RATE_LIMIT_MAX = 100; // As per security.js
 

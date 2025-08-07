@@ -7,19 +7,19 @@ All authentication systems are now working correctly after comprehensive debuggi
 ### ✅ Test Results
 
 #### 1. BackOffice Login
-- **URL**: http://admin.lvh.me:3838
+- **URL**: http://admin.lvh.me:3000
 - **Credentials**: backoffice@storehubqms.local / BackOffice123!@#
 - **Status**: ✅ **WORKING**
 - **Result**: Successfully authenticates and redirects to /backoffice/dashboard
 
 #### 2. Demo Tenant Login  
-- **URL**: http://demo.lvh.me:3838
+- **URL**: http://demo.lvh.me:3000
 - **Credentials**: admin@demo.local / Demo123!@#
 - **Status**: ✅ **WORKING**
 - **Result**: Successfully authenticates and redirects to /dashboard
 
 #### 3. Test Cafe Tenant Login
-- **URL**: http://test-cafe.lvh.me:3838
+- **URL**: http://test-cafe.lvh.me:3000
 - **Credentials**: cafe@testcafe.local / Test123!@#
 - **Status**: ✅ **WORKING**
 - **Result**: Successfully authenticates and redirects to /dashboard

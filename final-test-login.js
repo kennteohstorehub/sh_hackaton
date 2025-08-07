@@ -6,7 +6,7 @@ async function testTenantLogin(subdomain, email, password) {
   console.log(`\n🧪 Testing ${subdomain} login and dashboard access`);
   console.log('─'.repeat(60));
   
-  const baseUrl = `http://${subdomain}.lvh.me:3838`;
+  const baseUrl = `http://${subdomain}.lvh.me:3000`;
   const axiosInstance = axios.create({
     baseURL: baseUrl,
     withCredentials: true,
@@ -91,7 +91,7 @@ async function testBackOfficeLogin() {
   console.log(`\n🧪 Testing BackOffice login and dashboard access`);
   console.log('─'.repeat(60));
   
-  const baseUrl = 'http://admin.lvh.me:3838';
+  const baseUrl = 'http://admin.lvh.me:3000';
   const axiosInstance = axios.create({
     baseURL: baseUrl,
     withCredentials: true,

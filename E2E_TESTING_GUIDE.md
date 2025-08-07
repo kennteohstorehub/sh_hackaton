@@ -9,7 +9,7 @@ This comprehensive End-to-End (E2E) testing suite validates the complete queue m
 **Test Account (as specified in requirements):**
 - **Email:** `demo@smartqueue.com`
 - **Password:** `demo123456`
-- **Base URL:** `http://localhost:3838`
+- **Base URL:** `http://localhost:3000`
 
 ## 🧪 Test Coverage
 
@@ -132,7 +132,7 @@ The tests use the existing `playwright.config.js` which includes:
 
 ### Test Configuration
 Key settings in `tests/e2e/test-config.js`:
-- Base URL: `http://localhost:3838`
+- Base URL: `http://localhost:3000`
 - Timeouts: 30s default, 10s navigation
 - Test data generators for dynamic content
 
@@ -171,7 +171,7 @@ await publicPage.joinQueue({
 ## ⚠️ Prerequisites
 
 ### Server Requirements
-1. **Server Running:** Application must be running on `http://localhost:3838`
+1. **Server Running:** Application must be running on `http://localhost:3000`
 2. **Database Connected:** Database must be accessible and seeded with test data
 3. **Test Account:** `demo@smartqueue.com` account must exist with password `demo123456`
 

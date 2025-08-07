@@ -53,7 +53,7 @@ test.describe('Queue Notification System', () => {
         // Listen for console logs
         adminPage.on('console', msg => console.log('[ADMIN-PAGE]', msg.text()));
         
-        await adminPage.goto('http://localhost:3838/auth/login');
+        await adminPage.goto('http://localhost:3000/auth/login');
         await adminPage.waitForLoadState('networkidle');
         
         // Since auth is bypassed in dev, we should be redirected to dashboard
@@ -90,7 +90,7 @@ test.describe('Queue Notification System', () => {
             }
         });
         
-        await customerPage.goto(`http://localhost:3838/queue/${queueId}`);
+        await customerPage.goto(`http://localhost:3000/queue/${queueId}`);
         await customerPage.waitForLoadState('networkidle');
 
         // Fill in the join queue form

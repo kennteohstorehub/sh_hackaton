@@ -135,10 +135,10 @@ Request → Session Management → CSRF Protection → SuperAdmin Auth → Audit
 npm start
 
 # Visit SuperAdmin setup (if first time)
-http://localhost:3838/superadmin/auth/register
+http://localhost:3000/superadmin/auth/register
 
 # Or login if SuperAdmin exists
-http://localhost:3838/superadmin/auth/login
+http://localhost:3000/superadmin/auth/login
 ```
 
 ### 2. Test Credentials (for testing)

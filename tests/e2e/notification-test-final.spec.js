@@ -15,7 +15,7 @@ test.describe('WebChat Notification System - Final Test', () => {
         console.log('Test phone:', testPhone);
         
         // Step 1: Admin logs in
-        await page.goto('http://localhost:3838/auth/login');
+        await page.goto('http://localhost:3000/auth/login');
         await page.waitForURL(/.*dashboard/);
         console.log('✅ Admin logged in');
         
@@ -23,7 +23,7 @@ test.describe('WebChat Notification System - Final Test', () => {
         const customerPage = await context.newPage();
         customerPage.on('console', msg => console.log('[CUSTOMER]', msg.text()));
         
-        await customerPage.goto(`http://localhost:3838/queue/${queueId}`);
+        await customerPage.goto(`http://localhost:3000/queue/${queueId}`);
         await customerPage.fill('#customerName', 'Test Customer');
         await customerPage.fill('#customerPhone', testPhone);
         await customerPage.selectOption('#partySize', '2');

@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { LoginPage } = require('./pages/LoginPage');
 
 test.use({
-  baseURL: 'http://demo.lvh.me:3838'
+  baseURL: 'http://demo.lvh.me:3000'
 });
 
 test.describe('Tenant Name Display', () => {
@@ -48,7 +48,7 @@ test.describe('Tenant Name Display', () => {
 
   test('should display correct tenant name for different tenants', async ({ page }) => {
     // Navigate to delicious tenant (using the slug from the log)
-    await page.goto('http://delicious-restaurants.lvh.me:3838/auth/login');
+    await page.goto('http://delicious-restaurants.lvh.me:3000/auth/login');
     
     // We need to check if this tenant exists and has users
     // For now, let's just verify the login page loads correctly

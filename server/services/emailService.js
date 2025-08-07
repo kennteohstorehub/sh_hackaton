@@ -196,6 +196,129 @@ class EmailService {
   }
 
   /**
+   * Send welcome email to new merchant
+   */
+  async sendWelcomeEmail(data) {
+    const { to, name, businessName, loginUrl, trialDays = 14 } = data;
+    
+    const subject = `Welcome to StoreHub QMS - Your ${trialDays}-Day Trial Has Started!`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Open Sans', Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #FA8C16, #FF6B35); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background: white; padding: 30px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; }
+          .button { display: inline-block; padding: 12px 30px; background: #FA8C16; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+          .button:hover { background: #FF6B35; }
+          .features { background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0; }
+          .features li { margin: 10px 0; }
+          .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Welcome to StoreHub QMS!</h1>
+            <p style="font-size: 18px; margin: 0;">Your ${trialDays}-Day Free Trial Has Started</p>
+          </div>
+          
+          <div class="content">
+            <p>Hi ${name},</p>
+            
+            <p>Congratulations! Your queue management system for <strong>${businessName}</strong> is now ready to use.</p>
+            
+            <p>Your free trial includes:</p>
+            <div class="features">
+              <ul>
+                <li>✓ Full queue management features</li>
+                <li>✓ Real-time customer notifications</li>
+                <li>✓ Analytics and reporting</li>
+                <li>✓ Unlimited customers during trial</li>
+                <li>✓ Email support</li>
+              </ul>
+            </div>
+            
+            <p><strong>Your Login Details:</strong></p>
+            <p>
+              Email: ${to}<br>
+              Login URL: <a href="${loginUrl}">${loginUrl}</a>
+            </p>
+            
+            <div style="text-align: center;">
+              <a href="${loginUrl}" class="button">Go to Dashboard</a>
+            </div>
+            
+            <h3>Quick Start Guide:</h3>
+            <ol>
+              <li>Log in to your dashboard</li>
+              <li>Configure your business hours and queue settings</li>
+              <li>Download your QR code for customers</li>
+              <li>Start managing your queue!</li>
+            </ol>
+            
+            <p>Your trial will expire on <strong>${new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>. 
+            We'll send you a reminder before it expires.</p>
+            
+            <p>If you have any questions, feel free to reply to this email or contact our support team.</p>
+            
+            <p>Best regards,<br>The StoreHub QMS Team</p>
+          </div>
+          
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} StoreHub QMS. All rights reserved.</p>
+            <p>This email was sent to ${to}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const text = `
+Welcome to StoreHub QMS!
+
+Hi ${name},
+
+Congratulations! Your queue management system for ${businessName} is now ready to use.
+
+Your ${trialDays}-day free trial includes:
+- Full queue management features
+- Real-time customer notifications
+- Analytics and reporting
+- Unlimited customers during trial
+- Email support
+
+Your Login Details:
+Email: ${to}
+Login URL: ${loginUrl}
+
+Quick Start Guide:
+1. Log in to your dashboard
+2. Configure your business hours and queue settings
+3. Download your QR code for customers
+4. Start managing your queue!
+
+Your trial will expire on ${new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.
+We'll send you a reminder before it expires.
+
+If you have any questions, feel free to reply to this email.
+
+Best regards,
+The StoreHub QMS Team
+    `;
+    
+    return await this.sendEmail({
+      to,
+      subject,
+      html,
+      text
+    });
+  }
+
+  /**
    * Personalize email template
    */
   personalizeTemplate(template, data) {

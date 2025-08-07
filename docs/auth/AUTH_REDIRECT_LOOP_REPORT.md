@@ -6,7 +6,7 @@ A critical redirect loop exists in the authentication system that prevents users
 
 ## Test Environment
 
-- **URL**: http://localhost:3838
+- **URL**: http://localhost:3000
 - **Configuration**:
   - `USE_AUTH_BYPASS=false` (authentication required)
   - `NODE_ENV` not set (defaults to development)
@@ -20,10 +20,10 @@ When attempting to access any protected route, the system enters an infinite red
 
 ### Evidence
 ```
-REDIRECT: http://localhost:3838/dashboard -> /auth/login?redirect=%2Fdashboard
-REDIRECT: http://localhost:3838/auth/login?redirect=%2Fdashboard -> /dashboard
-REDIRECT: http://localhost:3838/dashboard -> /auth/login?redirect=%2Fdashboard
-REDIRECT: http://localhost:3838/auth/login?redirect=%2Fdashboard -> /dashboard
+REDIRECT: http://localhost:3000/dashboard -> /auth/login?redirect=%2Fdashboard
+REDIRECT: http://localhost:3000/auth/login?redirect=%2Fdashboard -> /dashboard
+REDIRECT: http://localhost:3000/dashboard -> /auth/login?redirect=%2Fdashboard
+REDIRECT: http://localhost:3000/auth/login?redirect=%2Fdashboard -> /dashboard
 ... (infinite loop continues)
 ```
 

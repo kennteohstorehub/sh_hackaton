@@ -4,7 +4,7 @@
  * Test Environment Validation Script
  * 
  * Validates that the test environment is ready for comprehensive E2E testing:
- * - Server is running on localhost:3838
+ * - Server is running on localhost:3000
  * - Test credentials work for authentication
  * - Essential endpoints are accessible
  * - Database connection is working
@@ -14,7 +14,7 @@ const https = require('https');
 const http = require('http');
 
 const TEST_CONFIG = {
-  baseUrl: 'http://localhost:3838',
+  baseUrl: 'http://localhost:3000',
   credentials: {
     email: 'demo@smartqueue.com',
     password: 'demo123456'
@@ -28,7 +28,7 @@ async function validateServer() {
   return new Promise((resolve, reject) => {
     const req = http.get(`${TEST_CONFIG.baseUrl}/`, (res) => {
       if (res.statusCode >= 200 && res.statusCode < 400) {
-        console.log('✅ Server is running on http://localhost:3838');
+        console.log('✅ Server is running on http://localhost:3000');
         resolve(true);
       } else {
         console.log(`❌ Server responded with status ${res.statusCode}`);
@@ -178,7 +178,7 @@ async function main() {
       console.log('');
       console.log('🔧 Troubleshooting steps:');
       console.log('   1. Start the server: npm start or node server/index.js');
-      console.log('   2. Verify it\'s running on http://localhost:3838');
+      console.log('   2. Verify it\'s running on http://localhost:3000');
       console.log('   3. Check server logs for any errors');
       console.log('   4. Ensure database is connected');
     }

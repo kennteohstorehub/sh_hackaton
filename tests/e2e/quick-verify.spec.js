@@ -5,7 +5,7 @@ test.describe('Quick Verification - Dashboard Functionality', () => {
     console.log('Starting quick verification test...');
     
     // 1. Login
-    await page.goto('http://localhost:3838/auth/login');
+    await page.goto('http://localhost:3000/auth/login');
     await page.fill('input[name="email"]', 'demo@storehub.com');
     await page.fill('input[name="password"]', 'demo123');
     await page.click('button[type="submit"]');
@@ -82,7 +82,7 @@ test.describe('Quick Verification - Dashboard Functionality', () => {
     }
     
     // 6. Test View Public Queue button
-    await page.goto('http://localhost:3838/dashboard/settings');
+    await page.goto('http://localhost:3000/dashboard/settings');
     await page.waitForLoadState('networkidle');
     
     const publicQueueBtn = page.locator('a:has-text("View Public Queue")').first();
@@ -107,7 +107,7 @@ test.describe('Quick Verification - Dashboard Functionality', () => {
     
     // 7. Test customer join queue
     const merchantId = 'clxa0zlb10000kxhzf7p0q8d9'; // Demo merchant ID
-    await page.goto(`http://localhost:3838/join-queue/${merchantId}`);
+    await page.goto(`http://localhost:3000/join-queue/${merchantId}`);
     await page.waitForLoadState('networkidle');
     
     // Verify page loads

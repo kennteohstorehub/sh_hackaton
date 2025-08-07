@@ -15,7 +15,7 @@
 ## 🔐 Access URLs & Credentials
 
 ### SuperAdmin Portal
-- **URL**: http://admin.lvh.me:3838
+- **URL**: http://admin.lvh.me:3000
 - **Email**: `superadmin@storehubqms.local`
 - **Password**: `SuperAdmin123!@#`
 - **Purpose**: Manage all tenants, view system-wide analytics
@@ -23,22 +23,22 @@
 ### Test Tenants
 
 #### 1. Demo Restaurant
-- **URL**: http://demo.lvh.me:3838
+- **URL**: http://demo.lvh.me:3000
 - **Admin**: `admin@demo.local` / `Demo123!@#`
 - **Features**: Basic plan, queue management
 
 #### 2. Test Cafe
-- **URL**: http://test-cafe.lvh.me:3838
+- **URL**: http://test-cafe.lvh.me:3000
 - **Admin**: `cafe@testcafe.local` / `Test123!@#`
 - **Features**: Basic plan, analytics enabled
 
 #### 3. Test Restaurant 1
-- **URL**: http://test-restaurant-1.lvh.me:3838
+- **URL**: http://test-restaurant-1.lvh.me:3000
 - **Admin**: `test1@test1.com` / `Test123!@#`
 - **Features**: For testing data isolation
 
 #### 4. Test Restaurant 2
-- **URL**: http://test-restaurant-2.lvh.me:3838
+- **URL**: http://test-restaurant-2.lvh.me:3000
 - **Admin**: `test2@test2.com` / `Test123!@#`
 - **Features**: For cross-tenant security testing
 
@@ -47,7 +47,7 @@
 ### 1. Test SuperAdmin Functions
 ```bash
 # Open SuperAdmin portal
-open http://admin.lvh.me:3838
+open http://admin.lvh.me:3000
 
 # Login with: superadmin@storehubqms.local / SuperAdmin123!@#
 # You should see:
@@ -59,8 +59,8 @@ open http://admin.lvh.me:3838
 ### 2. Test Tenant Isolation
 ```bash
 # Open two different tenants in separate browsers/incognito
-open http://demo.lvh.me:3838
-open http://test-cafe.lvh.me:3838
+open http://demo.lvh.me:3000
+open http://test-cafe.lvh.me:3000
 
 # Login to each with their respective credentials
 # Verify you can't see data from the other tenant
@@ -69,11 +69,11 @@ open http://test-cafe.lvh.me:3838
 ### 3. Test Subdomain Routing
 ```bash
 # Try accessing without subdomain
-open http://lvh.me:3838
+open http://lvh.me:3000
 # Should show "no tenant" message
 
 # Try invalid subdomain
-open http://invalid.lvh.me:3838
+open http://invalid.lvh.me:3000
 # Should show "tenant not found" error
 ```
 

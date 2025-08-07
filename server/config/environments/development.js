@@ -5,14 +5,14 @@
 module.exports = {
   // Development-specific overrides
   server: {
-    port: 3838,
-    url: 'http://localhost:3838'
+    port: 3000,
+    url: 'http://localhost:3000'
   },
 
   // Less strict security in development
   security: {
     cors: {
-      origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3838'],
+      origin: ['http://localhost:3000', 'http://localhost:3000'],
       credentials: true
     }
   },

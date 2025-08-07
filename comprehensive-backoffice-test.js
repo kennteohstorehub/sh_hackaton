@@ -15,7 +15,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-const BASE_URL = 'http://localhost:3838';
+const BASE_URL = 'http://localhost:3000';
 const BACKOFFICE_URL = `${BASE_URL}/backoffice`;
 
 // Test results tracking

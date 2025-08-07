@@ -104,18 +104,18 @@ The BackOffice system has been successfully implemented and verified. All authen
 
 ### How to Access BackOffice
 1. **Start the server**: `./quick-start.sh`
-2. **Open browser**: Navigate to `http://localhost:3838/backoffice/login`
+2. **Open browser**: Navigate to `http://localhost:3000/backoffice/login`
 3. **Login with credentials**:
    - Username: `backoffice@storehubqms.local`
    - Password: `backoffice123456`
 4. **Access dashboard**: Automatically redirected after successful login
 
 ### Available URLs
-- **Login**: `http://localhost:3838/backoffice/login`
-- **Dashboard**: `http://localhost:3838/backoffice/dashboard`
-- **Audit Logs**: `http://localhost:3838/backoffice/audit-logs`
-- **Settings**: `http://localhost:3838/backoffice/settings`
-- **Tenants**: `http://localhost:3838/backoffice/tenants`
+- **Login**: `http://localhost:3000/backoffice/login`
+- **Dashboard**: `http://localhost:3000/backoffice/dashboard`
+- **Audit Logs**: `http://localhost:3000/backoffice/audit-logs`
+- **Settings**: `http://localhost:3000/backoffice/settings`
+- **Tenants**: `http://localhost:3000/backoffice/tenants`
 
 ## SYSTEM ARCHITECTURE
 

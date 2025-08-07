@@ -12,13 +12,13 @@ The system implements a **dual-context authentication architecture**:
 
 1. **BackOffice Context** (`admin.*`)
    - For system administrators managing the entire platform
-   - Accessed via `admin.domain.com` (or `admin.lvh.me:3838` in development)
+   - Accessed via `admin.domain.com` (or `admin.lvh.me:3000` in development)
    - Uses `BackOfficeUser` model
    - Session type: `backoffice`
 
 2. **Tenant Context** (`tenant-slug.*`)
    - For tenant users accessing their organization's QMS
-   - Accessed via `tenant-slug.domain.com` (e.g., `demo.lvh.me:3838`)
+   - Accessed via `tenant-slug.domain.com` (e.g., `demo.lvh.me:3000`)
    - Uses `TenantUser` and `Merchant` models
    - Session type: `tenant`
 
@@ -215,7 +215,7 @@ model Merchant {
 ## Test Accounts
 
 ### BackOffice Administrator
-- **URL**: http://admin.lvh.me:3838
+- **URL**: http://admin.lvh.me:3000
 - **Email**: backoffice@storehubqms.local
 - **Password**: BackOffice123!@#
 - **Access**: Full system administration
@@ -223,13 +223,13 @@ model Merchant {
 ### Tenant Users
 
 #### Demo Restaurant
-- **URL**: http://demo.lvh.me:3838
+- **URL**: http://demo.lvh.me:3000
 - **Email**: admin@demo.local
 - **Password**: Demo123!@#
 - **Tenant**: Demo Restaurant
 
 #### Test Cafe
-- **URL**: http://test-cafe.lvh.me:3838
+- **URL**: http://test-cafe.lvh.me:3000
 - **Email**: cafe@testcafe.local
 - **Password**: Test123!@#
 - **Tenant**: Test Cafe

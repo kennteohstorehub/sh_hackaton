@@ -2,7 +2,7 @@ const { test, expect, chromium } = require('@playwright/test');
 const path = require('path');
 
 // Test configuration
-const BASE_URL = 'http://localhost:3838';
+const BASE_URL = 'http://localhost:3000';
 const TEST_CREDENTIALS = {
   email: 'test@example.com',
   password: 'password123'
@@ -363,5 +363,5 @@ test.describe('Authentication System Comprehensive Testing', () => {
 
 // Run the tests
 console.log('\n=== Starting Comprehensive Authentication Tests ===\n');
-console.log('Test server should be running at http://localhost:3838');
+console.log('Test server should be running at http://localhost:3000');
 console.log('Screenshots will be saved to ./screenshots/\n');

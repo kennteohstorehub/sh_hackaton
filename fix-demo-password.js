@@ -62,7 +62,7 @@ async function fixDemoPassword() {
         console.log('📧 Updated Login Credentials:');
         console.log('   Email: admin@demo.local');
         console.log('   Password: Password123!');
-        console.log('   URL: http://demo.lvh.me:3838');
+        console.log('   URL: http://demo.lvh.me:3000');
         console.log('');
         console.log('💡 The user can now login with their expected password.');
 

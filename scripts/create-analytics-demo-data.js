@@ -223,7 +223,7 @@ async function createAnalyticsData() {
         });
         
         console.log('\n🎉 Demo analytics data created successfully!');
-        console.log('🔗 Visit http://localhost:3001/dashboard/analytics to see the data visualization');
+        console.log('🔗 Visit http://localhost:3000/dashboard/analytics to see the data visualization');
         
     } catch (error) {
         console.error('❌ Error creating analytics data:', error);

@@ -80,8 +80,8 @@ async function restoreDemoMerchant() {
         
         console.log('🎉 Dashboard restored! The AUTH_BYPASS mode will work correctly now.\n');
         console.log('📱 Access:');
-        console.log('   Dashboard: http://localhost:3838/dashboard');
-        console.log(`   Customer queue: http://localhost:3838/queue/${DEMO_MERCHANT_ID}\n`);
+        console.log('   Dashboard: http://localhost:3000/dashboard');
+        console.log(`   Customer queue: http://localhost:3000/queue/${DEMO_MERCHANT_ID}\n`);
         
     } catch (error) {
         console.error('❌ Error restoring merchant:', error);

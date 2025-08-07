@@ -14,7 +14,7 @@ test.describe('Queue Management System - Complete E2E Flow', () => {
   const TEST_CREDENTIALS = {
     email: 'demo@smartqueue.com',
     password: 'demo123456',
-    baseUrl: 'http://localhost:3838'
+    baseUrl: 'http://localhost:3000'
   };
 
   test.beforeEach(async ({ page }) => {

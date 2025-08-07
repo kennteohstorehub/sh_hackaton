@@ -759,35 +759,8 @@
                     sessionStorage.setItem('queueNumber', data.queueNumber);
                     sessionStorage.setItem('verificationCode', data.verificationCode);
                     
-                    // Show success message
-                    const successHtml = `
-                        <div class="success-container">
-                            <div class="success-icon">
-                                <svg width="40" height="40" fill="none" stroke="var(--success-green)" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <h2 style="font-size: var(--heading-3); margin-bottom: var(--space-2);">You're in the Queue!</h2>
-                            <div class="queue-number-display">
-                                #${data.queueNumber}
-                            </div>
-                            <p style="color: var(--gray-600); margin-bottom: var(--space-3);">
-                                Estimated wait time: <strong>${data.estimatedWaitTime || 15} minutes</strong>
-                            </p>
-                            <p style="color: var(--gray-600); margin-bottom: var(--space-5);">
-                                We'll notify you via SMS when it's almost your turn.
-                            </p>
-                            <a href="/queue-status/<%= queueId %>/${data.queueEntry.id}" class="btn btn-primary btn-block">
-                                View Queue Status
-                            </a>
-                        </div>
-                    `;
-                    
-                    // Replace form with success message
-                    document.querySelector('.join-form-container').innerHTML = successHtml;
-                    
-                    // Scroll to success message
-                    document.querySelector('.success-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Skip overlay and redirect directly to queue status page
+                    window.location.href = `/queue-status/<%= queueId %>/${data.queueEntry.id}`;
                     
                 } else {
                     if (typeof StoreHubDS !== 'undefined') {

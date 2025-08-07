@@ -53,7 +53,7 @@ describe('Tenant Resolver Middleware Tests', () => {
     // Setup mock request object
     mockReq = {
       hostname: 'demo.lvh.me',
-      get: jest.fn().mockReturnValue('demo.lvh.me:3838'),
+      get: jest.fn().mockReturnValue('demo.lvh.me:3000'),
       session: {},
       user: null,
       tenant: null,
@@ -191,7 +191,7 @@ describe('Tenant Resolver Middleware Tests', () => {
         expect(mockRes.status).toHaveBeenCalledWith(404);
         expect(mockRes.render).toHaveBeenCalledWith('errors/no-subdomain', {
           message: 'Please access the system through your organization\'s subdomain',
-          devMessage: 'Try using admin.lvh.me:3838 for BackOffice or demo.lvh.me:3838 for demo tenant'
+          devMessage: 'Try using admin.lvh.me:3000 for BackOffice or demo.lvh.me:3000 for demo tenant'
         });
         expect(mockNext).not.toHaveBeenCalled();
       });

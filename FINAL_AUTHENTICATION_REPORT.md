@@ -27,25 +27,25 @@ These URLs bypass the login form to test functionality directly:
 
 1. **Regular Tenant Access**:
    ```
-   http://localhost:3838/test/test-auth/merchant
+   http://localhost:3000/test/test-auth/merchant
    ```
    This sets up a session as merchant and redirects to dashboard
 
 2. **SuperAdmin Access**:
    ```
-   http://localhost:3838/test/test-auth/superadmin
+   http://localhost:3000/test/test-auth/superadmin
    ```
    This sets up a SuperAdmin session and redirects to SuperAdmin dashboard
 
 ### Method 2: Regular Login (Currently Has Issues)
 
 1. **SuperAdmin Login**:
-   - URL: http://localhost:3838/superadmin/auth/login
+   - URL: http://localhost:3000/superadmin/auth/login
    - Credentials: `superadmin@storehubqms.local` / `SuperAdmin123!@#`
    - Status: Login form works, but redirect may fail
 
 2. **Regular Tenant Login**:
-   - URL: http://localhost:3838/auth/login
+   - URL: http://localhost:3000/auth/login
    - Credentials: `admin@demo.local` / `Demo123!@#`
    - Status: Login form works, but redirect may fail
 
@@ -76,7 +76,7 @@ To fully fix the authentication system:
 ## 🔍 How to Verify It's Working
 
 1. **Server Running**: Check console for "server running on port 3838"
-2. **Test Bypass Works**: Visit http://localhost:3838/test/test-auth/merchant
+2. **Test Bypass Works**: Visit http://localhost:3000/test/test-auth/merchant
 3. **Dashboard Loads**: After bypass, you should see the dashboard without errors
 4. **No 500 Errors**: Dashboard should load without internal server errors
 

@@ -195,3 +195,6 @@ test-output.log
 
 # Build version tracking (if generated)
 BUILD_VERSION.txt
+
+# Uploaded files
+public/uploads/

@@ -1,7 +1,7 @@
 # Authentication System - Comprehensive Test Report
 
 **Date:** July 30, 2025  
-**Environment:** Development (localhost:3838)  
+**Environment:** Development (localhost:3000)  
 **Test Framework:** Manual E2E Testing with Automated Scripts  
 **Build Version:** 2025-01-24-v8
 

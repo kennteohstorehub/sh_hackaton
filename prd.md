@@ -1,10 +1,11 @@
 # StoreHub Queue Management System - Product Requirements Document (PRD)
 
 ## Document Information
-- **Version**: 3.0
-- **Date**: August 2025
+- **Version**: 4.0
+- **Date**: January 2025
 - **Status**: Active Development
 - **Platform URL**: *.storehubqms.com
+- **Last Updated**: Aligned with current implementation
 
 ---
 
@@ -20,6 +21,8 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
   - Support tiered subscription models with feature gating
   - Reduce operational overhead by 60% through automation
   - Scale to support thousands of tenants on shared infrastructure
+  - Provide comprehensive analytics with 6-month data retention
+  - Enable real-time queue monitoring and customer flow analysis
 
 ### 1.3 Target Market
 - **Primary**: Malaysian restaurants in shopping malls and commercial areas
@@ -38,7 +41,7 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
 - **Subdomain-Based Multi-Tenancy**: Each tenant gets `{tenant}.storehubqms.com`
 - **Automated Provisioning**: < 2 minutes from signup to operational subdomain
 - **WebChat Integration**: Real-time browser-based communication
-- **SuperAdmin Control Panel**: Comprehensive tenant management
+- **BackOffice Control Panel**: Comprehensive merchant management
 - **No App Required**: Pure web-based solution
 - **Enterprise Security**: Complete tenant isolation with audit trails
 
@@ -68,7 +71,7 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
 │  │            Tenant Resolution Middleware                   │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │         Queue Management    |    SuperAdmin Portal       │   │
+│  │         Queue Management    |    BackOffice Portal       │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
@@ -79,16 +82,17 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
 ```
 
 ### 3.2 URL Structure
-- **SuperAdmin Portal**: `admin.storehubqms.com`
-- **Tenant Dashboard**: `{tenant}.storehubqms.com/dashboard`
-- **Customer Queue**: `{tenant}.storehubqms.com/queue`
+- **BackOffice Portal**: `admin.storehubqms.com` or `/backoffice`
+- **Merchant Dashboard**: `{merchant}.storehubqms.com/dashboard`
+- **Customer Queue**: `{merchant}.storehubqms.com/queue`
+- **Analytics API**: `/api/analytics`
 - **Public API**: `api.storehubqms.com`
 
 ---
 
 ## 4. User Personas
 
-### 4.1 SuperAdmin (Platform Administrator)
+### 4.1 BackOffice User (Platform Administrator)
 - **Profile**: Technical administrator managing the entire platform
 - **Responsibilities**: 
   - Create and manage tenant accounts
@@ -132,7 +136,7 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
 
 ## 5. Core Features
 
-### 5.1 SuperAdmin Control Panel
+### 5.1 BackOffice Control Panel
 
 #### 5.1.1 Tenant Management
 - **Automated Provisioning**
@@ -162,11 +166,28 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
 | Enterprise | Custom | Custom | All Features + SLA | Custom |
 
 #### 5.1.3 Analytics Dashboard
-- System-wide metrics
-- Tenant usage statistics
-- Revenue tracking
-- Growth trends
-- Performance monitoring
+- **Real-time Metrics**:
+  - Total customers served
+  - Average wait times
+  - Queue performance indicators
+  - Success/no-show/withdrawal rates
+- **Historical Analysis**:
+  - Daily/weekly/monthly trends
+  - Peak hour identification
+  - Customer flow patterns
+  - 6-month data retention policy
+- **Export Capabilities**:
+  - JSON format for API integration
+  - CSV format for spreadsheet analysis
+  - Customizable date ranges
+- **Queue-specific Analytics**:
+  - Individual queue performance
+  - Hourly distribution charts
+  - Service time optimization
+- **Outcome Analytics**:
+  - Served customer percentage
+  - No-show rate tracking
+  - Withdrawal rate analysis
 
 ### 5.2 Tenant Features
 
@@ -191,11 +212,6 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
   - Persistent chat interface
   - Session recovery
   - Typing indicators
-
-- **WhatsApp Business**
-  - Template messages
-  - Media support
-  - Two-way communication
 
 - **Browser Push**
   - Web push notifications
@@ -231,13 +247,15 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
 - **Hosting**: Render.com with auto-scaling
 - **Database**: PostgreSQL on Neon with Prisma ORM
 - **Backend**: Node.js + Express.js
-- **Frontend**: EJS templates + Vanilla JS
-- **Real-time**: Socket.IO with Redis adapter
+- **Frontend**: EJS templates + StoreHub Design System
+- **CSS Framework**: Custom StoreHub Design System (Open Sans typography)
+- **Real-time**: Socket.IO with WebSocket support
 - **Security**: Helmet.js, CSRF, rate limiting
 - **Sessions**: express-session with PostgreSQL store
-- **Email**: SendGrid/AWS SES
+- **Email**: SendGrid/AWS SES via unified emailService
 - **File Storage**: Cloudinary
-- **Monitoring**: Custom analytics + external APM
+- **Analytics**: Custom implementation with 6-month retention
+- **Monitoring**: Custom analytics + audit logging
 
 ### 6.2 Performance Requirements
 - Page load time: < 2 seconds
@@ -259,55 +277,15 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
 ## 7. Implementation Roadmap
 
 ### Phase 1: Foundation (Completed) ✅
-- Basic queue management
-- PostgreSQL migration
-- WebChat implementation
-- Session recovery
-- Multi-tenant middleware
-
-### Phase 2: SuperAdmin Portal (Current) 🚧
-- Tenant CRUD operations
-- Subdomain provisioning
-- User invitation system
-- Basic analytics
-- Billing integration
-
-### Phase 3: Advanced Features (Q3 2025)
-- SMS notifications
-- Advanced analytics
-- API marketplace
-- Mobile apps
-- Multi-location support
-
-### Phase 4: Enterprise (Q4 2025)
-- White-label options
-- Custom integrations
-- Advanced reporting
-- AI-powered insights
-- Global expansion
-
----
-
-## 8. Success Metrics
-
-### 8.1 Business Metrics
-- Active tenants: 500+ by end of 2025
-- Monthly Recurring Revenue: $50,000+
-- Tenant churn rate: < 5%
-- Customer satisfaction: > 95%
-
-### 8.2 Technical Metrics
-- System uptime: 99.9%
-- Average response time: < 200ms
-- Subdomain provisioning: < 30 seconds
-- Zero security incidents
-
-### 8.3 User Metrics
-- Tenant onboarding time: < 2 minutes
-- Daily active users: 10,000+
-- Queue completion rate: > 90%
-- Support ticket reduction: 60%
-
+- Basic queue management with drag-and-drop interface
+- PostgreSQL migration with Prisma ORM
+- WebChat implementation with real-time messaging
+- Session recovery and management
+- Multi-tenant middleware with subdomain routing
+- BackOffice portal with tenant management
+- Analytics system with dashboard and exports
+- StoreHub Design System implementation
+- Authentication system with role-based access
 ---
 
 ## 9. Risk Analysis
@@ -327,22 +305,40 @@ StoreHub Queue Management System is a comprehensive multi-tenant SaaS platform d
 ## 10. Appendices
 
 ### A. Database Schema Overview
-- Multi-tenant architecture with tenant_id isolation
-- Comprehensive audit logging
+- Multi-tenant architecture with tenant-based isolation
+- BackOffice user management system
+- Queue analytics with event tracking
+- WebChat message persistence
+- Notification logging system
+- Comprehensive audit logging (BackOfficeAuditLog)
 - Optimized indexes for performance
-- Scalable schema design
+- Scalable schema design with Prisma ORM
 
 ### B. API Structure
 - RESTful design principles
+- Analytics API endpoints:
+  - `/api/analytics/dashboard` - Dashboard metrics
+  - `/api/analytics/queue/:id` - Queue-specific analytics
+  - `/api/analytics/export` - Data export (JSON/CSV)
+- BackOffice API endpoints:
+  - `/api/backoffice/tenants` - Tenant management
+  - `/api/backoffice/users` - User management
+  - `/api/backoffice/audit-logs` - Audit trail
 - Consistent error handling
 - Rate limiting and throttling
-- Comprehensive documentation
+- Development auth bypass for testing
 
 ### C. UI/UX Guidelines
 - Mobile-first responsive design
+- StoreHub Design System implementation:
+  - Primary Orange (#FA8C16)
+  - Open Sans typography
+  - Modern minimalist interface
+  - Component-based architecture
 - Accessibility compliance (WCAG 2.1)
-- Consistent design system
+- Dark mode support for BackOffice
 - Performance-optimized assets
+- Real-time UI updates via WebSockets
 
 ---
 

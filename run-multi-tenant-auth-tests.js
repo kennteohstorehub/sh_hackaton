@@ -81,7 +81,7 @@ class MultiTenantAuthTestRunner {
   async checkServerHealth() {
     return new Promise((resolve, reject) => {
       const http = require('http');
-      const req = http.get('http://localhost:3838/health', (res) => {
+      const req = http.get('http://localhost:3000/health', (res) => {
         if (res.statusCode === 200) {
           resolve();
         } else {
@@ -401,10 +401,10 @@ class MultiTenantAuthTestRunner {
         testRunner: 'custom-multi-tenant-auth-runner'
       },
       testConfiguration: {
-        backofficeUrl: 'http://admin.lvh.me:3838',
+        backofficeUrl: 'http://admin.lvh.me:3000',
         tenantUrls: [
-          'http://demo.lvh.me:3838',
-          'http://test-cafe.lvh.me:3838'
+          'http://demo.lvh.me:3000',
+          'http://test-cafe.lvh.me:3000'
         ],
         databaseUrl: process.env.DATABASE_URL ? 'configured' : 'missing',
         sessionSecret: process.env.SESSION_SECRET ? 'configured' : 'missing'

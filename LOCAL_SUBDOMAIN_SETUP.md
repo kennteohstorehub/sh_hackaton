@@ -20,15 +20,15 @@ Enter your password when prompted.
 
 After adding hosts entries, access:
 
-1. BackOffice: http://admin.lvh.me:3838
+1. BackOffice: http://admin.lvh.me:3000
    - Login: backoffice@storehubqms.local
    - Password: BackOffice123\!@#
 
-2. Demo Tenant: http://demo.lvh.me:3838
+2. Demo Tenant: http://demo.lvh.me:3000
    - Login: admin@demo.local
    - Password: Demo123\!@#
 
-3. Test Cafe: http://test-cafe.lvh.me:3838
+3. Test Cafe: http://test-cafe.lvh.me:3000
    - Login: cafe@testcafe.local
    - Password: Test123\!@#
 

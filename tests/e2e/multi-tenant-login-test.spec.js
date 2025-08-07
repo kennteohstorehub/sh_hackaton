@@ -5,7 +5,7 @@ test.describe('Multi-Tenant Authentication Tests', () => {
   const testScenarios = [
     {
       name: 'BackOffice Login',
-      url: 'http://admin.lvh.me:3838',
+      url: 'http://admin.lvh.me:3000',
       email: 'backoffice@storehubqms.local',
       password: 'BackOffice123!@#',
       expectedTitle: 'BackOffice Dashboard',
@@ -13,7 +13,7 @@ test.describe('Multi-Tenant Authentication Tests', () => {
     },
     {
       name: 'Demo Tenant Login',
-      url: 'http://demo.lvh.me:3838',
+      url: 'http://demo.lvh.me:3000',
       email: 'admin@demo.local',
       password: 'Demo123!@#',
       expectedTitle: 'Queue Management System',
@@ -21,7 +21,7 @@ test.describe('Multi-Tenant Authentication Tests', () => {
     },
     {
       name: 'Test Cafe Tenant Login',
-      url: 'http://test-cafe.lvh.me:3838',
+      url: 'http://test-cafe.lvh.me:3000',
       email: 'cafe@testcafe.local',
       password: 'Test123!@#',
       expectedTitle: 'Queue Management System',
@@ -231,7 +231,7 @@ test.describe('Multi-Tenant Authentication Tests', () => {
     try {
       // Login to demo tenant in first context
       console.log('1. Logging into demo tenant');
-      await page1.goto('http://demo.lvh.me:3838');
+      await page1.goto('http://demo.lvh.me:3000');
       await page1.fill('input[type="email"], input[name="email"]', 'admin@demo.local');
       await page1.fill('input[type="password"], input[name="password"]', 'Demo123!@#');
       await page1.click('button[type="submit"], input[type="submit"]');
@@ -239,7 +239,7 @@ test.describe('Multi-Tenant Authentication Tests', () => {
       
       // Login to test-cafe tenant in second context  
       console.log('2. Logging into test-cafe tenant');
-      await page2.goto('http://test-cafe.lvh.me:3838');
+      await page2.goto('http://test-cafe.lvh.me:3000');
       await page2.fill('input[type="email"], input[name="email"]', 'cafe@testcafe.local');
       await page2.fill('input[type="password"], input[name="password"]', 'Test123!@#');
       await page2.click('button[type="submit"], input[type="submit"]');

@@ -6,7 +6,7 @@ This document provides a comprehensive testing analysis of the StoreHub Queue Ma
 
 ## Test Environment
 
-- **Application URL**: http://localhost:3838
+- **Application URL**: http://localhost:3000
 - **Test Date**: August 4, 2025
 - **Testing Method**: Automated and Manual Testing
 - **Browser**: Chromium-based browsers

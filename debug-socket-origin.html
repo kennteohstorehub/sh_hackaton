@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.io Debug</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Socket.io Debug Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(msg) {
+            const p = document.createElement('p');
+            p.textContent = msg;
+            results.appendChild(p);
+            console.log(msg);
+        }
+        
+        log('Current origin: ' + window.location.origin);
+        log('Current hostname: ' + window.location.hostname);
+        log('Current port: ' + window.location.port);
+        
+        // Test 1: Default connection
+        log('\nTest 1: Creating socket with io()...');
+        try {
+            const socket1 = io();
+            log('Socket 1 URL: ' + socket1.io.uri);
+            socket1.disconnect();
+        } catch (e) {
+            log('Error with io(): ' + e.message);
+        }
+        
+        // Test 2: Explicit origin
+        log('\nTest 2: Creating socket with io(window.location.origin)...');
+        try {
+            const socket2 = io(window.location.origin);
+            log('Socket 2 URL: ' + socket2.io.uri);
+            socket2.disconnect();
+        } catch (e) {
+            log('Error with io(window.location.origin): ' + e.message);
+        }
+        
+        // Test 3: Check io.uri default
+        log('\nTest 3: Checking io.uri...');
+        if (typeof io !== 'undefined' && io.uri) {
+            log('Default io.uri: ' + io.uri);
+        }
+        
+        // Test 4: Check for any global socket config
+        log('\nTest 4: Checking for global configs...');
+        if (typeof SOCKET_URL !== 'undefined') {
+            log('Found SOCKET_URL: ' + SOCKET_URL);
+        }
+        if (typeof API_URL !== 'undefined') {
+            log('Found API_URL: ' + API_URL);
+        }
+    </script>
+</body>
+</html>

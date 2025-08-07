@@ -8,7 +8,7 @@ test.describe('API Integration Tests', () => {
   test.beforeAll(async ({ playwright }) => {
     // Create API context
     apiContext = await playwright.request.newContext({
-      baseURL: process.env.BASE_URL || 'http://localhost:3838',
+      baseURL: process.env.BASE_URL || 'http://localhost:3000',
       extraHTTPHeaders: {
         'Content-Type': 'application/json',
       },

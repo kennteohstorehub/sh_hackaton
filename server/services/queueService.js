@@ -205,7 +205,9 @@ class QueueService {
       include: {
         entries: {
           where: {
-            status: 'waiting'
+            status: {
+              in: ['waiting', 'called']  // Include both waiting and called customers
+            }
           },
           orderBy: {
             position: 'asc'
@@ -500,19 +502,24 @@ class QueueService {
         }
       }),
       // Calculate average wait time
-      prisma.$queryRaw`
-        SELECT AVG(EXTRACT(EPOCH FROM ("completedAt" - "joinedAt"))/60) as avg_wait
-        FROM "QueueEntry"
-        WHERE "queueId" = ${queueId}
-        AND status = 'completed'
-        AND "completedAt" >= CURRENT_DATE
-      `
+      prisma.queueEntry.aggregate({
+        where: {
+          queueId,
+          status: 'completed',
+          completedAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0))
+          }
+        },
+        _avg: {
+          estimatedWaitTime: true
+        }
+      })
     ]);
 
     const stats = {
       waitingCount,
       servedToday,
-      averageWaitTime: avgWaitTime[0]?.avg_wait || 0
+      averageWaitTime: avgWaitTime._avg?.estimatedWaitTime || 15
     };
 
     TenantSecurityLogger.info('QUEUE_STATS_RETRIEVED', {

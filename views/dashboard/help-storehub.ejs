@@ -8,6 +8,8 @@
     <!-- StoreHub Design System -->
     <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
     <link rel="stylesheet" href="/css/storehub-help.css?v=<%= Date.now() %>">
+    <!-- Unified Header CSS - Load last to ensure precedence -->
+    <link rel="stylesheet" href="/css/header-unified.css?v=<%= Date.now() %>">
     
     <style>
         /* Additional page-specific styles */
@@ -29,6 +31,7 @@
 <body>
     <!-- Header -->
     <%- include('../partials/header-storehub', { 
+        activePage: 'help',
         title: 'Help & FAQ',
         merchant: locals.merchant,
         queues: locals.queues || [],
@@ -106,23 +109,23 @@
             </h2>
             
             <div class="help-card">
-                <h3>How to Set Up Your First Queue</h3>
+                <h3>How to Set Up Your Queue</h3>
                 <ol class="step-list">
-                    <li>From your dashboard, click "Create New Queue" to create your first queue</li>
-                    <li>Enter a name for your queue (e.g., "Main Dining", "Takeout", "Bar Service")</li>
+                    <li>Go to Settings to configure your queue name and business details</li>
                     <li>Set your average service time per customer</li>
-                    <li>Configure your maximum queue size if needed</li>
-                    <li>Save your queue and it will appear on your dashboard</li>
+                    <li>Configure your maximum queue capacity</li>
+                    <li>Set your operating hours</li>
+                    <li>Start your queue from the dashboard when ready</li>
                 </ol>
             </div>
             
             <div class="help-card">
                 <h3>Share Your Queue with Customers</h3>
                 <ol class="step-list">
-                    <li>Go to Settings → QR Code tab</li>
-                    <li>Download the QR code poster (PDF)</li>
+                    <li>Go to Settings → QR Code section</li>
+                    <li>Download the QR code poster</li>
                     <li>Print and display it at your business location</li>
-                    <li>Customers can scan to join your queue instantly</li>
+                    <li>Share your queue link with customers</li>
                 </ol>
             </div>
         </div>
@@ -138,7 +141,7 @@
             
             <div class="help-card">
                 <h3>How Customers Join Your Queue</h3>
-                <p>Customers have multiple ways to join your queue:</p>
+                <p>Customers can join your queue through:</p>
                 <ul class="feature-list">
                     <li>
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +159,29 @@
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span><strong>Walk-in:</strong> Add manually through dashboard</span>
+                        <span><strong>Staff Addition:</strong> Staff can add customers (mobile number required)</span>
+                    </li>
+                </ul>
+                
+                <h4 style="margin-top: 1.5rem;">Required Information</h4>
+                <ul class="feature-list">
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Mobile phone number (required for notifications)</span>
+                    </li>
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Party size (1-20 people)</span>
+                    </li>
+                    <li>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Special requests or notes (optional)</span>
                     </li>
                 </ul>
             </div>
@@ -215,7 +240,7 @@
                 
                 <div class="faq-item">
                     <h4>Remove from Queue</h4>
-                    <p>If a customer doesn't show up or cancels, click the X button to remove them from the queue.</p>
+                    <p>If a customer doesn't show up or cancels, click the remove button to take them out of the queue.</p>
                 </div>
                 
                 <div class="faq-item">
@@ -224,8 +249,8 @@
                 </div>
                 
                 <div class="faq-item">
-                    <h4>Add Walk-in Customer</h4>
-                    <p>Click "Add Customer" to manually add walk-in customers who don't have a smartphone.</p>
+                    <h4>Add Customer Manually</h4>
+                    <p>Click "Add Customer" to manually add customers. You'll need their mobile number and party size.</p>
                 </div>
                 
                 <div class="faq-item">
@@ -271,8 +296,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h4>Customer Satisfaction</h4>
-                    <p>AI-powered sentiment analysis of customer messages shows satisfaction trends.</p>
+                    <h4>Queue Performance</h4>
+                    <p>Track how efficiently you're serving customers and identify patterns to improve service.</p>
                 </div>
                 
                 <div class="analytics-card">
@@ -281,8 +306,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                         </svg>
                     </div>
-                    <h4>Queue Performance</h4>
-                    <p>Compare performance across different queues and time periods to identify trends.</p>
+                    <h4>Data Export</h4>
+                    <p>Export your analytics data in CSV or JSON format for detailed analysis and reporting.</p>
                 </div>
             </div>
         </div>
@@ -299,13 +324,13 @@
             <div class="faq-accordion">
                 <div class="faq-accordion-item">
                     <button class="faq-question" onclick="toggleFaq(this)">
-                        <span>How many queues can I create?</span>
+                        <span>How many queues can I have?</span>
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </button>
                     <div class="faq-answer">
-                        <p>You can create unlimited queues. Many businesses use separate queues for different services (e.g., dine-in, takeout, bar service).</p>
+                        <p>Each merchant account has one queue that you can configure and customize in Settings.</p>
                     </div>
                 </div>
                 
@@ -329,7 +354,7 @@
                         </svg>
                     </button>
                     <div class="faq-answer">
-                        <p>Yes! You can manually add walk-in customers through your dashboard by clicking "Add Customer".</p>
+                        <p>Staff can add customers manually through the dashboard, but a mobile phone number is required for all customers to receive notifications.</p>
                     </div>
                 </div>
                 
@@ -341,7 +366,7 @@
                         </svg>
                     </button>
                     <div class="faq-answer">
-                        <p>Create separate merchant accounts for each location, or use different queues with location-specific names.</p>
+                        <p>Each location needs its own merchant account with a separate queue.</p>
                     </div>
                 </div>
                 
@@ -359,13 +384,37 @@
                 
                 <div class="faq-accordion-item">
                     <button class="faq-question" onclick="toggleFaq(this)">
-                        <span>How do I export my data?</span>
+                        <span>How do customers receive notifications?</span>
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </button>
                     <div class="faq-answer">
-                        <p>Go to Analytics and click the Export button. You can download your data in CSV or JSON format for further analysis.</p>
+                        <p>Customers receive browser push notifications and see real-time updates on their queue status page. They should keep the browser tab open or allow notifications for the best experience.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-accordion-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>What information do customers need to provide?</span>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Customers must provide a mobile phone number and party size (1-20 people). They can optionally add special requests or notes.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-accordion-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>How do I export my analytics data?</span>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Go to Analytics and click the Export button. You can download your data in CSV or JSON format for detailed analysis.</p>
                     </div>
                 </div>
             </div>

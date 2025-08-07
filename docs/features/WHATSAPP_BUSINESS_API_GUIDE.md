@@ -226,7 +226,7 @@ console.log('Template sent:', result);
 ### 2. Test Webhook
 ```bash
 # Test Twilio webhook
-curl -X POST http://localhost:3838/api/webhooks/whatsapp/twilio \
+curl -X POST http://localhost:3000/api/webhooks/whatsapp/twilio \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "From=whatsapp:+60123456789&Body=STATUS&MessageSid=SMxxxxx"
 ```

@@ -9,6 +9,8 @@
     <!-- StoreHub Design System -->
     <link rel="stylesheet" href="/css/storehub-design-system.css?v=<%= Date.now() %>">
     <link rel="stylesheet" href="/css/storehub-settings.css?v=<%= Date.now() %>">
+    <!-- Unified Header CSS - Load last to ensure precedence -->
+    <link rel="stylesheet" href="/css/header-unified.css?v=<%= Date.now() %>">
     
     <style>
         /* Additional page-specific styles */
@@ -30,6 +32,7 @@
 <body>
     <!-- Header -->
     <%- include('../partials/header-storehub', { 
+        activePage: 'settings',
         title: 'Settings',
         merchant: locals.merchant,
         queues: locals.queues || [],
@@ -263,17 +266,6 @@
                 
                 <div class="notification-item">
                     <div class="notification-info">
-                        <h4>SMS Notifications</h4>
-                        <p>Send text messages to customers about their queue status</p>
-                    </div>
-                    <label class="toggle-switch large">
-                        <input type="checkbox" id="smsNotifications" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                
-                <div class="notification-item">
-                    <div class="notification-info">
                         <h4>Email Notifications</h4>
                         <p>Send email updates to customers who provide email addresses</p>
                     </div>
@@ -289,14 +281,14 @@
             </div>
         </div>
 
-        <!-- Message Templates -->
+        <!-- Mobile Display Settings -->
         <div class="settings-section">
             <div class="section-header">
                 <h2>
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                     </svg>
-                    Message Templates
+                    Mobile Display Settings
                 </h2>
                 <div class="lock-indicator" style="display: none;">
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -305,39 +297,144 @@
                     <span>Locked</span>
                 </div>
             </div>
-            <form id="messageTemplatesForm" class="settings-form">
-                <div class="form-group">
-                    <label for="welcomeMessage" class="form-label">Welcome Message</label>
-                    <textarea id="welcomeMessage" 
-                              name="welcomeMessage" 
-                              class="form-control" 
-                              rows="3" 
-                              placeholder="Welcome to [Restaurant Name]! You've been added to our queue. Your position is #[Position]. Estimated wait time: [WaitTime] minutes."></textarea>
-                    <div class="form-help">Sent when a customer joins the queue. Use [Restaurant Name], [Position], [WaitTime] as placeholders.</div>
+            <form id="mobileSettingsForm" class="settings-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="refreshInterval" class="form-label">Status Refresh Interval</label>
+                        <select id="refreshInterval" name="refreshInterval" class="form-control">
+                            <option value="5">5 seconds</option>
+                            <option value="10" selected>10 seconds</option>
+                            <option value="30">30 seconds</option>
+                            <option value="60">1 minute</option>
+                        </select>
+                        <div class="form-help">How often the mobile app checks for status updates</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="displayFormat" class="form-label">Display Format</label>
+                        <select id="displayFormat" name="displayFormat" class="form-control">
+                            <option value="compact">Compact View</option>
+                            <option value="detailed" selected>Detailed View</option>
+                        </select>
+                        <div class="form-help">Choose how queue information is displayed on mobile</div>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="notificationMessage" class="form-label">Ready Notification</label>
-                    <textarea id="notificationMessage" 
-                              name="notificationMessage" 
-                              class="form-control" 
-                              rows="3" 
-                              placeholder="Hi [Customer Name]! Your table at [Restaurant Name] will be ready in approximately [Minutes] minutes. Please be prepared to be seated."></textarea>
-                    <div class="form-help">Sent when it's almost the customer's turn. Use [Customer Name], [Restaurant Name], [Minutes] as placeholders.</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="highlightDuration" class="form-label">Highlight Duration</label>
+                        <select id="highlightDuration" name="highlightDuration" class="form-control">
+                            <option value="3">3 seconds</option>
+                            <option value="5" selected>5 seconds</option>
+                            <option value="10">10 seconds</option>
+                        </select>
+                        <div class="form-help">How long to highlight status changes</div>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="readyMessage" class="form-label">Table Ready Message</label>
-                    <textarea id="readyMessage" 
-                              name="readyMessage" 
-                              class="form-control" 
-                              rows="3" 
-                              placeholder="[Customer Name], your table is ready! Please proceed to the host stand at [Restaurant Name]."></textarea>
-                    <div class="form-help">Sent when the customer's table is ready. Use [Customer Name], [Restaurant Name] as placeholders.</div>
+                <div class="notification-settings">
+                    <div class="notification-item">
+                        <div class="notification-info">
+                            <h4>Auto-Scroll</h4>
+                            <p>Automatically scroll to customer's position in queue</p>
+                        </div>
+                        <label class="toggle-switch large">
+                            <input type="checkbox" id="autoScroll" name="autoScroll" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <div class="notification-info">
+                            <h4>Sound Alerts</h4>
+                            <p>Play sound when customer status changes</p>
+                        </div>
+                        <label class="toggle-switch large">
+                            <input type="checkbox" id="soundAlerts" name="soundAlerts" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <div class="notification-info">
+                            <h4>Vibration Alerts</h4>
+                            <p>Vibrate device when customer status changes</p>
+                        </div>
+                        <label class="toggle-switch large">
+                            <input type="checkbox" id="vibrationAlerts" name="vibrationAlerts" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Save Message Templates</button>
+                <button type="submit" class="btn btn-primary">Save Mobile Settings</button>
             </form>
+        </div>
+        
+        <!-- Business Branding -->
+        <div class="settings-section">
+            <div class="section-header">
+                <h2>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Business Branding
+                </h2>
+                <div class="lock-indicator" style="display: none;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v4H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-3V4a3 3 0 0 0-3-3zM10 4a2 2 0 1 1 4 0v4h-4V4z"></path>
+                    </svg>
+                    <span>Locked</span>
+                </div>
+            </div>
+            <div class="branding-container">
+                <div class="branding-row">
+                    <div class="logo-upload-section">
+                        <h3>Business Logo</h3>
+                        <div class="logo-preview" id="logoPreview">
+                            <img id="logoImage" src="/images/placeholder.svg" alt="Business Logo">
+                        </div>
+                        <div class="upload-controls">
+                            <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/jpg,image/svg+xml" style="display: none;">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('logoUpload').click()">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                Upload Logo
+                            </button>
+                            <button type="button" class="btn btn-outline" onclick="removeLogo()" id="removeLogoBtn" style="display: none;">Remove</button>
+                        </div>
+                        <div class="form-help">Recommended: 200x200px minimum, PNG or SVG format, max 2MB</div>
+                    </div>
+                    
+                    <div class="brand-settings">
+                        <h3>Brand Customization</h3>
+                        <div class="form-group">
+                            <label for="brandColor" class="form-label">Primary Brand Color</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="brandColor" name="brandColor" value="#FA8C16" class="color-picker">
+                                <input type="text" id="brandColorHex" value="#FA8C16" class="form-control color-hex" placeholder="#FA8C16">
+                            </div>
+                            <div class="form-help">Used for headers and buttons on public pages</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Banner Image (Optional)</label>
+                            <div class="banner-preview" id="bannerPreview">
+                                <img id="bannerImage" src="/images/placeholder.svg" alt="Banner">
+                            </div>
+                            <input type="file" id="bannerUpload" accept="image/png,image/jpeg,image/jpg" style="display: none;">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('bannerUpload').click()">
+                                Upload Banner
+                            </button>
+                            <div class="form-help">Landscape format recommended (1920x400px)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" onclick="saveBranding()">Save Branding</button>
+                </div>
+            </div>
         </div>
 
         <!-- System Settings -->
@@ -506,6 +603,39 @@
                         if (merchant.settings.partySizeRegularMax) {
                             document.getElementById('partySizeRegularMax').value = merchant.settings.partySizeRegularMax;
                         }
+                        
+                        // Load mobile settings
+                        if (merchant.settings.mobileRefreshInterval) {
+                            document.getElementById('refreshInterval').value = merchant.settings.mobileRefreshInterval;
+                        }
+                        if (merchant.settings.mobileDisplayFormat) {
+                            document.getElementById('displayFormat').value = merchant.settings.mobileDisplayFormat;
+                        }
+                        if (merchant.settings.mobileHighlightDuration) {
+                            document.getElementById('highlightDuration').value = merchant.settings.mobileHighlightDuration;
+                        }
+                        if (merchant.settings.mobileAutoScroll !== undefined) {
+                            document.getElementById('autoScroll').checked = merchant.settings.mobileAutoScroll;
+                        }
+                        if (merchant.settings.mobileSoundAlerts !== undefined) {
+                            document.getElementById('soundAlerts').checked = merchant.settings.mobileSoundAlerts;
+                        }
+                        if (merchant.settings.mobileVibrationAlerts !== undefined) {
+                            document.getElementById('vibrationAlerts').checked = merchant.settings.mobileVibrationAlerts;
+                        }
+                    }
+                    
+                    // Load branding
+                    if (merchant.logoUrl) {
+                        document.getElementById('logoImage').src = merchant.logoUrl;
+                        document.getElementById('removeLogoBtn').style.display = 'inline-block';
+                    }
+                    if (merchant.brandColor) {
+                        document.getElementById('brandColor').value = merchant.brandColor;
+                        document.getElementById('brandColorHex').value = merchant.brandColor;
+                    }
+                    if (merchant.bannerImageUrl) {
+                        document.getElementById('bannerImage').src = merchant.bannerImageUrl;
                     }
                 }
             } catch (error) {
@@ -616,6 +746,51 @@
             }
         });
 
+        // Handle mobile settings form submission
+        document.getElementById('mobileSettingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+                
+                const mobileSettings = {
+                    mobileRefreshInterval: parseInt(document.getElementById('refreshInterval').value),
+                    mobileDisplayFormat: document.getElementById('displayFormat').value,
+                    mobileHighlightDuration: parseInt(document.getElementById('highlightDuration').value),
+                    mobileAutoScroll: document.getElementById('autoScroll').checked,
+                    mobileSoundAlerts: document.getElementById('soundAlerts').checked,
+                    mobileVibrationAlerts: document.getElementById('vibrationAlerts').checked
+                };
+                
+                const response = await fetch('/api/merchant/settings/mobile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify(mobileSettings)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Mobile settings saved successfully!', 'success');
+                } else {
+                    showAlert('Error: ' + (result.error || 'Failed to save mobile settings'), 'error');
+                }
+            } catch (error) {
+                console.error('Error saving mobile settings:', error);
+                showAlert('Error saving mobile settings. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+        
         // Handle queue settings form submission
         document.getElementById('queueSettingsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -668,12 +843,10 @@
         async function saveNotificationSettings() {
             try {
                 const autoNotifications = document.getElementById('autoNotifications').checked;
-                const smsNotifications = document.getElementById('smsNotifications').checked;
                 const emailNotifications = document.getElementById('emailNotifications').checked;
                 
                 const notificationData = {
                     autoNotifications,
-                    smsNotifications,
                     emailNotifications
                 };
                 
@@ -756,6 +929,156 @@
             } catch (error) {
                 console.error('Error generating API key:', error);
                 showAlert('Error generating API key. Please try again.', 'error');
+            }
+        }
+        
+        // Logo upload handling
+        document.getElementById('logoUpload').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+            if (!validTypes.includes(file.type)) {
+                showAlert('Please upload a PNG, JPG, or SVG image', 'error');
+                return;
+            }
+            
+            // Validate file size (2MB max)
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert('File size must be less than 2MB', 'error');
+                return;
+            }
+            
+            // Preview the image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('logoImage').src = e.target.result;
+                document.getElementById('removeLogoBtn').style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+            
+            // Upload the file
+            const formData = new FormData();
+            formData.append('logo', file);
+            
+            try {
+                const response = await fetch('/api/merchant/upload-logo', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('logoImage').src = result.logoUrl;
+                    showAlert('Logo uploaded successfully!', 'success');
+                } else {
+                    showAlert('Error uploading logo: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error uploading logo:', error);
+                showAlert('Error uploading logo. Please try again.', 'error');
+            }
+        });
+        
+        // Banner upload handling
+        document.getElementById('bannerUpload').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                showAlert('Please upload a PNG or JPG image', 'error');
+                return;
+            }
+            
+            // Validate file size (5MB max for banner)
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('File size must be less than 5MB', 'error');
+                return;
+            }
+            
+            // Preview the image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('bannerImage').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            // Upload the file
+            const formData = new FormData();
+            formData.append('banner', file);
+            
+            try {
+                const response = await fetch('/api/merchant/upload-banner', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('bannerImage').src = result.bannerUrl;
+                    showAlert('Banner uploaded successfully!', 'success');
+                } else {
+                    showAlert('Error uploading banner: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error uploading banner:', error);
+                showAlert('Error uploading banner. Please try again.', 'error');
+            }
+        });
+        
+        // Color picker synchronization
+        document.getElementById('brandColor').addEventListener('change', function(e) {
+            document.getElementById('brandColorHex').value = e.target.value;
+        });
+        
+        document.getElementById('brandColorHex').addEventListener('change', function(e) {
+            const hex = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                document.getElementById('brandColor').value = hex;
+            }
+        });
+        
+        // Remove logo function
+        function removeLogo() {
+            document.getElementById('logoImage').src = '/images/placeholder.svg';
+            document.getElementById('logoUpload').value = '';
+            document.getElementById('removeLogoBtn').style.display = 'none';
+        }
+        
+        // Save branding function
+        async function saveBranding() {
+            try {
+                const brandingData = {
+                    brandColor: document.getElementById('brandColor').value
+                };
+                
+                const response = await fetch('/api/merchant/branding', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify(brandingData)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Branding settings saved successfully!', 'success');
+                } else {
+                    showAlert('Error saving branding: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving branding:', error);
+                showAlert('Error saving branding settings. Please try again.', 'error');
             }
         }
     </script>

@@ -3,7 +3,7 @@
 **Date:** August 4, 2025  
 **System:** StoreHub Queue Management System - BackOffice Portal  
 **Tested Version:** 2025-01-24-v8  
-**Base URL:** http://admin.lvh.me:3838  
+**Base URL:** http://admin.lvh.me:3000  
 
 ## 🎯 Executive Summary
 
@@ -45,7 +45,7 @@ The BackOffice system has been successfully implemented with comprehensive authe
 
 ### 🧪 Test Credentials
 ```
-URL: http://admin.lvh.me:3838/backoffice/auth/login
+URL: http://admin.lvh.me:3000/backoffice/auth/login
 Email: backoffice@storehubqms.local
 Password: BackOffice123!@#
 ```
@@ -198,7 +198,7 @@ Password: BackOffice123!@#
 ## 📝 Manual Testing Guide
 
 ### Quick Verification Steps
-1. **Access:** Visit http://admin.lvh.me:3838/backoffice/auth/login
+1. **Access:** Visit http://admin.lvh.me:3000/backoffice/auth/login
 2. **Login:** Use provided credentials
 3. **Navigate:** Test all main sections
 4. **Create:** Add a new tenant

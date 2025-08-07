@@ -6,7 +6,7 @@
 
 const axios = require('axios');
 
-const BASE_URL = 'http://admin.lvh.me:3838';
+const BASE_URL = 'http://admin.lvh.me:3000';
 
 // Common static resources that might be referenced
 const RESOURCES_TO_CHECK = [

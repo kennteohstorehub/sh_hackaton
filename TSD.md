@@ -1025,10 +1025,10 @@ class VirtualList {
 // config/environments.js
 const environments = {
   development: {
-    domain: 'localhost:3001',
+    domain: 'localhost:3000',
     database: process.env.DATABASE_URL_DEV,
     redis: 'redis://localhost:6379',
-    cors: ['http://localhost:3000', 'http://localhost:3001']
+    cors: ['http://localhost:3000', 'http://localhost:3000']
   },
   staging: {
     domain: 'staging.storehubqms.com',

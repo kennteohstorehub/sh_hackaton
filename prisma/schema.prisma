@@ -135,6 +135,9 @@ model Merchant {
   emailVerificationToken String?
   passwordResetToken     String?
   passwordResetExpires   DateTime?
+  logoUrl                String?               // Business logo URL
+  brandColor             String?               // Primary brand color (hex)
+  bannerImageUrl         String?               // Optional banner image
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
   // Relationships
@@ -225,6 +228,13 @@ model MerchantSettings {
   confirmTableAcceptance Boolean                @default(true)
   peakHours              Json?
   peakMultiplier         Float                  @default(1.5)
+  // Mobile Display Settings
+  mobileRefreshInterval  Int                    @default(10)    // Seconds between status refreshes
+  mobileDisplayFormat    String                 @default("detailed") // "compact" or "detailed"
+  mobileAutoScroll       Boolean                @default(true)   // Auto-scroll to customer position
+  mobileHighlightDuration Int                   @default(5)      // Seconds to highlight changes
+  mobileSoundAlerts      Boolean                @default(true)   // Enable sound notifications
+  mobileVibrationAlerts  Boolean                @default(true)   // Enable vibration
   merchant               Merchant               @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   notificationTemplates  NotificationTemplate[]
 }
@@ -307,6 +317,8 @@ model QueueEntry {
   servedAt          DateTime?
   completedAt       DateTime?
   requeuedAt        DateTime?
+  withdrawnAt       DateTime?
+  withdrawalReason  String?
   lastNotified      DateTime?
   notificationCount Int                 @default(0)
   sentimentScore    Float?
@@ -354,6 +366,22 @@ model QueueAnalytics {
   queue                Queue    @relation(fields: [queueId], references: [id], onDelete: Cascade)
 }
 
+model QueueAnalyticsEvent {
+  id           String   @id @default(uuid())
+  queueId      String
+  merchantId   String
+  tenantId     String?
+  eventType    String
+  customerId   String?
+  customerName String?
+  timestamp    DateTime @default(now())
+  metadata     Json?
+  
+  @@index([queueId, eventType])
+  @@index([merchantId, timestamp])
+  @@index([tenantId, timestamp])
+}
+
 // ===============================
 // SESSION MANAGEMENT
 // ===============================
@@ -389,6 +417,7 @@ enum QueueEntryStatus {
   completed
   cancelled
   no_show
+  withdrawn
 }
 
 enum Platform {
@@ -405,10 +434,12 @@ enum TenantUserRole {
 }
 
 enum SubscriptionStatus {
+  trial
   active
   inactive
   suspended
   cancelled
+  expired
 }
 
 enum BillingCycle {

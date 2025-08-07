@@ -114,7 +114,7 @@ class QueueChat {
     
     initializeSocket() {
         console.log('[SOCKET] Initializing Socket.IO connection...');
-        this.socket = io({
+        this.socket = io(window.location.origin, {
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 5,

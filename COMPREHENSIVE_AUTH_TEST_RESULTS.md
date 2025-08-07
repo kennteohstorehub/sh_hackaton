@@ -21,7 +21,7 @@ After running automated Playwright tests and manual session debugging, here are 
 
 ## ❌ Authentication Issues Identified
 
-### 1. BackOffice Authentication (admin.lvh.me:3838)
+### 1. BackOffice Authentication (admin.lvh.me:3000)
 - **Status**: ⚠️ PARTIALLY WORKING
 - **Issue**: Login redirects back to `/auth/login` instead of dashboard
 - **Credentials Tested**: backoffice@storehubqms.local / BackOffice123!@#
@@ -30,7 +30,7 @@ After running automated Playwright tests and manual session debugging, here are 
   - Redirects in a loop back to login page
   - Suggests authentication is failing server-side
 
-### 2. Demo Tenant Authentication (demo.lvh.me:3838)
+### 2. Demo Tenant Authentication (demo.lvh.me:3000)
 - **Status**: ❌ AUTHENTICATION SUCCEEDS, DASHBOARD FAILS
 - **Issue**: Login succeeds but dashboard returns 401 Unauthorized
 - **Credentials Tested**: admin@demo.local / Demo123!@#
@@ -40,7 +40,7 @@ After running automated Playwright tests and manual session debugging, here are 
   3. ❌ Dashboard access denied (401 error)
   4. In Playwright tests, this manifested as a 500 error page
 
-### 3. Test Cafe Tenant Authentication (test-cafe.lvh.me:3838)
+### 3. Test Cafe Tenant Authentication (test-cafe.lvh.me:3000)
 - **Status**: ❌ SAME ISSUE AS DEMO
 - **Issue**: Identical to demo tenant - login succeeds, dashboard fails
 - **Credentials Tested**: cafe@testcafe.local / Test123!@#

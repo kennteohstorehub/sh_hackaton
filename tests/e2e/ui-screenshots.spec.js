@@ -9,7 +9,7 @@ test.describe('StoreHub UI Screenshots', () => {
 
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
-    await page.goto('http://localhost:3838/auth/login');
+    await page.goto('http://localhost:3000/auth/login');
     await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL);
     await page.fill('input[name="password"]', process.env.TEST_USER_PASSWORD);
     await page.click('button[type="submit"]');
@@ -30,9 +30,9 @@ test.describe('StoreHub UI Screenshots', () => {
 
   test('Capture Login Page Screenshot', async ({ browser }) => {
     const loginPage = await browser.newPage();
-    await page.goto('http://localhost:3838/auth/login');
+    await page.goto('http://localhost:3000/auth/login');
     await page.waitForSelector('form');
-    await loginPage.goto('http://localhost:3838/auth/login');
+    await loginPage.goto('http://localhost:3000/auth/login');
     await loginPage.waitForSelector('form');
     await loginPage.screenshot({ 
       path: path.join(screenshotDir, 'login-page.png'), 
@@ -42,7 +42,7 @@ test.describe('StoreHub UI Screenshots', () => {
   });
 
   test('Capture Dashboard Screenshot', async () => {
-    await page.goto('http://localhost:3838/dashboard');
+    await page.goto('http://localhost:3000/dashboard');
     await page.waitForSelector('.dashboard-container', { timeout: 10000 });
     await page.screenshot({ 
       path: path.join(screenshotDir, 'dashboard.png'), 
@@ -51,7 +51,7 @@ test.describe('StoreHub UI Screenshots', () => {
   });
 
   test('Capture Queue Management Screenshot', async ({ page }) => {
-    await page.goto('http://localhost:3838/queue');
+    await page.goto('http://localhost:3000/queue');
     await page.waitForSelector('.queue-management');
     await page.screenshot({ 
       path: path.join(screenshotDir, 'queue-management.png'), 
@@ -60,7 +60,7 @@ test.describe('StoreHub UI Screenshots', () => {
   });
 
   test('Capture Settings Page Screenshot', async ({ page }) => {
-    await page.goto('http://localhost:3838/settings');
+    await page.goto('http://localhost:3000/settings');
     await page.waitForSelector('.settings-container');
     await page.screenshot({ 
       path: path.join(screenshotDir, 'settings.png'), 
@@ -69,7 +69,7 @@ test.describe('StoreHub UI Screenshots', () => {
   });
 
   test('Capture Customer Queue Page Screenshot', async ({ page }) => {
-    await page.goto('http://localhost:3838/customer-queue');
+    await page.goto('http://localhost:3000/customer-queue');
     await page.waitForSelector('.customer-queue');
     await page.screenshot({ 
       path: path.join(screenshotDir, 'customer-queue.png'), 

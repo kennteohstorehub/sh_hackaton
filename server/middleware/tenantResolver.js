@@ -23,6 +23,15 @@ async function resolveTenant(req, res, next) {
       
       // If no subdomain in local development, handle gracefully
       if (!subdomain) {
+        // Check if this is a backoffice route first
+        if (req.path.startsWith('/backoffice')) {
+          logger.info(`BackOffice access via ${hostname}`);
+          req.isBackOffice = true;
+          req.tenant = null;
+          req.tenantId = null;
+          return next();
+        }
+        
         // For bare localhost/lvh.me, check if we should use a default tenant
         if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'lvh.me') {
           const testTenant = await prisma.tenant.findFirst({
@@ -40,7 +49,7 @@ async function resolveTenant(req, res, next) {
         // Show helpful development page
         return res.status(404).render('errors/no-subdomain', {
           message: 'Please access the system through your organization\'s subdomain',
-          devMessage: isLocalDev ? 'Try using admin.lvh.me:3838 for BackOffice or demo.lvh.me:3838 for demo tenant' : null
+          devMessage: isLocalDev ? 'Try using admin.lvh.me:3000 for BackOffice or demo.lvh.me:3000 for demo tenant' : null
         });
       }
     } else {
@@ -60,7 +69,8 @@ async function resolveTenant(req, res, next) {
     }
     
     // Special handling for BackOffice portal
-    if (subdomain === 'admin') {
+    // Check if this is a backoffice route (regardless of subdomain)
+    if (subdomain === 'admin' || req.path.startsWith('/backoffice')) {
       req.isBackOffice = true;
       req.tenant = null;
       req.tenantId = null;

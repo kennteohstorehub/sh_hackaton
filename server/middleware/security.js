@@ -19,7 +19,7 @@ const configureSecurityMiddleware = (app) => {
           "https://cdn.jsdelivr.net", 
           "https://fonts.googleapis.com",
           // Allow HTTP in development
-          ...(isDevelopment ? ["http://admin.lvh.me:3838", "http://localhost:3838", "http://demo.lvh.me:3838", "http://*.lvh.me:3838"] : [])
+          ...(isDevelopment ? ["http://admin.lvh.me:3000", "http://localhost:3000", "http://demo.lvh.me:3000", "http://*.lvh.me:3000"] : [])
         ],
         scriptSrc: [
           "'self'", 
@@ -28,7 +28,7 @@ const configureSecurityMiddleware = (app) => {
           "https://cdn.jsdelivr.net", 
           "https://cdn.socket.io",
           // Allow HTTP in development
-          ...(isDevelopment ? ["http://admin.lvh.me:3838", "http://localhost:3838", "http://demo.lvh.me:3838", "http://*.lvh.me:3838"] : [])
+          ...(isDevelopment ? ["http://admin.lvh.me:3000", "http://localhost:3000", "http://demo.lvh.me:3000", "http://*.lvh.me:3000"] : [])
         ],
         scriptSrcAttr: ["'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "https:", ...(isDevelopment ? ["http:"] : [])],
@@ -37,15 +37,16 @@ const configureSecurityMiddleware = (app) => {
           "wss:", 
           "ws:",
           // Allow HTTP WebSocket connections in development
-          ...(isDevelopment ? ["http://admin.lvh.me:3838", "http://localhost:3838", "http://demo.lvh.me:3838", "http://*.lvh.me:3838", "ws://admin.lvh.me:3838", "ws://localhost:3838", "ws://demo.lvh.me:3838", "ws://*.lvh.me:3838"] : [])
+          ...(isDevelopment ? ["http://admin.lvh.me:3000", "http://localhost:3000", "http://demo.lvh.me:3000", "http://*.lvh.me:3000", "ws://admin.lvh.me:3000", "ws://localhost:3000", "ws://demo.lvh.me:3000", "ws://*.lvh.me:3000"] : [])
         ],
         fontSrc: [
           "'self'", 
           "https://cdn.jsdelivr.net", 
           "https://fonts.gstatic.com",
           // Allow HTTP fonts in development
-          ...(isDevelopment ? ["http://admin.lvh.me:3838", "http://localhost:3838", "http://demo.lvh.me:3838", "http://*.lvh.me:3838"] : [])
+          ...(isDevelopment ? ["http://admin.lvh.me:3000", "http://localhost:3000", "http://demo.lvh.me:3000", "http://*.lvh.me:3000"] : [])
         ],
+        mediaSrc: ["'self'", "data:"],
         // Only add upgrade-insecure-requests in production
         ...(isDevelopment ? {} : { upgradeInsecureRequests: [] })
       },
