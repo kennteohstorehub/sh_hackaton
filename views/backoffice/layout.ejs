@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/css/storehub-global.css?v=<%= Date.now() %>">
   <link rel="stylesheet" href="/css/storehub-backoffice-redesign.css?v=<%= Date.now() %>">
   <script src="/js/storehub-design-system.js?v=<%= Date.now() %>" defer></script>
+  <script src="/js/storehub-backoffice.js?v=<%= Date.now() %>" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <% if (typeof csrfMeta === 'function') { %>
@@ -41,18 +42,18 @@
         </div>
         
         <div class="nav-section">
-          <div class="nav-section-title">Tenant Management</div>
-          <a href="/backoffice/tenants" class="nav-item <%= locals.currentPage === 'tenants' ? 'active' : '' %>" title="All Tenants">
-            <span class="nav-icon">🏢</span>
-            <span>All Tenants</span>
-          </a>
-          <a href="/backoffice/tenants/create" class="nav-item <%= locals.currentPage === 'tenants-create' ? 'active' : '' %>" title="Add Tenant">
-            <span class="nav-icon">➕</span>
-            <span>Add Tenant</span>
-          </a>
+          <div class="nav-section-title">Merchant Management</div>
           <a href="/backoffice/merchants" class="nav-item <%= locals.currentPage === 'merchants' ? 'active' : '' %>" title="All Merchants">
-            <span class="nav-icon">👥</span>
+            <span class="nav-icon">🏢</span>
             <span>All Merchants</span>
+          </a>
+          <a href="/backoffice/merchants/create" class="nav-item <%= locals.currentPage === 'merchants-create' ? 'active' : '' %>" title="Add Merchant">
+            <span class="nav-icon">➕</span>
+            <span>Add Merchant</span>
+          </a>
+          <a href="/backoffice/users" class="nav-item <%= locals.currentPage === 'users' ? 'active' : '' %>" title="All Users">
+            <span class="nav-icon">👥</span>
+            <span>All Users</span>
           </a>
         </div>
         

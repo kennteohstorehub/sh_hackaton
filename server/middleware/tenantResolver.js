@@ -12,6 +12,32 @@ async function resolveTenant(req, res, next) {
     const hostname = req.hostname || req.get('host').split(':')[0];
     logger.info(`Resolving tenant for hostname: ${hostname}`);
     
+    // Check if this is a public route that doesn't require tenant resolution
+    const publicPaths = ['/register', '/auth/login', '/auth/logout', '/terms', '/privacy', '/'];
+    const isPublicPath = publicPaths.some(path => req.path === path || req.path.startsWith('/register/'));
+    
+    // For Render deployment or single domain setup without subdomains
+    const isRenderDeployment = hostname.includes('onrender.com');
+    
+    if (isPublicPath || isRenderDeployment) {
+      // Check if this is a backoffice route
+      if (req.path.startsWith('/backoffice')) {
+        logger.info(`BackOffice access via ${hostname}`);
+        req.isBackOffice = true;
+        req.tenant = null;
+        req.tenantId = null;
+        return next();
+      }
+      
+      // For public paths or Render deployment, skip tenant resolution
+      if (isPublicPath) {
+        logger.info(`Public path accessed: ${req.path}`);
+        req.tenant = null;
+        req.tenantId = null;
+        return next();
+      }
+    }
+    
     let subdomain = null;
     let isLocalDev = false;
     
@@ -56,9 +82,48 @@ async function resolveTenant(req, res, next) {
       // Production subdomain extraction
       const parts = hostname.split('.');
       
+      // For Render deployment, allow access without subdomain for public routes
+      if (hostname.includes('onrender.com')) {
+        // Check if trying to access dashboard without tenant
+        if (req.path.startsWith('/dashboard') || req.path.startsWith('/queue')) {
+          // Try to find a demo tenant for Render deployment
+          const demoTenant = await prisma.tenant.findFirst({
+            where: { 
+              OR: [
+                { slug: 'demo' },
+                { isActive: true }
+              ]
+            }
+          });
+          
+          if (demoTenant) {
+            req.tenant = demoTenant;
+            req.tenantId = demoTenant.id;
+            return next();
+          }
+          
+          return res.status(404).render('errors/no-subdomain', {
+            message: 'Please register your organization first',
+            registerUrl: '/register'
+          });
+        }
+        
+        // Allow other paths to proceed without tenant
+        req.tenant = null;
+        req.tenantId = null;
+        return next();
+      }
+      
       // Check if this is a subdomain request (need at least 3 parts: sub.domain.tld)
       if (parts.length < 3) {
         // Not a subdomain (e.g., storehubqms.com)
+        // Allow public paths without subdomain
+        if (isPublicPath) {
+          req.tenant = null;
+          req.tenantId = null;
+          return next();
+        }
+        
         return res.status(404).render('errors/no-subdomain', {
           message: 'Please access the system through your organization\'s subdomain'
         });

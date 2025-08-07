@@ -1,0 +1,1385 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BackOffice Dashboard - StoreHub Queue Management</title>
+  <!-- StoreHub Design System -->
+  <link rel="stylesheet" href="/css/storehub-design-system.css?v=1754584841030">
+  <link rel="stylesheet" href="/css/storehub-global.css?v=1754584841030">
+  <link rel="stylesheet" href="/css/storehub-backoffice-redesign.css?v=1754584841030">
+  <script src="/js/storehub-design-system.js?v=1754584841030" defer=""></script>
+  <script src="/js/storehub-backoffice.js?v=1754584841030" defer=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  
+    
+    <meta name="csrf-token" content="02791b9fadb2abf001c91bb4625f51085dcd716e605e94518172e0865e7e5802">
+    <meta name="csrf-param" content="_csrf">
+    <meta name="csrf-header" content="X-CSRF-Token">
+  
+  
+<style>
+    .btn {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.3);
+      transform: scale(0);
+      animation: ripple-animation 0.6s ease-out;
+    }
+    
+    @keyframes ripple-animation {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes slideOut {
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+    
+    .table th.sort-asc::after {
+      content: ' ↑';
+      opacity: 0.6;
+    }
+    
+    .table th.sort-desc::after {
+      content: ' ↓';
+      opacity: 0.6;
+    }
+  </style><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style id="apexcharts-css">@keyframes opaque {
+  0% {
+    opacity: 0
+  }
+
+  to {
+    opacity: 1
+  }
+}
+
+@keyframes resizeanim {
+
+  0%,
+  to {
+    opacity: 0
+  }
+}
+
+.apexcharts-canvas {
+  position: relative;
+  direction: ltr !important;
+  user-select: none
+}
+
+.apexcharts-canvas ::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 6px
+}
+
+.apexcharts-canvas ::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, .5);
+  box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5)
+}
+
+.apexcharts-inner {
+  position: relative
+}
+
+.apexcharts-text tspan {
+  font-family: inherit
+}
+
+rect.legend-mouseover-inactive,
+.legend-mouseover-inactive rect,
+.legend-mouseover-inactive path,
+.legend-mouseover-inactive circle,
+.legend-mouseover-inactive line,
+.legend-mouseover-inactive text.apexcharts-yaxis-title-text,
+.legend-mouseover-inactive text.apexcharts-yaxis-label {
+  transition: .15s ease all;
+  opacity: .2
+}
+
+.apexcharts-legend-text {
+  padding-left: 15px;
+  margin-left: -15px;
+}
+
+.apexcharts-series-collapsed {
+  opacity: 0
+}
+
+.apexcharts-tooltip {
+  border-radius: 5px;
+  box-shadow: 2px 2px 6px -4px #999;
+  cursor: default;
+  font-size: 14px;
+  left: 62px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  white-space: nowrap;
+  z-index: 12;
+  transition: .15s ease all
+}
+
+.apexcharts-tooltip.apexcharts-active {
+  opacity: 1;
+  transition: .15s ease all
+}
+
+.apexcharts-tooltip.apexcharts-theme-light {
+  border: 1px solid #e3e3e3;
+  background: rgba(255, 255, 255, .96)
+}
+
+.apexcharts-tooltip.apexcharts-theme-dark {
+  color: #fff;
+  background: rgba(30, 30, 30, .8)
+}
+
+.apexcharts-tooltip * {
+  font-family: inherit
+}
+
+.apexcharts-tooltip-title {
+  padding: 6px;
+  font-size: 15px;
+  margin-bottom: 4px
+}
+
+.apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
+  background: #eceff1;
+  border-bottom: 1px solid #ddd
+}
+
+.apexcharts-tooltip.apexcharts-theme-dark .apexcharts-tooltip-title {
+  background: rgba(0, 0, 0, .7);
+  border-bottom: 1px solid #333
+}
+
+.apexcharts-tooltip-text-goals-value,
+.apexcharts-tooltip-text-y-value,
+.apexcharts-tooltip-text-z-value {
+  display: inline-block;
+  margin-left: 5px;
+  font-weight: 600
+}
+
+.apexcharts-tooltip-text-goals-label:empty,
+.apexcharts-tooltip-text-goals-value:empty,
+.apexcharts-tooltip-text-y-label:empty,
+.apexcharts-tooltip-text-y-value:empty,
+.apexcharts-tooltip-text-z-value:empty,
+.apexcharts-tooltip-title:empty {
+  display: none
+}
+
+.apexcharts-tooltip-text-goals-label,
+.apexcharts-tooltip-text-goals-value {
+  padding: 6px 0 5px
+}
+
+.apexcharts-tooltip-goals-group,
+.apexcharts-tooltip-text-goals-label,
+.apexcharts-tooltip-text-goals-value {
+  display: flex
+}
+
+.apexcharts-tooltip-text-goals-label:not(:empty),
+.apexcharts-tooltip-text-goals-value:not(:empty) {
+  margin-top: -6px
+}
+
+.apexcharts-tooltip-marker {
+  display: inline-block;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  line-height: 16px;
+  margin-right: 4px;
+  text-align: center;
+  vertical-align: middle;
+  color: inherit;
+}
+
+.apexcharts-tooltip-marker::before {
+  content: "";
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  color: currentcolor;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-size: 26px;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 14px;
+  font-weight: 900;
+}
+
+.apexcharts-tooltip-marker[shape="circle"]::before {
+  content: "\25CF";
+}
+
+.apexcharts-tooltip-marker[shape="square"]::before,
+.apexcharts-tooltip-marker[shape="rect"]::before {
+  content: "\25A0";
+  transform: translate(-1px, -2px);
+}
+
+.apexcharts-tooltip-marker[shape="line"]::before {
+  content: "\2500";
+}
+
+.apexcharts-tooltip-marker[shape="diamond"]::before {
+  content: "\25C6";
+  font-size: 28px;
+}
+
+.apexcharts-tooltip-marker[shape="triangle"]::before {
+  content: "\25B2";
+  font-size: 22px;
+}
+
+.apexcharts-tooltip-marker[shape="cross"]::before {
+  content: "\2715";
+  font-size: 18px;
+}
+
+.apexcharts-tooltip-marker[shape="plus"]::before {
+  content: "\2715";
+  transform: rotate(45deg) translate(-1px, -1px);
+  font-size: 18px;
+}
+
+.apexcharts-tooltip-marker[shape="star"]::before {
+  content: "\2605";
+  font-size: 18px;
+}
+
+.apexcharts-tooltip-marker[shape="sparkle"]::before {
+  content: "\2726";
+  font-size: 20px;
+}
+
+.apexcharts-tooltip-series-group {
+  padding: 0 10px;
+  display: none;
+  text-align: left;
+  justify-content: left;
+  align-items: center
+}
+
+.apexcharts-tooltip-series-group.apexcharts-active .apexcharts-tooltip-marker {
+  opacity: 1
+}
+
+.apexcharts-tooltip-series-group.apexcharts-active,
+.apexcharts-tooltip-series-group:last-child {
+  padding-bottom: 4px
+}
+
+.apexcharts-tooltip-y-group {
+  padding: 6px 0 5px
+}
+
+.apexcharts-custom-tooltip,
+.apexcharts-tooltip-box {
+  padding: 4px 8px
+}
+
+.apexcharts-tooltip-boxPlot {
+  display: flex;
+  flex-direction: column-reverse
+}
+
+.apexcharts-tooltip-box>div {
+  margin: 4px 0
+}
+
+.apexcharts-tooltip-box span.value {
+  font-weight: 700
+}
+
+.apexcharts-tooltip-rangebar {
+  padding: 5px 8px
+}
+
+.apexcharts-tooltip-rangebar .category {
+  font-weight: 600;
+  color: #777
+}
+
+.apexcharts-tooltip-rangebar .series-name {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 5px
+}
+
+.apexcharts-xaxistooltip,
+.apexcharts-yaxistooltip {
+  opacity: 0;
+  pointer-events: none;
+  color: #373d3f;
+  font-size: 13px;
+  text-align: center;
+  border-radius: 2px;
+  position: absolute;
+  z-index: 10;
+  background: #eceff1;
+  border: 1px solid #90a4ae
+}
+
+.apexcharts-xaxistooltip {
+  padding: 9px 10px;
+  transition: .15s ease all
+}
+
+.apexcharts-xaxistooltip.apexcharts-theme-dark {
+  background: rgba(0, 0, 0, .7);
+  border: 1px solid rgba(0, 0, 0, .5);
+  color: #fff
+}
+
+.apexcharts-xaxistooltip:after,
+.apexcharts-xaxistooltip:before {
+  left: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none
+}
+
+.apexcharts-xaxistooltip:after {
+  border-color: transparent;
+  border-width: 6px;
+  margin-left: -6px
+}
+
+.apexcharts-xaxistooltip:before {
+  border-color: transparent;
+  border-width: 7px;
+  margin-left: -7px
+}
+
+.apexcharts-xaxistooltip-bottom:after,
+.apexcharts-xaxistooltip-bottom:before {
+  bottom: 100%
+}
+
+.apexcharts-xaxistooltip-top:after,
+.apexcharts-xaxistooltip-top:before {
+  top: 100%
+}
+
+.apexcharts-xaxistooltip-bottom:after {
+  border-bottom-color: #eceff1
+}
+
+.apexcharts-xaxistooltip-bottom:before {
+  border-bottom-color: #90a4ae
+}
+
+.apexcharts-xaxistooltip-bottom.apexcharts-theme-dark:after,
+.apexcharts-xaxistooltip-bottom.apexcharts-theme-dark:before {
+  border-bottom-color: rgba(0, 0, 0, .5)
+}
+
+.apexcharts-xaxistooltip-top:after {
+  border-top-color: #eceff1
+}
+
+.apexcharts-xaxistooltip-top:before {
+  border-top-color: #90a4ae
+}
+
+.apexcharts-xaxistooltip-top.apexcharts-theme-dark:after,
+.apexcharts-xaxistooltip-top.apexcharts-theme-dark:before {
+  border-top-color: rgba(0, 0, 0, .5)
+}
+
+.apexcharts-xaxistooltip.apexcharts-active {
+  opacity: 1;
+  transition: .15s ease all
+}
+
+.apexcharts-yaxistooltip {
+  padding: 4px 10px
+}
+
+.apexcharts-yaxistooltip.apexcharts-theme-dark {
+  background: rgba(0, 0, 0, .7);
+  border: 1px solid rgba(0, 0, 0, .5);
+  color: #fff
+}
+
+.apexcharts-yaxistooltip:after,
+.apexcharts-yaxistooltip:before {
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none
+}
+
+.apexcharts-yaxistooltip:after {
+  border-color: transparent;
+  border-width: 6px;
+  margin-top: -6px
+}
+
+.apexcharts-yaxistooltip:before {
+  border-color: transparent;
+  border-width: 7px;
+  margin-top: -7px
+}
+
+.apexcharts-yaxistooltip-left:after,
+.apexcharts-yaxistooltip-left:before {
+  left: 100%
+}
+
+.apexcharts-yaxistooltip-right:after,
+.apexcharts-yaxistooltip-right:before {
+  right: 100%
+}
+
+.apexcharts-yaxistooltip-left:after {
+  border-left-color: #eceff1
+}
+
+.apexcharts-yaxistooltip-left:before {
+  border-left-color: #90a4ae
+}
+
+.apexcharts-yaxistooltip-left.apexcharts-theme-dark:after,
+.apexcharts-yaxistooltip-left.apexcharts-theme-dark:before {
+  border-left-color: rgba(0, 0, 0, .5)
+}
+
+.apexcharts-yaxistooltip-right:after {
+  border-right-color: #eceff1
+}
+
+.apexcharts-yaxistooltip-right:before {
+  border-right-color: #90a4ae
+}
+
+.apexcharts-yaxistooltip-right.apexcharts-theme-dark:after,
+.apexcharts-yaxistooltip-right.apexcharts-theme-dark:before {
+  border-right-color: rgba(0, 0, 0, .5)
+}
+
+.apexcharts-yaxistooltip.apexcharts-active {
+  opacity: 1
+}
+
+.apexcharts-yaxistooltip-hidden {
+  display: none
+}
+
+.apexcharts-xcrosshairs,
+.apexcharts-ycrosshairs {
+  pointer-events: none;
+  opacity: 0;
+  transition: .15s ease all
+}
+
+.apexcharts-xcrosshairs.apexcharts-active,
+.apexcharts-ycrosshairs.apexcharts-active {
+  opacity: 1;
+  transition: .15s ease all
+}
+
+.apexcharts-ycrosshairs-hidden {
+  opacity: 0
+}
+
+.apexcharts-selection-rect {
+  cursor: move
+}
+
+.svg_select_shape {
+  stroke-width: 1;
+  stroke-dasharray: 10 10;
+  stroke: black;
+  stroke-opacity: 0.1;
+  pointer-events: none;
+  fill: none;
+}
+
+.svg_select_handle {
+  stroke-width: 3;
+  stroke: black;
+  fill: none;
+}
+
+.svg_select_handle_r {
+  cursor: e-resize;
+}
+
+.svg_select_handle_l {
+  cursor: w-resize;
+}
+
+.apexcharts-svg.apexcharts-zoomable.hovering-zoom {
+  cursor: crosshair
+}
+
+.apexcharts-svg.apexcharts-zoomable.hovering-pan {
+  cursor: move
+}
+
+.apexcharts-menu-icon,
+.apexcharts-pan-icon,
+.apexcharts-reset-icon,
+.apexcharts-selection-icon,
+.apexcharts-toolbar-custom-icon,
+.apexcharts-zoom-icon,
+.apexcharts-zoomin-icon,
+.apexcharts-zoomout-icon {
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  line-height: 24px;
+  color: #6e8192;
+  text-align: center
+}
+
+.apexcharts-menu-icon svg,
+.apexcharts-reset-icon svg,
+.apexcharts-zoom-icon svg,
+.apexcharts-zoomin-icon svg,
+.apexcharts-zoomout-icon svg {
+  fill: #6e8192
+}
+
+.apexcharts-selection-icon svg {
+  fill: #444;
+  transform: scale(.76)
+}
+
+.apexcharts-theme-dark .apexcharts-menu-icon svg,
+.apexcharts-theme-dark .apexcharts-pan-icon svg,
+.apexcharts-theme-dark .apexcharts-reset-icon svg,
+.apexcharts-theme-dark .apexcharts-selection-icon svg,
+.apexcharts-theme-dark .apexcharts-toolbar-custom-icon svg,
+.apexcharts-theme-dark .apexcharts-zoom-icon svg,
+.apexcharts-theme-dark .apexcharts-zoomin-icon svg,
+.apexcharts-theme-dark .apexcharts-zoomout-icon svg {
+  fill: #f3f4f5
+}
+
+.apexcharts-canvas .apexcharts-reset-zoom-icon.apexcharts-selected svg,
+.apexcharts-canvas .apexcharts-selection-icon.apexcharts-selected svg,
+.apexcharts-canvas .apexcharts-zoom-icon.apexcharts-selected svg {
+  fill: #008ffb
+}
+
+.apexcharts-theme-light .apexcharts-menu-icon:hover svg,
+.apexcharts-theme-light .apexcharts-reset-icon:hover svg,
+.apexcharts-theme-light .apexcharts-selection-icon:not(.apexcharts-selected):hover svg,
+.apexcharts-theme-light .apexcharts-zoom-icon:not(.apexcharts-selected):hover svg,
+.apexcharts-theme-light .apexcharts-zoomin-icon:hover svg,
+.apexcharts-theme-light .apexcharts-zoomout-icon:hover svg {
+  fill: #333
+}
+
+.apexcharts-menu-icon,
+.apexcharts-selection-icon {
+  position: relative
+}
+
+.apexcharts-reset-icon {
+  margin-left: 5px
+}
+
+.apexcharts-menu-icon,
+.apexcharts-reset-icon,
+.apexcharts-zoom-icon {
+  transform: scale(.85)
+}
+
+.apexcharts-zoomin-icon,
+.apexcharts-zoomout-icon {
+  transform: scale(.7)
+}
+
+.apexcharts-zoomout-icon {
+  margin-right: 3px
+}
+
+.apexcharts-pan-icon {
+  transform: scale(.62);
+  position: relative;
+  left: 1px;
+  top: 0
+}
+
+.apexcharts-pan-icon svg {
+  fill: #fff;
+  stroke: #6e8192;
+  stroke-width: 2
+}
+
+.apexcharts-pan-icon.apexcharts-selected svg {
+  stroke: #008ffb
+}
+
+.apexcharts-pan-icon:not(.apexcharts-selected):hover svg {
+  stroke: #333
+}
+
+.apexcharts-toolbar {
+  position: absolute;
+  z-index: 11;
+  max-width: 176px;
+  text-align: right;
+  border-radius: 3px;
+  padding: 0 6px 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center
+}
+
+.apexcharts-menu {
+  background: #fff;
+  position: absolute;
+  top: 100%;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 3px;
+  right: 10px;
+  opacity: 0;
+  min-width: 110px;
+  transition: .15s ease all;
+  pointer-events: none
+}
+
+.apexcharts-menu.apexcharts-menu-open {
+  opacity: 1;
+  pointer-events: all;
+  transition: .15s ease all
+}
+
+.apexcharts-menu-item {
+  padding: 6px 7px;
+  font-size: 12px;
+  cursor: pointer
+}
+
+.apexcharts-theme-light .apexcharts-menu-item:hover {
+  background: #eee
+}
+
+.apexcharts-theme-dark .apexcharts-menu {
+  background: rgba(0, 0, 0, .7);
+  color: #fff
+}
+
+@media screen and (min-width:768px) {
+  .apexcharts-canvas:hover .apexcharts-toolbar {
+    opacity: 1
+  }
+}
+
+.apexcharts-canvas .apexcharts-element-hidden,
+.apexcharts-datalabel.apexcharts-element-hidden,
+.apexcharts-hide .apexcharts-series-points {
+  opacity: 0;
+}
+
+.apexcharts-hidden-element-shown {
+  opacity: 1;
+  transition: 0.25s ease all;
+}
+
+.apexcharts-datalabel,
+.apexcharts-datalabel-label,
+.apexcharts-datalabel-value,
+.apexcharts-datalabels,
+.apexcharts-pie-label {
+  cursor: default;
+  pointer-events: none
+}
+
+.apexcharts-pie-label-delay {
+  opacity: 0;
+  animation-name: opaque;
+  animation-duration: .3s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease
+}
+
+.apexcharts-radialbar-label {
+  cursor: pointer;
+}
+
+.apexcharts-annotation-rect,
+.apexcharts-area-series .apexcharts-area,
+.apexcharts-gridline,
+.apexcharts-line,
+.apexcharts-point-annotation-label,
+.apexcharts-radar-series path:not(.apexcharts-marker),
+.apexcharts-radar-series polygon,
+.apexcharts-toolbar svg,
+.apexcharts-tooltip .apexcharts-marker,
+.apexcharts-xaxis-annotation-label,
+.apexcharts-yaxis-annotation-label,
+.apexcharts-zoom-rect,
+.no-pointer-events {
+  pointer-events: none
+}
+
+.apexcharts-tooltip-active .apexcharts-marker {
+  transition: .15s ease all
+}
+
+.apexcharts-radar-series .apexcharts-yaxis {
+  pointer-events: none;
+}
+
+.resize-triggers {
+  animation: 1ms resizeanim;
+  visibility: hidden;
+  opacity: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden
+}
+
+.contract-trigger:before,
+.resize-triggers,
+.resize-triggers>div {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0
+}
+
+.resize-triggers>div {
+  height: 100%;
+  width: 100%;
+  background: #eee;
+  overflow: auto
+}
+
+.contract-trigger:before {
+  overflow: hidden;
+  width: 200%;
+  height: 200%
+}
+
+.apexcharts-bar-goals-markers {
+  pointer-events: none
+}
+
+.apexcharts-bar-shadows {
+  pointer-events: none
+}
+
+.apexcharts-rangebar-goals-markers {
+  pointer-events: none
+}
+
+.apexcharts-disable-transitions * {
+  transition: none !important;
+}</style></head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">SH</div>
+          <div class="logo-text">StoreHub</div>
+        </div>
+        <div class="admin-badge">BackOffice</div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Overview</div>
+          <a href="/backoffice/dashboard" class="nav-item active" title="Dashboard">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </a>
+          <a href="/backoffice/analytics" class="nav-item " title="Analytics">
+            <span class="nav-icon">📈</span>
+            <span>Analytics</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Tenant Management</div>
+          <a href="/backoffice/tenants" class="nav-item " title="All Tenants">
+            <span class="nav-icon">🏢</span>
+            <span>All Tenants</span>
+          </a>
+          <a href="/backoffice/tenants/create" class="nav-item " title="Add Tenant">
+            <span class="nav-icon">➕</span>
+            <span>Add Tenant</span>
+          </a>
+          <a href="/backoffice/merchants" class="nav-item " title="All Merchants">
+            <span class="nav-icon">👥</span>
+            <span>All Merchants</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Billing &amp; Subscriptions</div>
+          <a href="/backoffice/subscriptions" class="nav-item " title="Subscriptions">
+            <span class="nav-icon">💳</span>
+            <span>Subscriptions</span>
+          </a>
+          <a href="/backoffice/billing" class="nav-item " title="Billing">
+            <span class="nav-icon">💰</span>
+            <span>Billing</span>
+          </a>
+          <a href="/backoffice/plans" class="nav-item " title="Subscription Plans">
+            <span class="nav-icon">📋</span>
+            <span>Subscription Plans</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="/backoffice/admins" class="nav-item " title="Admin Users">
+            <span class="nav-icon">👤</span>
+            <span>Admin Users</span>
+          </a>
+          <a href="/backoffice/audit-logs" class="nav-item " title="Audit Logs">
+            <span class="nav-icon">📝</span>
+            <span>Audit Logs</span>
+          </a>
+          <a href="/backoffice/settings" class="nav-item " title="System Settings">
+            <span class="nav-icon">⚙️</span>
+            <span>System Settings</span>
+          </a>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">
+            SA
+          </div>
+          <div class="user-details">
+            <div class="user-name">System Administrator</div>
+            <div class="user-role">Administrator</div>
+          </div>
+        </div>
+        <a href="/backoffice/auth/logout" class="logout-btn" title="Sign Out">
+          <span class="nav-icon">🚪</span>
+          <span>Sign Out</span>
+        </a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+        
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <div class="form-group"><input type="text" class="search-input form-control" placeholder="Search tenants, merchants, users..."><div class="search-results"></div></div>
+        </div>
+        
+        <div class="top-bar-actions">
+          <div class="notification-badge ">
+            <span>🔔</span>
+          </div>
+          <div class="user-menu">
+            <div class="user-avatar-small">
+              SA
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <div class="content-area">
+        
+        
+        
+          <div class="content-header">
+            <h2 class="content-title">Dashboard</h2>
+            
+              <p class="content-subtitle">Monitor your queue management system and oversee all merchant operations</p>
+            
+          </div>
+        
+        
+        
+        
+        
+          <div class="alert alert-success">
+            Welcome back, System Administrator!
+          </div>
+        
+        
+        
+        
+        
+        
+        <!-- Page Content -->
+        
+
+<!-- Statistics Cards -->
+<div class="dashboard-grid">
+  <div class="stats-card tenants dashboard-animate">
+    <div class="stats-icon">🏢</div>
+    <div class="stats-value">3</div>
+    <div class="stats-label">Total Tenants</div>
+    <div class="stats-trend trend-positive">
+      <span>↑ 3 active</span>
+    </div>
+  </div>
+  
+  <div class="stats-card customers dashboard-animate">
+    <div class="stats-icon">👥</div>
+    <div class="stats-value">0</div>
+    <div class="stats-label">Customers Today</div>
+    <div class="stats-trend trend-neutral">
+      <span>→ 0 this month</span>
+    </div>
+  </div>
+  
+  <div class="stats-card queues dashboard-animate">
+    <div class="stats-icon">⚡</div>
+    <div class="stats-value">0</div>
+    <div class="stats-label">Active Queues</div>
+    <div class="stats-trend trend-positive">
+      <span>↑ 3 total</span>
+    </div>
+  </div>
+  
+  <div class="stats-card health dashboard-animate">
+    <div class="stats-icon">
+      ⚠️
+    </div>
+    <div class="stats-value">80%</div>
+    <div class="stats-label">System Health</div>
+    <div class="stats-trend trend-negative">
+      <span>↓ High memory usage</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="content-grid">
+  <!-- Recent Activity -->
+  <div class="card dashboard-animate">
+    <div class="card-header">
+      <h3 class="card-title">Recent Activity</h3>
+    </div>
+    <div class="card-body">
+      <div class="activity-feed">
+        
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p>No recent activity</p>
+            <p>System activities will appear here</p>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <div class="card dashboard-animate">
+    <div class="card-header">
+      <h3 class="card-title">Quick Actions</h3>
+    </div>
+    <div class="card-body">
+      <div class="quick-actions" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <a href="/backoffice/tenants/create" class="btn btn-primary">
+          <span>➕</span>
+          Add New Tenant
+        </a>
+        <a href="/backoffice/merchants" class="btn btn-secondary">
+          <span>🏪</span>
+          View All Merchants
+        </a>
+        <a href="/backoffice/audit-logs" class="btn btn-secondary">
+          <span>📝</span>
+          View Audit Logs
+        </a>
+        <a href="/backoffice/settings" class="btn btn-secondary">
+          <span>⚙️</span>
+          System Settings
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Tenants -->
+<div class="card dashboard-animate" style="margin-top: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">Recent Tenants</h3>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    
+      <div class="table-responsive">
+        <table class="dashboard-table table">
+          <thead>
+            <tr>
+              <th>Tenant Name</th>
+              <th>Subdomain</th>
+              <th>Merchants</th>
+              <th>Users</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>
+                  <strong>Hotpot Palace</strong>
+                </td>
+                <td>
+                  <code style="background: var(--sh-primary-orange-light); color: var(--sh-primary-orange); padding: 0.25rem 0.5rem; border-radius: 4px;">hotpot</code>
+                </td>
+                <td>1</td>
+                <td>0</td>
+                <td>
+                  <span class="status-badge status-active">
+                    Active
+                  </span>
+                </td>
+                <td>8/8/2025</td>
+              </tr>
+            
+              <tr>
+                <td>
+                  <strong>KFC</strong>
+                </td>
+                <td>
+                  <code style="background: var(--sh-primary-orange-light); color: var(--sh-primary-orange); padding: 0.25rem 0.5rem; border-radius: 4px;">kfc</code>
+                </td>
+                <td>1</td>
+                <td>0</td>
+                <td>
+                  <span class="status-badge status-active">
+                    Active
+                  </span>
+                </td>
+                <td>8/8/2025</td>
+              </tr>
+            
+              <tr>
+                <td>
+                  <strong>ChickenRice Restaurant</strong>
+                </td>
+                <td>
+                  <code style="background: var(--sh-primary-orange-light); color: var(--sh-primary-orange); padding: 0.25rem 0.5rem; border-radius: 4px;">chickenrice</code>
+                </td>
+                <td>1</td>
+                <td>0</td>
+                <td>
+                  <span class="status-badge status-active">
+                    Active
+                  </span>
+                </td>
+                <td>8/8/2025</td>
+              </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    
+  </div>
+</div>
+
+<!-- Analytics Charts -->
+<div class="content-grid" style="margin-top: 2rem;">
+  <div class="chart-container dashboard-animate">
+    <h3>Customer Traffic Trends</h3>
+    <div id="trafficChart" style="height: 300px; min-height: 315px;" data-initialized="true"><div id="apexchartstfofkm7c" class="apexcharts-canvas apexchartstfofkm7c apexcharts-theme-light" style="width: 704px; height: 300px;"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="apexcharts-svg apexcharts-zoomable" xmlns:data="ApexChartsNS" transform="translate(0, 0)" width="704" height="300"><foreignObject x="0" y="0" width="704" height="300"><style type="text/css">.apexcharts-flip-y {
+  transform: scaleY(-1) translateY(-100%);
+  transform-origin: top;
+  transform-box: fill-box;
+}
+.apexcharts-flip-x {
+  transform: scaleX(-1);
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.apexcharts-legend {
+  display: flex;
+  overflow: auto;
+  padding: 0 10px;
+}
+.apexcharts-legend.apexcharts-legend-group-horizontal {
+  flex-direction: column;
+}
+.apexcharts-legend-group {
+  display: flex;
+}
+.apexcharts-legend-group-vertical {
+  flex-direction: column-reverse;
+}
+.apexcharts-legend.apx-legend-position-bottom, .apexcharts-legend.apx-legend-position-top {
+  flex-wrap: wrap
+}
+.apexcharts-legend.apx-legend-position-right, .apexcharts-legend.apx-legend-position-left {
+  flex-direction: column;
+  bottom: 0;
+}
+.apexcharts-legend.apx-legend-position-bottom.apexcharts-align-left, .apexcharts-legend.apx-legend-position-top.apexcharts-align-left, .apexcharts-legend.apx-legend-position-right, .apexcharts-legend.apx-legend-position-left {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.apexcharts-legend.apx-legend-position-bottom.apexcharts-align-center, .apexcharts-legend.apx-legend-position-top.apexcharts-align-center {
+  justify-content: center;
+  align-items: center;
+}
+.apexcharts-legend.apx-legend-position-bottom.apexcharts-align-right, .apexcharts-legend.apx-legend-position-top.apexcharts-align-right {
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+.apexcharts-legend-series {
+  cursor: pointer;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+}
+.apexcharts-legend-text {
+  position: relative;
+  font-size: 14px;
+}
+.apexcharts-legend-text *, .apexcharts-legend-marker * {
+  pointer-events: none;
+}
+.apexcharts-legend-marker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 1px;
+}
+
+.apexcharts-legend-series.apexcharts-no-click {
+  cursor: auto;
+}
+.apexcharts-legend .apexcharts-hidden-zero-series, .apexcharts-legend .apexcharts-hidden-null-series {
+  display: none !important;
+}
+.apexcharts-inactive-legend {
+  opacity: 0.45;
+} </style></foreignObject><rect width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe"></rect><g class="apexcharts-datalabels-group" transform="translate(0, 0) scale(1)"></g><g class="apexcharts-datalabels-group" transform="translate(0, 0) scale(1)"></g><g class="apexcharts-yaxis" rel="0" transform="translate(15.875, 0)"><g class="apexcharts-yaxis-texts-g"><text x="20" y="33.666666666666664" text-anchor="end" dominant-baseline="auto" font-size="11px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-yaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>700</tspan><title>700</title></text><text x="20" y="84.49241666666666" text-anchor="end" dominant-baseline="auto" font-size="11px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-yaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>600</tspan><title>600</title></text><text x="20" y="135.31816666666666" text-anchor="end" dominant-baseline="auto" font-size="11px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-yaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>500</tspan><title>500</title></text><text x="20" y="186.14391666666666" text-anchor="end" dominant-baseline="auto" font-size="11px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-yaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>400</tspan><title>400</title></text><text x="20" y="236.96966666666665" text-anchor="end" dominant-baseline="auto" font-size="11px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-yaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>300</tspan><title>300</title></text></g></g><g class="apexcharts-inner apexcharts-graphical" transform="translate(45.875, 30)"><defs><clipPath id="gridRectMasktfofkm7c"><rect width="654.125" height="209.303" x="-3" y="-3" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="gridRectBarMasktfofkm7c"><rect width="654.125" height="209.303" x="-3" y="-3" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="gridRectMarkerMasktfofkm7c"><rect width="654.125" height="203.303" x="-3" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="forecastMasktfofkm7c"></clipPath><clipPath id="nonForecastMasktfofkm7c"></clipPath><linearGradient x1="0" y1="0" x2="0" y2="1" id="SvgjsLinearGradient1000"><stop stop-opacity="0.4" stop-color="rgba(250,140,22,0.4)" offset="0"></stop><stop stop-opacity="0.1" stop-color="rgba(253,198,139,0.1)" offset="1"></stop><stop stop-opacity="0.1" stop-color="rgba(253,198,139,0.1)" offset="1"></stop></linearGradient><linearGradient x1="0" y1="0" x2="0" y2="1" id="SvgjsLinearGradient1001"><stop stop-opacity="0.4" stop-color="rgba(82,196,26,0.4)" offset="0"></stop><stop stop-opacity="0.1" stop-color="rgba(169,226,141,0.1)" offset="1"></stop><stop stop-opacity="0.1" stop-color="rgba(169,226,141,0.1)" offset="1"></stop></linearGradient></defs><line x1="0" y1="0" x2="0" y2="203.303" stroke="#b6b6b6" stroke-dasharray="3" stroke-linecap="butt" class="apexcharts-xcrosshairs" x="0" y="0" width="1" height="203.303" fill="#b1b9c4" filter="none" fill-opacity="0.9" stroke-width="1"></line><line x1="0" y1="203.303" x2="0" y2="209.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-xaxis-tick"></line><line x1="108.02083333333333" y1="203.303" x2="108.02083333333333" y2="209.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-xaxis-tick"></line><line x1="216.04166666666666" y1="203.303" x2="216.04166666666666" y2="209.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-xaxis-tick"></line><line x1="324.0625" y1="203.303" x2="324.0625" y2="209.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-xaxis-tick"></line><line x1="432.0833333333333" y1="203.303" x2="432.0833333333333" y2="209.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-xaxis-tick"></line><line x1="540.1041666666666" y1="203.303" x2="540.1041666666666" y2="209.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-xaxis-tick"></line><line x1="648.125" y1="203.303" x2="648.125" y2="209.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-xaxis-tick"></line><g class="apexcharts-grid"><g class="apexcharts-gridlines-horizontal"><line x1="0" y1="50.82575" x2="648.125" y2="50.82575" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line x1="0" y1="101.6515" x2="648.125" y2="101.6515" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line x1="0" y1="152.47725" x2="648.125" y2="152.47725" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line></g><g class="apexcharts-gridlines-vertical"></g><line x1="0" y1="203.303" x2="648.125" y2="203.303" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line><line x1="0" y1="1" x2="0" y2="203.303" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line></g><g class="apexcharts-grid-borders"><line x1="0" y1="0" x2="648.125" y2="0" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line x1="0" y1="203.303" x2="648.125" y2="203.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line x1="0" y1="203.303" x2="648.125" y2="203.303" stroke="#e0e0e0" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt"></line></g><g class="apexcharts-area-series apexcharts-plot-series"><g class="apexcharts-series" zIndex="0" seriesName="Customers" data:longestSeries="true" rel="1" data:realIndex="0"><path d="M0 90.19170388457314C35.95687110305479 90.19170388457314 66.7770463342446 14.78417314095526 102.7339174372994 14.78417314095526C138.6907885403542 14.78417314095526 174.79787966757794 67.95614994735249 210.7547507706327 67.95614994735249C246.71162187368753 67.95614994735249 282.81871300091126 95.025519957882 318.7755841039661 95.025519957882C354.73245520702085 95.025519957882 390.8395463342446 146.7473519422866 426.7964174372994 146.7473519422866C462.7532885403542 146.7473519422866 498.86037966757794 53.45470172742597 534.8172507706327 53.45470172742597C570.7741218736875 53.45470172742597 606.8812130009113 92.12523031389668 642.838084103966 92.12523031389668C642.838084103966 92.12523031389668 648.125 92.12523031389668 648.125 203.303L0 203.303C0 203.303 0 90.19170388457314 0 90.19170388457314 " fill="url(#SvgjsLinearGradient1000)" fill-opacity="1" stroke="none" stroke-opacity="1" stroke-linecap="butt" stroke-width="0" stroke-dasharray="0" class="apexcharts-area" index="0" clip-path="url(#gridRectMasktfofkm7c)" pathTo="M 0 84.370745C 37.807291666666664 84.370745 70.21354166666666 5.08257500000002 108.02083333333333 5.08257500000002C 145.828125 5.08257500000002 178.234375 60.99090000000001 216.04166666666666 60.99090000000001C 253.84895833333331 60.99090000000001 286.2552083333333 89.45332000000002 324.0625 89.45332000000002C 361.86979166666663 89.45332000000002 394.27604166666663 143.83687250000003 432.0833333333333 143.83687250000003C 469.890625 143.83687250000003 502.296875 45.74317500000001 540.1041666666666 45.74317500000001C 577.9114583333333 45.74317500000001 610.3177083333334 86.403775 648.125 86.403775C 648.125 86.403775 648.125 86.403775 648.125 203.303 L 0 203.303z" pathFrom="M 0 203.303 L 0 203.303 L 108.02083333333333 203.303 L 216.04166666666666 203.303 L 324.0625 203.303 L 432.0833333333333 203.303 L 540.1041666666666 203.303 L 648.125 203.303z"></path><path d="M0 90.2061451172072C35.95228038967579 90.2061451172072 66.76852072368362 14.80824186201204 102.72080111335941 14.80824186201204C138.6730815030352 14.80824186201204 174.78935405701696 67.97343005477785 210.74163444669273 67.97343005477785C246.69391483636855 67.97343005477785 282.8101873903503 95.0393440438223 318.7624677800261 95.0393440438223C354.71474816970186 95.0393440438223 390.8310207236836 146.75457255860363 426.7833011133594 146.75457255860363C462.7355815030352 146.75457255860363 498.85185405701696 53.473833274932616 534.8041344466927 53.473833274932616C570.7564148363685 53.473833274932616 606.8726873903503 92.13942468785324 642.8249677800261 92.13942468785324C642.8249677800261 92.13942468785324 648.125 92.13942468785324 648.125 92.13942468785324 " fill="none" fill-opacity="1" stroke="#fa8c16" stroke-opacity="1" stroke-linecap="butt" stroke-width="2" stroke-dasharray="0" class="apexcharts-area" index="0" clip-path="url(#gridRectMasktfofkm7c)" pathTo="M 0 84.370745C 37.807291666666664 84.370745 70.21354166666666 5.08257500000002 108.02083333333333 5.08257500000002C 145.828125 5.08257500000002 178.234375 60.99090000000001 216.04166666666666 60.99090000000001C 253.84895833333331 60.99090000000001 286.2552083333333 89.45332000000002 324.0625 89.45332000000002C 361.86979166666663 89.45332000000002 394.27604166666663 143.83687250000003 432.0833333333333 143.83687250000003C 469.890625 143.83687250000003 502.296875 45.74317500000001 540.1041666666666 45.74317500000001C 577.9114583333333 45.74317500000001 610.3177083333334 86.403775 648.125 86.403775" pathFrom="M 0 203.303 L 0 203.303 L 108.02083333333333 203.303 L 216.04166666666666 203.303 L 324.0625 203.303 L 432.0833333333333 203.303 L 540.1041666666666 203.303 L 648.125 203.303" fill-rule="evenodd"></path><g class="apexcharts-series-markers-wrap apexcharts-element-hidden" data:realIndex="0"><g class="apexcharts-series-markers"><path d="M 0, 0 
+           m -0, 0 
+           a 0,0 0 1,0 0,0 
+           a 0,0 0 1,0 -0,0" fill="#fa8c16" fill-opacity="1" stroke="#ffffff" stroke-opacity="0.9" stroke-linecap="butt" stroke-width="2" stroke-dasharray="0" cx="0" cy="0" shape="circle" class="apexcharts-marker w2tpvtps9f no-pointer-events" default-marker-size="0"></path></g></g></g><g class="apexcharts-series" zIndex="1" seriesName="QueuexEntries" data:longestSeries="true" rel="2" data:realIndex="1"><path d="M0 175.63369032341532C23.38877218102044 175.63369032341532 43.43629119332367 184.75198555774438 66.82506337434411 184.75198555774438C90.21383555536455 184.75198555774438 151.457124526657 201.73088013201223 174.84589670767744 201.73088013201223C198.23466888869788 201.73088013201223 259.47795785999034 173.1182985346349 282.8667300410108 173.1182985346349C306.25550222203117 173.1182985346349 367.49879119332365 195.75682463365874 390.8875633743441 195.75682463365874C414.27633555536454 195.75682463365874 475.519624526657 153.6240121715866 498.9083967076774 153.6240121715866C522.2971688886978 153.6240121715866 583.5404578599904 115.26428739268509 606.9292300410108 115.26428739268509C606.9292300410108 115.26428739268509 648.125 115.26428739268509 648.125 203.303L0 203.303C0 203.303 0 175.63369032341532 0 175.63369032341532 " fill="url(#SvgjsLinearGradient1001)" fill-opacity="1" stroke="none" stroke-opacity="1" stroke-linecap="butt" stroke-width="0" stroke-dasharray="0" class="apexcharts-area" index="1" clip-path="url(#gridRectMasktfofkm7c)" pathTo="M 0 158.57634000000002C 37.807291666666664 158.57634000000002 70.21354166666666 173.31580750000003 108.02083333333333 173.31580750000003C 145.828125 173.31580750000003 178.234375 200.76171250000002 216.04166666666666 200.76171250000002C 253.84895833333331 200.76171250000002 286.2552083333333 154.51028000000002 324.0625 154.51028000000002C 361.86979166666663 154.51028000000002 394.27604166666663 191.10482000000002 432.0833333333333 191.10482000000002C 469.890625 191.10482000000002 502.296875 122.99831500000002 540.1041666666666 122.99831500000002C 577.9114583333333 122.99831500000002 610.3177083333334 60.99090000000001 648.125 60.99090000000001C 648.125 60.99090000000001 648.125 60.99090000000001 648.125 203.303 L 0 203.303z" pathFrom="M 0 203.303 L 0 203.303 L 108.02083333333333 203.303 L 216.04166666666666 203.303 L 324.0625 203.303 L 432.0833333333333 203.303 L 540.1041666666666 203.303 L 648.125 203.303z"></path><path d="M0 175.62679095557064C23.394604192899237 175.62679095557064 43.44712207252715 184.74735984521215 66.84172626542639 184.74735984521215C90.23633045832563 184.74735984521215 151.4679554058605 201.7304881224756 174.86255959875973 201.7304881224756C198.25716379165897 201.7304881224756 259.4887887391938 173.11077195153163 282.88339293209305 173.11077195153163C306.2779971249923 173.11077195153163 367.5096220725271 195.7549429878829 390.90422626542636 195.7549429878829C414.2988304583256 195.7549429878829 475.5304554058605 153.61162467022913 498.9250595987597 153.61162467022913C522.319663791659 153.61162467022913 583.5512887391939 115.24233485863388 606.9458929320931 115.24233485863388C606.9458929320931 115.24233485863388 648.125 115.24233485863388 648.125 115.24233485863388 " fill="none" fill-opacity="1" stroke="#52c41a" stroke-opacity="1" stroke-linecap="butt" stroke-width="2" stroke-dasharray="0" class="apexcharts-area" index="1" clip-path="url(#gridRectMasktfofkm7c)" pathTo="M 0 158.57634000000002C 37.807291666666664 158.57634000000002 70.21354166666666 173.31580750000003 108.02083333333333 173.31580750000003C 145.828125 173.31580750000003 178.234375 200.76171250000002 216.04166666666666 200.76171250000002C 253.84895833333331 200.76171250000002 286.2552083333333 154.51028000000002 324.0625 154.51028000000002C 361.86979166666663 154.51028000000002 394.27604166666663 191.10482000000002 432.0833333333333 191.10482000000002C 469.890625 191.10482000000002 502.296875 122.99831500000002 540.1041666666666 122.99831500000002C 577.9114583333333 122.99831500000002 610.3177083333334 60.99090000000001 648.125 60.99090000000001" pathFrom="M 0 203.303 L 0 203.303 L 108.02083333333333 203.303 L 216.04166666666666 203.303 L 324.0625 203.303 L 432.0833333333333 203.303 L 540.1041666666666 203.303 L 648.125 203.303" fill-rule="evenodd"></path><g class="apexcharts-series-markers-wrap apexcharts-element-hidden" data:realIndex="1"><g class="apexcharts-series-markers"><path d="M 0, 0 
+           m -0, 0 
+           a 0,0 0 1,0 0,0 
+           a 0,0 0 1,0 -0,0" fill="#52c41a" fill-opacity="1" stroke="#ffffff" stroke-opacity="0.9" stroke-linecap="butt" stroke-width="2" stroke-dasharray="0" cx="0" cy="0" shape="circle" class="apexcharts-marker wb97qmmvz no-pointer-events" default-marker-size="0"></path></g></g></g><g class="apexcharts-datalabels" data:realIndex="0"></g><g class="apexcharts-datalabels" data:realIndex="1"></g></g><line x1="0" y1="0" x2="648.125" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line><line x1="0" y1="0" x2="648.125" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line><g class="apexcharts-xaxis" transform="translate(0, 0)"><g class="apexcharts-xaxis-texts-g" transform="translate(0, -4)"><text x="0" y="231.303" text-anchor="middle" dominant-baseline="auto" font-size="12px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-xaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>Sat</tspan><title>Sat</title></text><text x="108.02083333333334" y="231.303" text-anchor="middle" dominant-baseline="auto" font-size="12px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-xaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>Sun</tspan><title>Sun</title></text><text x="216.04166666666666" y="231.303" text-anchor="middle" dominant-baseline="auto" font-size="12px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-xaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>Mon</tspan><title>Mon</title></text><text x="324.06249999999994" y="231.303" text-anchor="middle" dominant-baseline="auto" font-size="12px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-xaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>Tue</tspan><title>Tue</title></text><text x="432.08333333333326" y="231.303" text-anchor="middle" dominant-baseline="auto" font-size="12px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-xaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>Wed</tspan><title>Wed</title></text><text x="540.1041666666666" y="231.303" text-anchor="middle" dominant-baseline="auto" font-size="12px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-xaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>Thu</tspan><title>Thu</title></text><text x="648.125" y="231.303" text-anchor="middle" dominant-baseline="auto" font-size="12px" font-family="Open Sans, sans-serif" font-weight="400" fill="#595959" class="apexcharts-text apexcharts-xaxis-label " style="font-family: &quot;Open Sans&quot;, sans-serif;"><tspan>Fri</tspan><title>Fri</title></text></g></g><g class="apexcharts-yaxis-annotations apexcharts-element-hidden"></g><g class="apexcharts-xaxis-annotations apexcharts-element-hidden"></g><g class="apexcharts-point-annotations apexcharts-element-hidden"></g></g><rect width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe" class="apexcharts-zoom-rect"></rect><rect width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe" class="apexcharts-selection-rect"></rect></svg><div class="apexcharts-legend apexcharts-align-center apx-legend-position-bottom" style="right: 0px; position: absolute; left: 0px; top: 274px; max-height: 150px;"><div class="apexcharts-legend-series" rel="1" seriesname="Customers" data:collapsed="false" style="margin: 4px 5px;"><span class="apexcharts-legend-marker" rel="1" data:collapsed="false" style="height: 16px; width: 16px; left: 0px; top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%"><path d="M 0, 0 
+           m -7, 0 
+           a 7,7 0 1,0 14,0 
+           a 7,7 0 1,0 -14,0" fill="#fa8c16" fill-opacity="1" stroke="#ffffff" stroke-opacity="0.9" stroke-linecap="butt" stroke-width="1" stroke-dasharray="0" cx="0" cy="0" shape="circle" class="apexcharts-legend-marker apexcharts-marker apexcharts-marker-circle" style="transform: translate(50%, 50%);"></path></svg></span><span class="apexcharts-legend-text" rel="1" i="0" data:default-text="Customers" data:collapsed="false" style="color: rgb(55, 61, 63); font-size: 12px; font-weight: 400; font-family: &quot;Open Sans&quot;, sans-serif;">Customers</span></div><div class="apexcharts-legend-series" rel="2" seriesname="QueuexEntries" data:collapsed="false" style="margin: 4px 5px;"><span class="apexcharts-legend-marker" rel="2" data:collapsed="false" style="height: 16px; width: 16px; left: 0px; top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%"><path d="M 0, 0 
+           m -7, 0 
+           a 7,7 0 1,0 14,0 
+           a 7,7 0 1,0 -14,0" fill="#52c41a" fill-opacity="1" stroke="#ffffff" stroke-opacity="0.9" stroke-linecap="butt" stroke-width="1" stroke-dasharray="0" cx="0" cy="0" shape="circle" class="apexcharts-legend-marker apexcharts-marker apexcharts-marker-circle" style="transform: translate(50%, 50%);"></path></svg></span><span class="apexcharts-legend-text" rel="2" i="1" data:default-text="Queue%20Entries" data:collapsed="false" style="color: rgb(55, 61, 63); font-size: 12px; font-weight: 400; font-family: &quot;Open Sans&quot;, sans-serif;">Queue Entries</span></div></div><div class="apexcharts-tooltip apexcharts-theme-light"><div class="apexcharts-tooltip-title" style="font-family: &quot;Open Sans&quot;, sans-serif; font-size: 12px;"></div><div class="apexcharts-tooltip-series-group apexcharts-tooltip-series-group-0" style="order: 1;"><span class="apexcharts-tooltip-marker" shape="circle" style="color: rgb(250, 140, 22);"></span><div class="apexcharts-tooltip-text" style="font-family: &quot;Open Sans&quot;, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div><div class="apexcharts-tooltip-series-group apexcharts-tooltip-series-group-1" style="order: 2;"><span class="apexcharts-tooltip-marker" shape="circle" style="color: rgb(82, 196, 26);"></span><div class="apexcharts-tooltip-text" style="font-family: &quot;Open Sans&quot;, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div></div><div class="apexcharts-xaxistooltip apexcharts-xaxistooltip-bottom apexcharts-theme-light"><div class="apexcharts-xaxistooltip-text" style="font-family: &quot;Open Sans&quot;, sans-serif; font-size: 12px;"></div></div><div class="apexcharts-yaxistooltip apexcharts-yaxistooltip-0 apexcharts-yaxistooltip-left apexcharts-theme-light"><div class="apexcharts-yaxistooltip-text"></div></div></div></div>
+  </div>
+  
+  <div class="chart-container dashboard-animate">
+    <h3>Queue Distribution</h3>
+    <div id="queueChart" style="height: 300px; min-height: 300px;" data-initialized="true"><div id="apexcharts6imv5fyl" class="apexcharts-canvas apexcharts6imv5fyl apexcharts-theme-light" style="width: 328px; height: 300px;"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="apexcharts-svg" xmlns:data="ApexChartsNS" transform="translate(0, 0)" width="328" height="300"><foreignObject x="0" y="0" width="328" height="300"><style type="text/css">.apexcharts-flip-y {
+  transform: scaleY(-1) translateY(-100%);
+  transform-origin: top;
+  transform-box: fill-box;
+}
+.apexcharts-flip-x {
+  transform: scaleX(-1);
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.apexcharts-legend {
+  display: flex;
+  overflow: auto;
+  padding: 0 10px;
+}
+.apexcharts-legend.apexcharts-legend-group-horizontal {
+  flex-direction: column;
+}
+.apexcharts-legend-group {
+  display: flex;
+}
+.apexcharts-legend-group-vertical {
+  flex-direction: column-reverse;
+}
+.apexcharts-legend.apx-legend-position-bottom, .apexcharts-legend.apx-legend-position-top {
+  flex-wrap: wrap
+}
+.apexcharts-legend.apx-legend-position-right, .apexcharts-legend.apx-legend-position-left {
+  flex-direction: column;
+  bottom: 0;
+}
+.apexcharts-legend.apx-legend-position-bottom.apexcharts-align-left, .apexcharts-legend.apx-legend-position-top.apexcharts-align-left, .apexcharts-legend.apx-legend-position-right, .apexcharts-legend.apx-legend-position-left {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.apexcharts-legend.apx-legend-position-bottom.apexcharts-align-center, .apexcharts-legend.apx-legend-position-top.apexcharts-align-center {
+  justify-content: center;
+  align-items: center;
+}
+.apexcharts-legend.apx-legend-position-bottom.apexcharts-align-right, .apexcharts-legend.apx-legend-position-top.apexcharts-align-right {
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+.apexcharts-legend-series {
+  cursor: pointer;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+}
+.apexcharts-legend-text {
+  position: relative;
+  font-size: 14px;
+}
+.apexcharts-legend-text *, .apexcharts-legend-marker * {
+  pointer-events: none;
+}
+.apexcharts-legend-marker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 1px;
+}
+
+.apexcharts-legend-series.apexcharts-no-click {
+  cursor: auto;
+}
+.apexcharts-legend .apexcharts-hidden-zero-series, .apexcharts-legend .apexcharts-hidden-null-series {
+  display: none !important;
+}
+.apexcharts-inactive-legend {
+  opacity: 0.45;
+} </style></foreignObject><g class="apexcharts-inner apexcharts-graphical" transform="translate(0, 0)"><defs><clipPath id="gridRectMask6imv5fyl"><rect width="334" height="272" x="-3" y="-3" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="gridRectBarMask6imv5fyl"><rect width="334" height="272" x="-3" y="-3" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="gridRectMarkerMask6imv5fyl"><rect width="334" height="266" x="-3" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="forecastMask6imv5fyl"></clipPath><clipPath id="nonForecastMask6imv5fyl"></clipPath></defs><g class="apexcharts-pie"><g transform="translate(0, 0) scale(1)"><circle r="80.44146341463416" cx="164" cy="133" fill="transparent"></circle><g class="apexcharts-slices"><g class="apexcharts-series apexcharts-pie-series" seriesName="Active" rel="1" data:realIndex="0"><path d="M 164 9.243902439024367 A 123.75609756097563 123.75609756097563 0 0 1 281.6990430166246 171.24273730386545 L 240.504377960806 157.85777924751255 A 80.44146341463416 80.44146341463416 0 0 0 164 52.55853658536584 L 164 9.243902439024367 z " fill="rgba(250,140,22,1)" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-linecap="butt" stroke-width="2" stroke-dasharray="0" class="apexcharts-pie-area apexcharts-donut-slice-0" index="0" j="0" data:angle="108" data:startAngle="0" data:strokeWidth="2" data:value="30" data:pathOrig="M 164 9.243902439024367 A 123.75609756097563 123.75609756097563 0 0 1 281.6990430166246 171.24273730386545 L 240.504377960806 157.85777924751255 A 80.44146341463416 80.44146341463416 0 0 0 164 52.55853658536584 L 164 9.243902439024367 z "></path></g><g class="apexcharts-series apexcharts-pie-series" seriesName="Waiting" rel="2" data:realIndex="1"><path d="M 281.6990430166246 171.24273730386545 A 123.75609756097563 123.75609756097563 0 0 1 125.75726269613456 250.69904301662464 L 139.14222075248748 209.504377960806 A 80.44146341463416 80.44146341463416 0 0 0 240.504377960806 157.85777924751255 L 281.6990430166246 171.24273730386545 z " fill="rgba(250,219,20,1)" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-linecap="butt" stroke-width="1.5143810494976635" stroke-dasharray="0" class="apexcharts-pie-area apexcharts-donut-slice-1" index="0" j="1" data:angle="90" data:startAngle="108" data:strokeWidth="2" data:value="25" data:pathOrig="M 281.6990430166246 171.24273730386545 A 123.75609756097563 123.75609756097563 0 0 1 125.75726269613456 250.69904301662464 L 139.14222075248748 209.504377960806 A 80.44146341463416 80.44146341463416 0 0 0 240.504377960806 157.85777924751255 L 281.6990430166246 171.24273730386545 z "></path></g><g class="apexcharts-series apexcharts-pie-series" seriesName="Completed" rel="3" data:realIndex="2"><path d="M 125.75726269613456 250.69904301662464 A 123.75609756097563 123.75609756097563 0 0 1 44.811476305897074 99.68832782428981 L 86.5274595988331 111.34741308578838 A 80.44146341463416 80.44146341463416 0 0 0 139.14222075248748 209.504377960806 L 125.75726269613456 250.69904301662464 z " fill="rgba(82,196,26,1)" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-linecap="butt" stroke-width="0" stroke-dasharray="0" class="apexcharts-pie-area apexcharts-donut-slice-2" index="0" j="2" data:angle="126" data:startAngle="198" data:strokeWidth="2" data:value="35" data:pathOrig="M 125.75726269613456 250.69904301662464 A 123.75609756097563 123.75609756097563 0 0 1 44.811476305897074 99.68832782428981 L 86.5274595988331 111.34741308578838 A 80.44146341463416 80.44146341463416 0 0 0 139.14222075248748 209.504377960806 L 125.75726269613456 250.69904301662464 z "></path></g><g class="apexcharts-series apexcharts-pie-series" seriesName="Cancelled" rel="4" data:realIndex="3"><path d="M0 0 " fill="rgba(207,19,34,1)" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-linecap="butt" stroke-width="0" stroke-dasharray="0" class="apexcharts-pie-area apexcharts-donut-slice-3" index="0" j="3" data:angle="36" data:startAngle="324" data:strokeWidth="2" data:value="10"></path></g></g></g><g class="apexcharts-datalabels-group" transform="translate(0, 0) scale(1)"><text x="164" y="123" text-anchor="middle" dominant-baseline="auto" font-size="16px" font-family="Helvetica, Arial, sans-serif" font-weight="400" fill="#373d3f" class="apexcharts-text apexcharts-datalabel-label" style="font-family: Helvetica, Arial, sans-serif;">Total</text><text x="164" y="159" text-anchor="middle" dominant-baseline="auto" font-size="20px" font-family="Helvetica, Arial, sans-serif" font-weight="400" fill="#373d3f" class="apexcharts-text apexcharts-datalabel-value" style="font-family: Helvetica, Arial, sans-serif;">100</text></g></g><line x1="0" y1="0" x2="328" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line><line x1="0" y1="0" x2="328" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line></g><g class="apexcharts-datalabels-group" transform="translate(0, 0) scale(1)"></g></svg><div class="apexcharts-legend apexcharts-align-center apx-legend-position-bottom" style="right: 0px; position: absolute; left: 0px; top: 275px; max-height: 150px;"><div class="apexcharts-legend-series" rel="1" seriesname="Active" data:collapsed="false" style="margin: 4px 5px;"><span class="apexcharts-legend-marker" rel="1" data:collapsed="false" style="height: 16px; width: 16px; left: 0px; top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%"><path d="M 0, 0 
+           m -7, 0 
+           a 7,7 0 1,0 14,0 
+           a 7,7 0 1,0 -14,0" fill="#fa8c16" fill-opacity="1" stroke="#ffffff" stroke-opacity="0.9" stroke-linecap="butt" stroke-width="1" stroke-dasharray="0" cx="0" cy="0" shape="circle" class="apexcharts-legend-marker apexcharts-marker apexcharts-marker-circle" style="transform: translate(50%, 50%);"></path></svg></span><span class="apexcharts-legend-text" rel="1" i="0" data:default-text="Active" data:collapsed="false" style="color: rgb(55, 61, 63); font-size: 12px; font-weight: 400; font-family: Helvetica, Arial, sans-serif;">Active</span></div><div class="apexcharts-legend-series" rel="2" seriesname="Waiting" data:collapsed="false" style="margin: 4px 5px;"><span class="apexcharts-legend-marker" rel="2" data:collapsed="false" style="height: 16px; width: 16px; left: 0px; top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%"><path d="M 0, 0 
+           m -7, 0 
+           a 7,7 0 1,0 14,0 
+           a 7,7 0 1,0 -14,0" fill="#fadb14" fill-opacity="1" stroke="#ffffff" stroke-opacity="0.9" stroke-linecap="butt" stroke-width="1" stroke-dasharray="0" cx="0" cy="0" shape="circle" class="apexcharts-legend-marker apexcharts-marker apexcharts-marker-circle" style="transform: translate(50%, 50%);"></path></svg></span><span class="apexcharts-legend-text" rel="2" i="1" data:default-text="Waiting" data:collapsed="false" style="color: rgb(55, 61, 63); font-size: 12px; font-weight: 400; font-family: Helvetica, Arial, sans-serif;">Waiting</span></div><div class="apexcharts-legend-series" rel="3" seriesname="Completed" data:collapsed="false" style="margin: 4px 5px;"><span class="apexcharts-legend-marker" rel="3" data:collapsed="false" style="height: 16px; width: 16px; left: 0px; top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%"><path d="M 0, 0 
+           m -7, 0 
+           a 7,7 0 1,0 14,0 
+           a 7,7 0 1,0 -14,0" fill="#52c41a" fill-opacity="1" stroke="#ffffff" stroke-opacity="0.9" stroke-linecap="butt" stroke-width="1" stroke-dasharray="0" cx="0" cy="0" shape="circle" class="apexcharts-legend-marker apexcharts-marker apexcharts-marker-circle" style="transform: translate(50%, 50%);"></path></svg></span><span class="apexcharts-legend-text" rel="3" i="2" data:default-text="Completed" data:collapsed="false" style="color: rgb(55, 61, 63); font-size: 12px; font-weight: 400; font-family: Helvetica, Arial, sans-serif;">Completed</span></div><div class="apexcharts-legend-series" rel="4" seriesname="Cancelled" data:collapsed="false" style="margin: 4px 5px;"><span class="apexcharts-legend-marker" rel="4" data:collapsed="false" style="height: 16px; width: 16px; left: 0px; top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%"><path d="M 0, 0 
+           m -7, 0 
+           a 7,7 0 1,0 14,0 
+           a 7,7 0 1,0 -14,0" fill="#cf1322" fill-opacity="1" stroke="#ffffff" stroke-opacity="0.9" stroke-linecap="butt" stroke-width="1" stroke-dasharray="0" cx="0" cy="0" shape="circle" class="apexcharts-legend-marker apexcharts-marker apexcharts-marker-circle" style="transform: translate(50%, 50%);"></path></svg></span><span class="apexcharts-legend-text" rel="4" i="3" data:default-text="Cancelled" data:collapsed="false" style="color: rgb(55, 61, 63); font-size: 12px; font-weight: 400; font-family: Helvetica, Arial, sans-serif;">Cancelled</span></div></div><div class="apexcharts-tooltip apexcharts-theme-dark"><div class="apexcharts-tooltip-series-group apexcharts-tooltip-series-group-0" style="order: 1;"><span class="apexcharts-tooltip-marker" shape="circle" style="background-color: rgb(250, 140, 22);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div><div class="apexcharts-tooltip-series-group apexcharts-tooltip-series-group-1" style="order: 2;"><span class="apexcharts-tooltip-marker" shape="circle" style="background-color: rgb(250, 219, 20);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div><div class="apexcharts-tooltip-series-group apexcharts-tooltip-series-group-2" style="order: 3;"><span class="apexcharts-tooltip-marker" shape="circle" style="background-color: rgb(82, 196, 26);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div><div class="apexcharts-tooltip-series-group apexcharts-tooltip-series-group-3" style="order: 4;"><span class="apexcharts-tooltip-marker" shape="circle" style="background-color: rgb(207, 19, 34);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div></div></div></div>
+  </div>
+</div>
+
+<!-- System Information -->
+<div class="card dashboard-animate" style="margin-top: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">System Information</h3>
+  </div>
+  <div class="card-body">
+    <div class="system-info-grid">
+      <div class="info-item">
+        <h4>
+          <span>🗄️</span> Database
+        </h4>
+        <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">PostgreSQL</p>
+        <div class="progress-bar" style="width: 100%; height: 6px; background: var(--sh-gray-200); border-radius: 3px; overflow: hidden; margin-top: 0.5rem;">
+          <div class="progress-fill" style="height: 100%; background: var(--sh-primary-orange); border-radius: 3px; transition: width 0.3s ease; width: 80%;"></div>
+        </div>
+        <p style="margin-top: 0.5rem;">
+          Status: <span class="status-badge status-degraded">
+            Degraded
+          </span>
+        </p>
+      </div>
+      
+      <div class="info-item">
+        <h4>
+          <span>📊</span> Tenants
+        </h4>
+        <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--sh-gray-900);">3</p>
+        <p>
+          <span class="status-badge status-active">3 Active</span>
+        </p>
+      </div>
+      
+      <div class="info-item">
+        <h4>
+          <span>🏪</span> Merchants
+        </h4>
+        <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--sh-gray-900);">3</p>
+        <p>
+          <span class="status-badge status-active">3 Active</span>
+        </p>
+      </div>
+      
+      <div class="info-item">
+        <h4>
+          <span>📦</span> Version
+        </h4>
+        <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">StoreHub QMS v2.0</p>
+        <p>
+          <span class="status-badge status-active">✓ Latest Version</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      </div>
+    </main>
+  </div>
+  
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('mobile-open');
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+      
+      if (window.innerWidth <= 768 && 
+          !sidebar.contains(event.target) && 
+          !menuBtn.contains(event.target)) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+  </script>
+
+<div class="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 1050;"></div></body></html>

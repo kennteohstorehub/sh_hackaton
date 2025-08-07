@@ -1663,7 +1663,8 @@ input:checked + .toggle-slider:before {
 }
 
 /* FIXED MODAL - Prevent overflow during modal operations */
-.modal {
+/* Note: Using specific class to avoid conflicts with stop-queue-modal */
+.dashboard-modal {
     display: none;
     position: fixed;
     top: 0;
@@ -1679,13 +1680,14 @@ input:checked + .toggle-slider:before {
     max-width: 100vw;
 }
 
-.modal.active {
+.dashboard-modal.active {
     display: flex;
     opacity: 1;
     align-items: center;
     justify-content: center;
 }
 
+.dashboard-modal .modal-content,
 .modal-content {
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);

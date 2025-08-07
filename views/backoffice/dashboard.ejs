@@ -1,18 +1,13 @@
 
-<!-- Page Header -->
-<div class="content-header">
-  <h1 class="content-title">Dashboard</h1>
-  <p class="content-subtitle">Monitor your queue management system and oversee all merchant operations</p>
-</div>
 
 <!-- Statistics Cards -->
 <div class="dashboard-grid">
-  <div class="stats-card tenants dashboard-animate">
+  <div class="stats-card merchants dashboard-animate">
     <div class="stats-icon">🏢</div>
-    <div class="stats-value"><%= systemStats?.tenants?.total || 0 %></div>
-    <div class="stats-label">Total Tenants</div>
+    <div class="stats-value"><%= systemStats?.merchants?.total || 0 %></div>
+    <div class="stats-label">Total Merchants</div>
     <div class="stats-trend trend-positive">
-      <span>↑ <%= systemStats?.tenants?.active || 0 %> active</span>
+      <span>↑ <%= systemStats?.merchants?.active || 0 %> active</span>
     </div>
   </div>
   
@@ -46,101 +41,71 @@
   </div>
 </div>
 
-<!-- Main Content Grid -->
-<div class="content-grid">
-  <!-- Recent Activity -->
-  <div class="card dashboard-animate">
-    <div class="card-header">
-      <h3 class="card-title">Recent Activity</h3>
-    </div>
-    <div class="card-body">
-      <div class="activity-feed">
-        <% if (typeof recentActivity !== 'undefined' && recentActivity && recentActivity.length > 0) { %>
-          <% recentActivity.forEach((activity, index) => { %>
-            <div class="activity-item">
-              <div class="activity-indicator"></div>
-              <div class="activity-content">
-                <div class="activity-action"><%= activity.action %></div>
-                <div class="activity-details"><%= activity.details %></div>
-                <div class="activity-time"><%= activity.timestamp %></div>
-              </div>
-            </div>
-          <% }) %>
-        <% } else { %>
-          <div class="empty-state">
-            <div class="empty-state-icon">📋</div>
-            <p>No recent activity</p>
-            <p>System activities will appear here</p>
-          </div>
-        <% } %>
-      </div>
-    </div>
+<!-- Recent Activity -->
+<div class="card dashboard-animate" style="margin-top: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">Recent Activity</h3>
   </div>
-  
-  <!-- Quick Actions -->
-  <div class="card dashboard-animate">
-    <div class="card-header">
-      <h3 class="card-title">Quick Actions</h3>
-    </div>
-    <div class="card-body">
-      <div class="quick-actions" style="display: flex; flex-direction: column; gap: 0.75rem;">
-        <a href="/backoffice/tenants/create" class="btn btn-primary">
-          <span>➕</span>
-          Add New Tenant
-        </a>
-        <a href="/backoffice/merchants" class="btn btn-secondary">
-          <span>🏪</span>
-          View All Merchants
-        </a>
-        <a href="/backoffice/audit-logs" class="btn btn-secondary">
-          <span>📝</span>
-          View Audit Logs
-        </a>
-        <a href="/backoffice/settings" class="btn btn-secondary">
-          <span>⚙️</span>
-          System Settings
-        </a>
-      </div>
+  <div class="card-body">
+    <div class="activity-feed">
+      <% if (typeof recentActivity !== 'undefined' && recentActivity && recentActivity.length > 0) { %>
+        <% recentActivity.forEach((activity, index) => { %>
+          <div class="activity-item">
+            <div class="activity-indicator"></div>
+            <div class="activity-content">
+              <div class="activity-action"><%= activity.action %></div>
+              <div class="activity-details"><%= activity.details %></div>
+              <div class="activity-time"><%= activity.timestamp %></div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <p>No recent activity</p>
+          <p>System activities will appear here</p>
+        </div>
+      <% } %>
     </div>
   </div>
 </div>
 
-<!-- Recent Tenants -->
+<!-- Recent Merchants -->
 <div class="card dashboard-animate" style="margin-top: 2rem;">
   <div class="card-header">
-    <h3 class="card-title">Recent Tenants</h3>
+    <h3 class="card-title">Recent Merchants</h3>
   </div>
   <div class="card-body" style="padding: 0;">
-    <% if (typeof recentTenants !== 'undefined' && recentTenants && recentTenants.length > 0) { %>
+    <% if (typeof recentMerchants !== 'undefined' && recentMerchants && recentMerchants.length > 0) { %>
       <div class="table-responsive">
         <table class="dashboard-table">
           <thead>
             <tr>
-              <th>Tenant Name</th>
+              <th>Merchant Name</th>
               <th>Subdomain</th>
-              <th>Merchants</th>
+              <th>Queues</th>
               <th>Users</th>
               <th>Status</th>
               <th>Created</th>
             </tr>
           </thead>
           <tbody>
-            <% recentTenants.forEach((tenant) => { %>
+            <% recentMerchants.forEach((merchant) => { %>
               <tr>
                 <td>
-                  <strong><%= tenant.name %></strong>
+                  <strong><%= merchant.name %></strong>
                 </td>
                 <td>
-                  <code style="background: var(--sh-primary-orange-light); color: var(--sh-primary-orange); padding: 0.25rem 0.5rem; border-radius: 4px;"><%= tenant.slug %></code>
+                  <code style="background: var(--sh-primary-orange-light); color: var(--sh-primary-orange); padding: 0.25rem 0.5rem; border-radius: 4px;"><%= merchant.slug %></code>
                 </td>
-                <td><%= tenant._count?.merchants || 0 %></td>
-                <td><%= tenant._count?.users || 0 %></td>
+                <td><%= merchant._count?.queues || 0 %></td>
+                <td><%= merchant._count?.users || 0 %></td>
                 <td>
-                  <span class="status-badge <%= tenant.isActive ? 'status-active' : 'status-inactive' %>">
-                    <%= tenant.isActive ? 'Active' : 'Inactive' %>
+                  <span class="status-badge <%= merchant.isActive ? 'status-active' : 'status-inactive' %>">
+                    <%= merchant.isActive ? 'Active' : 'Inactive' %>
                   </span>
                 </td>
-                <td><%= new Date(tenant.createdAt).toLocaleDateString() %></td>
+                <td><%= new Date(merchant.createdAt).toLocaleDateString() %></td>
               </tr>
             <% }) %>
           </tbody>
@@ -149,9 +114,9 @@
     <% } else { %>
       <div class="empty-state">
         <div class="empty-state-icon">🏢</div>
-        <p>No tenants found</p>
-        <a href="/backoffice/tenants/create" class="btn btn-primary">
-          Create Your First Tenant
+        <p>No merchants found</p>
+        <a href="/backoffice/merchants/create" class="btn btn-primary">
+          Create Your First Merchant
         </a>
       </div>
     <% } %>
@@ -195,11 +160,11 @@
       
       <div class="info-item">
         <h4>
-          <span>📊</span> Tenants
+          <span>📊</span> Merchants
         </h4>
-        <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--sh-gray-900);"><%= systemStats?.tenants?.total || 0 %></p>
+        <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--sh-gray-900);"><%= systemStats?.merchants?.total || 0 %></p>
         <p>
-          <span class="status-badge status-active"><%= systemStats?.tenants?.active || 0 %> Active</span>
+          <span class="status-badge status-active"><%= systemStats?.merchants?.active || 0 %> Active</span>
         </p>
       </div>
       

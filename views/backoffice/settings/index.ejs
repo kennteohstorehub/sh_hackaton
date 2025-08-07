@@ -1,155 +1,124 @@
-<div class="container-fluid mt-4">
-  <!-- Header with Gradient Background -->
-  <div class="row mb-5">
-    <div class="col-12">
-      <div class="header-card p-4 rounded-4 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h2 class="mb-2 text-white"><%= contentTitle %></h2>
-            <p class="text-white-75 mb-0 fs-5"><%= contentSubtitle %></p>
-          </div>
-          <div>
-            <button class="btn btn-light btn-lg rounded-3 px-4" onclick="refreshSystemStats()">
-              <i class="fas fa-sync-alt me-2"></i>Refresh Stats
-            </button>
-          </div>
-        </div>
-      </div>
+<div class="storehub-container">
+  <!-- Header -->
+  <div class="storehub-page-header">
+    <div class="header-content">
+      <h1 class="storehub-page-title"><%= contentTitle %></h1>
+      <p class="storehub-page-subtitle"><%= contentSubtitle %></p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="refreshSystemStats()">
+        <span class="btn-icon">🔄</span>
+        Refresh Stats
+      </button>
     </div>
   </div>
 
-  <div class="row">
+  <div class="settings-layout">
     <!-- Settings Navigation -->
-    <div class="col-md-3">
-      <div class="modern-nav-card rounded-4 shadow-sm p-3">
-        <h6 class="nav-title mb-4 text-muted fw-bold">SETTINGS</h6>
-        <div class="nav flex-column nav-pills modern-nav" id="settingsTab" role="tablist">
-          <button class="nav-link active rounded-3 mb-2" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile" type="button" role="tab">
-            <div class="d-flex align-items-center">
-              <div class="nav-icon-bg me-3">
-                <i class="fas fa-user"></i>
-              </div>
-              <span class="fw-medium">Profile</span>
-            </div>
-          </button>
-          <button class="nav-link rounded-3 mb-2" id="system-tab" data-bs-toggle="pill" data-bs-target="#system" type="button" role="tab">
-            <div class="d-flex align-items-center">
-              <div class="nav-icon-bg me-3">
-                <i class="fas fa-cogs"></i>
-              </div>
-              <span class="fw-medium">System Settings</span>
-            </div>
-          </button>
-          <button class="nav-link rounded-3 mb-2" id="security-tab" data-bs-toggle="pill" data-bs-target="#security" type="button" role="tab">
-            <div class="d-flex align-items-center">
-              <div class="nav-icon-bg me-3">
-                <i class="fas fa-shield-alt"></i>
-              </div>
-              <span class="fw-medium">Security</span>
-            </div>
-          </button>
-          <button class="nav-link rounded-3 mb-2" id="email-tab" data-bs-toggle="pill" data-bs-target="#email" type="button" role="tab">
-            <div class="d-flex align-items-center">
-              <div class="nav-icon-bg me-3">
-                <i class="fas fa-envelope"></i>
-              </div>
-              <span class="fw-medium">Email Configuration</span>
-            </div>
-          </button>
-          <button class="nav-link rounded-3 mb-2" id="notifications-tab" data-bs-toggle="pill" data-bs-target="#notifications" type="button" role="tab">
-            <div class="d-flex align-items-center">
-              <div class="nav-icon-bg me-3">
-                <i class="fas fa-bell"></i>
-              </div>
-              <span class="fw-medium">Notifications</span>
-            </div>
-          </button>
-          <button class="nav-link rounded-3 mb-2" id="stats-tab" data-bs-toggle="pill" data-bs-target="#stats" type="button" role="tab">
-            <div class="d-flex align-items-center">
-              <div class="nav-icon-bg me-3">
-                <i class="fas fa-chart-bar"></i>
-              </div>
-              <span class="fw-medium">System Stats</span>
-            </div>
-          </button>
+    <div class="settings-nav">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="nav-title">SETTINGS</h6>
+          <nav class="nav-pills" id="settingsTab" role="tablist">
+            <button class="nav-link active" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile" type="button" role="tab">
+              <span class="nav-icon">👤</span>
+              <span>Profile</span>
+            </button>
+            <button class="nav-link" id="system-tab" data-bs-toggle="pill" data-bs-target="#system" type="button" role="tab">
+              <span class="nav-icon">⚙️</span>
+              <span>System Settings</span>
+            </button>
+            <button class="nav-link" id="security-tab" data-bs-toggle="pill" data-bs-target="#security" type="button" role="tab">
+              <span class="nav-icon">🛡️</span>
+              <span>Security</span>
+            </button>
+            <button class="nav-link" id="email-tab" data-bs-toggle="pill" data-bs-target="#email" type="button" role="tab">
+              <span class="nav-icon">✉️</span>
+              <span>Email Configuration</span>
+            </button>
+            <button class="nav-link" id="notifications-tab" data-bs-toggle="pill" data-bs-target="#notifications" type="button" role="tab">
+              <span class="nav-icon">🔔</span>
+              <span>Notifications</span>
+            </button>
+            <button class="nav-link" id="stats-tab" data-bs-toggle="pill" data-bs-target="#stats" type="button" role="tab">
+              <span class="nav-icon">📊</span>
+              <span>System Stats</span>
+            </button>
+          </nav>
         </div>
       </div>
     </div>
 
     <!-- Settings Content -->
-    <div class="col-md-9">
+    <div class="settings-content">
       <div class="tab-content" id="settingsTabContent">
         <!-- Profile Settings -->
         <div class="tab-pane fade show active" id="profile" role="tabpanel">
-          <div class="modern-card rounded-4 shadow-sm">
-            <div class="modern-card-header p-4 border-bottom-0">
-              <div class="d-flex align-items-center">
-                <div class="header-icon-bg me-3">
-                  <i class="fas fa-user"></i>
-                </div>
-                <h5 class="mb-0 fw-bold">Profile Settings</h5>
-              </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <span class="card-icon">👤</span>
+                Profile Settings
+              </h3>
             </div>
-            <div class="modern-card-body p-4">
-              <form method="POST" action="/backoffice/settings/profile">
+            <div class="card-body">
+              <form method="POST" action="/backoffice/settings/profile" class="storehub-form">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 
-                <div class="row mb-4">
-                  <div class="col-md-6">
-                    <label class="form-label fw-medium text-dark mb-2">Name</label>
-                    <input type="text" class="form-control modern-input rounded-3 py-3" name="name" value="<%= backOfficeUser.fullName %>" required>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" name="name" value="<%= backOfficeUser.fullName %>" required>
                   </div>
-                  <div class="col-md-6">
-                    <label class="form-label fw-medium text-dark mb-2">Email</label>
-                    <input type="email" class="form-control modern-input rounded-3 py-3" name="email" value="<%= backOfficeUser.email %>" required>
+                  <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" value="<%= backOfficeUser.email %>" required>
                   </div>
                 </div>
 
-                <div class="divider my-5"></div>
+                <div class="form-divider"></div>
 
-                <h6 class="mb-4 fw-bold text-dark d-flex align-items-center">
-                  <i class="fas fa-key me-2 text-primary"></i>Change Password
+                <h6 class="form-section-title">
+                  <span class="section-icon">🔑</span>
+                  Change Password
                 </h6>
-                <div class="row mb-4">
-                  <div class="col-md-4">
-                    <label class="form-label fw-medium text-dark mb-2">Current Password</label>
-                    <input type="password" class="form-control modern-input rounded-3 py-3" name="currentPassword" placeholder="Leave blank to keep current">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" class="form-control" name="currentPassword" placeholder="Leave blank to keep current">
                   </div>
-                  <div class="col-md-4">
-                    <label class="form-label fw-medium text-dark mb-2">New Password</label>
-                    <input type="password" class="form-control modern-input rounded-3 py-3" name="newPassword" placeholder="Minimum 8 characters">
+                  <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-control" name="newPassword" placeholder="Minimum 8 characters">
                   </div>
-                  <div class="col-md-4">
-                    <label class="form-label fw-medium text-dark mb-2">Confirm New Password</label>
-                    <input type="password" class="form-control modern-input rounded-3 py-3" name="confirmPassword" placeholder="Confirm new password">
+                  <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" name="confirmPassword" placeholder="Confirm new password">
                   </div>
                 </div>
 
-                <div class="modern-info-card rounded-3 p-4 mb-4">
-                  <div class="d-flex align-items-start">
-                    <div class="info-icon-bg me-3">
-                      <i class="fas fa-info-circle"></i>
+                <div class="info-card">
+                  <div class="info-icon">ℹ️</div>
+                  <div class="info-content">
+                    <h6>Account Information</h6>
+                    <div class="info-item">
+                      <span class="info-label">Account Type:</span>
+                      <span class="badge badge-primary">BackOffice User</span>
                     </div>
-                    <div>
-                      <h6 class="fw-bold mb-2">Account Information</h6>
-                      <div class="info-item mb-2">
-                        <span class="text-muted me-2">Account Type:</span>
-                        <span class="badge modern-badge bg-primary">BackOffice User</span>
-                      </div>
-                      <div class="info-item mb-2">
-                        <span class="text-muted me-2">Member since:</span>
-                        <span class="fw-medium"><%= new Date(backOfficeUser.createdAt).toLocaleDateString() %></span>
-                      </div>
-                      <div class="info-item">
-                        <span class="text-muted me-2">Last login:</span>
-                        <span class="fw-medium"><%= backOfficeUser.lastLogin ? new Date(backOfficeUser.lastLogin).toLocaleString() : 'Never' %></span>
-                      </div>
+                    <div class="info-item">
+                      <span class="info-label">Member since:</span>
+                      <span class="info-value"><%= new Date(backOfficeUser.createdAt).toLocaleDateString() %></span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Last login:</span>
+                      <span class="info-value"><%= backOfficeUser.lastLogin ? new Date(backOfficeUser.lastLogin).toLocaleString() : 'Never' %></span>
                     </div>
                   </div>
                 </div>
 
-                <button type="submit" class="btn modern-btn-primary rounded-3 px-4 py-3">
-                  <i class="fas fa-save me-2"></i>Update Profile
+                <button type="submit" class="btn btn-primary">
+                  <span class="btn-icon">💾</span>
+                  Update Profile
                 </button>
               </form>
             </div>
@@ -160,74 +129,76 @@
         <div class="tab-pane fade" id="system" role="tabpanel">
           <div class="card">
             <div class="card-header">
-              <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>System Settings</h5>
+              <h3 class="card-title">
+                <span class="card-icon">⚙️</span>
+                System Settings
+              </h3>
             </div>
             <div class="card-body">
-              <form method="POST" action="/backoffice/settings/general">
+              <form method="POST" action="/backoffice/settings/general" class="storehub-form">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 
-                <div class="row mb-4">
-                  <div class="col-md-6">
+                <div class="form-row">
+                  <div class="form-group">
                     <label class="form-label">Site Name</label>
-                    <input type="text" class="form-control" name="siteName" value="<%= generalSettings.siteName || 'QMS BackOffice' %>" required>
+                    <input type="text" class="form-control" name="siteName" value="<%= typeof generalSettings !== 'undefined' && generalSettings.siteName ? generalSettings.siteName : 'QMS BackOffice' %>" required>
                   </div>
-                  <div class="col-md-6">
+                  <div class="form-group">
                     <label class="form-label">Support Email</label>
-                    <input type="email" class="form-control" name="supportEmail" value="<%= generalSettings.supportEmail || 'support@storehubqms.com' %>" required>
+                    <input type="email" class="form-control" name="supportEmail" value="<%= typeof generalSettings !== 'undefined' && generalSettings.supportEmail ? generalSettings.supportEmail : 'support@storehubqms.com' %>" required>
                   </div>
                 </div>
 
-                <div class="row mb-4">
-                  <div class="col-md-6">
+                <div class="form-row">
+                  <div class="form-group">
                     <label class="form-label">Timezone</label>
                     <select class="form-control" name="timezone">
-                      <option value="Asia/Kuala_Lumpur" <%= generalSettings.timezone === 'Asia/Kuala_Lumpur' ? 'selected' : '' %>>Asia/Kuala_Lumpur (GMT+8)</option>
-                      <option value="Asia/Singapore" <%= generalSettings.timezone === 'Asia/Singapore' ? 'selected' : '' %>>Asia/Singapore (GMT+8)</option>
-                      <option value="Asia/Jakarta" <%= generalSettings.timezone === 'Asia/Jakarta' ? 'selected' : '' %>>Asia/Jakarta (GMT+7)</option>
-                      <option value="Asia/Bangkok" <%= generalSettings.timezone === 'Asia/Bangkok' ? 'selected' : '' %>>Asia/Bangkok (GMT+7)</option>
-                      <option value="Asia/Manila" <%= generalSettings.timezone === 'Asia/Manila' ? 'selected' : '' %>>Asia/Manila (GMT+8)</option>
+                      <option value="Asia/Kuala_Lumpur" <%= typeof generalSettings !== 'undefined' && generalSettings.timezone === 'Asia/Kuala_Lumpur' ? 'selected' : '' %>>Asia/Kuala_Lumpur (GMT+8)</option>
+                      <option value="Asia/Singapore" <%= typeof generalSettings !== 'undefined' && generalSettings.timezone === 'Asia/Singapore' ? 'selected' : '' %>>Asia/Singapore (GMT+8)</option>
+                      <option value="Asia/Jakarta" <%= typeof generalSettings !== 'undefined' && generalSettings.timezone === 'Asia/Jakarta' ? 'selected' : '' %>>Asia/Jakarta (GMT+7)</option>
+                      <option value="Asia/Bangkok" <%= typeof generalSettings !== 'undefined' && generalSettings.timezone === 'Asia/Bangkok' ? 'selected' : '' %>>Asia/Bangkok (GMT+7)</option>
+                      <option value="Asia/Manila" <%= typeof generalSettings !== 'undefined' && generalSettings.timezone === 'Asia/Manila' ? 'selected' : '' %>>Asia/Manila (GMT+8)</option>
                     </select>
                   </div>
-                  <div class="col-md-6">
+                  <div class="form-group">
                     <label class="form-label">Language</label>
                     <select class="form-control" name="language">
-                      <option value="en" <%= generalSettings.language === 'en' ? 'selected' : '' %>>English</option>
-                      <option value="ms" <%= generalSettings.language === 'ms' ? 'selected' : '' %>>Bahasa Malaysia</option>
-                      <option value="zh" <%= generalSettings.language === 'zh' ? 'selected' : '' %>>中文</option>
+                      <option value="en" <%= typeof generalSettings !== 'undefined' && generalSettings.language === 'en' ? 'selected' : '' %>>English</option>
+                      <option value="ms" <%= typeof generalSettings !== 'undefined' && generalSettings.language === 'ms' ? 'selected' : '' %>>Bahasa Malaysia</option>
+                      <option value="zh" <%= typeof generalSettings !== 'undefined' && generalSettings.language === 'zh' ? 'selected' : '' %>>中文</option>
                     </select>
                   </div>
                 </div>
 
-                <div class="row mb-4">
-                  <div class="col-md-6">
+                <div class="form-row">
+                  <div class="form-group">
                     <label class="form-label">Date Format</label>
                     <select class="form-control" name="dateFormat">
-                      <option value="DD/MM/YYYY" <%= generalSettings.dateFormat === 'DD/MM/YYYY' ? 'selected' : '' %>>DD/MM/YYYY</option>
-                      <option value="MM/DD/YYYY" <%= generalSettings.dateFormat === 'MM/DD/YYYY' ? 'selected' : '' %>>MM/DD/YYYY</option>
-                      <option value="YYYY-MM-DD" <%= generalSettings.dateFormat === 'YYYY-MM-DD' ? 'selected' : '' %>>YYYY-MM-DD</option>
+                      <option value="DD/MM/YYYY" <%= typeof generalSettings !== 'undefined' && generalSettings.dateFormat === 'DD/MM/YYYY' ? 'selected' : '' %>>DD/MM/YYYY</option>
+                      <option value="MM/DD/YYYY" <%= typeof generalSettings !== 'undefined' && generalSettings.dateFormat === 'MM/DD/YYYY' ? 'selected' : '' %>>MM/DD/YYYY</option>
+                      <option value="YYYY-MM-DD" <%= typeof generalSettings !== 'undefined' && generalSettings.dateFormat === 'YYYY-MM-DD' ? 'selected' : '' %>>YYYY-MM-DD</option>
                     </select>
                   </div>
-                  <div class="col-md-6">
+                  <div class="form-group">
                     <label class="form-label">Time Format</label>
                     <select class="form-control" name="timeFormat">
-                      <option value="12h" <%= generalSettings.timeFormat === '12h' ? 'selected' : '' %>>12-hour (AM/PM)</option>
-                      <option value="24h" <%= generalSettings.timeFormat === '24h' ? 'selected' : '' %>>24-hour</option>
+                      <option value="12h" <%= typeof generalSettings !== 'undefined' && generalSettings.timeFormat === '12h' ? 'selected' : '' %>>12-hour (AM/PM)</option>
+                      <option value="24h" <%= typeof generalSettings !== 'undefined' && generalSettings.timeFormat === '24h' ? 'selected' : '' %>>24-hour</option>
                     </select>
                   </div>
                 </div>
 
-                <div class="mb-4">
-                  <div class="form-check">
-                    <input type="checkbox" class="form-check-input" name="maintenanceMode" id="maintenanceMode" <%= generalSettings.maintenanceMode ? 'checked' : '' %>>
-                    <label class="form-check-label" for="maintenanceMode">
-                      Enable maintenance mode
-                    </label>
-                    <small class="text-muted d-block">When enabled, only BackOffice users can access the system</small>
-                  </div>
+                <div class="form-check-group">
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" name="maintenanceMode" id="maintenanceMode" <%= typeof generalSettings !== 'undefined' && generalSettings.maintenanceMode ? 'checked' : '' %>>
+                    <span class="form-check-label">Enable maintenance mode</span>
+                    <small class="form-text">When enabled, only BackOffice users can access the system</small>
+                  </label>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-save me-2"></i>Update General Settings
+                  <span class="btn-icon">💾</span>
+                  Update General Settings
                 </button>
               </form>
             </div>
@@ -238,75 +209,69 @@
         <div class="tab-pane fade" id="security" role="tabpanel">
           <div class="card">
             <div class="card-header">
-              <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security Settings</h5>
+              <h3 class="card-title">
+                <span class="card-icon">🛡️</span>
+                Security Settings
+              </h3>
             </div>
             <div class="card-body">
-              <form method="POST" action="/backoffice/settings/security">
+              <form method="POST" action="/backoffice/settings/security" class="storehub-form">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 
-                <div class="row mb-4">
-                  <div class="col-md-6">
+                <div class="form-row">
+                  <div class="form-group">
                     <label class="form-label">Session Timeout (minutes)</label>
-                    <input type="number" class="form-control" name="sessionTimeout" value="<%= securitySettings.sessionTimeout || 480 %>" min="15" max="1440">
-                    <small class="text-muted">15-1440 minutes (24 hours max)</small>
+                    <input type="number" class="form-control" name="sessionTimeout" value="<%= typeof securitySettings !== 'undefined' && securitySettings.sessionTimeout ? securitySettings.sessionTimeout : 480 %>" min="15" max="1440">
+                    <small class="form-text">15-1440 minutes (24 hours max)</small>
                   </div>
-                  <div class="col-md-6">
-                    <div class="form-check mt-4">
-                      <input type="checkbox" class="form-check-input" name="requireTwoFactor" id="requireTwoFactor" <%= securitySettings.requireTwoFactor ? 'checked' : '' %>>
-                      <label class="form-check-label" for="requireTwoFactor">
-                        Require Two-Factor Authentication
-                      </label>
-                    </div>
+                  <div class="form-group">
+                    <label class="form-check">
+                      <input type="checkbox" class="form-check-input" name="requireTwoFactor" id="requireTwoFactor" <%= typeof securitySettings !== 'undefined' && securitySettings.requireTwoFactor ? 'checked' : '' %>>
+                      <span class="form-check-label">Require Two-Factor Authentication</span>
+                    </label>
                   </div>
                 </div>
 
-                <div class="row mb-4">
-                  <div class="col-md-12">
-                    <h6 class="mb-3">Password Requirements</h6>
-                    <div class="row">
-                      <div class="col-md-3">
-                        <label class="form-label">Minimum Length</label>
-                        <input type="number" class="form-control" name="passwordMinLength" value="<%= securitySettings.passwordMinLength || 8 %>" min="6" max="50">
-                      </div>
-                      <div class="col-md-3">
-                        <div class="form-check mt-4">
-                          <input type="checkbox" class="form-check-input" name="passwordRequireNumbers" id="passwordRequireNumbers" <%= securitySettings.passwordRequireNumbers !== false ? 'checked' : '' %>>
-                          <label class="form-check-label" for="passwordRequireNumbers">
-                            Require numbers
-                          </label>
-                        </div>
-                      </div>
-                      <div class="col-md-3">
-                        <div class="form-check mt-4">
-                          <input type="checkbox" class="form-check-input" name="passwordRequireSymbols" id="passwordRequireSymbols" <%= securitySettings.passwordRequireSymbols ? 'checked' : '' %>>
-                          <label class="form-check-label" for="passwordRequireSymbols">
-                            Require symbols
-                          </label>
-                        </div>
-                      </div>
-                    </div>
+                <h6 class="form-section-title">Password Requirements</h6>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Minimum Length</label>
+                    <input type="number" class="form-control" name="passwordMinLength" value="<%= typeof securitySettings !== 'undefined' && securitySettings.passwordMinLength ? securitySettings.passwordMinLength : 8 %>" min="6" max="50">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-check">
+                      <input type="checkbox" class="form-check-input" name="passwordRequireNumbers" id="passwordRequireNumbers" <%= typeof securitySettings === 'undefined' || securitySettings.passwordRequireNumbers !== false ? 'checked' : '' %>>
+                      <span class="form-check-label">Require numbers</span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-check">
+                      <input type="checkbox" class="form-check-input" name="passwordRequireSymbols" id="passwordRequireSymbols" <%= typeof securitySettings !== 'undefined' && securitySettings.passwordRequireSymbols ? 'checked' : '' %>>
+                      <span class="form-check-label">Require symbols</span>
+                    </label>
                   </div>
                 </div>
 
-                <div class="row mb-4">
-                  <div class="col-md-6">
+                <div class="form-row">
+                  <div class="form-group">
                     <label class="form-label">Max Login Attempts</label>
-                    <input type="number" class="form-control" name="maxLoginAttempts" value="<%= securitySettings.maxLoginAttempts || 5 %>" min="3" max="20">
+                    <input type="number" class="form-control" name="maxLoginAttempts" value="<%= typeof securitySettings !== 'undefined' && securitySettings.maxLoginAttempts ? securitySettings.maxLoginAttempts : 5 %>" min="3" max="20">
                   </div>
-                  <div class="col-md-6">
+                  <div class="form-group">
                     <label class="form-label">Lockout Duration (minutes)</label>
-                    <input type="number" class="form-control" name="lockoutDuration" value="<%= securitySettings.lockoutDuration || 30 %>" min="5" max="1440">
+                    <input type="number" class="form-control" name="lockoutDuration" value="<%= typeof securitySettings !== 'undefined' && securitySettings.lockoutDuration ? securitySettings.lockoutDuration : 30 %>" min="5" max="1440">
                   </div>
                 </div>
 
-                <div class="mb-4">
+                <div class="form-group">
                   <label class="form-label">Allowed IP Ranges (optional)</label>
-                  <textarea class="form-control" name="allowedIpRanges" rows="3" placeholder="192.168.1.0/24&#10;10.0.0.0/8"><%= securitySettings.allowedIpRanges || '' %></textarea>
-                  <small class="text-muted">One IP range per line. Leave empty to allow all IPs.</small>
+                  <textarea class="form-control" name="allowedIpRanges" rows="3" placeholder="192.168.1.0/24&#10;10.0.0.0/8"><%= typeof securitySettings !== 'undefined' && securitySettings.allowedIpRanges ? securitySettings.allowedIpRanges : '' %></textarea>
+                  <small class="form-text">One IP range per line. Leave empty to allow all IPs.</small>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-save me-2"></i>Update Security Settings
+                  <span class="btn-icon">💾</span>
+                  Update Security Settings
                 </button>
               </form>
             </div>
@@ -317,114 +282,109 @@
         <div class="tab-pane fade" id="email" role="tabpanel">
           <div class="card">
             <div class="card-header">
-              <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Email Configuration</h5>
+              <h3 class="card-title">
+                <span class="card-icon">✉️</span>
+                Email Configuration
+              </h3>
             </div>
             <div class="card-body">
-              <form method="POST" action="/backoffice/settings/email" id="emailConfigForm">
+              <form method="POST" action="/backoffice/settings/email" id="emailConfigForm" class="storehub-form">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 
-                <div class="row mb-4">
-                  <div class="col-md-12">
-                    <label class="form-label">Email Provider</label>
-                    <select class="form-control" name="provider" id="emailProvider" required>
-                      <option value="smtp" <%= emailSettings.provider === 'smtp' ? 'selected' : '' %>>SMTP</option>
-                      <option value="sendgrid" <%= emailSettings.provider === 'sendgrid' ? 'selected' : '' %>>SendGrid</option>
-                      <option value="ses" <%= emailSettings.provider === 'ses' ? 'selected' : '' %>>Amazon SES</option>
-                    </select>
-                  </div>
+                <div class="form-group">
+                  <label class="form-label">Email Provider</label>
+                  <select class="form-control" name="provider" id="emailProvider" required>
+                    <option value="smtp" <%= typeof emailSettings !== 'undefined' && emailSettings.provider === 'smtp' ? 'selected' : '' %>>SMTP</option>
+                    <option value="sendgrid" <%= typeof emailSettings !== 'undefined' && emailSettings.provider === 'sendgrid' ? 'selected' : '' %>>SendGrid</option>
+                    <option value="ses" <%= typeof emailSettings !== 'undefined' && emailSettings.provider === 'ses' ? 'selected' : '' %>>Amazon SES</option>
+                  </select>
                 </div>
 
-                <div class="row mb-4">
-                  <div class="col-md-6">
-                    <label class="form-label">From Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="fromName" value="<%= emailSettings.fromName || 'QMS BackOffice' %>" required>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">From Name</label>
+                    <input type="text" class="form-control" name="fromName" value="<%= typeof emailSettings !== 'undefined' && emailSettings.fromName ? emailSettings.fromName : 'QMS BackOffice' %>" required>
                   </div>
-                  <div class="col-md-6">
-                    <label class="form-label">From Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control" name="fromEmail" value="<%= emailSettings.fromEmail || 'noreply@storehubqms.com' %>" required>
+                  <div class="form-group">
+                    <label class="form-label required">From Email</label>
+                    <input type="email" class="form-control" name="fromEmail" value="<%= typeof emailSettings !== 'undefined' && emailSettings.fromEmail ? emailSettings.fromEmail : 'noreply@storehubqms.com' %>" required>
                   </div>
                 </div>
 
                 <!-- SMTP Settings -->
-                <div id="smtpSettings" class="provider-settings" style="<%= emailSettings.provider !== 'smtp' ? 'display: none;' : '' %>">
-                  <h6 class="mb-3">SMTP Settings</h6>
-                  <div class="row mb-3">
-                    <div class="col-md-8">
+                <div id="smtpSettings" class="provider-settings" style="<%= typeof emailSettings === 'undefined' || emailSettings.provider !== 'smtp' ? 'display: none;' : '' %>">
+                  <h6 class="form-section-title">SMTP Settings</h6>
+                  <div class="form-row">
+                    <div class="form-group">
                       <label class="form-label">SMTP Host</label>
-                      <input type="text" class="form-control" name="smtpHost" value="<%= emailSettings.smtpHost || '' %>" placeholder="smtp.gmail.com">
+                      <input type="text" class="form-control" name="smtpHost" value="<%= typeof emailSettings !== 'undefined' && emailSettings.smtpHost ? emailSettings.smtpHost : '' %>" placeholder="smtp.gmail.com">
                     </div>
-                    <div class="col-md-4">
+                    <div class="form-group">
                       <label class="form-label">SMTP Port</label>
-                      <input type="number" class="form-control" name="smtpPort" value="<%= emailSettings.smtpPort || 587 %>" min="1" max="65535">
+                      <input type="number" class="form-control" name="smtpPort" value="<%= typeof emailSettings !== 'undefined' && emailSettings.smtpPort ? emailSettings.smtpPort : 587 %>" min="1" max="65535">
                     </div>
                   </div>
-                  <div class="row mb-3">
-                    <div class="col-md-6">
+                  <div class="form-row">
+                    <div class="form-group">
                       <label class="form-label">SMTP Username</label>
-                      <input type="text" class="form-control" name="smtpUser" value="<%= emailSettings.smtpUser || '' %>">
+                      <input type="text" class="form-control" name="smtpUser" value="<%= typeof emailSettings !== 'undefined' && emailSettings.smtpUser ? emailSettings.smtpUser : '' %>">
                     </div>
-                    <div class="col-md-6">
+                    <div class="form-group">
                       <label class="form-label">SMTP Password</label>
                       <input type="password" class="form-control" name="smtpPassword" placeholder="Leave blank to keep current">
                     </div>
                   </div>
-                  <div class="mb-3">
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" name="smtpSecure" id="smtpSecure" <%= emailSettings.smtpSecure ? 'checked' : '' %>>
-                      <label class="form-check-label" for="smtpSecure">
-                        Use TLS/SSL
-                      </label>
-                    </div>
+                  <div class="form-check-group">
+                    <label class="form-check">
+                      <input type="checkbox" class="form-check-input" name="smtpSecure" id="smtpSecure" <%= typeof emailSettings !== 'undefined' && emailSettings.smtpSecure ? 'checked' : '' %>>
+                      <span class="form-check-label">Use TLS/SSL</span>
+                    </label>
                   </div>
                 </div>
 
                 <!-- SendGrid Settings -->
-                <div id="sendgridSettings" class="provider-settings" style="<%= emailSettings.provider !== 'sendgrid' ? 'display: none;' : '' %>">
-                  <h6 class="mb-3">SendGrid Settings</h6>
-                  <div class="mb-3">
+                <div id="sendgridSettings" class="provider-settings" style="<%= typeof emailSettings === 'undefined' || emailSettings.provider !== 'sendgrid' ? 'display: none;' : '' %>">
+                  <h6 class="form-section-title">SendGrid Settings</h6>
+                  <div class="form-group">
                     <label class="form-label">SendGrid API Key</label>
                     <input type="password" class="form-control" name="sendgridApiKey" placeholder="SG.xxxxxxxxxxxxxxxxxxxx">
-                    <small class="text-muted">Get your API key from <a href="https://app.sendgrid.com/settings/api_keys" target="_blank">SendGrid Dashboard</a></small>
+                    <small class="form-text">Get your API key from <a href="https://app.sendgrid.com/settings/api_keys" target="_blank">SendGrid Dashboard</a></small>
                   </div>
                 </div>
 
                 <!-- AWS SES Settings -->
-                <div id="sesSettings" class="provider-settings" style="<%= emailSettings.provider !== 'ses' ? 'display: none;' : '' %>">
-                  <h6 class="mb-3">Amazon SES Settings</h6>
-                  <div class="row mb-3">
-                    <div class="col-md-6">
+                <div id="sesSettings" class="provider-settings" style="<%= typeof emailSettings === 'undefined' || emailSettings.provider !== 'ses' ? 'display: none;' : '' %>">
+                  <h6 class="form-section-title">Amazon SES Settings</h6>
+                  <div class="form-row">
+                    <div class="form-group">
                       <label class="form-label">AWS Access Key ID</label>
-                      <input type="text" class="form-control" name="awsAccessKeyId" value="<%= emailSettings.awsAccessKeyId || '' %>">
+                      <input type="text" class="form-control" name="awsAccessKeyId" value="<%= typeof emailSettings !== 'undefined' && emailSettings.awsAccessKeyId ? emailSettings.awsAccessKeyId : '' %>">
                     </div>
-                    <div class="col-md-6">
+                    <div class="form-group">
                       <label class="form-label">AWS Secret Access Key</label>
                       <input type="password" class="form-control" name="awsSecretAccessKey" placeholder="Leave blank to keep current">
                     </div>
                   </div>
-                  <div class="mb-3">
+                  <div class="form-group">
                     <label class="form-label">AWS Region</label>
                     <select class="form-control" name="awsRegion">
-                      <option value="us-east-1" <%= emailSettings.awsRegion === 'us-east-1' ? 'selected' : '' %>>US East (N. Virginia)</option>
-                      <option value="us-west-2" <%= emailSettings.awsRegion === 'us-west-2' ? 'selected' : '' %>>US West (Oregon)</option>
-                      <option value="eu-west-1" <%= emailSettings.awsRegion === 'eu-west-1' ? 'selected' : '' %>>EU (Ireland)</option>
-                      <option value="ap-southeast-1" <%= emailSettings.awsRegion === 'ap-southeast-1' ? 'selected' : '' %>>Asia Pacific (Singapore)</option>
+                      <option value="us-east-1" <%= typeof emailSettings !== 'undefined' && emailSettings.awsRegion === 'us-east-1' ? 'selected' : '' %>>US East (N. Virginia)</option>
+                      <option value="us-west-2" <%= typeof emailSettings !== 'undefined' && emailSettings.awsRegion === 'us-west-2' ? 'selected' : '' %>>US West (Oregon)</option>
+                      <option value="eu-west-1" <%= typeof emailSettings !== 'undefined' && emailSettings.awsRegion === 'eu-west-1' ? 'selected' : '' %>>EU (Ireland)</option>
+                      <option value="ap-southeast-1" <%= typeof emailSettings !== 'undefined' && emailSettings.awsRegion === 'ap-southeast-1' ? 'selected' : '' %>>Asia Pacific (Singapore)</option>
                     </select>
                   </div>
                 </div>
 
-                <hr class="my-4">
-
-                <div class="row">
-                  <div class="col-md-6">
-                    <button type="submit" class="btn btn-primary">
-                      <i class="fas fa-save me-2"></i>Update Email Settings
-                    </button>
-                  </div>
-                  <div class="col-md-6 text-end">
-                    <button type="button" class="btn btn-outline-secondary" onclick="testEmailConfiguration()">
-                      <i class="fas fa-paper-plane me-2"></i>Send Test Email
-                    </button>
-                  </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">
+                    <span class="btn-icon">💾</span>
+                    Update Email Settings
+                  </button>
+                  <button type="button" class="btn btn-secondary" onclick="testEmailConfiguration()">
+                    <span class="btn-icon">📧</span>
+                    Send Test Email
+                  </button>
                 </div>
               </form>
             </div>
@@ -435,84 +395,54 @@
         <div class="tab-pane fade" id="notifications" role="tabpanel">
           <div class="card">
             <div class="card-header">
-              <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Notification Settings</h5>
+              <h3 class="card-title">
+                <span class="card-icon">🔔</span>
+                Notification Settings
+              </h3>
             </div>
             <div class="card-body">
-              <form method="POST" action="/backoffice/settings/notifications">
+              <form method="POST" action="/backoffice/settings/notifications" class="storehub-form">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 
-                <div class="row mb-4">
-                  <div class="col-md-12">
-                    <h6 class="mb-3">General Notifications</h6>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-check">
-                          <input type="checkbox" class="form-check-input" name="emailEnabled" id="emailEnabled" <%= notificationSettings.emailEnabled !== false ? 'checked' : '' %>>
-                          <label class="form-check-label" for="emailEnabled">
-                            Enable email notifications
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <h6 class="form-section-title">General Notifications</h6>
+                <div class="form-check-group">
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" name="emailEnabled" id="emailEnabled" <%= typeof notificationSettings === 'undefined' || notificationSettings.emailEnabled !== false ? 'checked' : '' %>>
+                    <span class="form-check-label">Enable email notifications</span>
+                  </label>
                 </div>
 
-                <div class="row mb-4">
-                  <div class="col-md-12">
-                    <h6 class="mb-3">Alert Types</h6>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-check">
-                          <input type="checkbox" class="form-check-input" name="newTenantAlert" id="newTenantAlert" <%= notificationSettings.newTenantAlert !== false ? 'checked' : '' %>>
-                          <label class="form-check-label" for="newTenantAlert">
-                            New tenant registrations
-                          </label>
-                        </div>
-                        <div class="form-check">
-                          <input type="checkbox" class="form-check-input" name="systemAlert" id="systemAlert" <%= notificationSettings.systemAlert !== false ? 'checked' : '' %>>
-                          <label class="form-check-label" for="systemAlert">
-                            System alerts and errors
-                          </label>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-check">
-                          <input type="checkbox" class="form-check-input" name="securityAlert" id="securityAlert" <%= notificationSettings.securityAlert !== false ? 'checked' : '' %>>
-                          <label class="form-check-label" for="securityAlert">
-                            Security alerts
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <h6 class="form-section-title">Alert Types</h6>
+                <div class="form-check-group">
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" name="newMerchantAlert" id="newMerchantAlert" <%= typeof notificationSettings === 'undefined' || notificationSettings.newMerchantAlert !== false ? 'checked' : '' %>>
+                    <span class="form-check-label">New merchant registrations</span>
+                  </label>
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" name="systemAlert" id="systemAlert" <%= typeof notificationSettings === 'undefined' || notificationSettings.systemAlert !== false ? 'checked' : '' %>>
+                    <span class="form-check-label">System alerts and errors</span>
+                  </label>
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" name="securityAlert" id="securityAlert" <%= typeof notificationSettings === 'undefined' || notificationSettings.securityAlert !== false ? 'checked' : '' %>>
+                    <span class="form-check-label">Security alerts</span>
+                  </label>
                 </div>
 
-                <div class="row mb-4">
-                  <div class="col-md-12">
-                    <h6 class="mb-3">Reports</h6>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-check">
-                          <input type="checkbox" class="form-check-input" name="weeklyReport" id="weeklyReport" <%= notificationSettings.weeklyReport ? 'checked' : '' %>>
-                          <label class="form-check-label" for="weeklyReport">
-                            Weekly activity reports
-                          </label>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-check">
-                          <input type="checkbox" class="form-check-input" name="monthlyReport" id="monthlyReport" <%= notificationSettings.monthlyReport !== false ? 'checked' : '' %>>
-                          <label class="form-check-label" for="monthlyReport">
-                            Monthly summary reports
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <h6 class="form-section-title">Reports</h6>
+                <div class="form-check-group">
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" name="weeklyReport" id="weeklyReport" <%= typeof notificationSettings !== 'undefined' && notificationSettings.weeklyReport ? 'checked' : '' %>>
+                    <span class="form-check-label">Weekly activity reports</span>
+                  </label>
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" name="monthlyReport" id="monthlyReport" <%= typeof notificationSettings === 'undefined' || notificationSettings.monthlyReport !== false ? 'checked' : '' %>>
+                    <span class="form-check-label">Monthly summary reports</span>
+                  </label>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-save me-2"></i>Update Notification Settings
+                  <span class="btn-icon">💾</span>
+                  Update Notification Settings
                 </button>
               </form>
             </div>
@@ -523,15 +453,16 @@
         <div class="tab-pane fade" id="stats" role="tabpanel">
           <div class="card">
             <div class="card-header">
-              <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>System Statistics</h5>
+              <h3 class="card-title">
+                <span class="card-icon">📊</span>
+                System Statistics
+              </h3>
             </div>
             <div class="card-body">
               <div id="systemStatsContent">
-                <div class="text-center py-4">
-                  <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                  <p class="mt-2">Loading system statistics...</p>
+                <div class="loading-state">
+                  <div class="spinner"></div>
+                  <p>Loading system statistics...</p>
                 </div>
               </div>
             </div>
@@ -542,15 +473,197 @@
   </div>
 </div>
 
+<style>
+/* StoreHub Settings Page Styles */
+.settings-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.settings-nav .nav-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--sh-gray-700);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.settings-nav .nav-link:hover {
+  background: var(--sh-gray-100);
+  color: var(--sh-gray-900);
+}
+
+.settings-nav .nav-link.active {
+  background: var(--sh-primary-orange-light);
+  color: var(--sh-primary-orange);
+  font-weight: 500;
+}
+
+.settings-nav .nav-icon {
+  font-size: 1.25rem;
+}
+
+.settings-nav .nav-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sh-gray-500);
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sh-gray-900);
+  margin: 1.5rem 0 1rem;
+}
+
+.form-section-title .section-icon {
+  font-size: 1rem;
+}
+
+.form-divider {
+  height: 1px;
+  background: var(--sh-gray-200);
+  margin: 2rem 0;
+}
+
+.info-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--sh-gray-50);
+  border: 1px solid var(--sh-gray-200);
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.info-card .info-icon {
+  font-size: 1.5rem;
+}
+
+.info-card .info-content h6 {
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--sh-gray-900);
+}
+
+.info-card .info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.info-card .info-label {
+  color: var(--sh-gray-600);
+  font-size: 0.875rem;
+}
+
+.info-card .info-value {
+  color: var(--sh-gray-900);
+  font-weight: 500;
+}
+
+.form-check-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem;
+  border: 2px solid var(--sh-gray-300);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-check-input:checked {
+  background-color: var(--sh-primary-orange);
+  border-color: var(--sh-primary-orange);
+}
+
+.form-check-label {
+  flex: 1;
+  color: var(--sh-gray-900);
+  cursor: pointer;
+}
+
+.provider-settings {
+  padding: 1rem;
+  background: var(--sh-gray-50);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid var(--sh-gray-200);
+  border-top-color: var(--sh-primary-orange);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .settings-nav {
+    margin-bottom: 1rem;
+  }
+}
+</style>
+
 <script>
 // Load system stats when tab is activated
 document.addEventListener('DOMContentLoaded', function() {
   const statsTab = document.getElementById('stats-tab');
-  const statsTabPane = document.getElementById('stats');
-  
-  statsTab.addEventListener('shown.bs.tab', function() {
-    loadSystemStats();
-  });
+  if (statsTab) {
+    statsTab.addEventListener('shown.bs.tab', function() {
+      loadSystemStats();
+    });
+  }
 });
 
 async function loadSystemStats() {
@@ -559,93 +672,86 @@ async function loadSystemStats() {
     const stats = await response.json();
     
     const content = `
-      <div class="row mb-4">
-        <div class="col-md-3">
-          <div class="card bg-primary text-white">
-            <div class="card-body">
-              <h4>${stats.tenants.total}</h4>
-              <p class="mb-0">Total Tenants</p>
-              <small>${stats.tenants.active} active</small>
-            </div>
+      <div class="stats-grid">
+        <div class="stats-card">
+          <div class="stats-icon">🏢</div>
+          <div class="stats-value">${stats.merchants?.total || 0}</div>
+          <div class="stats-label">Total Merchants</div>
+          <div class="stats-trend trend-positive">
+            <span>${stats.merchants?.active || 0} active</span>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card bg-success text-white">
-            <div class="card-body">
-              <h4>${stats.users.total}</h4>
-              <p class="mb-0">Total Users</p>
-              <small>${stats.users.active} active</small>
-            </div>
+        <div class="stats-card">
+          <div class="stats-icon">👥</div>
+          <div class="stats-value">${stats.users?.total || 0}</div>
+          <div class="stats-label">Total Users</div>
+          <div class="stats-trend trend-positive">
+            <span>${stats.users?.active || 0} active</span>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card bg-info text-white">
-            <div class="card-body">
-              <h4>${stats.queues.total}</h4>
-              <p class="mb-0">Total Queues</p>
-              <small>${stats.queues.active} active</small>
-            </div>
+        <div class="stats-card">
+          <div class="stats-icon">📋</div>
+          <div class="stats-value">${stats.queues?.total || 0}</div>
+          <div class="stats-label">Total Queues</div>
+          <div class="stats-trend trend-neutral">
+            <span>${stats.queues?.active || 0} active</span>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card bg-warning text-white">
-            <div class="card-body">
-              <h4>${Math.floor(stats.system.uptime / 3600)}h</h4>
-              <p class="mb-0">Uptime</p>
-              <small>System running</small>
-            </div>
+        <div class="stats-card">
+          <div class="stats-icon">⏱️</div>
+          <div class="stats-value">${Math.floor((stats.system?.uptime || 0) / 3600)}h</div>
+          <div class="stats-label">Uptime</div>
+          <div class="stats-trend trend-positive">
+            <span>System running</span>
           </div>
         </div>
       </div>
       
-      <div class="row">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">
-              <h6 class="mb-0">System Information</h6>
-            </div>
-            <div class="card-body">
-              <table class="table table-sm">
-                <tr>
-                  <td>Node Version:</td>
-                  <td><code>${stats.system.nodeVersion}</code></td>
-                </tr>
-                <tr>
-                  <td>Platform:</td>
-                  <td><code>${stats.system.platform}</code></td>
-                </tr>
-                <tr>
-                  <td>Environment:</td>
-                  <td><span class="badge bg-${stats.system.env === 'production' ? 'success' : 'warning'}">${stats.system.env}</span></td>
-                </tr>
-                <tr>
-                  <td>Memory Usage:</td>
-                  <td>${Math.round(stats.system.memoryUsage.heapUsed / 1024 / 1024)} MB</td>
-                </tr>
-              </table>
-            </div>
+      <div class="content-grid" style="margin-top: 2rem;">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">System Information</h3>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <tr>
+                <td>Node Version:</td>
+                <td><code>${stats.system?.nodeVersion || 'N/A'}</code></td>
+              </tr>
+              <tr>
+                <td>Platform:</td>
+                <td><code>${stats.system?.platform || 'N/A'}</code></td>
+              </tr>
+              <tr>
+                <td>Environment:</td>
+                <td><span class="badge ${stats.system?.env === 'production' ? 'badge-success' : 'badge-warning'}">${stats.system?.env || 'development'}</span></td>
+              </tr>
+              <tr>
+                <td>Memory Usage:</td>
+                <td>${Math.round((stats.system?.memoryUsage?.heapUsed || 0) / 1024 / 1024)} MB</td>
+              </tr>
+            </table>
           </div>
         </div>
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">
-              <h6 class="mb-0">Quick Actions</h6>
-            </div>
-            <div class="card-body">
-              <div class="d-grid gap-2">
-                <button class="btn btn-outline-primary" onclick="refreshSystemStats()">
-                  <i class="fas fa-sync-alt me-2"></i>Refresh Statistics
-                </button>
-                <a href="/backoffice/audit-logs" class="btn btn-outline-info">
-                  <i class="fas fa-list me-2"></i>View Audit Logs
-                </a>
-                <a href="/backoffice/tenants" class="btn btn-outline-success">
-                  <i class="fas fa-building me-2"></i>Manage Tenants
-                </a>
-                <a href="/backoffice/merchants" class="btn btn-outline-warning">
-                  <i class="fas fa-store me-2"></i>View Merchants
-                </a>
-              </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Quick Actions</h3>
+          </div>
+          <div class="card-body">
+            <div class="btn-group-vertical">
+              <button class="btn btn-secondary" onclick="refreshSystemStats()">
+                <span class="btn-icon">🔄</span>
+                Refresh Statistics
+              </button>
+              <a href="/backoffice/audit-logs" class="btn btn-secondary">
+                <span class="btn-icon">📋</span>
+                View Audit Logs
+              </a>
+              <a href="/backoffice/merchants" class="btn btn-secondary">
+                <span class="btn-icon">🏢</span>
+                Manage Merchants
+              </a>
             </div>
           </div>
         </div>
@@ -657,7 +763,6 @@ async function loadSystemStats() {
     console.error('Failed to load system stats:', error);
     document.getElementById('systemStatsContent').innerHTML = `
       <div class="alert alert-danger">
-        <i class="fas fa-exclamation-triangle me-2"></i>
         Failed to load system statistics. Please try again.
       </div>
     `;
@@ -666,34 +771,35 @@ async function loadSystemStats() {
 
 function refreshSystemStats() {
   document.getElementById('systemStatsContent').innerHTML = `
-    <div class="text-center py-4">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <p class="mt-2">Refreshing system statistics...</p>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Refreshing system statistics...</p>
     </div>
   `;
   loadSystemStats();
 }
 
 // Email provider switching
-document.getElementById('emailProvider').addEventListener('change', function() {
-  const provider = this.value;
-  
-  // Hide all provider settings
-  document.querySelectorAll('.provider-settings').forEach(el => {
-    el.style.display = 'none';
+const emailProvider = document.getElementById('emailProvider');
+if (emailProvider) {
+  emailProvider.addEventListener('change', function() {
+    const provider = this.value;
+    
+    // Hide all provider settings
+    document.querySelectorAll('.provider-settings').forEach(el => {
+      el.style.display = 'none';
+    });
+    
+    // Show selected provider settings
+    if (provider === 'smtp') {
+      document.getElementById('smtpSettings').style.display = '';
+    } else if (provider === 'sendgrid') {
+      document.getElementById('sendgridSettings').style.display = '';
+    } else if (provider === 'ses') {
+      document.getElementById('sesSettings').style.display = '';
+    }
   });
-  
-  // Show selected provider settings
-  if (provider === 'smtp') {
-    document.getElementById('smtpSettings').style.display = '';
-  } else if (provider === 'sendgrid') {
-    document.getElementById('sendgridSettings').style.display = '';
-  } else if (provider === 'ses') {
-    document.getElementById('sesSettings').style.display = '';
-  }
-});
+}
 
 // Test email configuration
 async function testEmailConfiguration() {
@@ -703,7 +809,7 @@ async function testEmailConfiguration() {
   const btn = event.target;
   const originalText = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Sending...';
+  btn.innerHTML = '<span class="spinner-small"></span> Sending...';
   
   try {
     const response = await fetch('/backoffice/settings/email/test', {
@@ -730,365 +836,3 @@ async function testEmailConfiguration() {
   }
 }
 </script>
-
-<style>
-/* Modern Settings Page Styles */
-:root {
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-  --modern-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-  --modern-shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.12);
-  --border-radius: 12px;
-  --input-border-radius: 8px;
-  --nav-bg: #ffffff;
-  --nav-hover: #f8fafc;
-  --nav-active: #e6f2ff;
-  --text-primary: #1a202c;
-  --text-secondary: #718096;
-}
-
-/* Header Card */
-.header-card {
-  background: var(--primary-gradient);
-  border: none;
-  overflow: hidden;
-  position: relative;
-}
-
-.header-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-  pointer-events: none;
-}
-
-.text-white-75 {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-/* Navigation */
-.modern-nav-card {
-  background: var(--nav-bg);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  backdrop-filter: blur(10px);
-}
-
-.nav-title {
-  font-size: 0.75rem;
-  letter-spacing: 1px;
-  color: var(--text-secondary) !important;
-}
-
-.modern-nav .nav-link {
-  border: none;
-  background: transparent;
-  padding: 16px 20px;
-  margin-bottom: 8px;
-  transition: all 0.3s ease;
-  color: var(--text-primary);
-  font-weight: 500;
-  position: relative;
-  overflow: hidden;
-}
-
-.modern-nav .nav-link::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
-  transition: left 0.5s ease;
-}
-
-.modern-nav .nav-link:hover::before {
-  left: 100%;
-}
-
-.modern-nav .nav-link:hover {
-  background: var(--nav-hover);
-  transform: translateX(4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-.modern-nav .nav-link.active {
-  background: var(--nav-active);
-  color: #4285f4;
-  box-shadow: 0 4px 16px rgba(66, 133, 244, 0.15);
-  transform: translateX(4px);
-}
-
-.nav-icon-bg {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.1) 0%, rgba(66, 133, 244, 0.05) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: #4285f4;
-  transition: all 0.3s ease;
-}
-
-.modern-nav .nav-link.active .nav-icon-bg {
-  background: linear-gradient(135deg, #4285f4 0%, #667eea 100%);
-  color: white;
-  transform: scale(1.1);
-}
-
-/* Modern Cards */
-.modern-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.modern-card:hover {
-  box-shadow: var(--modern-shadow-hover);
-  transform: translateY(-2px);
-}
-
-.modern-card-header {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.header-icon-bg {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #4285f4 0%, #667eea 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 18px;
-}
-
-.modern-card-body {
-  background: white;
-}
-
-/* Form Elements */
-.modern-input {
-  border: 2px solid #e2e8f0;
-  background: #ffffff;
-  transition: all 0.3s ease;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.modern-input:focus {
-  border-color: #4285f4;
-  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
-  background: #ffffff;
-  transform: translateY(-1px);
-}
-
-.modern-input::placeholder {
-  color: #a0aec0;
-  font-weight: 400;
-}
-
-.form-label {
-  color: var(--text-primary);
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-/* Divider */
-.divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
-  border: none;
-}
-
-/* Info Card */
-.modern-info-card {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  border: 1px solid rgba(66, 133, 244, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.modern-info-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(135deg, #4285f4 0%, #667eea 100%);
-}
-
-.info-icon-bg {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.15) 0%, rgba(66, 133, 244, 0.05) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #4285f4;
-  font-size: 16px;
-}
-
-.modern-badge {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-/* Buttons */
-.modern-btn-primary {
-  background: linear-gradient(135deg, #4285f4 0%, #667eea 100%);
-  border: none;
-  font-weight: 600;
-  box-shadow: 0 4px 16px rgba(66, 133, 244, 0.3);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.modern-btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.modern-btn-primary:hover::before {
-  left: 100%;
-}
-
-.modern-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(66, 133, 244, 0.4);
-  background: linear-gradient(135deg, #3367d6 0%, #5a67d8 100%);
-}
-
-.modern-btn-primary:active {
-  transform: translateY(0);
-}
-
-/* Select Elements */
-.form-select {
-  border: 2px solid #e2e8f0;
-  border-radius: var(--input-border-radius);
-  padding: 12px 16px;
-  background: white;
-  transition: all 0.3s ease;
-  font-weight: 500;
-}
-
-.form-select:focus {
-  border-color: #4285f4;
-  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
-}
-
-/* Checkboxes */
-.form-check-input {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #e2e8f0;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-
-.form-check-input:checked {
-  background-color: #4285f4;
-  border-color: #4285f4;
-  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
-}
-
-.form-check-label {
-  color: var(--text-primary);
-  font-weight: 500;
-  margin-left: 8px;
-}
-
-/* System Stats Cards */
-.modern-stats-card {
-  background: white;
-  border: none;
-  border-radius: var(--border-radius);
-  box-shadow: var(--modern-shadow);
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.modern-stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--modern-shadow-hover);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .header-card {
-    text-align: center;
-  }
-  
-  .modern-nav .nav-link {
-    padding: 12px 16px;
-  }
-  
-  .nav-icon-bg {
-    width: 32px;
-    height: 32px;
-    font-size: 12px;
-  }
-  
-  .header-icon-bg {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
-  }
-}
-
-/* Animation Classes */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-/* Loading States */
-.loading-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-</style>

@@ -46,17 +46,20 @@ router.get('/', async (req, res) => {
     };
 
     res.render('backoffice/dashboard', {
-      title: 'QMS BackOffice',
-      pageTitle: 'QMS BackOffice Dashboard',
-      contentTitle: 'System Dashboard',
-      contentSubtitle: 'Monitor and manage your multi-tenant queue management system',
+      layout: 'backoffice/layout',
+      title: 'BackOffice Dashboard - StoreHub Queue Management',
+      pageTitle: 'Dashboard',
+      contentTitle: 'Dashboard',
+      contentSubtitle: 'Monitor your queue management system and oversee all merchant operations',
+      currentPage: 'dashboard',
       systemStats,
       recentTenants,
       recentActivity: [], // Placeholder for recent activity
       subscriptionStats,
       statusStats,
       backOfficeUser: res.locals.backOfficeUser || req.backOfficeUser,
-      csrfToken: res.locals.csrfToken || ''
+      csrfToken: res.locals.csrfToken || '',
+      messages: res.locals.messages || {}
     });
 
   } catch (error) {

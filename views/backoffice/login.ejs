@@ -12,8 +12,8 @@
   <% } %>
   <style>
     body {
-      font-family: var(--sh-font-family);
-      background: var(--sh-gray-50);
+      font-family: var(--sh-font-primary);
+      background: linear-gradient(135deg, var(--sh-gray-100) 0%, var(--sh-base-white) 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -29,8 +29,8 @@
       right: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle, var(--sh-primary-orange-light) 0%, transparent 70%);
-      opacity: 0.3;
+      background: radial-gradient(circle, rgba(250, 140, 22, 0.1) 0%, transparent 70%);
+      opacity: 0.5;
       animation: pulse 20s ease-in-out infinite;
     }
     
@@ -40,13 +40,13 @@
     }
     
     .login-container {
-      background: white;
-      padding: var(--sh-spacing-12);
-      border-radius: var(--sh-border-radius-xl);
+      background: var(--sh-base-white);
+      padding: var(--sh-space-12);
+      border-radius: var(--sh-radius-xl);
       box-shadow: var(--sh-shadow-xl);
       width: 100%;
       max-width: 440px;
-      margin: var(--sh-spacing-4);
+      margin: var(--sh-space-4);
       position: relative;
       border: 1px solid var(--sh-gray-200);
     }

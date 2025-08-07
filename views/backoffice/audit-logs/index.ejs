@@ -1,887 +1,340 @@
-<div class="container-fluid mt-4">
-  <!-- Header with Gradient Background -->
-  <div class="row mb-5">
-    <div class="col-12">
-      <div class="audit-header-card p-4 rounded-4 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h2 class="mb-2 text-white fw-bold"><%= contentTitle %></h2>
-            <p class="text-white-75 mb-0 fs-5"><%= contentSubtitle %></p>
-          </div>
-          <div class="d-flex gap-3">
-            <button class="btn btn-light btn-lg rounded-3 px-4" onclick="exportAuditLogs()">
-              <i class="fas fa-download me-2"></i>Export CSV
-            </button>
-            <button class="btn btn-outline-light btn-lg rounded-3 px-4" onclick="refreshStats()">
-              <i class="fas fa-sync-alt me-2"></i>Refresh
-            </button>
-          </div>
-        </div>
-      </div>
+<div class="storehub-container">
+  <!-- Header -->
+  <div class="storehub-page-header">
+    <div class="header-content">
+      <h1 class="storehub-page-title"><%= contentTitle %></h1>
+      <p class="storehub-page-subtitle"><%= contentSubtitle %></p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="exportAuditLogs()">
+        <span class="btn-icon">📥</span>
+        Export CSV
+      </button>
+      <button class="btn btn-primary" onclick="refreshStats()">
+        <span class="btn-icon">🔄</span>
+        Refresh
+      </button>
     </div>
   </div>
 
   <!-- Filters -->
-  <div class="row mb-5">
-    <div class="col-12">
-      <div class="modern-filter-card rounded-4 shadow-sm">
-        <div class="p-4">
-          <div class="d-flex align-items-center mb-4">
-            <div class="filter-icon-bg me-3">
-              <i class="fas fa-filter"></i>
-            </div>
-            <h6 class="mb-0 fw-bold text-dark">Filter Audit Logs</h6>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <span class="card-icon">🔍</span>
+        Filter Audit Logs
+      </h3>
+    </div>
+    <div class="card-body">
+      <form method="GET" class="storehub-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Search</label>
+            <input type="text" 
+                   class="form-control" 
+                   name="search" 
+                   value="<%= filters.search %>" 
+                   placeholder="Action, entity, or user...">
           </div>
-          <form method="GET" class="row g-4">
-            <div class="col-md-3">
-              <label class="form-label fw-medium text-dark mb-2">Search</label>
-              <input type="text" 
-                     class="form-control modern-input rounded-3 py-3" 
-                     name="search" 
-                     value="<%= filters.search %>" 
-                     placeholder="Action, entity, or user...">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label fw-medium text-dark mb-2">Action</label>
-              <select class="form-select modern-select rounded-3 py-3" name="action">
-                <option value="all" <%= filters.action === 'all' ? 'selected' : '' %>>All Actions</option>
+          <div class="form-group">
+            <label class="form-label">Action</label>
+            <select class="form-control" name="action">
+              <option value="all" <%= filters.action === 'all' ? 'selected' : '' %>>All Actions</option>
+              <% if (typeof filterOptions !== 'undefined' && filterOptions.actions) { %>
                 <% filterOptions.actions.forEach(action => { %>
                   <option value="<%= action %>" <%= filters.action === action ? 'selected' : '' %>>
                     <%= action %>
                   </option>
                 <% }) %>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label fw-medium text-dark mb-2">Entity</label>
-              <select class="form-select modern-select rounded-3 py-3" name="entity">
-                <option value="all" <%= filters.entity === 'all' ? 'selected' : '' %>>All Entities</option>
+              <% } %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Entity</label>
+            <select class="form-control" name="entity">
+              <option value="all" <%= filters.entity === 'all' ? 'selected' : '' %>>All Entities</option>
+              <% if (typeof filterOptions !== 'undefined' && filterOptions.entities) { %>
                 <% filterOptions.entities.forEach(entity => { %>
                   <option value="<%= entity %>" <%= filters.entity === entity ? 'selected' : '' %>>
                     <%= entity %>
                   </option>
                 <% }) %>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label fw-medium text-dark mb-2">User</label>
-              <select class="form-select modern-select rounded-3 py-3" name="user">
-                <option value="all" <%= filters.user === 'all' ? 'selected' : '' %>>All Users</option>
+              <% } %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">User</label>
+            <select class="form-control" name="user">
+              <option value="all" <%= filters.user === 'all' ? 'selected' : '' %>>All Users</option>
+              <% if (typeof filterOptions !== 'undefined' && filterOptions.users) { %>
                 <% filterOptions.users.forEach(user => { %>
                   <option value="<%= user.id %>" <%= filters.user === user.id ? 'selected' : '' %>>
                     <%= user.name || user.email %>
                   </option>
                 <% }) %>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label fw-medium text-dark mb-2">Date From</label>
-              <input type="date" 
-                     class="form-control modern-input rounded-3 py-3" 
-                     name="dateFrom" 
-                     value="<%= filters.dateFrom %>">
-            </div>
-            <div class="col-md-1">
-              <label class="form-label">&nbsp;</label>
-              <div class="d-flex gap-2">
-                <button type="submit" class="btn modern-btn-primary rounded-3 px-4 py-3">
-                  <i class="fas fa-search"></i>
-                </button>
-                <a href="/backoffice/audit-logs" class="btn btn-outline-secondary rounded-3 px-4 py-3">
-                  <i class="fas fa-times"></i>
-                </a>
-              </div>
-            </div>
-          </form>
+              <% } %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date From</label>
+            <input type="date" 
+                   class="form-control" 
+                   name="dateFrom" 
+                   value="<%= filters.dateFrom %>">
+          </div>
+          <div class="form-group form-actions">
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-icon">🔍</span>
+              Search
+            </button>
+            <a href="/backoffice/audit-logs" class="btn btn-secondary">
+              <span class="btn-icon">❌</span>
+              Clear
+            </a>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 
-  <!-- Statistics Cards -->
-  <div class="row mb-5" id="statsCards">
-    <div class="col-md-3 mb-4">
-      <div class="modern-stats-card rounded-4 shadow-sm p-4 h-100 primary-card">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="stats-icon-bg primary-bg mb-3">
-              <i class="fas fa-list-alt"></i>
-            </div>
-            <h6 class="text-muted mb-2 fw-medium">Total Logs</h6>
-            <h3 class="mb-0 fw-bold text-dark" id="totalLogs">-</h3>
-          </div>
-          <div class="stats-trend">
-            <div class="trend-circle primary-bg-light">
-              <i class="fas fa-arrow-up text-primary"></i>
-            </div>
-          </div>
-        </div>
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stats-card">
+      <div class="stats-icon">📋</div>
+      <div class="stats-value" id="totalLogs"><%= typeof auditLogs !== 'undefined' ? auditLogs.length : 0 %></div>
+      <div class="stats-label">Total Logs</div>
+      <div class="stats-trend trend-positive">
+        <span>↑ Active monitoring</span>
       </div>
     </div>
-    <div class="col-md-3 mb-4">
-      <div class="modern-stats-card rounded-4 shadow-sm p-4 h-100 success-card">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="stats-icon-bg success-bg mb-3">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <h6 class="text-muted mb-2 fw-medium">Top Action</h6>
-            <h5 class="mb-0 fw-bold text-dark" id="topAction">-</h5>
-          </div>
-          <div class="stats-trend">
-            <div class="trend-circle success-bg-light">
-              <i class="fas fa-fire text-success"></i>
-            </div>
-          </div>
-        </div>
+    <div class="stats-card">
+      <div class="stats-icon">📊</div>
+      <div class="stats-value" id="topAction">-</div>
+      <div class="stats-label">Top Action</div>
+      <div class="stats-trend trend-positive">
+        <span>🔥 Most frequent</span>
       </div>
     </div>
-    <div class="col-md-3 mb-4">
-      <div class="modern-stats-card rounded-4 shadow-sm p-4 h-100 info-card">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="stats-icon-bg info-bg mb-3">
-              <i class="fas fa-database"></i>
-            </div>
-            <h6 class="text-muted mb-2 fw-medium">Top Entity</h6>
-            <h5 class="mb-0 fw-bold text-dark" id="topEntity">-</h5>
-          </div>
-          <div class="stats-trend">
-            <div class="trend-circle info-bg-light">
-              <i class="fas fa-cube text-info"></i>
-            </div>
-          </div>
-        </div>
+    <div class="stats-card">
+      <div class="stats-icon">🗜</div>
+      <div class="stats-value" id="topEntity">-</div>
+      <div class="stats-label">Top Entity</div>
+      <div class="stats-trend trend-neutral">
+        <span>🎯 Most accessed</span>
       </div>
     </div>
-    <div class="col-md-3 mb-4">
-      <div class="modern-stats-card rounded-4 shadow-sm p-4 h-100 warning-card">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="stats-icon-bg warning-bg mb-3">
-              <i class="fas fa-user"></i>
-            </div>
-            <h6 class="text-muted mb-2 fw-medium">Most Active User</h6>
-            <h5 class="mb-0 fw-bold text-dark" id="topUser">-</h5>
-          </div>
-          <div class="stats-trend">
-            <div class="trend-circle warning-bg-light">
-              <i class="fas fa-crown text-warning"></i>
-            </div>
-          </div>
-        </div>
+    <div class="stats-card">
+      <div class="stats-icon">👤</div>
+      <div class="stats-value" id="topUser">-</div>
+      <div class="stats-label">Most Active User</div>
+      <div class="stats-trend trend-positive">
+        <span>👑 Top contributor</span>
       </div>
     </div>
   </div>
 
   <!-- Audit Logs Table -->
-  <div class="row">
-    <div class="col-12">
-      <div class="modern-table-card rounded-4 shadow-sm">
-        <div class="table-header p-4 border-bottom">
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-              <div class="table-icon-bg me-3">
-                <i class="fas fa-table"></i>
-              </div>
-              <h5 class="mb-0 fw-bold text-dark">Audit Log Entries</h5>
-            </div>
-            <div class="table-actions">
-              <span class="badge modern-badge bg-light text-dark">
-                <i class="fas fa-list me-1"></i>
-                <span id="tableCount"><%= auditLogs.length %></span> entries
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="table-body p-0">
-          <% if (auditLogs.length === 0) { %>
-            <div class="empty-state text-center py-5 px-4">
-              <div class="empty-icon-bg mx-auto mb-4">
-                <i class="fas fa-search"></i>
-              </div>
-              <h5 class="fw-bold text-dark mb-2">No audit logs found</h5>
-              <p class="text-muted mb-4">
-                <% if (filters.search || filters.action !== 'all' || filters.entity !== 'all' || filters.user !== 'all' || filters.dateFrom || filters.dateTo) { %>
-                  Try adjusting your filters to see more results
-                <% } else { %>
-                  No audit logs are available at this time
-                <% } %>
-              </p>
-              <% if (filters.search || filters.action !== 'all' || filters.entity !== 'all' || filters.user !== 'all' || filters.dateFrom || filters.dateTo) { %>
-                <a href="/backoffice/audit-logs" class="btn modern-btn-primary rounded-3 px-4">
-                  <i class="fas fa-refresh me-2"></i>Clear Filters
-                </a>
-              <% } %>
-            </div>
-          <% } else { %>
-            <div class="table-responsive">
-              <table class="table modern-table mb-0">
-                <thead class="modern-table-head">
-                  <tr>
-                    <th class="fw-bold text-dark">Timestamp</th>
-                    <th class="fw-bold text-dark">Action</th>
-                    <th class="fw-bold text-dark">Entity</th>
-                    <th class="fw-bold text-dark">User</th>
-                    <th class="fw-bold text-dark">IP Address</th>
-                    <th class="fw-bold text-dark">Details</th>
-                    <th class="fw-bold text-dark">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="modern-table-body">
-                  <% auditLogs.forEach(log => { %>
-                    <tr class="modern-table-row">
-                      <td class="align-middle">
-                        <div class="timestamp-wrapper">
-                          <div class="fw-bold text-dark"><%= new Date(log.createdAt).toLocaleDateString() %></div>
-                          <small class="text-muted"><%= new Date(log.createdAt).toLocaleTimeString() %></small>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <span class="modern-action-badge badge-<%= 
-                          log.action.includes('create') ? 'success' :
-                          log.action.includes('update') ? 'warning' :
-                          log.action.includes('delete') ? 'danger' :
-                          log.action.includes('login') ? 'info' : 'secondary'
-                        %>">
-                          <i class="fas fa-<%= 
-                            log.action.includes('create') ? 'plus' :
-                            log.action.includes('update') ? 'edit' :
-                            log.action.includes('delete') ? 'trash' :
-                            log.action.includes('login') ? 'sign-in-alt' : 'cog'
-                          %> me-1"></i>
-                          <%= log.action %>
-                        </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="entity-info">
-                          <div class="fw-bold text-dark"><%= log.resource %></div>
-                          <% if (log.resourceId) { %>
-                            <small class="text-muted d-flex align-items-center mt-1">
-                              <i class="fas fa-fingerprint me-1"></i>
-                              <%= log.resourceId %>
-                            </small>
-                          <% } %>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <% if (log.userId) { %>
-                          <div class="user-info">
-                            <div class="d-flex align-items-center">
-                              <div class="user-avatar me-2">
-                                <i class="fas fa-user"></i>
-                              </div>
-                              <small class="text-dark fw-medium"><%= log.userId %></small>
-                            </div>
-                          </div>
-                        <% } else { %>
-                          <div class="d-flex align-items-center">
-                            <div class="system-avatar me-2">
-                              <i class="fas fa-robot"></i>
-                            </div>
-                            <span class="text-muted fw-medium">System</span>
-                          </div>
-                        <% } %>
-                      </td>
-                      <td class="align-middle">
-                        <div class="ip-address">
-                          <i class="fas fa-globe-americas me-1 text-muted"></i>
-                          <small class="text-muted fw-medium"><%= log.ipAddress || 'N/A' %></small>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <% if (log.details && typeof log.details === 'object') { %>
-                          <div class="details-info">
-                            <span class="details-badge">
-                              <i class="fas fa-info-circle me-1"></i>
-                              <% if (log.details.changes) { %>
-                                <%= Object.keys(log.details.changes).length %> changes
-                              <% } else { %>
-                                <%= Object.keys(log.details).length %> details
-                              <% } %>
-                            </span>
-                          </div>
-                        <% } else { %>
-                          <small class="text-muted">-</small>
-                        <% } %>
-                      </td>
-                      <td class="align-middle">
-                        <a href="/backoffice/audit-logs/<%= log.id %>" 
-                           class="btn modern-view-btn rounded-3"
-                           title="View Details">
-                          <i class="fas fa-eye me-1"></i>
-                          View
-                        </a>
-                      </td>
-                    </tr>
-                  <% }) %>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Pagination -->
-            <% if (pagination.pages > 1) { %>
-              <nav aria-label="Audit logs pagination" class="mt-4">
-                <ul class="pagination justify-content-center">
-                  <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
-                    <a class="page-link" href="?page=<%= pagination.page - 1 %>&search=<%= filters.search %>&action=<%= filters.action %>&entity=<%= filters.entity %>&user=<%= filters.user %>&dateFrom=<%= filters.dateFrom %>&dateTo=<%= filters.dateTo %>">
-                      Previous
-                    </a>
-                  </li>
-                  <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) { %>
-                    <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
-                      <a class="page-link" href="?page=<%= i %>&search=<%= filters.search %>&action=<%= filters.action %>&entity=<%= filters.entity %>&user=<%= filters.user %>&dateFrom=<%= filters.dateFrom %>&dateTo=<%= filters.dateTo %>">
-                        <%= i %>
-                      </a>
-                    </li>
-                  <% } %>
-                  <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
-                    <a class="page-link" href="?page=<%= pagination.page + 1 %>&search=<%= filters.search %>&action=<%= filters.action %>&entity=<%= filters.entity %>&user=<%= filters.user %>&dateFrom=<%= filters.dateFrom %>&dateTo=<%= filters.dateTo %>">
-                      Next
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            <% } %>
-          <% } %>
-        </div>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <span class="card-icon">🗒</span>
+        Audit Log Entries
+      </h3>
+      <div class="card-actions">
+        <span class="badge badge-info">
+          <span id="tableCount"><%= typeof auditLogs !== 'undefined' ? auditLogs.length : 0 %></span> entries
+        </span>
       </div>
     </div>
+    <div class="card-body" style="padding: 0;">
+      <% if (typeof auditLogs === 'undefined' || auditLogs.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <p>No audit logs found</p>
+          <% if (filters.search || filters.action !== 'all' || filters.entity !== 'all' || filters.user !== 'all' || filters.dateFrom) { %>
+            <p>Try adjusting your filters to see more results</p>
+            <a href="/backoffice/audit-logs" class="btn btn-primary">
+              Clear Filters
+            </a>
+          <% } else { %>
+            <p>No audit logs are available at this time</p>
+          <% } %>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Action</th>
+                <th>Entity</th>
+                <th>User</th>
+                <th>IP Address</th>
+                <th>Details</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% auditLogs.forEach(log => { %>
+                <tr>
+                  <td>
+                    <div class="timestamp-wrapper">
+                      <div class="fw-bold"><%= new Date(log.timestamp || log.createdAt).toLocaleDateString() %></div>
+                      <small class="text-muted"><%= new Date(log.timestamp || log.createdAt).toLocaleTimeString() %></small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge <%= 
+                      log.action.includes('create') ? 'badge-success' :
+                      log.action.includes('update') ? 'badge-warning' :
+                      log.action.includes('delete') ? 'badge-danger' :
+                      log.action.includes('login') ? 'badge-info' : 'badge-secondary'
+                    %>">
+                      <%= log.action %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="entity-info">
+                      <div class="fw-bold"><%= log.resourceType || log.resource || '-' %></div>
+                      <% if (log.resourceId) { %>
+                        <small class="text-muted">
+                          ID: <%= log.resourceId %>
+                        </small>
+                      <% } %>
+                    </div>
+                  </td>
+                  <td>
+                    <% if (log.backOfficeUserId || log.userId) { %>
+                      <div class="user-info">
+                        <span>👤</span>
+                        <span class="fw-medium"><%= log.backOfficeUserId || log.userId %></span>
+                      </div>
+                    <% } else { %>
+                      <div class="system-info">
+                        <span>🤖</span>
+                        <span class="text-muted">System</span>
+                      </div>
+                    <% } %>
+                  </td>
+                  <td>
+                    <small class="text-muted"><%= log.ipAddress || 'N/A' %></small>
+                  </td>
+                  <td>
+                    <% if (log.details && typeof log.details === 'object') { %>
+                      <span class="badge badge-info">
+                        <% if (log.details.changes) { %>
+                          <%= Object.keys(log.details.changes).length %> changes
+                        <% } else { %>
+                          <%= Object.keys(log.details).length %> details
+                        <% } %>
+                      </span>
+                    <% } else { %>
+                      <small class="text-muted">-</small>
+                    <% } %>
+                  </td>
+                  <td>
+                    <a href="/backoffice/audit-logs/<%= log.id %>" class="btn btn-sm btn-text">
+                      View
+                    </a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
   </div>
+
+  <!-- Pagination -->
+  <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+    <div class="pagination-wrapper">
+      <nav aria-label="Page navigation">
+        <ul class="pagination">
+          <% if (pagination.currentPage > 1) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&<%= new URLSearchParams(filters).toString() %>">
+                Previous
+              </a>
+            </li>
+          <% } %>
+          
+          <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+            <% if (i <= 3 || i > pagination.totalPages - 3 || (i >= pagination.currentPage - 1 && i <= pagination.currentPage + 1)) { %>
+              <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>">
+                  <%= i %>
+                </a>
+              </li>
+            <% } else if ((i === 4 && pagination.currentPage > 5) || (i === pagination.totalPages - 3 && pagination.currentPage < pagination.totalPages - 4)) { %>
+              <li class="page-item disabled">
+                <span class="page-link">...</span>
+              </li>
+            <% } %>
+          <% } %>
+          
+          <% if (pagination.currentPage < pagination.totalPages) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&<%= new URLSearchParams(filters).toString() %>">
+                Next
+              </a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
+    </div>
+  <% } %>
 </div>
 
 <script>
-// Load statistics on page load
+// Calculate stats on page load
 document.addEventListener('DOMContentLoaded', function() {
-  loadStats();
+  calculateStats();
 });
 
-async function loadStats() {
-  try {
-    const response = await fetch('/backoffice/audit-logs/api/stats?period=7d');
-    const stats = await response.json();
-    
-    document.getElementById('totalLogs').textContent = stats.total.toLocaleString();
-    
-    if (stats.actions.length > 0) {
-      document.getElementById('topAction').textContent = stats.actions[0].action;
+function calculateStats() {
+  <% if (typeof auditLogs !== 'undefined' && auditLogs.length > 0) { %>
+    // Calculate top action
+    const actions = {};
+    <% auditLogs.forEach(log => { %>
+      actions['<%= log.action %>'] = (actions['<%= log.action %>'] || 0) + 1;
+    <% }) %>
+    const topAction = Object.keys(actions).reduce((a, b) => actions[a] > actions[b] ? a : b);
+    document.getElementById('topAction').textContent = topAction;
+
+    // Calculate top entity
+    const entities = {};
+    <% auditLogs.forEach(log => { %>
+      <% if (log.resourceType || log.resource) { %>
+        entities['<%= log.resourceType || log.resource %>'] = (entities['<%= log.resourceType || log.resource %>'] || 0) + 1;
+      <% } %>
+    <% }) %>
+    if (Object.keys(entities).length > 0) {
+      const topEntity = Object.keys(entities).reduce((a, b) => entities[a] > entities[b] ? a : b);
+      document.getElementById('topEntity').textContent = topEntity;
     }
-    
-    if (stats.entities.length > 0) {
-      document.getElementById('topEntity').textContent = stats.entities[0].resource;
-    }
-    
-    if (stats.topUsers.length > 0) {
-      const topUser = stats.topUsers[0].userId || 'System';
+
+    // Calculate most active user
+    const users = {};
+    <% auditLogs.forEach(log => { %>
+      <% if (log.backOfficeUserId || log.userId) { %>
+        users['<%= log.backOfficeUserId || log.userId %>'] = (users['<%= log.backOfficeUserId || log.userId %>'] || 0) + 1;
+      <% } %>
+    <% }) %>
+    if (Object.keys(users).length > 0) {
+      const topUser = Object.keys(users).reduce((a, b) => users[a] > users[b] ? a : b);
       document.getElementById('topUser').textContent = topUser.length > 20 ? topUser.substring(0, 20) + '...' : topUser;
     }
-  } catch (error) {
-    console.error('Failed to load stats:', error);
-  }
-}
-
-function refreshStats() {
-  loadStats();
+  <% } %>
 }
 
 function exportAuditLogs() {
   const params = new URLSearchParams(window.location.search);
-  window.location.href = '/backoffice/audit-logs/export/csv?' + params.toString();
+  params.set('export', 'csv');
+  window.location.href = '/backoffice/audit-logs?' + params.toString();
+}
+
+function refreshStats() {
+  window.location.reload();
 }
 </script>
-
-<style>
-/* Modern Audit Logs Page Styles */
-:root {
-  --audit-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --primary-color: #4285f4;
-  --success-color: #0f9d58;
-  --warning-color: #f4b400;
-  --danger-color: #ea4335;
-  --info-color: #4285f4;
-  --secondary-color: #9aa0a6;
-  --modern-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-  --modern-shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.12);
-  --border-radius: 12px;
-  --text-primary: #1a202c;
-  --text-secondary: #718096;
-  --bg-light: #f8fafc;
-}
-
-/* Header */
-.audit-header-card {
-  background: var(--audit-gradient);
-  border: none;
-  overflow: hidden;
-  position: relative;
-}
-
-.audit-header-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-  pointer-events: none;
-}
-
-.text-white-75 {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-/* Filter Card */
-.modern-filter-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
-
-.modern-filter-card:hover {
-  box-shadow: var(--modern-shadow-hover);
-}
-
-.filter-icon-bg {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 16px;
-}
-
-/* Form Elements */
-.modern-input, .modern-select {
-  border: 2px solid #e2e8f0;
-  background: #ffffff;
-  transition: all 0.3s ease;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.modern-input:focus, .modern-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
-  background: #ffffff;
-  transform: translateY(-1px);
-}
-
-.modern-input::placeholder {
-  color: #a0aec0;
-  font-weight: 400;
-}
-
-/* Statistics Cards */
-.modern-stats-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.modern-stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--modern-shadow-hover);
-}
-
-.modern-stats-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary-color) 0%, #667eea 100%);
-}
-
-.primary-card::before {
-  background: linear-gradient(90deg, var(--primary-color) 0%, #667eea 100%);
-}
-
-.success-card::before {
-  background: linear-gradient(90deg, var(--success-color) 0%, #4facfe 100%);
-}
-
-.info-card::before {
-  background: linear-gradient(90deg, var(--info-color) 0%, #00f2fe 100%);
-}
-
-.warning-card::before {
-  background: linear-gradient(90deg, var(--warning-color) 0%, #fda085 100%);
-}
-
-.stats-icon-bg {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 24px;
-  transition: all 0.3s ease;
-}
-
-.primary-bg {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%);
-}
-
-.success-bg {
-  background: linear-gradient(135deg, var(--success-color) 0%, #4facfe 100%);
-}
-
-.info-bg {
-  background: linear-gradient(135deg, var(--info-color) 0%, #00f2fe 100%);
-}
-
-.warning-bg {
-  background: linear-gradient(135deg, var(--warning-color) 0%, #fda085 100%);
-}
-
-.stats-trend {
-  align-self: flex-start;
-}
-
-.trend-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.primary-bg-light {
-  background: rgba(66, 133, 244, 0.1);
-}
-
-.success-bg-light {
-  background: rgba(15, 157, 88, 0.1);
-}
-
-.info-bg-light {
-  background: rgba(66, 133, 244, 0.1);
-}
-
-.warning-bg-light {
-  background: rgba(244, 180, 0, 0.1);
-}
-
-/* Table Card */
-.modern-table-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-}
-
-.table-header {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-}
-
-.table-icon-bg {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 18px;
-}
-
-/* Empty State */
-.empty-state {
-  padding: 60px 20px;
-}
-
-.empty-icon-bg {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.1) 0%, rgba(66, 133, 244, 0.05) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary-color);
-  font-size: 32px;
-}
-
-/* Modern Table */
-.modern-table {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.modern-table-head th {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  border: none;
-  padding: 20px;
-  font-size: 14px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  position: relative;
-}
-
-.modern-table-head th::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 20px;
-  right: 20px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--primary-color) 0%, transparent 100%);
-}
-
-.modern-table-row {
-  transition: all 0.3s ease;
-  border: none;
-}
-
-.modern-table-row:hover {
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.02) 0%, rgba(66, 133, 244, 0.01) 100%);
-  transform: translateX(4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-}
-
-.modern-table-row td {
-  padding: 20px;
-  border: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  vertical-align: middle;
-}
-
-/* Table Content Styling */
-.timestamp-wrapper {
-  min-width: 120px;
-}
-
-.modern-action-badge {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-}
-
-.badge-success {
-  background: linear-gradient(135deg, var(--success-color) 0%, #4facfe 100%);
-  color: white;
-}
-
-.badge-warning {
-  background: linear-gradient(135deg, var(--warning-color) 0%, #fda085 100%);
-  color: white;
-}
-
-.badge-danger {
-  background: linear-gradient(135deg, var(--danger-color) 0%, #f093fb 100%);
-  color: white;
-}
-
-.badge-info {
-  background: linear-gradient(135deg, var(--info-color) 0%, #667eea 100%);
-  color: white;
-}
-
-.badge-secondary {
-  background: linear-gradient(135deg, var(--secondary-color) 0%, #cbd5e0 100%);
-  color: white;
-}
-
-.entity-info {
-  min-width: 140px;
-}
-
-.user-avatar, .system-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-}
-
-.user-avatar {
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.15) 0%, rgba(66, 133, 244, 0.05) 100%);
-  color: var(--primary-color);
-}
-
-.system-avatar {
-  background: linear-gradient(135deg, rgba(154, 160, 166, 0.15) 0%, rgba(154, 160, 166, 0.05) 100%);
-  color: var(--secondary-color);
-}
-
-.details-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.1) 0%, rgba(66, 133, 244, 0.05) 100%);
-  color: var(--primary-color);
-  font-size: 12px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-}
-
-.modern-view-btn {
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.1) 0%, rgba(66, 133, 244, 0.05) 100%);
-  border: 1px solid rgba(66, 133, 244, 0.2);
-  color: var(--primary-color);
-  font-weight: 600;
-  font-size: 12px;
-  padding: 8px 16px;
-  transition: all 0.3s ease;
-}
-
-.modern-view-btn:hover {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(66, 133, 244, 0.3);
-}
-
-/* Buttons */
-.modern-btn-primary {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%);
-  border: none;
-  font-weight: 600;
-  box-shadow: 0 4px 16px rgba(66, 133, 244, 0.3);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.modern-btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.modern-btn-primary:hover::before {
-  left: 100%;
-}
-
-.modern-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(66, 133, 244, 0.4);
-  background: linear-gradient(135deg, #3367d6 0%, #5a67d8 100%);
-}
-
-.modern-badge {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-/* Pagination */
-.pagination .page-link {
-  border: 2px solid #e2e8f0;
-  color: var(--text-primary);
-  font-weight: 500;
-  padding: 12px 16px;
-  margin: 0 4px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.pagination .page-link:hover {
-  border-color: var(--primary-color);
-  background: rgba(66, 133, 244, 0.1);
-  color: var(--primary-color);
-  transform: translateY(-2px);
-}
-
-.pagination .page-item.active .page-link {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%);
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 16px rgba(66, 133, 244, 0.3);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .audit-header-card .d-flex {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
-  }
-  
-  .stats-icon-bg {
-    width: 48px;
-    height: 48px;
-    font-size: 20px;
-  }
-  
-  .modern-table-row:hover {
-    transform: none;
-  }
-  
-  .modern-action-badge {
-    font-size: 10px;
-    padding: 6px 12px;
-  }
-}
-
-/* Animation Classes */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-/* Loading States */
-.loading-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Hover Effects */
-.modern-stats-card:hover .stats-icon-bg {
-  transform: scale(1.1) rotate(10deg);
-}
-
-.modern-table-row:hover .modern-action-badge {
-  transform: scale(1.05);
-}
-
-.modern-table-row:hover .user-avatar,
-.modern-table-row:hover .system-avatar {
-  transform: scale(1.1);
-}
-</style>

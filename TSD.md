@@ -1,10 +1,11 @@
 # StoreHub Queue Management System - Technical Specification Document (TSD)
 
 ## Document Information
-- **Version**: 2.0
-- **Date**: August 2025
+- **Version**: 3.0
+- **Date**: January 2025
 - **Status**: Active Development
 - **Platform**: *.storehubqms.com
+- **Last Updated**: Aligned with current implementation
 
 ---
 
@@ -33,7 +34,7 @@
 │  │    (Extracts tenant from subdomain, sets context)        │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │   SuperAdmin Portal  |  Tenant Dashboard  |  Customer UI │   │
+│  │   BackOffice Portal  |  Tenant Dashboard  |  Customer UI │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
@@ -48,8 +49,9 @@
 - **Hosting**: Render.com (Auto-scaling, Managed SSL)
 - **Database**: PostgreSQL on Neon with Prisma ORM
 - **Backend**: Node.js 20 LTS + Express.js 4.21
-- **Frontend**: EJS templates + Vanilla JavaScript
-- **Real-time**: Socket.IO with Redis adapter (multi-instance)
+- **Frontend**: EJS templates + StoreHub Design System
+- **CSS Framework**: Custom StoreHub Design System
+- **Real-time**: Socket.IO with WebSocket support
 - **Security**: 
   - Helmet.js for HTTP headers
   - CSP (Content Security Policy)
@@ -77,23 +79,27 @@
 │   │   ├── queueService.js         # Queue operations (tenant-aware)
 │   │   ├── merchantService.js      # Merchant/tenant operations
 │   │   ├── tenantService.js        # Multi-tenant management
+│   │   ├── backOfficeService.js    # BackOffice operations
 │   │   ├── renderApiService.js     # Render.com API integration
-│   │   ├── whatsappService.js      # WhatsApp integration
-│   │   ├── webchatService.js       # WebChat real-time messaging
-│   │   ├── notificationService.js  # Multi-channel notifications
+│   │   ├── webChatService.js       # WebChat real-time messaging
+│   │   ├── unifiedNotificationService.js  # Multi-channel notifications
 │   │   ├── emailService.js         # Email notifications
-│   │   └── analyticsService.js     # Tenant-scoped analytics
+│   │   └── systemSettingsService.js # System configuration
 │   ├── routes/
-│   │   ├── superadmin/             # SuperAdmin routes
+│   │   ├── backoffice/             # BackOffice routes
+│   │   │   ├── auth.js             # BackOffice authentication
+│   │   │   ├── dashboard.js        # BackOffice dashboard
 │   │   │   ├── tenants.js          # Tenant CRUD operations
 │   │   │   ├── users.js            # User management
-│   │   │   ├── billing.js          # Subscription management
-│   │   │   └── analytics.js        # Platform analytics
+│   │   │   ├── merchants.js        # Merchant management
+│   │   │   ├── settings.js         # System settings
+│   │   │   └── audit-logs.js       # Audit trail viewing
 │   │   ├── api/
-│   │   │   ├── queue.js            # Queue management API
-│   │   │   ├── customer.js         # Customer operations
-│   │   │   ├── webchat.js          # WebChat endpoints
-│   │   │   └── analytics.js        # Tenant analytics
+│   │   │   └── (routes integrated into main route files)
+│   │   ├── analytics.js            # Analytics API endpoints
+│   │   ├── queue.js                # Queue management API
+│   │   ├── customer.js             # Customer operations
+│   │   ├── merchant.js             # Merchant operations
 │   │   └── frontend/
 │   │       ├── dashboard.js        # Management dashboard
 │   │       ├── queue.js            # Customer queue UI
@@ -104,9 +110,12 @@
 │       ├── constants.js            # System-wide constants
 │       └── helpers.js              # Utility functions
 ├── views/                          # EJS templates
-│   ├── superadmin/                 # SuperAdmin interface
+│   ├── backoffice/                 # BackOffice interface
 │   │   ├── tenants/                # Tenant management views
-│   │   └── analytics/              # Platform analytics
+│   │   ├── users/                  # User management views
+│   │   ├── merchants/              # Merchant views
+│   │   ├── audit-logs/             # Audit log views
+│   │   └── settings/               # Settings views
 │   ├── dashboard/                  # Tenant management interface
 │   ├── queue/                      # Customer queue views
 │   └── partials/                   # Shared components
@@ -127,87 +136,88 @@
 
 ### 2.1 Multi-Tenant Models
 
-#### Tenant Model (New)
+#### Tenant Model (Current Implementation)
 ```prisma
 model Tenant {
-  id                    String              @id @default(uuid())
-  subdomain             String              @unique
-  businessName          String
-  businessType          BusinessType
-  subscriptionPlan      SubscriptionPlan    @default(FREE)
-  subscriptionStatus    SubscriptionStatus  @default(TRIAL)
-  trialEndsAt           DateTime?
-  billingEmail          String
-  supportEmail          String?
-  phone                 String
-  timezone              String              @default("Asia/Kuala_Lumpur")
-  isActive              Boolean             @default(true)
-  activatedAt           DateTime?
-  deactivatedAt         DateTime?
-  customDomain          String?             @unique
-  logoUrl               String?
-  primaryColor          String              @default("#FF8C00")
-  maxQueues             Int                 @default(1)
-  maxUsers              Int                 @default(3)
-  maxCustomersPerDay    Int                 @default(50)
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  id                    String                @id @default(uuid())
+  name                  String
+  slug                  String                @unique  // Subdomain identifier
+  domain                String?               @unique  // Custom domain
+  isActive              Boolean               @default(true)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
   
+  // Relationships
+  users                 TenantUser[]
   merchants             Merchant[]
-  subscriptions         Subscription[]
-  auditLogs             AuditLog[]
+  subscription          TenantSubscription?
+  auditLogs             BackOfficeAuditLog[]
+  webChatMessages       WebChatMessage[]
+  notificationLogs      NotificationLog[]
+  generalAuditLogs      AuditLog[]
   
-  @@index([subdomain])
+  @@index([slug])
+  @@index([domain])
   @@index([isActive])
 }
 
-enum SubscriptionPlan {
-  FREE
-  BASIC
-  PREMIUM
-  ENTERPRISE
-}
-
-enum SubscriptionStatus {
-  TRIAL
-  ACTIVE
-  PAST_DUE
-  CANCELLED
-  SUSPENDED
+// Subscription Management
+model TenantSubscription {
+  id                    String                @id @default(uuid())
+  tenantId              String                @unique
+  status                SubscriptionStatus    @default(active)
+  priority              SubscriptionPriority  @default(standard)
+  billingCycle          BillingCycle          @default(monthly)
+  startDate             DateTime              @default(now())
+  endDate               DateTime?
+  maxMerchants          Int                   @default(1)
+  maxQueuesPerMerchant  Int                   @default(3)
+  maxUsersPerTenant     Int                   @default(5)
+  aiFeatures            Boolean               @default(false)
+  analytics             Boolean               @default(false)
+  customBranding        Boolean               @default(false)
+  priority_support      Boolean               @default(false)
+  tenant                Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 ```
 
-#### Updated Merchant Model (Tenant-aware)
+#### Merchant Model (Current Implementation)
 ```prisma
 model Merchant {
   id                     String                @id @default(uuid())
-  tenantId               String                // NEW: Links to tenant
+  tenantId               String?               // Optional for backward compatibility
   businessName           String
-  email                  String
+  email                  String                @unique
   password               String
   phone                  String
-  role                   MerchantRole          @default(STAFF)
+  businessType           BusinessType
+  timezone               String                @default("UTC")
   isActive               Boolean               @default(true)
   lastLogin              DateTime?
-  invitedBy              String?
-  invitedAt              DateTime?
-  acceptedAt             DateTime?
+  emailVerified          Boolean               @default(false)
+  emailVerificationToken String?
+  passwordResetToken     String?
+  passwordResetExpires   DateTime?
+  logoUrl                String?               // Business logo URL
+  brandColor             String?               // Primary brand color
+  bannerImageUrl         String?               // Optional banner image
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
   
-  tenant                 Tenant                @relation(fields: [tenantId], references: [id])
+  // Relationships
+  tenant                 Tenant?               @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  businessHours          BusinessHours[]
+  address                MerchantAddress?
+  integrations           MerchantIntegrations?
   settings               MerchantSettings?
+  subscription           MerchantSubscription?
   queues                 Queue[]
-  sessions               Session[]
+  serviceTypes           ServiceType[]
   
-  @@unique([tenantId, email])  // Email unique per tenant
-  @@index([tenantId])
-}
-
-enum MerchantRole {
-  OWNER
-  ADMIN
-  STAFF
+  @@index([email])
+  @@index([businessName])
+  @@index([businessType])
+  @@index([tenantId, isActive])
 }
 ```
 
@@ -302,27 +312,28 @@ enum Platform {
 ### 2.4 Session & Authentication Models
 ```prisma
 model Session {
-  id        String   @id
-  sid       String   @unique
-  sess      Json
+  sid       String   @id
+  sess      String   // Session data as string
   expire    DateTime
-  tenantId  String?  // NEW: Track tenant per session
   
   @@index([expire])
-  @@index([tenantId])
 }
 
-model SuperAdmin {
-  id                String    @id @default(uuid())
-  email             String    @unique
-  password          String
-  name              String
-  isActive          Boolean   @default(true)
-  lastLogin         DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+model BackOfficeUser {
+  id                    String                @id @default(uuid())
+  email                 String                @unique
+  password              String
+  fullName              String
+  isActive              Boolean               @default(true)
+  lastLogin             DateTime?
+  passwordResetToken    String?
+  passwordResetExpires  DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  auditLogs             BackOfficeAuditLog[]
   
-  auditLogs         AuditLog[]
+  @@index([email])
+  @@index([isActive])
 }
 ```
 
@@ -429,42 +440,77 @@ enum UserType {
 
 ## 3. API Endpoints
 
-### 3.1 SuperAdmin API (New)
+### 3.1 BackOffice API (Current Implementation)
 ```
 # Authentication
-POST   /api/superadmin/login              # SuperAdmin login
-POST   /api/superadmin/logout             # Logout
+POST   /backoffice/login                  # BackOffice login
+POST   /backoffice/logout                 # Logout
+GET    /backoffice/dashboard              # BackOffice dashboard
 
 # Tenant Management
-GET    /api/superadmin/tenants            # List all tenants
-POST   /api/superadmin/tenants            # Create new tenant
-GET    /api/superadmin/tenants/:id        # Get tenant details
-PUT    /api/superadmin/tenants/:id        # Update tenant
-DELETE /api/superadmin/tenants/:id        # Deactivate tenant
-POST   /api/superadmin/tenants/:id/activate   # Activate tenant
-POST   /api/superadmin/tenants/:id/suspend    # Suspend tenant
-
-# Subdomain Provisioning
-POST   /api/superadmin/tenants/:id/provision-subdomain  # Provision subdomain
-DELETE /api/superadmin/tenants/:id/remove-subdomain     # Remove subdomain
+GET    /backoffice/tenants                # List all tenants
+GET    /backoffice/tenants/create         # Show create form
+POST   /backoffice/tenants/create         # Create new tenant
+GET    /backoffice/tenants/:id            # Get tenant details
+GET    /backoffice/tenants/:id/edit       # Show edit form
+POST   /backoffice/tenants/:id/edit       # Update tenant
+POST   /backoffice/tenants/:id/toggle     # Toggle tenant status
+POST   /backoffice/tenants/:id/delete     # Delete tenant
+GET    /backoffice/tenants/check-slug     # Check subdomain availability
 
 # User Management
-GET    /api/superadmin/tenants/:id/users  # List tenant users
-POST   /api/superadmin/tenants/:id/users  # Create/invite user
-DELETE /api/superadmin/users/:id          # Remove user
+GET    /backoffice/users                  # List all users
+GET    /backoffice/users/:id              # User details
+POST   /backoffice/users/:id/toggle       # Toggle user status
 
-# Analytics & Monitoring
-GET    /api/superadmin/analytics          # Platform analytics
-GET    /api/superadmin/analytics/tenants  # Tenant usage stats
-GET    /api/superadmin/analytics/revenue  # Revenue analytics
+# Merchant Management
+GET    /backoffice/merchants              # List all merchants
+GET    /backoffice/merchants/:id          # Merchant details
 
-# Billing & Subscriptions
-GET    /api/superadmin/subscriptions      # All subscriptions
-PUT    /api/superadmin/tenants/:id/subscription  # Update plan
-GET    /api/superadmin/invoices           # All invoices
+# Audit Logs
+GET    /backoffice/audit-logs             # View audit trail
+GET    /backoffice/audit-logs/:id         # Audit log details
+
+# Settings
+GET    /backoffice/settings               # System settings
+POST   /backoffice/settings               # Update settings
 ```
 
-### 3.2 Tenant API (Queue Management)
+### 3.2 Analytics API (Current Implementation)
+```
+# Dashboard Analytics
+GET    /api/analytics/dashboard           # Get dashboard analytics
+  Query params:
+    - period: 1d, 7d, 30d, 90d, 180d
+  Returns:
+    - Total customers served
+    - Average wait times
+    - Success/no-show/withdrawal rates
+    - Peak hours analysis
+    - Daily statistics
+    - Queue performance metrics
+
+# Queue-Specific Analytics
+GET    /api/analytics/queue/:id           # Get specific queue analytics
+  Query params:
+    - period: 1d, 7d, 30d, 90d, 180d
+  Returns:
+    - Queue performance metrics
+    - Hourly distribution
+    - Customer flow patterns
+    - Service time analysis
+
+# Export Analytics
+GET    /api/analytics/export              # Export analytics data
+  Query params:
+    - format: json, csv
+    - period: 7d, 30d, 90d
+  Returns:
+    - Formatted data for analysis
+    - CSV download option
+```
+
+### 3.3 Queue Management API
 ```
 # Authentication
 POST   /api/auth/login                    # Tenant user login
@@ -489,21 +535,23 @@ POST   /api/queues/:id/seat/:entryId      # Mark as seated
 POST   /api/queues/:id/cancel/:entryId    # Cancel entry
 POST   /api/queues/:id/no-show/:entryId   # Mark no-show
 
-# WebChat API
-GET    /api/webchat/:sessionId            # Get chat messages
-POST   /api/webchat/:sessionId/message    # Send message
-GET    /api/webchat/:sessionId/status     # Get connection status
+# WebChat API (Integrated into queue routes)
+POST   /api/queue/webchat/send            # Send chat message
+GET    /api/queue/webchat/:sessionId     # Get chat messages
+POST   /api/queue/webchat/recovery        # Recover chat session
 ```
 
-### 3.3 Frontend Routes
+### 3.4 Frontend Routes
 ```
-# SuperAdmin Portal (admin.storehubqms.com)
-GET    /superadmin                        # SuperAdmin dashboard
-GET    /superadmin/login                  # Login page
-GET    /superadmin/tenants                # Tenant management
-GET    /superadmin/tenants/:id            # Tenant details
-GET    /superadmin/analytics              # Platform analytics
-GET    /superadmin/billing                # Billing management
+# BackOffice Portal (admin.storehubqms.com or /backoffice)
+GET    /backoffice                        # BackOffice dashboard
+GET    /backoffice/login                  # Login page
+GET    /backoffice/tenants                # Tenant management
+GET    /backoffice/tenants/:id            # Tenant details
+GET    /backoffice/users                  # User management
+GET    /backoffice/merchants              # Merchant management
+GET    /backoffice/audit-logs             # Audit trail
+GET    /backoffice/settings               # System settings
 
 # Tenant Dashboard ({tenant}.storehubqms.com)
 GET    /dashboard                          # Management dashboard
@@ -523,17 +571,24 @@ GET    /webchat                           # WebChat interface
 
 ### 4.1 Multi-Tenant Socket.IO Architecture
 ```javascript
-// Namespace-based tenant isolation
-const tenantNamespace = io.of(`/${tenant.subdomain}`);
-
-// Room structure
-const rooms = {
-  tenant: `tenant:${tenantId}`,              // All tenant users
-  merchant: `merchant:${merchantId}`,        // Specific merchant
-  queue: `queue:${queueId}`,                 // Queue updates
-  customer: `customer:${customerId}`,        // Customer notifications
-  webchat: `webchat:${sessionId}`           // WebChat messages
-};
+// Socket.IO with WebSocket support
+io.on('connection', (socket) => {
+  // Extract tenant context from socket handshake
+  const tenantId = socket.handshake.query.tenantId;
+  
+  // Room structure
+  const rooms = {
+    merchant: `merchant:${merchantId}`,    // Merchant updates
+    queue: `queue:${queueId}`,             // Queue updates
+    customer: `customer:${customerId}`,    // Customer notifications
+    webchat: `webchat:${sessionId}`       // WebChat messages
+  };
+  
+  // Join appropriate rooms based on user type
+  socket.on('join-queue', (queueId) => {
+    socket.join(`queue:${queueId}`);
+  });
+});
 
 // Connection with tenant context
 tenantNamespace.use(async (socket, next) => {
@@ -620,9 +675,9 @@ async function resolveTenant(req, res, next) {
   const hostname = req.hostname; // e.g., storehubrestaurant.storehubqms.com
   const subdomain = hostname.split('.')[0];
   
-  // Special handling for SuperAdmin
-  if (subdomain === 'admin') {
-    req.isSuperAdmin = true;
+  // Special handling for BackOffice
+  if (subdomain === 'admin' || req.path.startsWith('/backoffice')) {
+    req.isBackOffice = true;
     return next();
   }
   
@@ -774,8 +829,15 @@ app.use((req, res, next) => {
 
 #### Authentication & Authorization
 ```javascript
-// SuperAdmin authentication
-app.use('/api/superadmin/*', authenticateSuperAdmin);
+// BackOffice authentication
+app.use('/backoffice/*', requireBackOfficeAuth);
+
+// Development auth bypass (when USE_AUTH_BYPASS=true)
+if (process.env.USE_AUTH_BYPASS === 'true') {
+  const { authMiddleware } = require('../middleware/auth-bypass');
+} else {
+  const { authMiddleware } = require('../middleware/auth');
+}
 
 // Tenant user authentication
 app.use('/api/*', authenticateTenant);
@@ -1131,7 +1193,35 @@ NEW_RELIC_LICENSE_KEY=xxx
 
 ## 10. Monitoring & Analytics
 
-### 10.1 Application Monitoring
+### 10.1 Analytics Implementation
+```javascript
+// Analytics are implemented directly in routes/analytics.js
+// Key endpoints:
+
+// Dashboard analytics with comprehensive metrics
+router.get('/dashboard', authMiddleware, async (req, res) => {
+  // Returns:
+  // - Total customers served
+  // - Average wait times
+  // - Success/no-show/withdrawal rates
+  // - Peak hour analysis
+  // - Daily statistics
+  // - Queue performance metrics
+});
+
+// Queue-specific analytics
+router.get('/queue/:id', authMiddleware, async (req, res) => {
+  // Returns queue-specific performance data
+});
+
+// Export functionality
+router.get('/export', authMiddleware, async (req, res) => {
+  // Supports JSON and CSV formats
+  // Customizable date ranges
+});
+```
+
+### 10.2 Application Monitoring
 ```javascript
 // Custom metrics collection
 class MetricsCollector {
@@ -1154,7 +1244,41 @@ class MetricsCollector {
 }
 ```
 
-### 10.2 Error Tracking
+### 10.3 Data Retention Policy
+```javascript
+// server/jobs/analyticsDataRetention.js
+const analyticsDataRetentionJob = {
+  name: 'analytics-data-retention',
+  schedule: '0 0 * * *', // Daily at midnight
+  task: async () => {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    
+    // Clean up old analytics events
+    await prisma.queueAnalyticsEvent.deleteMany({
+      where: {
+        timestamp: {
+          lt: sixMonthsAgo
+        }
+      }
+    });
+    
+    // Clean up old queue entries
+    await prisma.queueEntry.deleteMany({
+      where: {
+        joinedAt: {
+          lt: sixMonthsAgo
+        },
+        status: {
+          in: ['completed', 'cancelled', 'no_show']
+        }
+      }
+    });
+  }
+};
+```
+
+### 10.4 Error Tracking
 ```javascript
 // Centralized error handling with context
 app.use((err, req, res, next) => {
@@ -1218,7 +1342,26 @@ describe('Multi-Tenant Queue System', () => {
 });
 ```
 
-### 11.2 Load Testing
+### 11.2 Analytics Data Retention
+```javascript
+// Analytics data is retained for 6 months
+const DATA_RETENTION_PERIOD = 6 * 30 * 24 * 60 * 60 * 1000; // 6 months in ms
+
+// Automated cleanup job
+const cleanupOldAnalytics = async () => {
+  const sixMonthsAgo = new Date(Date.now() - DATA_RETENTION_PERIOD);
+  
+  await prisma.queueAnalyticsEvent.deleteMany({
+    where: {
+      timestamp: {
+        lt: sixMonthsAgo
+      }
+    }
+  });
+};
+```
+
+### 11.3 Load Testing
 ```bash
 # K6 load test script
 import http from 'k6/http';
@@ -1272,7 +1415,39 @@ export default function () {
 
 ---
 
-**Document Version**: 2.0  
-**Last Updated**: August 2025  
+## 13. Current Implementation Status
+
+### Completed Features
+- ✅ Multi-tenant architecture with subdomain routing
+- ✅ BackOffice portal for platform administration
+- ✅ Tenant management with CRUD operations
+- ✅ Queue management system with drag-and-drop interface
+- ✅ WebChat real-time messaging system
+- ✅ Analytics dashboard with 6-month retention
+- ✅ Export functionality (JSON/CSV)
+- ✅ StoreHub Design System implementation
+- ✅ Authentication system with role-based access
+- ✅ Audit logging system
+- ✅ Email notification service
+- ✅ Session management and recovery
+
+### In Development
+- 🚧 SMS notification integration
+- 🚧 WhatsApp Business API enhancements
+- 🚧 Advanced predictive analytics
+- 🚧 Mobile application
+- 🚧 API marketplace
+
+### Key Differences from Original Specification
+1. **Naming Convention**: BackOffice instead of SuperAdmin throughout the system
+2. **Analytics**: Implemented in routes rather than separate service layer
+3. **Database**: Using BackOfficeUser model instead of SuperAdmin
+4. **UI Framework**: Custom StoreHub Design System instead of generic CSS
+5. **Development Tools**: Auth bypass mechanism for easier testing
+
+---
+
+**Document Version**: 3.0  
+**Last Updated**: January 2025  
 **Implementation Status**: Phase 1 Complete, Phase 2 In Development  
 **Platform**: https://storehubqms.com 
