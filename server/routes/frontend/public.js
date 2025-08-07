@@ -17,7 +17,7 @@ router.get('/debug-socket', (req, res) => {
   res.sendFile('debug-socket-origin.html', { root: process.cwd() });
 });
 
-// Home page - redirect to login if not authenticated
+// Home page - show landing page
 router.get('/', (req, res) => {
   // Check if this is the admin subdomain
   if (req.isBackOffice) {
@@ -30,13 +30,8 @@ router.get('/', (req, res) => {
     return res.redirect('/backoffice/auth/login');
   }
   
-  // Check if regular user is already logged in
-  if (req.session && req.session.userId) {
-    // User is logged in, redirect to dashboard
-    return res.redirect('/dashboard');
-  }
-  // User is not logged in, redirect to login page
-  res.redirect('/auth/login');
+  // Show landing page
+  res.render('landing');
 });
 
 // Dashboard - Protected merchant dashboard route

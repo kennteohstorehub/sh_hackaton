@@ -13,7 +13,7 @@ async function resolveTenant(req, res, next) {
     logger.info(`Resolving tenant for hostname: ${hostname}`);
     
     // Check if this is a public route that doesn't require tenant resolution
-    const publicPaths = ['/register', '/auth/login', '/auth/logout', '/terms', '/privacy', '/'];
+    const publicPaths = ['/register', '/auth/login', '/auth/logout', '/terms', '/privacy', '/', '/help', '/contact', '/features'];
     const isPublicPath = publicPaths.some(path => req.path === path || req.path.startsWith('/register/'));
     
     // For Render deployment or single domain setup without subdomains

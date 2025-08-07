@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreHub Queue Management System - Streamline Your Customer Experience</title>
+    <link rel="stylesheet" href="/css/storehub-global.css">
+    <link rel="stylesheet" href="/css/storehub-design-system.css">
+    <link rel="stylesheet" href="/css/landing.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <span>StoreHub QMS</span>
+                </div>
+                <div class="nav-actions">
+                    <a href="/backoffice/auth/login" class="btn-secondary">BackOffice Login</a>
+                    <a href="/register" class="btn-primary">Start Free Trial</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="pilot-badge">
+                <span class="badge-icon">🚀</span>
+                <span>Pilot Program - Join Early Access</span>
+            </div>
+            <h1 class="hero-title">
+                Transform Your Queue Management<br>
+                <span class="gradient-text">Delight Your Customers</span>
+            </h1>
+            <p class="hero-subtitle">
+                Streamline customer flow, reduce wait times, and enhance the customer experience 
+                with our intelligent queue management system. Currently in pilot testing with select partners.
+            </p>
+            <div class="hero-actions">
+                <a href="/register" class="btn-primary btn-large">
+                    Start Your 14-Day Free Trial
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+                <a href="#features" class="btn-secondary btn-large">
+                    See How It Works
+                </a>
+            </div>
+            <div class="hero-note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>No credit card required • Setup in 5 minutes</span>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="dashboard-preview">
+                <div class="preview-header">
+                    <div class="preview-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="preview-title">Queue Dashboard</span>
+                </div>
+                <div class="preview-content">
+                    <div class="queue-cards">
+                        <div class="queue-card">
+                            <div class="queue-number">A001</div>
+                            <div class="queue-customer">John Doe</div>
+                            <div class="queue-status waiting">Waiting</div>
+                        </div>
+                        <div class="queue-card">
+                            <div class="queue-number">A002</div>
+                            <div class="queue-customer">Jane Smith</div>
+                            <div class="queue-status called">Called</div>
+                        </div>
+                        <div class="queue-card">
+                            <div class="queue-number">A003</div>
+                            <div class="queue-customer">Mike Johnson</div>
+                            <div class="queue-status waiting">Waiting</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Everything You Need to Manage Queues Efficiently</h2>
+                <p>Powerful features designed for businesses of all sizes</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                    </div>
+                    <h3>Real-Time Queue Monitoring</h3>
+                    <p>Track queue status, customer flow, and wait times in real-time from your dashboard.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </div>
+                    <h3>Smart Notifications</h3>
+                    <p>Keep customers informed with browser notifications when their turn approaches.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                    </div>
+                    <h3>QR Code Check-in</h3>
+                    <p>Customers scan a QR code to join the queue instantly from their mobile devices.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="20" x2="12" y2="10"></line>
+                            <line x1="18" y1="20" x2="18" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="16"></line>
+                        </svg>
+                    </div>
+                    <h3>Analytics & Insights</h3>
+                    <p>Understand customer patterns and optimize operations with detailed analytics.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    <h3>Mobile-First Design</h3>
+                    <p>Works seamlessly on all devices - smartphones, tablets, and desktops.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m4.22-13.22l4.24 4.24M1.54 1.54l4.24 4.24M12 1l4.24 4.24M12 19l4.24-4.24"></path>
+                        </svg>
+                    </div>
+                    <h3>Customizable Settings</h3>
+                    <p>Tailor the system to match your business needs and branding.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>Get started in minutes, not hours</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Sign Up</h3>
+                    <p>Create your account and set up your business profile in minutes</p>
+                </div>
+                <div class="step-arrow">
+                    <svg width="40" height="20" viewBox="0 0 40 20" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="0" y1="10" x2="30" y2="10"></line>
+                        <polyline points="25 5 30 10 25 15"></polyline>
+                    </svg>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Configure</h3>
+                    <p>Customize your queue settings and generate your unique QR code</p>
+                </div>
+                <div class="step-arrow">
+                    <svg width="40" height="20" viewBox="0 0 40 20" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="0" y1="10" x2="30" y2="10"></line>
+                        <polyline points="25 5 30 10 25 15"></polyline>
+                    </svg>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Go Live</h3>
+                    <p>Share your QR code and start managing queues like a pro</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Queue Notification Flow -->
+    <section class="notification-flow">
+        <div class="container">
+            <div class="section-header">
+                <h2>Smart Queue Notification System</h2>
+                <p>Keep your customers informed every step of the way</p>
+            </div>
+            <div class="flow-timeline">
+                <div class="flow-step">
+                    <div class="flow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                    </div>
+                    <h3>1. Customer Scans QR Code</h3>
+                    <p>Customers scan your unique QR code to join the queue instantly from their phone</p>
+                    <div class="flow-mockup">
+                        <div class="phone-frame">
+                            <div class="screen-content">
+                                <div class="qr-scan-demo">📱 Scanning QR Code...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flow-connector"></div>
+                
+                <div class="flow-step">
+                    <div class="flow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <h3>2. Real-Time Position Updates</h3>
+                    <p>Customers see their queue position and estimated wait time in real-time</p>
+                    <div class="flow-mockup">
+                        <div class="phone-frame">
+                            <div class="screen-content">
+                                <div class="position-display">
+                                    <div class="queue-number">A005</div>
+                                    <div class="position-text">Position: 3rd in queue</div>
+                                    <div class="wait-time">Est. wait: 15 minutes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flow-connector"></div>
+                
+                <div class="flow-step">
+                    <div class="flow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </div>
+                    <h3>3. Browser Notification Alert</h3>
+                    <p>Automatic browser notification when customer's turn is approaching</p>
+                    <div class="flow-mockup">
+                        <div class="notification-demo">
+                            <div class="notification-icon">🔔</div>
+                            <div class="notification-content">
+                                <strong>Your turn is coming up!</strong>
+                                <p>You're next in queue. Please proceed to the counter.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flow-connector"></div>
+                
+                <div class="flow-step">
+                    <div class="flow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"></path>
+                            <path d="M16 2a16 16 0 0 1 2 2"></path>
+                        </svg>
+                    </div>
+                    <h3>4. Merchant Calls Customer</h3>
+                    <p>Staff can call customers with one click when ready to serve</p>
+                    <div class="flow-mockup">
+                        <div class="merchant-screen">
+                            <div class="customer-card">
+                                <span class="customer-name">John Doe - A005</span>
+                                <button class="call-btn">📞 Call Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flow-connector"></div>
+                
+                <div class="flow-step">
+                    <div class="flow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3>5. Customer Acknowledges</h3>
+                    <p>Customer confirms arrival with one tap, completing the flow</p>
+                    <div class="flow-mockup">
+                        <div class="phone-frame">
+                            <div class="screen-content">
+                                <div class="acknowledge-screen">
+                                    <div class="success-icon">✅</div>
+                                    <button class="ack-btn">I'm Here!</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pilot Program Section -->
+    <section class="pilot-program">
+        <div class="container">
+            <div class="pilot-content">
+                <div class="pilot-info">
+                    <h2>Join Our Pilot Program</h2>
+                    <p class="pilot-description">
+                        We're currently in pilot testing phase, working closely with select businesses 
+                        to perfect our queue management solution. Be among the first to experience 
+                        the future of customer flow management.
+                    </p>
+                    <div class="pilot-benefits">
+                        <div class="benefit">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>14-day free trial with full features</span>
+                        </div>
+                        <div class="benefit">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Email support during pilot phase</span>
+                        </div>
+                        <div class="benefit">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Your feedback shapes the product</span>
+                        </div>
+                        <div class="benefit">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Special pilot program benefits</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pilot-action">
+                    <div class="action-card">
+                        <h3>Ready to Transform Your Queue Management?</h3>
+                        <p>Join innovative businesses already using StoreHub QMS</p>
+                        <a href="/register" class="btn-primary btn-large btn-block">
+                            Start Your Free Trial
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                        <small>No credit card required • Cancel anytime</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                        <span>StoreHub QMS</span>
+                    </div>
+                    <p>Smart queue management for modern businesses</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#how-it-works">How It Works</a>
+                        <a href="/register">Start Free Trial</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <a href="/help">Help Center</a>
+                        <a href="/contact">Contact Us</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="/terms">Terms of Service</a>
+                        <a href="/privacy">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 StoreHub Queue Management System. All rights reserved.</p>
+                <p class="pilot-note">Currently in pilot testing phase</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Add animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe feature cards and steps
+        document.querySelectorAll('.feature-card, .step').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

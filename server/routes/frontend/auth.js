@@ -21,19 +21,21 @@ if (!useAuthBypass && ensureTenantSession) {
   router.use(ensureTenantSession);
 }
 
-// Login page
-router.get('/login', requireGuest, requireGuestByContext, (req, res) => {
+// Login page - redirect to landing page
+router.get('/login', (req, res) => {
+  // Redirect /auth/login to the landing page
+  res.redirect('/');
+});
+
+// Merchant Login page - actual login form for merchants
+router.get('/merchant-login', requireGuest, requireGuestByContext, (req, res) => {
   const redirect = req.query.redirect || '/dashboard';
   
   // Ensure messages object exists
   const messages = res.locals.messages || { error: null, success: null };
   
-  // Debug CSRF token
-  console.log('[AUTH] Login GET - CSRF Token available:', !!res.locals.csrfToken);
-  console.log('[AUTH] Login GET - Session exists:', !!req.session);
-  
-  res.render('auth/login-storehub', {
-    title: 'Login - StoreHub Queue Management System',
+  res.render('auth/merchant-login', {
+    title: 'Merchant Login - StoreHub Queue Management System',
     redirect,
     messages: messages,
     csrfToken: res.locals.csrfToken || ''
