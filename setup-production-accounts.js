@@ -1,5 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+
+// Set the DATABASE_URL for production
+process.env.DATABASE_URL = 'postgresql://neondb_owner:npg_rCJ2L1UzIZgw@ep-gentle-tooth-a13skk4o-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+
 const prisma = new PrismaClient();
 
 async function setupProductionAccounts() {
@@ -24,12 +28,11 @@ async function setupProductionAccounts() {
 
     // Create BackOffice Admin
     console.log('👤 Creating BackOffice Admin...');
-    const admin = await prisma.backOfficeUser.create({
+    await prisma.backOfficeUser.create({
       data: {
         email: 'admin@storehub.com',
         fullName: 'System Administrator',
         password: hashedPassword,
-        role: 'superadmin',
         isActive: true
       }
     });
@@ -67,7 +70,7 @@ async function setupProductionAccounts() {
       const trialEndDate = new Date();
       trialEndDate.setDate(trialEndDate.getDate() + 30); // 30-day trial
 
-      const subscription = await prisma.tenantSubscription.create({
+      await prisma.tenantSubscription.create({
         data: {
           tenantId: tenant.id,
           status: 'trial',
@@ -102,7 +105,7 @@ async function setupProductionAccounts() {
       console.log(`  ✅ Merchant created: ${merchant.email}`);
 
       // Create default queue
-      const queue = await prisma.queue.create({
+      await prisma.queue.create({
         data: {
           merchantId: merchant.id,
           name: 'Main Queue',
