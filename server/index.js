@@ -359,11 +359,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root route - redirect to landing or registration
-app.get('/', (req, res) => {
-  res.redirect('/register');
-});
-
 // Apply CSRF validation to all state-changing routes
 app.use(csrfValidation);
 
