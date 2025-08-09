@@ -350,6 +350,20 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check endpoint (no CSRF needed)
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    service: 'StoreHub Queue Management System',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Root route - redirect to landing or registration
+app.get('/', (req, res) => {
+  res.redirect('/register');
+});
+
 // Apply CSRF validation to all state-changing routes
 app.use(csrfValidation);
 
