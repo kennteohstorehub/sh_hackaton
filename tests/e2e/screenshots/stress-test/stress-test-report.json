@@ -1,0 +1,81 @@
+{
+  "summary": {
+    "duration": "3.04 seconds",
+    "totalCustomers": 10,
+    "successfulJoins": 0,
+    "failedJoins": 0,
+    "successRate": "0.0%"
+  },
+  "notifications": {
+    "totalReceived": 0,
+    "averagePerCustomer": "NaN"
+  },
+  "positionUpdates": {
+    "totalReceived": 0,
+    "averagePerCustomer": "NaN"
+  },
+  "customerStates": {},
+  "errors": [],
+  "customerDetails": [
+    {
+      "name": "Test Customer 1",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 2",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 3",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 4",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 5",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 6",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 7",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 8",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 9",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    },
+    {
+      "name": "Test Customer 10",
+      "positionChanges": 0,
+      "notifications": 0,
+      "state": "unknown"
+    }
+  ]
+}

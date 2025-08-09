@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-08-08T09:48:40.187Z",
+  "results": [
+    {
+      "testName": "Landing Page Load",
+      "status": "PASS",
+      "details": "Landing page loaded with login and register buttons",
+      "timestamp": "2025-08-08T09:48:38.712Z"
+    },
+    {
+      "testName": "Merchant Login",
+      "status": "FAIL",
+      "details": "No element found for selector: input[name=\"email\"]",
+      "timestamp": "2025-08-08T09:48:39.357Z"
+    },
+    {
+      "testName": "Queue Entry",
+      "status": "FAIL",
+      "details": "No element found for selector: a[href*=\"/queue-management\"]",
+      "timestamp": "2025-08-08T09:48:39.359Z"
+    },
+    {
+      "testName": "Customer Flow",
+      "status": "FAIL",
+      "details": "No element found for selector: button[data-testid=\"call-next-customer\"]",
+      "timestamp": "2025-08-08T09:48:39.360Z"
+    },
+    {
+      "testName": "Session Persistence",
+      "status": "FAIL",
+      "details": "expected null to exist",
+      "timestamp": "2025-08-08T09:48:40.185Z"
+    },
+    {
+      "testName": "Logout",
+      "status": "FAIL",
+      "details": "No element found for selector: button[data-testid=\"logout\"]",
+      "timestamp": "2025-08-08T09:48:40.186Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "passed": 1,
+    "failed": 5
+  }
+}

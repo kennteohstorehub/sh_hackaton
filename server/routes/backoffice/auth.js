@@ -87,7 +87,10 @@ router.get('/login', requireGuestByContext, (req, res) => {
     title: 'BackOffice Login - StoreHub Queue Management System',
     redirect,
     messages: messages,
-    csrfToken: res.locals.csrfToken || ''
+    csrfToken: res.locals.csrfToken || '',
+    merchantName: 'StoreHub Admin',
+    merchantSlug: null,
+    portalType: 'BackOffice Portal'
   });
 });
 

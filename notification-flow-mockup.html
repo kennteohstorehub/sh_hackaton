@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Flow Mockup - StoreHub QMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f9fafb;
+        }
+        
+        /* Design System Variables */
+        :root {
+            --primary-orange: #FA8C16;
+            --primary-hover: #FFA940;
+            --primary-pressed: #D46B08;
+            --gray-900: #262626;
+            --gray-700: #595959;
+            --gray-600: #6B6B6B;
+            --gray-500: #8C8C8C;
+            --gray-100: #FAFAFA;
+        }
+        
+        .preview-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .preview-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .preview-header p {
+            opacity: 0.9;
+        }
+        
+        /* New Notification Flow Section */
+        .notification-flow {
+            padding: 5rem 0;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .notification-flow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, #FA8C16 10%, #FA8C16 90%, transparent 100%);
+            opacity: 0.2;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        
+        .section-header p {
+            font-size: 1.125rem;
+            color: #6b7280;
+        }
+        
+        .flow-timeline {
+            position: relative;
+        }
+        
+        /* Enhanced Flow Step */
+        .flow-step {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+        
+        .flow-step:nth-child(even) {
+            direction: rtl;
+        }
+        
+        .flow-step:nth-child(even) > * {
+            direction: ltr;
+        }
+        
+        .flow-content {
+            padding: 2rem;
+            background: #f9fafb;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            position: relative;
+        }
+        
+        .flow-number {
+            position: absolute;
+            top: -20px;
+            left: 30px;
+            background: var(--primary-orange);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(250, 140, 22, 0.3);
+        }
+        
+        .flow-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        
+        .flow-content p {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .flow-features {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .feature-tag {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        /* Device Mockups */
+        .device-mockup {
+            position: relative;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
+        }
+        
+        .iphone-frame {
+            width: 320px;
+            height: 640px;
+            background: #1a1a1a;
+            border-radius: 40px;
+            padding: 10px;
+            position: relative;
+        }
+        
+        .iphone-frame::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 5px;
+            background: #333;
+            border-radius: 10px;
+        }
+        
+        .iphone-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .desktop-frame {
+            width: 100%;
+            max-width: 500px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            padding: 8px;
+            position: relative;
+        }
+        
+        .desktop-frame::before {
+            content: '● ● ●';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #9ca3af;
+            font-size: 12px;
+            letter-spacing: 4px;
+        }
+        
+        .desktop-screen {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            padding-top: 30px;
+            min-height: 300px;
+        }
+        
+        /* Actual Production-Like Screens */
+        .screen-content {
+            padding: 20px;
+        }
+        
+        /* Step 1: QR Code */
+        .qr-display {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .qr-code-box {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            background: white;
+            border: 2px solid var(--primary-orange);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Realistic QR Code Pattern */
+        .qr-pattern {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(11, 1fr);
+            gap: 2px;
+        }
+        
+        .qr-block {
+            background: #000;
+            border-radius: 1px;
+        }
+        
+        .qr-corner {
+            background: #000;
+            border-radius: 2px;
+        }
+        
+        .qr-white {
+            background: white;
+        }
+        
+        .merchant-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .scan-instruction {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        /* Step 2: Join Form */
+        .join-form {
+            padding: 20px;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-hover));
+            margin: -20px -20px 20px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        
+        .form-field {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .form-button {
+            width: 100%;
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Step 3: Queue Status */
+        .queue-status {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        
+        .queue-number-circle {
+            width: 120px;
+            height: 120px;
+            background: var(--primary-orange);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(250, 140, 22, 0.3);
+        }
+        
+        .position-info {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .position-info div {
+            margin: 8px 0;
+        }
+        
+        .position-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .wait-time {
+            color: #6b7280;
+        }
+        
+        /* Step 4: Notification */
+        .notification-popup {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 280px;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .notification-text strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .notification-text span {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        /* Step 5: Merchant Dashboard */
+        .dashboard-queue {
+            padding: 20px;
+        }
+        
+        .queue-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .queue-header {
+            background: #f9fafb;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .queue-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .queue-item.highlight {
+            background: #FFF7ED;
+            border-left: 3px solid var(--primary-orange);
+        }
+        
+        .customer-info {
+            flex: 1;
+        }
+        
+        .customer-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .customer-details {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-call {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+        
+        /* Comparison Section */
+        .comparison {
+            background: #f9fafb;
+            padding: 3rem;
+            margin-top: 4rem;
+            border-radius: 16px;
+        }
+        
+        .comparison h3 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #1f2937;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .comparison-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid transparent;
+        }
+        
+        .comparison-item.current {
+            border-color: #e5e7eb;
+        }
+        
+        .comparison-item.proposed {
+            border-color: var(--primary-orange);
+            box-shadow: 0 4px 12px rgba(250, 140, 22, 0.1);
+        }
+        
+        .comparison-label {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .badge {
+            background: var(--primary-orange);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .comparison-list {
+            list-style: none;
+        }
+        
+        .comparison-list li {
+            padding: 0.5rem 0;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .comparison-list li::before {
+            content: '→';
+            color: var(--primary-orange);
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-header">
+        <h1>🎨 Notification Flow Section - Design Mockup</h1>
+        <p>Preview of the improved queue notification flow with production-accurate designs</p>
+    </div>
+    
+    <!-- New Improved Notification Flow Section -->
+    <section class="notification-flow">
+        <div class="container">
+            <div class="section-header">
+                <h2>Smart Queue Notification System</h2>
+                <p>Experience the complete customer journey with real-time updates</p>
+            </div>
+            
+            <div class="flow-timeline">
+                <!-- Step 1: QR Code Scan -->
+                <div class="flow-step">
+                    <div class="flow-content">
+                        <div class="flow-number">1</div>
+                        <h3>Instant Queue Access</h3>
+                        <p>Customers scan your unique QR code displayed at your venue or shared digitally. The system instantly recognizes your business and presents a tailored queue experience.</p>
+                        <div class="flow-features">
+                            <span class="feature-tag">🎯 One-tap access</span>
+                            <span class="feature-tag">📱 Mobile optimized</span>
+                            <span class="feature-tag">🏪 Branded experience</span>
+                        </div>
+                    </div>
+                    <div class="device-mockup">
+                        <div class="iphone-frame">
+                            <div class="iphone-screen">
+                                <div class="qr-display">
+                                    <div class="qr-code-box">
+                                        <!-- Realistic QR Code Pattern -->
+                                        <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <!-- QR Code Corners -->
+                                            <rect x="0" y="0" width="50" height="50" fill="black"/>
+                                            <rect x="10" y="10" width="30" height="30" fill="white"/>
+                                            <rect x="20" y="20" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="110" y="0" width="50" height="50" fill="black"/>
+                                            <rect x="120" y="10" width="30" height="30" fill="white"/>
+                                            <rect x="130" y="20" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="0" y="110" width="50" height="50" fill="black"/>
+                                            <rect x="10" y="120" width="30" height="30" fill="white"/>
+                                            <rect x="20" y="130" width="10" height="10" fill="black"/>
+                                            
+                                            <!-- Random QR Pattern -->
+                                            <rect x="60" y="10" width="10" height="10" fill="black"/>
+                                            <rect x="80" y="10" width="10" height="10" fill="black"/>
+                                            <rect x="70" y="20" width="10" height="10" fill="black"/>
+                                            <rect x="90" y="20" width="10" height="10" fill="black"/>
+                                            <rect x="60" y="30" width="10" height="10" fill="black"/>
+                                            <rect x="80" y="30" width="10" height="10" fill="black"/>
+                                            <rect x="100" y="30" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="10" y="60" width="10" height="10" fill="black"/>
+                                            <rect x="30" y="60" width="10" height="10" fill="black"/>
+                                            <rect x="50" y="60" width="10" height="10" fill="black"/>
+                                            <rect x="70" y="60" width="10" height="10" fill="black"/>
+                                            <rect x="90" y="60" width="10" height="10" fill="black"/>
+                                            <rect x="110" y="60" width="10" height="10" fill="black"/>
+                                            <rect x="130" y="60" width="10" height="10" fill="black"/>
+                                            <rect x="150" y="60" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="20" y="70" width="10" height="10" fill="black"/>
+                                            <rect x="40" y="70" width="10" height="10" fill="black"/>
+                                            <rect x="60" y="70" width="10" height="10" fill="black"/>
+                                            <rect x="80" y="70" width="10" height="10" fill="black"/>
+                                            <rect x="100" y="70" width="10" height="10" fill="black"/>
+                                            <rect x="120" y="70" width="10" height="10" fill="black"/>
+                                            <rect x="140" y="70" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="10" y="80" width="10" height="10" fill="black"/>
+                                            <rect x="30" y="80" width="10" height="10" fill="black"/>
+                                            <rect x="70" y="80" width="10" height="10" fill="black"/>
+                                            <rect x="90" y="80" width="10" height="10" fill="black"/>
+                                            <rect x="110" y="80" width="10" height="10" fill="black"/>
+                                            <rect x="130" y="80" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="60" y="90" width="10" height="10" fill="black"/>
+                                            <rect x="80" y="90" width="10" height="10" fill="black"/>
+                                            <rect x="100" y="90" width="10" height="10" fill="black"/>
+                                            <rect x="120" y="90" width="10" height="10" fill="black"/>
+                                            <rect x="140" y="90" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="70" y="100" width="10" height="10" fill="black"/>
+                                            <rect x="90" y="100" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="60" y="120" width="10" height="10" fill="black"/>
+                                            <rect x="80" y="120" width="10" height="10" fill="black"/>
+                                            <rect x="100" y="120" width="10" height="10" fill="black"/>
+                                            <rect x="120" y="120" width="10" height="10" fill="black"/>
+                                            <rect x="140" y="120" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="70" y="130" width="10" height="10" fill="black"/>
+                                            <rect x="90" y="130" width="10" height="10" fill="black"/>
+                                            <rect x="110" y="130" width="10" height="10" fill="black"/>
+                                            
+                                            <rect x="60" y="140" width="10" height="10" fill="black"/>
+                                            <rect x="80" y="140" width="10" height="10" fill="black"/>
+                                            <rect x="100" y="140" width="10" height="10" fill="black"/>
+                                            <rect x="120" y="140" width="10" height="10" fill="black"/>
+                                            <rect x="140" y="140" width="10" height="10" fill="black"/>
+                                        </svg>
+                                    </div>
+                                    <div class="merchant-name">Demo Restaurant</div>
+                                    <div class="scan-instruction">Scan to join our queue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Join Queue Form -->
+                <div class="flow-step">
+                    <div class="flow-content">
+                        <div class="flow-number">2</div>
+                        <h3>Smart Queue Registration</h3>
+                        <p>Simple, elegant form captures essential information. Pre-filled data for returning customers speeds up the process. StoreHub's design system ensures a premium experience.</p>
+                        <div class="flow-features">
+                            <span class="feature-tag">✨ Auto-fill for returning customers</span>
+                            <span class="feature-tag">👥 Party size selection</span>
+                            <span class="feature-tag">📝 Special requests</span>
+                        </div>
+                    </div>
+                    <div class="device-mockup">
+                        <div class="iphone-frame">
+                            <div class="iphone-screen">
+                                <div class="join-form">
+                                    <div class="form-header">
+                                        <strong>Join Our Queue</strong>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label">Your Name</label>
+                                        <input class="form-input" value="Sarah Johnson" readonly>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label">Phone Number</label>
+                                        <input class="form-input" value="+60 12-345 6789" readonly>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label">Party Size</label>
+                                        <select class="form-input">
+                                            <option>2 people</option>
+                                        </select>
+                                    </div>
+                                    <button class="form-button">Join Queue Now</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Real-time Status -->
+                <div class="flow-step">
+                    <div class="flow-content">
+                        <div class="flow-number">3</div>
+                        <h3>Live Queue Tracking</h3>
+                        <p>Beautiful, real-time status page shows exact position, estimated wait time, and queue progress. Customers can leave and return without losing their spot.</p>
+                        <div class="flow-features">
+                            <span class="feature-tag">⏱️ Accurate wait times</span>
+                            <span class="feature-tag">📊 Real-time updates</span>
+                            <span class="feature-tag">🔄 Auto-refresh</span>
+                        </div>
+                    </div>
+                    <div class="device-mockup">
+                        <div class="iphone-frame">
+                            <div class="iphone-screen">
+                                <div class="queue-status">
+                                    <div class="queue-number-circle">A005</div>
+                                    <h3 style="margin-bottom: 10px;">You're in the queue!</h3>
+                                    <div class="position-info">
+                                        <div class="position-number">Position: 3rd</div>
+                                        <div class="wait-time">Est. wait: 15 minutes</div>
+                                    </div>
+                                    <p style="color: #6b7280; font-size: 0.875rem;">
+                                        We'll notify you when it's your turn
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Push Notification -->
+                <div class="flow-step">
+                    <div class="flow-content">
+                        <div class="flow-number">4</div>
+                        <h3>Smart Notifications</h3>
+                        <p>Browser push notifications alert customers when their turn approaches. Works on all devices without app installation. Multiple notification touchpoints ensure no one misses their turn.</p>
+                        <div class="flow-features">
+                            <span class="feature-tag">🔔 Browser notifications</span>
+                            <span class="feature-tag">📱 Works without app</span>
+                            <span class="feature-tag">🔊 Sound alerts</span>
+                        </div>
+                    </div>
+                    <div class="device-mockup">
+                        <div class="iphone-frame">
+                            <div class="iphone-screen" style="background: #f3f4f6;">
+                                <div class="notification-popup">
+                                    <div class="notification-icon">🔔</div>
+                                    <div class="notification-text">
+                                        <strong>Your turn is coming up!</strong>
+                                        <span>You're next. Please head to the counter.</span>
+                                    </div>
+                                </div>
+                                <div style="padding: 100px 20px; text-align: center; color: #9ca3af;">
+                                    Home Screen
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Merchant Dashboard -->
+                <div class="flow-step">
+                    <div class="flow-content">
+                        <div class="flow-number">5</div>
+                        <h3>Powerful Queue Management</h3>
+                        <p>Merchants get a comprehensive dashboard to manage queues efficiently. One-click to send notifications, mark customers as seated, or handle no-shows. Complete visibility of all waiting customers.</p>
+                        <div class="flow-features">
+                            <span class="feature-tag">📊 Queue analytics</span>
+                            <span class="feature-tag">⚡ One-click actions</span>
+                            <span class="feature-tag">📱 Mobile responsive</span>
+                        </div>
+                    </div>
+                    <div class="device-mockup">
+                        <div class="desktop-frame">
+                            <div class="desktop-screen">
+                                <div class="dashboard-queue">
+                                    <div class="queue-table">
+                                        <div class="queue-header">Current Queue (5 waiting)</div>
+                                        <div class="queue-item highlight">
+                                            <div class="customer-info">
+                                                <div class="customer-name">A001 - John Smith</div>
+                                                <div class="customer-details">Party of 4 • Waiting 25 min</div>
+                                            </div>
+                                            <div class="action-buttons">
+                                                <button class="btn-call">🔔 Notify Customer</button>
+                                                <button class="btn-secondary">Seat</button>
+                                            </div>
+                                        </div>
+                                        <div class="queue-item">
+                                            <div class="customer-info">
+                                                <div class="customer-name">A002 - Emily Chen</div>
+                                                <div class="customer-details">Party of 2 • Waiting 20 min</div>
+                                            </div>
+                                            <div class="action-buttons">
+                                                <button class="btn-secondary">Call</button>
+                                            </div>
+                                        </div>
+                                        <div class="queue-item">
+                                            <div class="customer-info">
+                                                <div class="customer-name">A003 - Sarah Johnson</div>
+                                                <div class="customer-details">Party of 2 • Waiting 15 min</div>
+                                            </div>
+                                            <div class="action-buttons">
+                                                <button class="btn-secondary">Call</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Comparison Section -->
+            <div class="comparison">
+                <h3>Current vs Proposed Design</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-item current">
+                        <div class="comparison-label">
+                            Current Design
+                        </div>
+                        <ul class="comparison-list">
+                            <li>Simple text-based mockups</li>
+                            <li>Basic emoji icons</li>
+                            <li>Generic descriptions</li>
+                            <li>No device frames</li>
+                            <li>Limited visual hierarchy</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-item proposed">
+                        <div class="comparison-label">
+                            Proposed Design
+                            <span class="badge">Recommended</span>
+                        </div>
+                        <ul class="comparison-list">
+                            <li>Production-accurate UI components</li>
+                            <li>StoreHub Design System integration</li>
+                            <li>Real queue numbers & statuses</li>
+                            <li>Professional device mockups</li>
+                            <li>Enhanced visual storytelling</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

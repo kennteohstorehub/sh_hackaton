@@ -61,6 +61,30 @@
       color: rgba(255, 255, 255, 0.9);
     }
     
+    /* Merchant Badge - Subtle Style */
+    .merchant-badge {
+      background: linear-gradient(135deg, rgba(250, 140, 22, 0.08), rgba(212, 107, 8, 0.08));
+      color: var(--sh-primary-pressed);
+      border: 1px solid rgba(250, 140, 22, 0.2);
+      padding: var(--sh-space-4) var(--sh-space-5);
+      text-align: center;
+      border-radius: var(--sh-radius-lg) var(--sh-radius-lg) 0 0;
+    }
+    
+    .merchant-badge h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+      color: #D46B08;
+    }
+    
+    .merchant-badge p {
+      font-size: 14px;
+      margin: 4px 0 0 0;
+      opacity: 0.85;
+      color: #FA8C16;
+    }
+    
     .auth-body {
       padding: var(--sh-space-8) var(--sh-space-6);
     }
@@ -185,17 +209,22 @@
 </head>
 <body>
   <div class="auth-container fade-in">
-    <div class="auth-header">
-      <span class="auth-badge">Admin</span>
-      <div class="auth-logo">StoreHub</div>
-      <div class="auth-subtitle">BackOffice Portal</div>
-    </div>
+    <% if (typeof merchantName !== 'undefined' && merchantName) { %>
+      <!-- Merchant Badge - Subtle Style -->
+      <div class="merchant-badge">
+        <h3><%= merchantName %></h3>
+        <p><%= portalType %></p>
+      </div>
+    <% } else { %>
+      <!-- Fallback for legacy -->
+      <div class="auth-header">
+        <span class="auth-badge">Admin</span>
+        <div class="auth-logo">StoreHub</div>
+        <div class="auth-subtitle">BackOffice Portal</div>
+      </div>
+    <% } %>
     
     <div class="auth-body">
-      <h1 class="auth-title">Administrator Login</h1>
-      <p class="auth-description">
-        Access the backoffice management system
-      </p>
       
       <% if (messages && messages.error) { %>
       <div class="alert alert-danger">

@@ -200,6 +200,31 @@
             box-shadow: var(--sh-shadow-lg);
         }
 
+        /* Merchant Badge - Style 3 Subtle */
+        .merchant-badge {
+            background: linear-gradient(135deg, rgba(250, 140, 22, 0.08), rgba(212, 107, 8, 0.08));
+            color: var(--sh-primary-pressed);
+            border: 1px solid rgba(250, 140, 22, 0.2);
+            padding: var(--sh-space-4) var(--sh-space-5);
+            border-radius: var(--sh-radius-md);
+            margin: calc(-1 * var(--sh-space-12)) calc(-1 * var(--sh-space-12)) var(--sh-space-8) calc(-1 * var(--sh-space-12));
+            text-align: center;
+        }
+
+        .merchant-badge h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--sh-primary-pressed);
+        }
+
+        .merchant-badge p {
+            font-size: 14px;
+            margin: 4px 0 0 0;
+            opacity: 0.85;
+            color: var(--sh-primary-orange);
+        }
+
         .auth-header {
             margin-bottom: var(--sh-space-10);
         }
@@ -544,10 +569,13 @@
         <!-- Right Panel - Login Form -->
         <div class="auth-panel">
             <div class="auth-card">
-                <div class="auth-header">
-                    <h2>Welcome back</h2>
-                    <p>Sign in to your merchant account</p>
-                </div>
+                <% if (merchantName) { %>
+                    <!-- Merchant Badge - Shows which merchant account this is -->
+                    <div class="merchant-badge">
+                        <h3><%= merchantName %></h3>
+                        <p><%= portalType %></p>
+                    </div>
+                <% } %>
 
                 <% if (messages && messages.error) { %>
                     <div class="alert alert-error">
@@ -611,7 +639,11 @@
                     </div>
 
                     <button type="submit" class="btn-primary" id="submitBtn">
-                        Sign In
+                        <% if (merchantName) { %>
+                            Sign In to <%= merchantName %>
+                        <% } else { %>
+                            Sign In
+                        <% } %>
                     </button>
                 </form>
 

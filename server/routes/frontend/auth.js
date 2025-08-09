@@ -22,11 +22,44 @@ if (!useAuthBypass && ensureTenantSession) {
   router.use(ensureTenantSession);
 }
 
-// Login page - redirect to merchant login
-router.get('/login', (req, res) => {
-  // Redirect /auth/login to the actual merchant login page
+// Login page - show merchant login
+router.get('/login', requireGuest, requireGuestByContext, (req, res) => {
+  // Pass tenant information to merchant-login
   const redirect = req.query.redirect || '/dashboard';
-  res.redirect('/auth/merchant-login?redirect=' + encodeURIComponent(redirect));
+  
+  // Extract tenant information for display
+  let merchantName = null;
+  let merchantSlug = null;
+  let portalType = 'Merchant Portal';
+  
+  if (req.tenant) {
+    // We have a tenant context from the URL path
+    merchantName = req.tenant.name;
+    merchantSlug = req.tenant.slug;
+    logger.info(`Login page for tenant: ${merchantName}`);
+  }
+  
+  // Ensure messages object exists
+  const messages = res.locals.messages || { error: null, success: null };
+  
+  // Ensure CSRF token is available
+  if (!res.locals.csrfToken) {
+    logger.warn('CSRF token not found in res.locals, checking session');
+    if (req.session && req.session.csrfToken) {
+      res.locals.csrfToken = req.session.csrfToken;
+    }
+  }
+  
+  // Render merchant-login directly instead of redirecting
+  res.render('auth/merchant-login', {
+    title: merchantName ? `${merchantName} - ${portalType}` : 'Merchant Login - StoreHub Queue Management System',
+    redirect,
+    messages: messages,
+    csrfToken: res.locals.csrfToken || '',
+    merchantName: merchantName,
+    merchantSlug: merchantSlug,
+    portalType: portalType
+  });
 });
 
 // Merchant Login page - actual login form for merchants
@@ -46,11 +79,31 @@ router.get('/merchant-login', requireGuest, requireGuestByContext, (req, res) =>
     }
   }
   
+  // Extract tenant information for display
+  let merchantName = null;
+  let merchantSlug = null;
+  let portalType = 'Merchant Portal';
+  
+  if (req.tenant) {
+    // We have a tenant context from the URL path
+    merchantName = req.tenant.name;
+    merchantSlug = req.tenant.slug;
+    logger.info(`Login page for tenant: ${merchantName}`);
+  } else if (req.isBackOffice) {
+    // This is BackOffice admin login
+    merchantName = 'StoreHub Admin';
+    portalType = 'BackOffice Portal';
+    logger.info('Login page for BackOffice admin');
+  }
+  
   res.render('auth/merchant-login', {
-    title: 'Merchant Login - StoreHub Queue Management System',
+    title: merchantName ? `${merchantName} - ${portalType}` : 'Merchant Login - StoreHub Queue Management System',
     redirect,
     messages: messages,
-    csrfToken: res.locals.csrfToken || ''
+    csrfToken: res.locals.csrfToken || '',
+    merchantName: merchantName,
+    merchantSlug: merchantSlug,
+    portalType: portalType
   });
 });
 
