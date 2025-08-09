@@ -62,8 +62,8 @@ RUN mkdir -p .wwebjs_auth && chmod -R 755 .wwebjs_auth
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
-# Expose port
-EXPOSE 3000
+# Expose port (Render uses PORT env variable, default 10000)
+EXPOSE 10000
 
 # Start the application
 CMD ["npm", "start"]
