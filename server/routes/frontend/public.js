@@ -17,7 +17,7 @@ router.get('/debug-socket', (req, res) => {
   res.sendFile('debug-socket-origin.html', { root: process.cwd() });
 });
 
-// Home page - show landing page
+// Home page - show landing page or redirect to merchant login for subdomains
 router.get('/', (req, res) => {
   // Check if this is the admin subdomain
   if (req.isBackOffice) {
@@ -30,7 +30,18 @@ router.get('/', (req, res) => {
     return res.redirect('/backoffice/auth/login');
   }
   
-  // Show landing page
+  // If this is a tenant subdomain, redirect to merchant login
+  if (req.tenant && req.tenantId) {
+    // Check if merchant is already logged in
+    if (req.session && req.session.userId) {
+      // Merchant is logged in, redirect to dashboard
+      return res.redirect('/dashboard');
+    }
+    // Merchant is not logged in, redirect to merchant login
+    return res.redirect('/auth/merchant-login');
+  }
+  
+  // No tenant (localhost or main domain), show landing page
   res.render('landing');
 });
 

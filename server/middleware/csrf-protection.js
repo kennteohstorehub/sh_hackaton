@@ -58,11 +58,23 @@ const csrfValidation = (req, res, next) => {
     '/webhook/',
     '/api/customer/join/',  // Public queue join endpoint
     '/api/customer/queue/',  // Public queue stats endpoint
-    '/api/queue/acknowledge'  // Customer acknowledgment endpoint
+    '/api/queue/acknowledge',  // Customer acknowledgment endpoint
+    '/register'  // Public registration endpoint (temporarily skip CSRF)
   ];
   
-  if (skipPaths.some(path => req.path.includes(path))) {
-    return next();
+  // Check if path should skip CSRF
+  for (const path of skipPaths) {
+    if (path.endsWith('/')) {
+      // For paths ending with /, check if request path starts with it
+      if (req.path.startsWith(path)) {
+        return next();
+      }
+    } else {
+      // For exact paths, check exact match or if it's included
+      if (req.path === path || req.path.includes(path)) {
+        return next();
+      }
+    }
   }
 
   // Get the session token

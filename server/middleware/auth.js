@@ -50,7 +50,7 @@ const requireAuth = (req, res, next) => {
     }
     
     // Determine appropriate login page based on context
-    let loginUrl = '/auth/login';
+    let loginUrl = '/auth/merchant-login'; // Use merchant-login which has the actual form
     
     // If this is a BackOffice route or BackOffice subdomain, redirect to BackOffice login
     if (req.originalUrl.startsWith('/backoffice') || req.isBackOffice) {

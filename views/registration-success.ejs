@@ -9,23 +9,40 @@
     <style>
         body {
             font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FFF5E6 0%, #FFE4CC 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 24px;
+            position: relative;
+        }
+
+        /* Decorative background pattern */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(250, 140, 22, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(250, 140, 22, 0.05) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .success-container {
-            background: white;
-            border-radius: 16px;
-            padding: 48px;
+            background: var(--base-white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-12);
             max-width: 600px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-xl);
             animation: slideUp 0.5s ease-out;
+            position: relative;
+            z-index: 1;
         }
 
         @keyframes slideUp {
@@ -42,15 +59,16 @@
         .success-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #52C41A, #73D13D);
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-hover));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 32px;
+            margin: 0 auto var(--space-8);
             font-size: 40px;
             color: white;
             animation: scaleIn 0.5s ease-out 0.2s both;
+            box-shadow: 0 4px 12px rgba(250, 140, 22, 0.3);
         }
 
         @keyframes scaleIn {
@@ -63,10 +81,10 @@
         }
 
         h1 {
-            font-size: 32px;
-            font-weight: 600;
+            font-size: var(--heading-1);
+            font-weight: var(--weight-semibold);
             color: var(--gray-900);
-            margin-bottom: 16px;
+            margin-bottom: var(--space-4);
             animation: fadeIn 0.5s ease-out 0.3s both;
         }
 
@@ -80,9 +98,9 @@
         }
 
         .subtitle {
-            font-size: 18px;
+            font-size: var(--body-large);
             color: var(--gray-600);
-            margin-bottom: 32px;
+            margin-bottom: var(--space-8);
             line-height: 1.6;
             animation: fadeIn 0.5s ease-out 0.4s both;
         }
@@ -90,24 +108,24 @@
         .info-box {
             background: var(--gray-100);
             border: 1px solid var(--gray-300);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 32px;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
             text-align: left;
             animation: fadeIn 0.5s ease-out 0.5s both;
         }
 
         .info-box h3 {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: var(--body);
+            font-weight: var(--weight-semibold);
             color: var(--gray-900);
-            margin-bottom: 16px;
+            margin-bottom: var(--space-4);
         }
 
         .info-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: var(--space-2) 0;
             border-bottom: 1px solid var(--gray-200);
         }
 
@@ -116,15 +134,15 @@
         }
 
         .info-label {
-            font-size: 14px;
+            font-size: var(--small);
             color: var(--gray-600);
         }
 
         .info-value {
-            font-size: 14px;
-            font-weight: 500;
+            font-size: var(--small);
+            font-weight: var(--weight-medium);
             color: var(--gray-900);
-            font-family: 'SF Mono', 'Consolas', monospace;
+            font-family: var(--font-mono);
         }
 
         .info-value.url {
@@ -134,69 +152,77 @@
 
         .actions {
             display: flex;
-            gap: 16px;
+            gap: var(--space-4);
             justify-content: center;
             flex-wrap: wrap;
             animation: fadeIn 0.5s ease-out 0.6s both;
         }
 
         .btn {
-            padding: 12px 32px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
+            padding: var(--space-3) var(--space-8);
+            border-radius: var(--radius-md);
+            font-size: var(--body);
+            font-weight: var(--weight-medium);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all var(--transition-normal);
             cursor: pointer;
             border: none;
-            font-family: 'Open Sans', sans-serif;
+            font-family: var(--font-primary);
+            min-width: 120px;
         }
 
         .btn-primary {
             background: var(--primary-orange);
             color: white;
-            box-shadow: 0 4px 12px rgba(250, 140, 22, 0.3);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-primary:hover {
             background: var(--primary-hover);
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(250, 140, 22, 0.4);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:active {
+            background: var(--primary-pressed);
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
         }
 
         .btn-secondary {
             background: white;
-            color: var(--gray-700);
-            border: 2px solid var(--gray-300);
+            color: var(--primary-orange);
+            border: 2px solid var(--primary-orange);
         }
 
         .btn-secondary:hover {
             background: var(--gray-100);
-            border-color: var(--gray-400);
+            border-color: var(--primary-hover);
+            color: var(--primary-hover);
         }
 
         .checklist {
             text-align: left;
-            background: #F6FFED;
-            border: 1px solid #B7EB8F;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 32px;
+            background: linear-gradient(135deg, rgba(250, 140, 22, 0.05), rgba(255, 169, 64, 0.05));
+            border: 1px solid rgba(250, 140, 22, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--space-5);
+            margin-top: var(--space-8);
             animation: fadeIn 0.5s ease-out 0.7s both;
         }
 
         .checklist h4 {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: var(--body);
+            font-weight: var(--weight-semibold);
             color: var(--gray-900);
-            margin-bottom: 12px;
+            margin-bottom: var(--space-3);
         }
 
         .checklist-item {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: var(--space-2);
+            font-size: var(--small);
             color: var(--gray-700);
         }
 
@@ -205,39 +231,40 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            background: #52C41A;
+            background: var(--primary-orange);
             color: white;
             border-radius: 50%;
             text-align: center;
             line-height: 20px;
             font-size: 12px;
-            margin-right: 12px;
+            margin-right: var(--space-3);
             flex-shrink: 0;
         }
 
         .trial-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-hover));
             color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 24px;
+            padding: var(--space-1) var(--space-4);
+            border-radius: var(--radius-full);
+            font-size: var(--small);
+            font-weight: var(--weight-medium);
+            margin-bottom: var(--space-6);
             animation: fadeIn 0.5s ease-out 0.3s both;
+            box-shadow: 0 2px 8px rgba(250, 140, 22, 0.25);
         }
 
         @media (max-width: 768px) {
             .success-container {
-                padding: 32px 24px;
+                padding: var(--space-8) var(--space-6);
             }
 
             h1 {
-                font-size: 28px;
+                font-size: var(--heading-2);
             }
 
             .subtitle {
-                font-size: 16px;
+                font-size: var(--body);
             }
 
             .actions {
@@ -275,7 +302,7 @@
             </div>
             <div class="info-item">
                 <span class="info-label">Queue URL:</span>
-                <span class="info-value url">https://<%= subdomain %>.storehubqms.com</span>
+                <span class="info-value url"><%= loginUrl %></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Trial Expires:</span>
@@ -290,7 +317,7 @@
             <a href="<%= loginUrl || '/login' %>" class="btn btn-primary">
                 Go to Dashboard →
             </a>
-            <button onclick="copyToClipboard('https://<%= subdomain %>.storehubqms.com')" class="btn btn-secondary">
+            <button onclick="copyToClipboard('<%= loginUrl %>')" class="btn btn-secondary">
                 Copy Queue URL
             </button>
         </div>
@@ -322,9 +349,9 @@
                 const btn = event.target;
                 const originalText = btn.textContent;
                 btn.textContent = 'Copied!';
-                btn.style.background = '#52C41A';
+                btn.style.background = 'var(--success-green)';
                 btn.style.color = 'white';
-                btn.style.borderColor = '#52C41A';
+                btn.style.borderColor = 'var(--success-green)';
                 
                 setTimeout(() => {
                     btn.textContent = originalText;

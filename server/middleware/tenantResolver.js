@@ -10,16 +10,73 @@ const { isLocalDomain, extractSubdomainLocal } = require('./tenantResolver.local
 async function resolveTenant(req, res, next) {
   try {
     const hostname = req.hostname || req.get('host').split(':')[0];
-    logger.info(`Resolving tenant for hostname: ${hostname}`);
+    logger.info(`Resolving tenant for hostname: ${hostname}, path: ${req.path}`);
+    
+    // Check for path-based tenant routing FIRST (e.g., /t/tenant-slug/...)
+    const pathMatch = req.path.match(/^\/t\/([^\/]+)/);
+    if (pathMatch) {
+      const tenantSlug = pathMatch[1];
+      logger.info(`Path-based tenant detected: ${tenantSlug}`);
+      
+      // Look up tenant by slug
+      const tenant = await prisma.tenant.findFirst({
+        where: {
+          slug: tenantSlug,
+          isActive: true
+        }
+      });
+      
+      if (tenant) {
+        logger.info(`Tenant resolved from path: ${tenant.name}`);
+        req.tenant = tenant;
+        req.tenantId = tenant.id;
+        req.tenantSlug = tenantSlug;
+        // Rewrite the path to remove the tenant prefix
+        req.url = req.url.replace(`/t/${tenantSlug}`, '');
+        req.path = req.path.replace(`/t/${tenantSlug}`, '');
+        return next();
+      } else {
+        logger.warn(`Tenant not found for slug: ${tenantSlug}`);
+        return res.status(404).render('errors/tenant-not-found', {
+          message: 'Organization not found',
+          slug: tenantSlug
+        });
+      }
+    }
     
     // Check if this is a public route that doesn't require tenant resolution
-    const publicPaths = ['/register', '/auth/login', '/auth/logout', '/terms', '/privacy', '/', '/help', '/contact', '/features'];
+    // Note: '/' is only public for non-subdomain access (localhost, main domain)
+    // Auth routes need tenant context when accessed via subdomain
+    const publicPaths = ['/register', '/auth/logout', '/terms', '/privacy', '/help', '/contact', '/features'];
+    // Add '/' to public paths only if it's not a subdomain request
+    const isRootPath = req.path === '/';
+    const isAuthPath = req.path.startsWith('/auth/');
     const isPublicPath = publicPaths.some(path => req.path === path || req.path.startsWith('/register/'));
     
     // For Render deployment or single domain setup without subdomains
     const isRenderDeployment = hostname.includes('onrender.com');
     
-    if (isPublicPath || isRenderDeployment) {
+    // Check if this appears to be a subdomain (for early detection)
+    const hasSubdomain = (() => {
+      const parts = hostname.split(':')[0].split('.');
+      // For local dev: check for subdomain.lvh.me pattern
+      if (hostname.includes('lvh.me')) {
+        return parts.length > 2 && parts[0] !== 'lvh';
+      }
+      // For production: 3+ parts means subdomain (sub.domain.com)
+      return parts.length >= 3 && !hostname.includes('onrender.com');
+    })();
+    
+    // Special handling for root path - only public if NOT a subdomain
+    if (isRootPath && !hasSubdomain) {
+      // Root path on main domain (localhost, main domain) is public
+      logger.info(`Public root path accessed on main domain: ${hostname}`);
+      req.tenant = null;
+      req.tenantId = null;
+      return next();
+    }
+    
+    if ((isPublicPath && !isRootPath && !hasSubdomain) || (isRenderDeployment && !hasSubdomain)) {
       // Check if this is a backoffice route
       if (req.path.startsWith('/backoffice')) {
         logger.info(`BackOffice access via ${hostname}`);
@@ -29,13 +86,26 @@ async function resolveTenant(req, res, next) {
         return next();
       }
       
-      // For public paths or Render deployment, skip tenant resolution
-      if (isPublicPath) {
+      // For public paths on main domain (not subdomain), skip tenant resolution
+      // But auth paths on subdomains should continue to get tenant context
+      if (isPublicPath && !isAuthPath) {
         logger.info(`Public path accessed: ${req.path}`);
         req.tenant = null;
         req.tenantId = null;
         return next();
       }
+    }
+    
+    // Special case: Auth paths on subdomains need tenant context
+    if (isAuthPath && hasSubdomain) {
+      logger.info(`Auth path on subdomain - will resolve tenant: ${req.path}`);
+      // Continue to resolve tenant below
+    } else if (isAuthPath && !hasSubdomain) {
+      // Auth path on main domain - no tenant context needed
+      logger.info(`Auth path on main domain - no tenant: ${req.path}`);
+      req.tenant = null;
+      req.tenantId = null;
+      return next();
     }
     
     let subdomain = null;

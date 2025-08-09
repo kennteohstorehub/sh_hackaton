@@ -38,6 +38,7 @@ const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
 const { config, initialize: initializeConfig } = require('./config');
+const { getCookieDomain } = require('./utils/cookieDomain');
 
 const logger = require('./utils/logger');
 const { 
@@ -211,44 +212,61 @@ app.use(methodOverride('_method'));
 
 // Session configuration - use explicit fix for production
 const sessionFixConfig = require('./config/session-fix');
-const sessionConfig = {
-  ...sessionFixConfig,
-  secret: config.security.sessionSecret || process.env.SESSION_SECRET
-};
 
-// Only use PostgreSQL session store if database URL is available
-if (config.database.postgres.url || process.env.DATABASE_URL) {
-  try {
-    sessionConfig.store = new pgSession({
-      conString: config.database.postgres.url || process.env.DATABASE_URL,
-      tableName: 'Session',
-      ttl: 24 * 60 * 60,
-      disableTouch: false,
-      createTableIfMissing: false,
-      pruneSessionInterval: 60
+// Dynamic session middleware to set cookie domain per request
+app.use((req, res, next) => {
+  // Determine cookie domain based on the current request
+  const cookieDomain = getCookieDomain(req.hostname || req.get('host'));
+  
+  // Create session config with dynamic cookie domain
+  const sessionConfig = {
+    ...sessionFixConfig,
+    secret: config.security.sessionSecret || process.env.SESSION_SECRET,
+    cookie: {
+      ...sessionFixConfig.cookie,
+      // Set domain dynamically for subdomain support
+      domain: cookieDomain
+    }
+  };
+  
+  // Only use PostgreSQL session store if database URL is available
+  if (config.database.postgres.url || process.env.DATABASE_URL) {
+    try {
+      sessionConfig.store = new pgSession({
+        conString: config.database.postgres.url || process.env.DATABASE_URL,
+        tableName: 'Session',
+        ttl: 24 * 60 * 60,
+        disableTouch: false,
+        createTableIfMissing: false,
+        pruneSessionInterval: 60
+      });
+    } catch (error) {
+      logger.error('Failed to initialize PostgreSQL session store:', error);
+      logger.warn('Falling back to memory session store (not suitable for production)');
+    }
+  } else {
+    logger.warn('No PostgreSQL URL provided - using memory session store (not suitable for production)');
+  }
+  
+  // Log session configuration for first request only
+  if (!app.locals.sessionConfigLogged) {
+    logger.info('Session configuration:', {
+      name: sessionConfig.name,
+      proxy: sessionConfig.proxy,
+      cookie: {
+        secure: sessionConfig.cookie?.secure,
+        httpOnly: sessionConfig.cookie?.httpOnly,
+        sameSite: sessionConfig.cookie?.sameSite,
+        maxAge: sessionConfig.cookie?.maxAge,
+        domain: sessionConfig.cookie?.domain || 'not set'
+      }
     });
-    logger.info('PostgreSQL session store initialized with pool');
-  } catch (error) {
-    logger.error('Failed to initialize PostgreSQL session store:', error);
-    logger.warn('Falling back to memory session store (not suitable for production)');
+    app.locals.sessionConfigLogged = true;
   }
-} else {
-  logger.warn('No PostgreSQL URL provided - using memory session store (not suitable for production)');
-}
-
-// Log session configuration for debugging
-logger.info('Session configuration:', {
-  name: sessionConfig.name,
-  proxy: sessionConfig.proxy,
-  cookie: {
-    secure: sessionConfig.cookie?.secure,
-    httpOnly: sessionConfig.cookie?.httpOnly,
-    sameSite: sessionConfig.cookie?.sameSite,
-    maxAge: sessionConfig.cookie?.maxAge
-  }
+  
+  // Apply session middleware
+  session(sessionConfig)(req, res, next);
 });
-
-app.use(session(sessionConfig));
 
 app.use(flash());
 
@@ -258,6 +276,7 @@ app.use(resolveTenant);
 
 // Authentication Context Middleware (Must run after tenant resolution)
 const { setAuthContext, validateAuthContext } = require('./middleware/auth-context');
+const { requireAuth } = require('./middleware/auth');
 app.use(setAuthContext);
 app.use(validateAuthContext);
 
@@ -341,6 +360,21 @@ app.use('/', registrationRoutes);
 app.use('/', publicRoutes);
 // Always use the real auth routes - no conditional routing
 app.use('/auth', authRoutes);
+
+// Tenant-scoped routes (path-based: /t/tenant-slug/...)
+// This middleware will handle all tenant-specific routes
+app.use('/t/:tenantSlug', resolveTenant, (req, res, next) => {
+  // The resolveTenant middleware will handle tenant resolution
+  // and rewrite the URL to remove the /t/tenant-slug prefix
+  next();
+});
+
+// Apply tenant-scoped auth routes
+app.use('/t/:tenantSlug/auth', resolveTenant, authRoutes);
+app.use('/t/:tenantSlug/dashboard', resolveTenant, setAuthContext, requireAuth, (req, res) => {
+  res.redirect('/dashboard');
+});
+app.use('/t/:tenantSlug', resolveTenant, publicRoutes);
 
 // BackOffice Routes
 app.use('/backoffice/auth', backOfficeAuthRoutes);

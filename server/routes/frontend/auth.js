@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const merchantService = require('../../services/merchantService');
 const prisma = require('../../utils/prisma');
 const logger = require('../../utils/logger');
+const { buildTenantUrl, needsSubdomainAdjustment } = require('../../utils/subdomainHelper');
 // Use appropriate auth middleware based on environment
 const useAuthBypass = process.env.USE_AUTH_BYPASS === 'true';
 
@@ -21,10 +22,11 @@ if (!useAuthBypass && ensureTenantSession) {
   router.use(ensureTenantSession);
 }
 
-// Login page - redirect to landing page
+// Login page - redirect to merchant login
 router.get('/login', (req, res) => {
-  // Redirect /auth/login to the landing page
-  res.redirect('/');
+  // Redirect /auth/login to the actual merchant login page
+  const redirect = req.query.redirect || '/dashboard';
+  res.redirect('/auth/merchant-login?redirect=' + encodeURIComponent(redirect));
 });
 
 // Merchant Login page - actual login form for merchants
@@ -33,6 +35,16 @@ router.get('/merchant-login', requireGuest, requireGuestByContext, (req, res) =>
   
   // Ensure messages object exists
   const messages = res.locals.messages || { error: null, success: null };
+  
+  // Ensure CSRF token is available
+  if (!res.locals.csrfToken) {
+    logger.warn('CSRF token not found in res.locals, checking session');
+    if (req.session && req.session.csrfToken) {
+      res.locals.csrfToken = req.session.csrfToken;
+    } else {
+      logger.error('No CSRF token available for merchant-login page');
+    }
+  }
   
   res.render('auth/merchant-login', {
     title: 'Merchant Login - StoreHub Queue Management System',
@@ -91,7 +103,8 @@ router.post('/login',
     
     if (!merchant) {
       req.flash('error', 'Invalid email or password.');
-      return res.redirect('/auth/login');
+      const redirect = req.body.redirect || '/dashboard';
+      return res.redirect('/auth/merchant-login?redirect=' + encodeURIComponent(redirect));
     }
     
     // DEBUG: Log merchant object structure
@@ -109,12 +122,13 @@ router.post('/login',
     const authenticatedMerchant = await merchantService.authenticate(email, password, req.tenantId);
     if (!authenticatedMerchant) {
       req.flash('error', 'Invalid email or password.');
-      return res.redirect('/auth/login');
+      const redirect = req.body.redirect || '/dashboard';
+      return res.redirect('/auth/merchant-login?redirect=' + encodeURIComponent(redirect));
     }
 
     // Store data we need to preserve
     const merchantId = merchant.id;
-    const redirectUrl = req.body.redirect || req.query.redirect || '/dashboard';
+    let redirectUrl = req.body.redirect || req.query.redirect || '/dashboard';
     const successMessage = `Welcome back, ${merchant.businessName}!`;
     
     // Store the CSRF token before regeneration
@@ -126,7 +140,8 @@ router.post('/login',
       if (err) {
         logger.error('Session regeneration error:', err);
         req.flash('error', 'Login error. Please try again.');
-        return res.redirect('/auth/login');
+        const redirect = req.body.redirect || '/dashboard';
+        return res.redirect('/auth/merchant-login?redirect=' + encodeURIComponent(redirect));
       }
       
       // Restore CSRF token after regeneration
@@ -183,6 +198,11 @@ router.post('/login',
           logger.error('Session save error:', err);
         }
         
+        // Build tenant-specific URL if needed
+        if (needsSubdomainAdjustment(redirectUrl)) {
+          redirectUrl = buildTenantUrl(req, redirectUrl);
+        }
+        
         // Redirect to original URL if provided
         logger.info(`Login successful, redirecting to: ${redirectUrl}`);
         res.redirect(redirectUrl);
@@ -193,7 +213,8 @@ router.post('/login',
     logger.error('Login error:', error);
     logger.error('Error stack:', error.stack);
     req.flash('error', 'An error occurred during login. Please try again.');
-    res.redirect('/auth/login');
+    const redirect = req.body.redirect || '/dashboard';
+    res.redirect('/auth/merchant-login?redirect=' + encodeURIComponent(redirect));
   }
 });
 
@@ -268,9 +289,12 @@ router.post('/register',
         if (err) {
           logger.error('Session save error:', err);
         }
-        // MULTI-TENANT FIX: Use absolute path for redirect
-    const dashboardUrl = req.tenant ? '/dashboard' : '/dashboard';
-    res.redirect(dashboardUrl);
+        
+        // Build tenant-specific dashboard URL
+        const dashboardUrl = buildTenantUrl(req, '/dashboard');
+        logger.info(`Registration redirect: ${dashboardUrl} for tenant: ${req.tenant?.slug || 'no-tenant'}`);
+        
+        res.redirect(dashboardUrl);
       });
     });
 

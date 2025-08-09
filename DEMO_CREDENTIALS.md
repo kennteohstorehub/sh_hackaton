@@ -2,93 +2,98 @@
 
 This file contains all test account credentials for the StoreHub Queue Management System.
 
-## 🔐 Merchant Accounts
+## 🚀 Production URLs (Render Deployment)
 
-All merchant accounts use the same password: **`password123`**
+| **Access Type** | **URL** | **Username** | **Password** |
+|-----------------|---------|--------------|--------------|
+| **Landing Page** | https://storehub-qms.onrender.com | - | - |
+| **Registration** | https://storehub-qms.onrender.com/register | - | - |
+| **Demo 1 Login** | https://storehub-qms.onrender.com/t/demo1/auth/login | demo1@demo.com | password123 |
+| **Demo 2 Login** | https://storehub-qms.onrender.com/t/demo2/auth/login | demo2@demo.com | password123 |
+| **BackOffice Admin** | https://storehub-qms.onrender.com/backoffice/login | admin@storehub.com | password123 |
 
-| Business Name | Email | Password | Subdomain URL | Direct Login |
-|--------------|-------|----------|---------------|-------------|
-| ChickenRice Restaurant | chickenrice@demo.com | password123 | http://chickenrice.localhost:3000 | http://localhost:3000/auth/login |
-| KFC | kfc@demo.com | password123 | http://kfc.localhost:3000 | http://localhost:3000/auth/login |
-| Hotpot Palace | hotpot@demo.com | password123 | http://hotpot.localhost:3000 | http://localhost:3000/auth/login |
+## 🏠 Local Development URLs
 
-## 🔑 BackOffice Admin Account
+| **Access Type** | **URL** | **Username** | **Password** |
+|-----------------|---------|--------------|--------------|
+| **Demo 1 (Path-based)** | http://localhost:3000/t/demo1/auth/login | demo1@demo.com | password123 |
+| **Demo 2 (Path-based)** | http://localhost:3000/t/demo2/auth/login | demo2@demo.com | password123 |
+| **Demo 1 (Subdomain)** | http://demo1.lvh.me:3000/auth/login | demo1@demo.com | password123 |
+| **Demo 2 (Subdomain)** | http://demo2.lvh.me:3000/auth/login | demo2@demo.com | password123 |
+| **BackOffice Admin** | http://localhost:3000/backoffice/login | admin@storehub.com | password123 |
 
-| Role | Email | Password | URL |
-|------|-------|----------|-----|
-| BackOffice Admin | admin@demo.com | password123 | http://localhost:3000/backoffice/login |
+## 📝 Account Details
 
-## 📝 Quick Start
+### BackOffice Administrator
+- **Email**: `admin@storehub.com`
+- **Password**: `password123`
+- **Role**: SuperAdmin
+- **Access**: Full system administration
 
-### Login Options:
-1. **Direct Login (Recommended)**: http://localhost:3000/auth/login
-   - Works for all merchant accounts without subdomain setup
-   
-2. **Subdomain Login**: Use the subdomain URLs if you have hosts file configured
-   - Example: http://chickenrice.localhost:3000
+### Demo Merchant 1
+- **Business Name**: Demo Restaurant 1
+- **Email**: `demo1@demo.com`
+- **Password**: `password123`
+- **Tenant Slug**: `demo1`
+- **Subscription**: 30-day trial
 
-3. **BackOffice Login**: http://localhost:3000/backoffice/login
-   - For admin access only
+### Demo Merchant 2
+- **Business Name**: Demo Restaurant 2
+- **Email**: `demo2@demo.com`
+- **Password**: `password123`
+- **Tenant Slug**: `demo2`
+- **Subscription**: 30-day trial
 
-## 🌐 Subdomain Setup (Optional)
+## 🚀 Quick Start
 
-If you want to use subdomain URLs, add these entries to your hosts file (`/etc/hosts` on Mac/Linux):
-```
-127.0.0.1 chickenrice.localhost
-127.0.0.1 kfc.localhost
-127.0.0.1 hotpot.localhost
-```
+### For Production (Render):
+1. Visit https://storehub-qms.onrender.com
+2. Use path-based routing: `/t/demo1/` or `/t/demo2/`
+3. Login with credentials above
 
-## 🚀 Getting Started
-
-1. **Start the server**:
+### For Local Development:
+1. Start the server:
    ```bash
    npm start
    ```
+2. Access via:
+   - Path-based: `http://localhost:3000/t/demo1/`
+   - Subdomain: `http://demo1.lvh.me:3000/`
 
-2. **Login** using any of the accounts above with password: `password123`
+## 🔧 Reset Accounts
 
-3. **Start a queue** from the merchant dashboard
-
-4. **Access customer view** at: `http://localhost:3000/queue/[queueId]`
-
-## 🔧 Reset/Recreate Accounts
-
-If you need to reset the accounts to this clean state:
+To reset accounts to this clean state:
 ```bash
-node setup-clean-accounts.js
+node setup-production-accounts.js
 ```
 
 This will:
-- Delete all existing accounts
-- Create the 3 merchant accounts
-- Create the 1 BackOffice admin account
+- Remove all existing accounts
+- Create 2 demo merchant accounts
+- Create 1 BackOffice admin account
 - All with password: `password123`
 
 ## ⚠️ Important Notes
 
-- **Same Password**: All accounts use `password123` for easy testing
-- **CSRF Token**: The login forms now include CSRF tokens (fixes the 403 error)
-- **Each merchant** has:
-  - Its own tenant with domain configuration
-  - Default queue settings
-  - Business information pre-configured
+- **Path-Based Routing**: Currently using `/t/tenant-slug/` format
+- **Future Subdomain**: Will migrate to `*.storehubqms.com` after domain setup
+- **Trial Period**: Each demo account has 30-day trial
+- **CSRF Protection**: All forms include CSRF tokens
 
 ## 🛠️ Troubleshooting
 
 ### Cannot Login?
-1. Make sure the server is running: `npm start`
-2. Try the direct login URL: http://localhost:3000/auth/login
-3. Clear browser cookies and cache
-4. Check that you're using password: `password123`
+1. Ensure server is running
+2. Check you're using correct path: `/t/demo1/` or `/t/demo2/`
+3. Clear browser cookies
+4. Verify password: `password123`
 
-### Need More Test Data?
-Run the setup script to recreate clean accounts:
-```bash
-node setup-clean-accounts.js
-```
+### After Deployment:
+- Allow 1-2 minutes for Render to spin up
+- First request may be slow (cold start)
+- Check https://storehub-qms.onrender.com/api/health
 
 ---
 
-*Last Updated: 2025-01-08*
+*Last Updated: 2025-01-09*
 *StoreHub Queue Management System v1.0.0*
